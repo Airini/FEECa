@@ -12,7 +12,7 @@ class Field v where
 
 class Field f => VectorSpace v f where
   --type Vector = v
-  --vspaceDim :: Int
+  vspaceDim :: v -> Int
   addV  :: v -> v -> v
   sclV  :: f -> v -> v
  
