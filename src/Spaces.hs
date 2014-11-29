@@ -22,8 +22,9 @@ class (VectorSpace v) => Algebra v where
   (/\) :: v -> v -> v
   sclA :: Fieldf v -> v -> v
 
-class (VectorSpace v) => Function h v where
+-- Maybe not necessary to have 
+class (VectorSpace v, Field f) => Function h v f where
   deriv :: v -> h -> h
-  eval  :: v -> h -> Fieldf v
+  eval  :: v -> h -> f
 
 

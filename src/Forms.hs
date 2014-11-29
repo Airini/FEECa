@@ -1,5 +1,7 @@
 -- {-# LANGUAGE GADTs #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ExistentialQuantification #-}
 module Forms where
 
@@ -28,7 +30,7 @@ instance Field f => VectorSpace (Vector f) where
 
 data Form v f = 
   Fform { arity :: Int, -- vecDim??
-          constituents :: [([Int], f)], operator :: v -> [v] -> f }
+          constituents :: [([Int], f)], operator :: [v] -> f }
 -- where the f in constituents might very well be changed to (v -> f) so as to
 -- englobe differential forms
 
@@ -94,7 +96,7 @@ refine :: (Field f, Num f, VectorSpace v) =>
        -> Form v f
        -> Form v f
 refine proj (Fform k cs _) = Fform k cs undefined 
-  where op = \_ vs -> foldl (\t -> add t . ($ vs)) addId (map (formify proj) cs)
+  where op = \vs -> foldl (\t -> add t . ($ vs)) addId (map (formify proj) cs)
 
 formify :: (Field f, Num f, VectorSpace v) =>
               (Int -> v -> f) -> ([Int],f) -> [v] -> f
@@ -107,6 +109,32 @@ formify proj (i:is, s)
                                   (formify proj (is,s) (choose e vs)))
                              (permutationPairs (vspaceDim (head vs)) 1 (length is)))
   where choose ns vs = pick (differences ns) vs
+
+zeroForm :: Form v f
+zeroForm = Fform 0 [] undefined
+
+contract :: Form v f -> v -> Form v f
+contract omega | null (constituents omega) = const zeroForm
+               | otherwise                 = undefined
+
+-- We need a basis here
+(<>) :: Form v f -> Form v f -> f
+omega <> eta = undefined
+
+
+--- ONLY PLACEHOLDERS!!
+data Poly v f = Pp (v -> f)
+
+instance (VectorSpace v, Field f) => Function (Poly v f) v f where
+  deriv = undefined
+  eval x (Pp g) = g x
+
+instance Field f => VectorSpace (Poly v f) where
+  type Fieldf (Poly v f) = f
+  vspaceDim = undefined
+  addV (Pp g) (Pp h) = Pp $ \vs -> add (g vs) (h vs)
+  sclV a (Pp g) = Pp $ \vs -> mul a (g vs)
+---
 
 
 
