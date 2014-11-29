@@ -21,4 +21,7 @@ class (VectorSpace v f) => Algebra v f where
   (/\) :: v -> v -> v
   sclA :: f -> v -> v
 
+class (VectorSpace v f) => Function h v f where
+  deriv :: v -> h -> h
+  eval  :: v -> h -> f
 
