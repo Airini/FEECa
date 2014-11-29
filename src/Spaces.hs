@@ -1,4 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
 module Spaces where
 
 class Field v where
@@ -10,18 +11,18 @@ class Field v where
   mulId :: v
   mulInv :: v -> v
 
-class Field f => VectorSpace v f where
-  --type Vector = v
+class VectorSpace v where
+  type Fieldf v :: *
   vspaceDim :: v -> Int
   addV  :: v -> v -> v
-  sclV  :: f -> v -> v
+  sclV  :: Fieldf v -> v -> v
  
-class (VectorSpace v f) => Algebra v f where
+class (VectorSpace v) => Algebra v where
   addA :: v -> v -> v
   (/\) :: v -> v -> v
-  sclA :: f -> v -> v
+  sclA :: Fieldf v -> v -> v
 
-class (VectorSpace v f) => Function h v f where
+class (VectorSpace v) => Function h v where
   deriv :: v -> h -> h
-  eval  :: v -> h -> f
+  eval  :: v -> h -> Fieldf v
 

@@ -1,5 +1,6 @@
 -- {-# LANGUAGE GADTs #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ExistentialQuantification #-}
 module Forms where
@@ -17,7 +18,8 @@ addList (Vex n xs) (Vex m ys)
 scaleList :: Field f => f -> Vector f -> Vector f
 scaleList a (Vex n xs) = Vex n (map (mul a) xs)
 
-instance Field f => VectorSpace (Vector f) f where
+instance Field f => VectorSpace (Vector f) where
+  type Fieldf (Vector f) = f
   vspaceDim (Vex n _) = n
   addV = addList
   sclV = scaleList
@@ -31,7 +33,7 @@ data Form v f =
 -- TODO: functor?
 
 
-dx :: VectorSpace v f => Int -> Form v f
+dx :: (Field f, VectorSpace v) => Int -> Form v f
 dx i | i <= 0    = error "dx: invalid projection of a negative component"
      | otherwise = Fform 1 [([i],mulId)] undefined
 
@@ -68,12 +70,13 @@ omega //\\ eta = Fform (arity omega + arity eta)
           | otherwise              = ([],addId)
 
 
-instance (VectorSpace v f, Field f') => VectorSpace (Form v f) f' where
+instance (VectorSpace v, Field f) => VectorSpace (Form v f) where
+  type Fieldf (Form v f) = f
   vspaceDim = undefined
   addV = undefined
   sclV = undefined
 
-instance (VectorSpace v f, Field f') => Algebra (Form v f) f' where
+instance (VectorSpace v, Field f) => Algebra (Form v f) where
   addA = undefined
   (/\) = undefined
   sclA = undefined
