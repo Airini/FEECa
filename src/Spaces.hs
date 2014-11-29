@@ -26,3 +26,4 @@ class (VectorSpace v) => Function h v where
   deriv :: v -> h -> h
   eval  :: v -> h -> Fieldf v
 
+

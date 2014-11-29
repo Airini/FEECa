@@ -1,13 +1,12 @@
 -- {-# LANGUAGE GADTs #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ExistentialQuantification #-}
 module Forms where
 
 import Data.List(intersect)
 import Data.Type.Natural
 import Spaces
+import Discrete
 
 
 data Vector f = Vex Int [f]
@@ -29,7 +28,7 @@ instance Field f => VectorSpace (Vector f) where
 
 data Form v f = 
   Fform { arity :: Int, -- vecDim??
-          constituents :: [([Int], f)], refined :: v -> [v] -> f }
+          constituents :: [([Int], f)], operator :: v -> [v] -> f }
 -- where the f in constituents might very well be changed to (v -> f) so as to
 -- englobe differential forms
 
@@ -83,4 +82,31 @@ instance (VectorSpace v, Field f) => Algebra (Form v f) where
   addA = addV
   (/\) = (//\\)
   sclA = sclV
+
+-- Our basic projection for 'Vector f'
+dxV :: Int -> [Vector f] -> f
+dxV i [Vex n x] = x !! i
+dxV i _   = error "dxV: incorrect number of arguments; must only be 1"
+
+refine :: (Field f, Num f, VectorSpace v) =>
+          (Int -> v -> f)      -- ^ The definition for the projection function
+                               --   for the specific vector space
+       -> Form v f
+       -> Form v f
+refine proj (Fform k cs _) = Fform k cs undefined 
+  where op = \_ vs -> foldl (\t -> add t . ($ vs)) addId (map (formify proj) cs)
+
+formify :: (Field f, Num f, VectorSpace v) =>
+              (Int -> v -> f) -> ([Int],f) -> [v] -> f
+formify proj (i:is, s)
+    | null is   = mul s . proj i . head
+    | otherwise = \vs ->
+        foldl add addId (map (\(w,e) -> mul (mul
+                                  ((-1) ^ (sign (w,e)))
+                                  ((proj i . head) (choose w vs)))
+                                  (formify proj (is,s) (choose e vs)))
+                             (permutationPairs (vspaceDim (head vs)) 1 (length is)))
+  where choose ns vs = pick (differences ns) vs
+
+
 
