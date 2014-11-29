@@ -6,7 +6,9 @@
 module Forms where
 
 import Data.List(intersect)
+import Data.Type.Natural
 import Spaces
+
 
 data Vector f = Vex Int [f]
 
@@ -26,7 +28,8 @@ instance Field f => VectorSpace (Vector f) where
 
 
 data Form v f = 
-  Fform { arity :: Int, constituents :: [([Int], f)], refined :: v -> [v] -> f }
+  Fform { arity :: Int, -- vecDim??
+          constituents :: [([Int], f)], refined :: v -> [v] -> f }
 -- where the f in constituents might very well be changed to (v -> f) so as to
 -- englobe differential forms
 
@@ -72,12 +75,12 @@ omega //\\ eta = Fform (arity omega + arity eta)
 
 instance (VectorSpace v, Field f) => VectorSpace (Form v f) where
   type Fieldf (Form v f) = f
-  vspaceDim = undefined
-  addV = undefined
-  sclV = undefined
+  vspaceDim _ = undefined
+  addV = (+++)
+  sclV = (***)
 
 instance (VectorSpace v, Field f) => Algebra (Form v f) where
-  addA = undefined
-  (/\) = undefined
-  sclA = undefined
+  addA = addV
+  (/\) = (//\\)
+  sclA = sclV
 
