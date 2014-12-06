@@ -43,3 +43,5 @@ prop_sublists (OrderedIntPair (k,n)) = l ==  map head (map (l \\) subl)
     where l = unrank k n
           subl = map (unrank (k-1)) (sublists k n)
 
+
+main = quickCheck prop_increasing
