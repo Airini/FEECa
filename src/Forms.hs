@@ -10,8 +10,9 @@ import Data.Type.Natural
 import Spaces
 import Discrete
 
-
-data Vector f = Vex Int [f]
+type Dim = Int
+data Vector f = Vex Dim [f]
+vectorInvariant (Vex n xs) = n == length xs
 
 addList :: Field f => Vector f -> Vector f -> Vector f
 addList (Vex n xs) (Vex m ys)
@@ -29,10 +30,21 @@ instance Field f => VectorSpace (Vector f) where
 
 
 data Form v f = 
-  Fform { arity :: Int, -- vecDim??
-          constituents :: [([Int], f)], operator :: [v] -> f }
+  Fform { arity :: Int -- vecDim??
+        , constituents :: [([Int], f)]
+        , operator :: [v] -> f } -- to be removed? (Can be calculated from constituents -- see refine (unfininshed))
 -- where the f in constituents might very well be changed to (v -> f) so as to
 -- englobe differential forms
+
+-- constituents [([1,2],17), ([1,3], 38)] = 17*dx1/\dx2 + 38*dx1/\dx3
+
+constituentsInv :: [([Int],f)] -> Bool
+constituentsInv [] = True
+constituentsInv ((xs,f):ys) = all (\(xs',_)-> length xs == length xs') ys
+
+-- related to refine
+-- evalForm :: Form v f -> [Vector f] -> f
+-- evalForm (Fform arity const op) = op 
 
 -- TODO: functor?
 
