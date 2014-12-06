@@ -32,7 +32,7 @@ increasing (l:(m:ms)) = and [l<m,increasing ms]
 increasing (l:_) = True
 increasing [] = True
 
---- | For each length k the list with index 0 is just 0..k
+-- | For each length k the list with index 0 is just 0..k
 prop_indexZero :: SmallInt -> Bool
 prop_indexZero (SmallInt i) = (unrank i 0) == [1..i]
 

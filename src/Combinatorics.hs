@@ -1,4 +1,4 @@
-module Combinatorics(rank, unrank, sublists) where
+module Combinatorics(rank, unrank, unrankIndices, sublists) where
 
 import Math.Combinatorics.Exact.Binomial
 import Data.Maybe(fromJust)
@@ -13,6 +13,9 @@ rankRec :: Int -> [Int] -> Int
 rankRec i [] = 0
 rankRec i (l:ls) = (l-1) `choose` i + (rankRec (i+1) ls)
 
+unrankIndices :: Int -> Int -> [Int]
+unrankIndices k n = map (\x -> x - 1) (unrankRec [] k n)
+
 -- | Compute the increasing list corresponding to a given index n and length k.
 unrank :: Int -> Int -> [Int]
 unrank k n = (unrankRec [] k n)
@@ -23,7 +26,7 @@ unrankRec l k 0 = unrankRec (k:l) (k-1) 0
 unrankRec l k n = unrankRec (c:l) (k-1) (n-((c - 1) `choose` k))
     where c = (fromJust (find (\x -> n < (x `choose` k)) [k..]))
 
--- | Ranks of the k-1 subcombinations of the k-combination given by its rank n
+-- | Ranks of the k-1 increasing sublists of the k-increasing list given by its rank n
 sublists :: Int -> Int -> [Int]
 sublists 1 _ = [0]
 sublists k n = sublists' [] 0 k n
@@ -35,4 +38,3 @@ sublists' ls r k n = sublists' (n':ls) (r + ccc) (k-1) (n - cc)
           cc = (c-1) `choose` k
           ccc = (c-1) `choose` (k-1)
           n' = r + n - cc
-
