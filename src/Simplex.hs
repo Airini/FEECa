@@ -2,9 +2,10 @@
    GADTs,
    MultiParamTypeClasses #-}
 
-module Simplex(Simplex,
+module Simplex(Simplex(Simplex),
                geometricalDimension,
                topologicalDimension,
+               vertices,
                subsimplex,
                subsimplices) where
 
@@ -16,7 +17,7 @@ import Math.Combinatorics.Exact.Binomial
 
 -- | n-simplex represented by a list of vectors of given dimensionality
 -- Invariant: geometrical dimension = length of the vector - 1
-data Simplex v = Simplex [v]
+data Simplex v = Simplex [v] deriving ( Show )
 
 -- | The geometrical dimension of a simplex is the dimensionality of the
 -- | underlying vector space.
@@ -33,6 +34,9 @@ topologicalDimension (Simplex []) =
     error "topologicalDimension: Encountered Simplex without vertices."
 topologicalDimension (Simplex l) = (length l) - 1
 
+-- | List of vertices of the simplex
+vertices :: Simplex v -> [v]
+vertices (Simplex l) = l
 
 -- | i:th k-dimensional subsimplex of given simplex
 subsimplex :: Simplex v -> Int -> Int -> Simplex v
@@ -40,7 +44,7 @@ subsimplex (Simplex []) _ _ =
                 error "subsimplex: Encountered Simplex without vertices."
 subsimplex s@(Simplex l) k i
            | k > n = error err_dim
-           | i > (n+1) `choose` (k+1) = error err_ind
+           | i >= (n+1) `choose` (k+1) = error err_ind
            | otherwise = Simplex (map (l !!) indices)
     where n = topologicalDimension s
           indices = unrankIndices (k+1) i
@@ -53,7 +57,7 @@ subsimplices s@(Simplex l) k
              | k > n = error err_dim
              | otherwise = map Simplex subsimplexLists
     where n = topologicalDimension s
-          sublistIndices = map (unrankIndices (k+1)) [0..(k+1) `choose` (n+1)]
+          sublistIndices = map (unrankIndices (k+1)) [0..(n+1) `choose` (k+1) - 1]
           subsimplexLists = map (takeIndices l) sublistIndices
           err_dim = "subsimplices: Dimensionality of subsimplices is higher than that of the simplex."
 
