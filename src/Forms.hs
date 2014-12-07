@@ -28,6 +28,8 @@ instance Field f => VectorSpace (Vector f) where
   addV = addList
   sclV = scaleList
 
+instance Show f => Show (Vector f) where
+  show (Vex n xs) = show n ++ "-vector " ++ show xs
 
 data Form v f = 
   Fform { arity :: Int -- vecDim??
@@ -47,6 +49,9 @@ constituentsInv ((xs,f):ys) = all (\(xs',_)-> length xs == length xs') ys
 -- evalForm (Fform arity const op) = op 
 
 -- TODO: functor?
+
+instance (Show v, Show f) => Show (Form v f) where
+  show (Fform k cs _) = show k ++ "-form: " ++ show cs
 
 
 dx :: (Field f, VectorSpace v) => Int -> Form v f
