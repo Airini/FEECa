@@ -6,7 +6,7 @@
 module Forms where
 
 import Data.List(intersect)
-import Data.Type.Natural
+--import Data.Type.Natural
 import Spaces
 import Discrete
 
@@ -98,16 +98,16 @@ instance (VectorSpace v, Field f) => Algebra (Form v f) where
   sclA = sclV
 
 -- Our basic projection for 'Vector f'
-dxV :: Int -> [Vector f] -> f
-dxV i [Vex n x] = x !! i
-dxV i _   = error "dxV: incorrect number of arguments; must only be 1"
+dxV :: Int -> Vector f -> f
+dxV i (Vex n x) = x !! i
+--dxV i _   = error "dxV: incorrect number of arguments; must only be 1"
 
 refine :: (Field f, Num f, VectorSpace v) =>
           (Int -> v -> f)      -- ^ The definition for the projection function
                                --   for the specific vector space
        -> Form v f
        -> Form v f
-refine proj (Fform k cs _) = Fform k cs undefined 
+refine proj (Fform k cs _) = Fform k cs op
   where op = \vs -> foldl (\t -> add t . ($ vs)) addId (map (formify proj) cs)
 
 formify :: (Field f, Num f, VectorSpace v) =>

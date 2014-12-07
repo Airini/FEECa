@@ -57,7 +57,7 @@ library
   other-extensions:    MultiParamTypeClasses, TypeFamilies, GADTs, FlexibleInstances, ExistentialQuantification
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.7 && <4.8, QuickCheck >=2.6 && <2.7, type-natural, exact-combinatorics, singletons
+  build-depends:       base >=4.7 && <4.8, QuickCheck >=2.6 && <2.7.*, type-natural, exact-combinatorics, singletons
   
   -- Directories containing source files.
   -- hs-source-dirs:      

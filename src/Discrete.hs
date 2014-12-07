@@ -1,18 +1,22 @@
 module Discrete where
 
-import Data.Type.Natural
+--import Data.Type.Natural
 import Data.List ((\\),nub)
 
 -- Specific operations on naturals
 
-factorial :: Nat -> Nat
+--factorial :: Nat -> Nat
+factorial :: Int -> Int
 factorial n = n * factorial (n - 1)
 
-quotient :: Nat -> Nat -> Nat
-quotient Z _ = Z
-quotient (S x) y = S (quotient (S x - y) y)
+--quotient :: Nat -> Nat -> Nat
+quotient :: Int -> Int -> Int
+--quotient Z _ = Z
+--quotient (S x) y = S (quotient (S x - y) y)
+quotient x y = div x y
 
-combinations :: Nat -> Nat -> Nat
+--combinations :: Nat -> Nat -> Nat
+combinations :: Int -> Int -> Int
 combinations n k = quotient (factorial n) ((factorial k) * (factorial (n - k)))
 
 
