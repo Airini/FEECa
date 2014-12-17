@@ -21,8 +21,8 @@ combinations n k = quotient (factorial n) ((factorial k) * (factorial (n - k)))
 
 
 -- Sign of a permutation defined by a pair of increasing permutations
-sign :: ([Int], [Int]) -> Int
-sign (p1, p2) = sum [ length (filter (i <) p1) | i <- p2]
+-- sign :: Field f => ([Int], [Int]) -> f
+-- sign (p1, p2) = if (sum [ length (filter (i <) p1) | i <- p2]) `mod` 2 == 0 then mulId else addInv mulId
 
 
 -- Picks elements at given indices

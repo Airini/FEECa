@@ -107,21 +107,28 @@ dxV :: Int -> Vector f -> f
 dxV i (Vex n x) = x !! i
 --dxV i _   = error "dxV: incorrect number of arguments; must only be 1"
 
-refine :: (Field f, Num f, VectorSpace v) =>
+refine :: (Field f, VectorSpace v) =>
           (Int -> v -> f)      -- ^ The definition for the projection function
                                --   for the specific vector space
        -> Form v f
-       -> Form v f
-refine proj (Fform k cs _) = Fform k cs op
-  where op = \vs -> foldl (\t -> add t . ($ vs)) addId (map (formify proj) cs)
+       -> [v] -> f
+refine proj (Fform k cs _) vs = sumF (map (($ vs) . (formify proj)) cs)
 
-formify :: (Field f, Num f, VectorSpace v) =>
-              (Int -> v -> f) -> ([Int],f) -> [v] -> f
+-- To be moved
+sumF :: Field a => [a] -> a
+sumF = foldl add addId
+ 
+-- Sign of a permutation defined by a pair of increasing permutations
+sign :: Field f => ([Int], [Int]) -> f
+sign (p1, p2) = if (sum [ length (filter (i <) p1) | i <- p2]) `mod` 2 == 0 then mulId else addInv mulId
+
+formify :: (Field f, VectorSpace v) =>
+              (i -> v -> f) -> ([i],f) -> [v] -> f
 formify proj (i:is, s)
     | null is   = mul s . proj i . head
     | otherwise = \vs ->
         foldl add addId (map (\(w,e) -> mul (mul
-                                  ((-1) ^ (sign (w,e)))
+                                  (sign (w,e))
                                   ((proj i . head) (choose w vs)))
                                   (formify proj (is,s) (choose e vs)))
                              (permutationPairs (vspaceDim (head vs)) 1 (length is)))
