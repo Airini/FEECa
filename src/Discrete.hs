@@ -2,6 +2,7 @@ module Discrete where
 
 --import Data.Type.Natural
 import Data.List ((\\),nub)
+import Debug.Trace
 
 -- Specific operations on naturals
 
@@ -29,7 +30,8 @@ combinations n k = quotient (factorial n) ((factorial k) * (factorial (n - k)))
 pick :: [Int] -> [a] -> [a]
 pick [] xs         = []
 pick (1:is) (x:xs) = x : pick is xs
-pick (i:is) xs     = pick (i-1:is) xs
+pick (i:is) (x:xs) = pick (i-1:is) xs
+--pick (i:is) xs | i<0 = error "mep"
 
 -- Returns differences between consecutive elements
 differences :: [Int] -> [Int]

@@ -41,6 +41,34 @@ data Form f =  -- we lose dependency on the type of vector!
         -}
 
 -- constituents [([1,2],17), ([1,3], 38)] = 17*dx1/\dx2 + 38*dx1/\dx3
+v1 :: Vector Double
+v1 = Vex 3 [1.0, 2.0, 3.0]
+v2 :: Vector Double
+v2 = Vex 3 [1.2, 2.5, 1.0]
+ex1 = Fform 1 [([1], 2)]
+
+a1 = refine dxV ex1 [v1]
+a2 = refine dxV ex2 [v1]
+a3 = refine dxV (ex1 //\\ ex2) [v1, v2]
+a4 = refine dxV (ex2 //\\ ex1) [v1, v2]
+
+ex2 = Fform 1 [([2], 3)]
+
+t1 = Fform 1 [([2],2.0),([0],-47.0),([2],-35.0),([1],-50.0),([1],-3.0),([0],29.0),([1],-11.0),([1],-17.0),([0],-6.0),([1],30.0)]
+t2 = Fform 1 [([2],-17.0),([2],53.0),([0],-36.0),([1],-51.0),([2],-47.0),([1],-28.0),([0],58.0),([0],-48.0),([0],-4.0),([1],20.0)]
+b1 = Vex 3 [723.0,255.0,-109.0]
+b2 = Vex 3 [-340.0,-1018.0,297.0]
+aux1 d1 d2 vs = refine dxV (d1 //\\ d2) vs
+
+t3 = Fform 2 [([2,1],813.0),([1,0],351.0),([1,2],903.0),([3,1],816.0),([2,0],180.0),([0,0],314.0),([0,3],373.0),([0,1],-988.0),([0,3],-284.0),([1,3],301.0),([1,3],-161.0),([0,0],842.0),([0,2],407.0),([1,3],-959.0),([1,3],954.0),([0,1],639.0)]
+t4 = Fform 2 [([2,1],981.0),([3,0],150.0),([1,0],692.0),([2,1],674.0),([3,0],-354.0),([3,3],927.0),([1,3],-869.0),([0,3],238.0),([3,1],575.0),([0,3],433.0),([2,0],359.0),([2,1],554.0),([2,1],259.0),([2,3],16.0),([3,0],923.0),([3,3],936.0)]
+
+b3 = Vex 4 [208.0,770.0,-278.0,189.0]
+b4 = Vex 4 [601.0,862.0,989.0,-212.0]
+b5 = Vex 4 [694.0,669.0,1014.0,-303.0]
+b6 = Vex 4 [74.0,268.0,-963.0,-577.0]
+
+
 
 constituentsInv :: [([Int],f)] -> Bool
 constituentsInv [] = True
@@ -113,6 +141,8 @@ refine :: (Field f, VectorSpace v) =>
        -> [v] -> f
 refine proj (Fform k cs) vs = sumF (map (($ vs) . (formify proj)) cs)
 
+-- refine proj (Fform k cs) vs = sumF (map (\(cc,s) -> mul s ((formify proj (cc,s)) vs)) cs) -- ($ vs) . (formify proj)) cs)
+
 -- To be moved
 sumF :: Field a => [a] -> a
 sumF = foldl add addId
@@ -130,10 +160,10 @@ formify proj (i:is, s)
                                   (sign (w,e))
                                   ((proj i . head) (choose w vs)))
                                   (formify proj (is,s) (choose e vs)))
-                             (permutationPairs (vspaceDim (head vs)) 1 (length is)))
+                             (permutationPairs (length is + 1) 1 (length is)))
   where choose ns vs = pick (differences ns) vs
 
-
+-- (vspaceDim (head vs))
 
 zeroForm :: Form f
 zeroForm = Fform 0 []

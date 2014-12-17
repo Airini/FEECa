@@ -83,6 +83,6 @@ prop_ n = p ((mod (abs n) 5)+2)
               forAll (pairOf (sized $ kform n k) (sized $ kform n j)) $ \(df1, df2) ->
               forAll (knTupGen (k+j) n) $ \(Tp vs) ->
                 (refine dxV (df1 //\\ df2)) vs ==
-                ((-1) ^ (k + j)) * ((refine dxV (df2 //\\ df1)) vs)
+                ((-1) ^ (k * j)) * ((refine dxV (df2 //\\ df1)) vs)
 
 
