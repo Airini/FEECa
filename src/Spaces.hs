@@ -22,7 +22,16 @@ class VectorSpace v where
   vspaceDim :: v -> Int   -- Morally an associated constant, could be modelled with a type :: Nat
   addV  :: v -> v -> v
   sclV  :: Fieldf v -> v -> v
- 
+
+instance Field Double where
+  add    = (+)
+  addId  = 0
+  addInv = (0-)
+  
+  mul    = (*)
+  mulId  = 1
+  mulInv = (1/)
+
 class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
   addA :: v -> v -> v                
   (/\) :: v -> v -> v
@@ -34,6 +43,7 @@ class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of diff
 -- Maybe not necessary to have 
 class (VectorSpace v, Field f) => Function h v f where -- h ~= v -> f
   deriv :: v -> h -> h
+  -- integration too
   eval  :: v -> h -> f
 
   ($$)  :: h -> (v -> f)

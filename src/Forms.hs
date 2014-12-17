@@ -133,6 +133,8 @@ formify proj (i:is, s)
                              (permutationPairs (vspaceDim (head vs)) 1 (length is)))
   where choose ns vs = pick (differences ns) vs
 
+
+
 zeroForm :: Form f
 zeroForm = Fform 0 []
 

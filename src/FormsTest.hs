@@ -7,6 +7,7 @@ import Spaces
 import Control.Monad (liftM, liftM2)
 import Discrete
 
+{-
 instance Field Double where
   add = (+)
   addId = 0
@@ -14,6 +15,7 @@ instance Field Double where
   mul = (*)
   mulId = 1
   mulInv = recip
+-}
 
 instance Field Int where
   add = (+)
