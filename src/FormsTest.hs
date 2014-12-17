@@ -26,12 +26,12 @@ instance Field Int where
 -- To toggle testing between Int and rounded Double
 type Cof = Double
 
-kform :: Int -> Int -> Int -> Gen (Form (Vector Cof) Cof)
+kform :: Int -> Int -> Int -> Gen (Form Cof)
 kform n k terms = do
   diffs  <- vectorOf terms (vectorOf k arbitrary)
   coeffs <- vectorOf terms (liftM fromIntegral (arbitrary :: Gen Int))
   let capDs = map (map (flip mod n)) diffs
-  return $ Fform k (zip capDs coeffs) undefined
+  return $ Fform k (zip capDs coeffs)
 
 -- Truncating generator for vectors of 'Double': to avoid errors in computation
 -- dependent on order of function application when it comes to floating points
@@ -39,7 +39,7 @@ kform n k terms = do
 --  arbitrary = liftM (Vex 4 . map (fromIntegral . round)) $
 --                           vectorOf 4 (arbitrary :: Gen Double)
 
-instance Arbitrary (Form (Vector Cof) Cof) where
+instance Arbitrary (Form Cof) where
   arbitrary = sized (kform 4 2)
 
 newtype Tup4 = V4 [Vector Cof]
@@ -48,12 +48,12 @@ newtype Tup4 = V4 [Vector Cof]
 instance Arbitrary Tup4 where
   arbitrary = liftM V4 $ vectorOf 4 arbitrary
 
-prop_first :: Form (Vector Cof) Cof
-            -> Form (Vector Cof) Cof
+prop_first :: Form Cof
+            -> Form Cof
             -> Tup4 -> Bool
 prop_first df1 df2 (V4 vs) =
-    (operator $ refine dxV (df1 //\\ df2)) vs ==
-    ((-1) ^ (arity df1 * arity df2)) * ((operator $ refine dxV (df2 //\\ df1)) vs)
+    (refine dxV (df1 //\\ df2)) vs ==
+    ((-1) ^ (arity df1 * arity df2)) * ((refine dxV (df2 //\\ df1)) vs)
 
 pairOf :: Gen a -> Gen b -> Gen (a,b)
 pairOf = liftM2 (,)
@@ -80,7 +80,7 @@ prop_ n = p ((mod (abs n) 5)+2)
   where p n = forAll (elements (arityPairs n)) $ \(k,j) ->
               forAll (pairOf (sized $ kform n k) (sized $ kform n j)) $ \(df1, df2) ->
               forAll (knTupGen (k+j) n) $ \(Tp vs) ->
-                (operator $ refine dxV (df1 //\\ df2)) vs ==
-                ((-1) ^ (k + j)) * ((operator $ refine dxV (df2 //\\ df1)) vs)
+                (refine dxV (df1 //\\ df2)) vs ==
+                ((-1) ^ (k + j)) * ((refine dxV (df2 //\\ df1)) vs)
 
 

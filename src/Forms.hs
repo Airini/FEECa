@@ -31,12 +31,14 @@ instance Field f => VectorSpace (Vector f) where
 instance Show f => Show (Vector f) where
   show (Vex n xs) = show n ++ "-vector " ++ show xs
 
-data Form v f = 
+data Form f =  -- we lose dependency on the type of vector! 
   Fform { arity :: Int -- vecDim??
-        , constituents :: [([Int], f)]
+        , constituents :: [([Int], f)] }
+        {-
         , operator :: [v] -> f } -- to be removed? (Can be calculated from constituents -- see refine (unfininshed))
 -- where the f in constituents might very well be changed to (v -> f) so as to
 -- englobe differential forms
+        -}
 
 -- constituents [([1,2],17), ([1,3], 38)] = 17*dx1/\dx2 + 38*dx1/\dx3
 
@@ -50,22 +52,21 @@ constituentsInv ((xs,f):ys) = all (\(xs',_)-> length xs == length xs') ys
 
 -- TODO: functor?
 
-instance (Show v, Show f) => Show (Form v f) where
-  show (Fform k cs _) = show k ++ "-form: " ++ show cs
+instance (Show f) => Show (Form f) where
+  show (Fform k cs) = show k ++ "-form: " ++ show cs
 
 
-dx :: (Field f, VectorSpace v) => Int -> Form v f
+dx :: (Field f) => Int -> Form f
 dx i | i <= 0    = error "dx: invalid projection of a negative component"
-     | otherwise = Fform 1 [([i],mulId)] undefined
+     | otherwise = Fform 1 [([i],mulId)]
 
 
 -- TODO: missing permutation simplification/identification
-(+++) :: (Field f') => Form v f' -> Form v f' -> Form v f'
+(+++) :: (Field f') => Form f' -> Form f' -> Form f'
 omega +++ eta
     | arity omega /= arity eta = error "(+++): forms must be of the same dimension"
     | otherwise = Fform (arity eta)
                   (step (constituents omega) (constituents eta))
-                  undefined
   where step [] ys = ys
         step xs [] = xs
         step (x:xs) (y:ys)
@@ -76,28 +77,26 @@ omega +++ eta
 pairM :: (a -> b) -> (c -> d) -> (a,c) -> (b,d)
 pairM f h (x,y) = (f x, h y)
 
-(***) :: Field f => f -> Form v f -> Form v f
+(***) :: Field f => f -> Form f -> Form f
 a *** omega = Fform (arity omega)
                     (map (pairM id (mul a)) (constituents omega))
-                    undefined
 
-(//\\) :: Field f => Form v f -> Form v f -> Form v f
+(//\\) :: Field f => Form f -> Form f -> Form f
 omega //\\ eta = Fform (arity omega + arity eta)
                        (concatMap (\d -> map (combine d) (dxs d)) (constituents eta))
-                       undefined
   where dxs (ys,_) = filter (null . intersect ys . fst) (constituents omega)
         combine (ys,b) (xs,a)
           | null (intersect xs ys) = (xs++ys, mul a b)
           | otherwise              = ([],addId)
 
 
-instance (VectorSpace v, Field f) => VectorSpace (Form v f) where
-  type Fieldf (Form v f) = f
+instance (Field f) => VectorSpace (Form f) where
+  type Fieldf (Form f) = f
   vspaceDim _ = undefined
   addV = (+++)
   sclV = (***)
 
-instance (VectorSpace v, Field f) => Algebra (Form v f) where
+instance (Field f) => Algebra (Form f) where
   addA = addV
   (/\) = (//\\)
   sclA = sclV
@@ -110,9 +109,9 @@ dxV i (Vex n x) = x !! i
 refine :: (Field f, VectorSpace v) =>
           (Int -> v -> f)      -- ^ The definition for the projection function
                                --   for the specific vector space
-       -> Form v f
+       -> Form f
        -> [v] -> f
-refine proj (Fform k cs _) vs = sumF (map (($ vs) . (formify proj)) cs)
+refine proj (Fform k cs) vs = sumF (map (($ vs) . (formify proj)) cs)
 
 -- To be moved
 sumF :: Field a => [a] -> a
@@ -134,15 +133,15 @@ formify proj (i:is, s)
                              (permutationPairs (vspaceDim (head vs)) 1 (length is)))
   where choose ns vs = pick (differences ns) vs
 
-zeroForm :: Form v f
-zeroForm = Fform 0 [] undefined
+zeroForm :: Form f
+zeroForm = Fform 0 []
 
-contract :: Form v f -> v -> Form v f
+contract :: Form f -> v -> Form f
 contract omega | null (constituents omega) = const zeroForm
                | otherwise                 = undefined
 
 -- We need a basis here
-(<>) :: Form v f -> Form v f -> f
+(<>) :: Form f -> Form f -> f
 omega <> eta = undefined
 
 
@@ -158,7 +157,7 @@ instance Field f => VectorSpace (Poly v f) where
   vspaceDim = undefined
   addV (Pp g) (Pp h) = Pp $ \vs -> add (g vs) (h vs)
   sclV a (Pp g) = Pp $ \vs -> mul a (g vs)
----
+--
 
 
 
