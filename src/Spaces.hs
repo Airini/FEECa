@@ -35,6 +35,7 @@ class Eq v => VectorSpace v where
   powV :: Integral i => v -> [i] -> (Fieldf v)
   toList :: v -> [Fieldf v]
 
+
 instance (Floating a, Eq [a]) => VectorSpace [a] where
    type Fieldf [a] = a
    vspaceDim v = length v
