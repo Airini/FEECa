@@ -3,16 +3,30 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ExistentialQuantification #-}
-module Forms where
+module Forms (
+  Dim, Vector (Vex), Form (Fform, arity)
+  , zeroForm, dx, dxV
+  , refine
+  ) where
+
 
 import Data.List(intersect)
 --import Data.Type.Natural
 import Spaces
 import Discrete
 
+
+-- * Basic example implementation for generic vectors (coordinates with
+--   respect to a basis)
+
 type Dim = Int
 data Vector f = Vex Dim [f]
+
+-- | Vector invariant: the number of components is valid
 vectorInvariant (Vex n xs) = n == length xs
+
+instance Show f => Show (Vector f) where
+  show (Vex n xs) = show n ++ "-vector " ++ show xs
 
 addList :: Field f => Vector f -> Vector f -> Vector f
 addList (Vex n xs) (Vex m ys)
@@ -27,69 +41,41 @@ instance Field f => VectorSpace (Vector f) where
   vspaceDim (Vex n _) = n
   addV = addList
   sclV = scaleList
+  --toList (Vex _ cs) = cs
 
-instance Show f => Show (Vector f) where
-  show (Vex n xs) = show n ++ "-vector " ++ show xs
+-- | Our basic projection for 'Vector f': usual 1-form basis == external
+--   derivative of global coordinate functions
+dxV :: Int -> Vector f -> f
+dxV i (Vex n x) = x !! (i-1)
+--dxV i _   = error "dxV: incorrect number of arguments; must only be 1"
 
+
+-- * General form: does not depend on the underlying vector space it works on
+--   in any way.
+
+-- | Bilinear, alternating forms over vectorspaces
 data Form f =  -- we lose dependency on the type of vector! 
-  Fform { arity :: Int -- vecDim??
-        , constituents :: [([Int], f)] }
-        {-
-        , operator :: [v] -> f } -- to be removed? (Can be calculated from constituents -- see refine (unfininshed))
--- where the f in constituents might very well be changed to (v -> f) so as to
--- englobe differential forms
-        -}
+  Fform { arity :: Int                    -- ^ For complete evaluation
+        , constituents :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
+
+{- where the f in constituents might very well be changed to (v -> f) so as to
+   englobe differential forms -}
 
 -- constituents [([1,2],17), ([1,3], 38)] = 17*dx1/\dx2 + 38*dx1/\dx3
-v1 :: Vector Double
-v1 = Vex 3 [1.0, 2.0, 3.0]
-v2 :: Vector Double
-v2 = Vex 3 [1.2, 2.5, 1.0]
-ex1 = Fform 1 [([1], 2)]
 
-a1 = refine dxV ex1 [v1]
-a2 = refine dxV ex2 [v1]
-a3 = refine dxV (ex1 //\\ ex2) [v1, v2]
-a4 = refine dxV (ex2 //\\ ex1) [v1, v2]
-
-ex2 = Fform 1 [([2], 3)]
-
-t1 = Fform 1 [([2],2.0),([0],-47.0),([2],-35.0),([1],-50.0),([1],-3.0),([0],29.0),([1],-11.0),([1],-17.0),([0],-6.0),([1],30.0)]
-t2 = Fform 1 [([2],-17.0),([2],53.0),([0],-36.0),([1],-51.0),([2],-47.0),([1],-28.0),([0],58.0),([0],-48.0),([0],-4.0),([1],20.0)]
-b1 = Vex 3 [723.0,255.0,-109.0]
-b2 = Vex 3 [-340.0,-1018.0,297.0]
-aux1 d1 d2 vs = refine dxV (d1 //\\ d2) vs
-
-t3 = Fform 2 [([2,1],813.0),([1,0],351.0),([1,2],903.0),([3,1],816.0),([2,0],180.0),([0,0],314.0),([0,3],373.0),([0,1],-988.0),([0,3],-284.0),([1,3],301.0),([1,3],-161.0),([0,0],842.0),([0,2],407.0),([1,3],-959.0),([1,3],954.0),([0,1],639.0)]
-t4 = Fform 2 [([2,1],981.0),([3,0],150.0),([1,0],692.0),([2,1],674.0),([3,0],-354.0),([3,3],927.0),([1,3],-869.0),([0,3],238.0),([3,1],575.0),([0,3],433.0),([2,0],359.0),([2,1],554.0),([2,1],259.0),([2,3],16.0),([3,0],923.0),([3,3],936.0)]
-
-b3 = Vex 4 [208.0,770.0,-278.0,189.0]
-b4 = Vex 4 [601.0,862.0,989.0,-212.0]
-b5 = Vex 4 [694.0,669.0,1014.0,-303.0]
-b6 = Vex 4 [74.0,268.0,-963.0,-577.0]
-
-
-
-constituentsInv :: [([Int],f)] -> Bool
-constituentsInv [] = True
-constituentsInv ((xs,f):ys) = all (\(xs',_)-> length xs == length xs') ys
-
--- related to refine
--- evalForm :: Form v f -> [Vector f] -> f
--- evalForm (Fform arity const op) = op 
+-- | Invariant for constituents of a defined form: all terms have the same arity
+--   ie: each is the result of the exterior product of the same number of 1-forms
+constituentsInv :: [(f, [Int])] -> Bool
+constituentsInv []          = True
+constituentsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
 
 -- TODO: functor?
 
 instance (Show f) => Show (Form f) where
   show (Fform k cs) = show k ++ "-form: " ++ show cs
 
-
-dx :: (Field f) => Int -> Form f
-dx i | i <= 0    = error "dx: invalid projection of a negative component"
-     | otherwise = Fform 1 [([i],mulId)]
-
-
--- TODO: missing permutation simplification/identification
+-- | Sum of forms
+-- Shall we do: permutation simplification/identification
 (+++) :: (Field f') => Form f' -> Form f' -> Form f'
 omega +++ eta
     | arity omega /= arity eta = error "(+++): forms must be of the same dimension"
@@ -98,25 +84,23 @@ omega +++ eta
   where step [] ys = ys
         step xs [] = xs
         step (x:xs) (y:ys)
-          | fst x == fst y = (fst x, add (snd x) (snd y)) : step xs ys
-          | fst x < fst y  = x : step xs (y:ys)
+          | snd x == snd y = (add (fst x) (fst y), snd x) : step xs ys
+          | snd x < snd y  = x : step xs (y:ys)
           | otherwise      = y : step (x:xs) ys
 
-pairM :: (a -> b) -> (c -> d) -> (a,c) -> (b,d)
-pairM f h (x,y) = (f x, h y)
-
+-- | Scaling of forms
 (***) :: Field f => f -> Form f -> Form f
 a *** omega = Fform (arity omega)
-                    (map (pairM id (mul a)) (constituents omega))
+                    (map (pairM (mul a) id) (constituents omega))
 
+-- | Product of forms
 (//\\) :: Field f => Form f -> Form f -> Form f
 omega //\\ eta = Fform (arity omega + arity eta)
                        (concatMap (\d -> map (combine d) (dxs d)) (constituents eta))
-  where dxs (ys,_) = filter (null . intersect ys . fst) (constituents omega)
-        combine (ys,b) (xs,a)
-          | null (intersect xs ys) = (xs++ys, mul a b)
-          | otherwise              = ([],addId)
-
+  where dxs (_,ys) = filter (null . intersect ys . snd) (constituents omega)
+        combine (b,ys) (a,xs)
+          | null (intersect xs ys) = (mul a b, xs++ys)
+          | otherwise              = (addId, [])
 
 instance (Field f) => VectorSpace (Form f) where
   type Fieldf (Form f) = f
@@ -124,50 +108,51 @@ instance (Field f) => VectorSpace (Form f) where
   addV = (+++)
   sclV = (***)
 
+-- This is instance is valid this way since we do not have a restrictive typing
+-- for forms and hence addition is blind to arity *type-wise* - however,
+-- runtime errors will take place if invalid addition is attempted
 instance (Field f) => Algebra (Form f) where
   addA = addV
   (/\) = (//\\)
   sclA = sclV
 
--- Our basic projection for 'Vector f'
-dxV :: Int -> Vector f -> f
-dxV i (Vex n x) = x !! i
---dxV i _   = error "dxV: incorrect number of arguments; must only be 1"
+-- | Basic abstract 1-form
+dx :: (Field f) => Int -> Form f
+dx i | i <= 0    = error "dx: invalid projection of a negative component"
+     | otherwise = Fform 1 [ (mulId,[i]) ]
 
+-- | The (normalised) == 0 form
+zeroForm :: Form f
+zeroForm = Fform 0 []
+
+
+-- | Run function for 'Form's: given (an appropriate number of) vector arguments
+--   and a 1-form basis (given as a basis-element indexing function 'proj'), it
+--   evaluates the form on those arguments
 refine :: (Field f, VectorSpace v) =>
           (Int -> v -> f)      -- ^ The definition for the projection function
                                --   for the specific vector space
        -> Form f
        -> [v] -> f
 refine proj (Fform k cs) vs = sumF (map (($ vs) . (formify proj)) cs)
-
 -- refine proj (Fform k cs) vs = sumF (map (\(cc,s) -> mul s ((formify proj (cc,s)) vs)) cs) -- ($ vs) . (formify proj)) cs)
 
--- To be moved
-sumF :: Field a => [a] -> a
-sumF = foldl add addId
- 
--- Sign of a permutation defined by a pair of increasing permutations
-sign :: Field f => ([Int], [Int]) -> f
-sign (p1, p2) = if (sum [ length (filter (i <) p1) | i <- p2]) `mod` 2 == 0 then mulId else addInv mulId
-
+-- | Helper function in evaluation: given a 1-form basis, converts a single
+--   'Form' constituent term into an actual function on vectors
 formify :: (Field f, VectorSpace v) =>
-              (i -> v -> f) -> ([i],f) -> [v] -> f
-formify proj (i:is, s)
+              (i -> v -> f) -> (f,[i]) -> [v] -> f
+formify proj (s, i:is)
     | null is   = mul s . proj i . head
     | otherwise = \vs ->
         foldl add addId (map (\(w,e) -> mul (mul
                                   (sign (w,e))
                                   ((proj i . head) (choose w vs)))
-                                  (formify proj (is,s) (choose e vs)))
+                                  (formify proj (s,is) (choose e vs)))
                              (permutationPairs (length is + 1) 1 (length is)))
   where choose ns vs = pick (differences ns) vs
 
--- (vspaceDim (head vs))
 
-zeroForm :: Form f
-zeroForm = Fform 0 []
-
+-- If the function was actually a field, this part would be simplified
 contract :: Form f -> v -> Form f
 contract omega | null (constituents omega) = const zeroForm
                | otherwise                 = undefined
@@ -192,4 +177,21 @@ instance Field f => VectorSpace (Poly v f) where
 --
 
 
+-- * Helper functions
 
+-- | Sign of a permutation defined by a pair of increasing permutations:
+--   specialised to an appropriate 'Field' type (required for operations)
+sign :: Field f => ([Int], [Int]) -> f
+sign (p1, p2) = if (sum [ length (filter (i <) p1) | i <- p2]) `mod` 2 == 0
+                  then mulId
+                  else addInv mulId
+
+-- | Pair component-wise pair-function application
+pairM :: (a -> b) -> (c -> d) -> (a,c) -> (b,d)
+pairM f h (x,y) = (f x, h y)
+
+-- | Equivalent to 'sum' for 'Field' types
+-- To be moved
+sumF :: Field a => [a] -> a
+sumF = foldl add addId
+ 

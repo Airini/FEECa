@@ -10,6 +10,7 @@ import Data.Maybe
 import Data.List
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
+
 data Polynomial a = Polynomial  [(a,[Int])] deriving Show
 
 -- | Create 1st degree homogeneous polynomial in n variables from
