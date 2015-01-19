@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Polynomials where
 
@@ -11,7 +12,36 @@ import Data.List
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
-data Polynomial a = Polynomial  [(a,[Int])] deriving Show
+-- | Type synonym for multi-indices to specify monomials over R^n. The i-th integer
+-- | in the list specified the power of the corresponding component of R^n. The degree
+-- | of the monomial is given by the sum of the non-negative entries.
+type MultiIndex = [Int]
+
+-- | Polynomials as list of coefficient-monomial terms over R^n.
+data Polynomial a = Polynomial  [(a,MultiIndex)] deriving Show
+
+instance (Rn v, a ~ (Fieldf v), Floating a, Eq a) => Function (Polynomial a) v a where
+    deriv = deriveP
+    eval  = evalP
+
+-- | Directional derivative of a polynomial in a given space direction.
+deriveP :: (Rn v, a ~ (Fieldf v), Floating a, Eq a) => v -> Polynomial a -> Polynomial a
+deriveP v (Polynomial ps) = Polynomial $ concat [deriveMonomial (toList v) m
+                                                     | m <- ps]
+deriveMonomial :: (Floating a, Eq a) => [a] -> (a,MultiIndex) -> [(a,MultiIndex)]
+deriveMonomial vs (c,a)
+    | length vs == length a = [(c', decInd i a)
+                                   | i <- [0..length a-1],
+                                     let c' = mul (vs!!i) (mul c (fromInt (a!!i))),
+                                     c' /= 0]
+    | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
+
+-- | Decrease element in multi-index
+decInd :: Int -> MultiIndex -> MultiIndex
+decInd i a
+       | (i >= 0) && (i < length a) = take i a ++ ((max 0 (a!!i)-1) : drop (i+1) a)
+       | otherwise = error "decInd: Illegal index"
+
 
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients.
@@ -30,11 +60,11 @@ addP (Polynomial p1) (Polynomial p2) = Polynomial (p1 ++ p2)
 
 
 -- | Evaluate polynomial at given point in space
-evalP :: (Rn v, Floating (Fieldf v))
-         => (Polynomial (Fieldf v)) -> v -> Fieldf v
-evalP (Polynomial []) v = addId
-evalP (Polynomial ((c,alpha):ls)) v = add (mul c (powV v alpha))
-                                          (evalP (Polynomial ls) v)
+evalP :: (Rn v, a ~ (Fieldf v), Floating a)
+         =>  v -> Polynomial a -> a
+evalP v (Polynomial []) = addId
+evalP v (Polynomial ((c,alpha):ls)) = add (mul c (powV v alpha))
+                                          (evalP v (Polynomial ls))
 
 -- | 1st degree polynomial taking value 1 on vertex n_i of the simplex and
 -- | 0 on all others. Requires the topological dimension of the simplex to be

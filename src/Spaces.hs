@@ -13,6 +13,7 @@ class Field v where
   mul     :: v -> v -> v
   mulId   :: v
   mulInv  :: v -> v
+  fromInt :: Int -> v
 
 instance Floating a => Field a where
     add = (+)
@@ -21,6 +22,7 @@ instance Floating a => Field a where
     mul = (*)
     mulId = 1
     mulInv = (1/)
+    fromInt = fromInteger . toInteger
   -- associative, distributive, ...
 
   -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate, but no mulInv
@@ -47,12 +49,14 @@ instance (Field a, Eq [a]) => VectorSpace [a] where
 class (VectorSpace v) => Rn v where
     powV :: Integral i => v -> [i] -> (Fieldf v)
     toList :: v -> [Fieldf v]
+    fromList :: [Fieldf v] -> v
 
 instance (VectorSpace [a], Floating a, Field a) => Rn [a] where
    powV [] [] = mulId
    powV (v:vs) (i:is) = v**(fromIntegral i) * (powV vs is)
    powV _ _ = error "powV: Lists do not have equal length"
    toList v = v
+   fromList v = v
 
 class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
   addA :: v -> v -> v
