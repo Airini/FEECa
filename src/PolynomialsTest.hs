@@ -32,7 +32,7 @@ instance Arbitrary (Simplex [Double]) where
 
 
 -- | Test list of vectors for linear independence.
-linearIndep :: (VectorSpace v, (Fieldf v) ~ Double)  => [v] -> Bool
+linearIndep :: (Rn v, (Fieldf v) ~ Double)  => [v] -> Bool
 linearIndep vs = m == (M.rank a)
     where m = length vs
           n = vspaceDim (vs !! 0)

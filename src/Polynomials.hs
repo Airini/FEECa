@@ -30,7 +30,7 @@ addP (Polynomial p1) (Polynomial p2) = Polynomial (p1 ++ p2)
 
 
 -- | Evaluate polynomial at given point in space
-evalP :: (VectorSpace v, Floating (Fieldf v))
+evalP :: (Rn v, Floating (Fieldf v))
          => (Polynomial (Fieldf v)) -> v -> Fieldf v
 evalP (Polynomial []) v = addId
 evalP (Polynomial ((c,alpha):ls)) v = add (mul c (powV v alpha))
@@ -40,7 +40,7 @@ evalP (Polynomial ((c,alpha):ls)) v = add (mul c (powV v alpha))
 -- | 0 on all others. Requires the topological dimension of the simplex to be
 -- | as large as the geometrical dimension, i.e. the simplex must contain n+1
 -- | vertices if the underlying space has dimensionality n.
-barycentricCoord :: (VectorSpace v, (Fieldf v) ~ Double) => Simplex v -> Int -> Polynomial (Fieldf v)
+barycentricCoord :: (Rn v, (Fieldf v) ~ Double) => Simplex v -> Int -> Polynomial (Fieldf v)
 barycentricCoord s i = addP (deg1P (drop 1 c)) (deg0P dim (c!!0))
     where ns = vertices s
           dim = topologicalDimension s

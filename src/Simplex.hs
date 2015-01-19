@@ -21,7 +21,7 @@ data Simplex v = Simplex [v] deriving ( Show )
 
 -- | The geometrical dimension of a simplex is the dimensionality of the
 -- | underlying vector space.
-geometricalDimension :: VectorSpace v => Simplex v -> Int
+geometricalDimension :: Rn v => Simplex v -> Int
 geometricalDimension (Simplex []) =
     error "geometricalDimension: Encountered Simplex without vertices."
 geometricalDimension (Simplex (l:ls)) = vspaceDim l
