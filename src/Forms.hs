@@ -11,7 +11,7 @@ module Forms (
 
 
 import Data.List(intersect)
---import Data.Type.Natural
+import Data.Type.Natural
 import Spaces
 import Discrete
 

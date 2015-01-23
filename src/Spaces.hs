@@ -14,17 +14,8 @@ class Field v where
   mulId   :: v
   mulInv  :: v -> v
   fromInt :: Int -> v
-
-instance Floating a => Field a where
-    add = (+)
-    addId = 0
-    addInv = (0-)
-    mul = (*)
-    mulId = 1
-    mulInv = (1/)
-    fromInt = fromInteger . toInteger
+  
   -- associative, distributive, ...
-
   -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate, but no mulInv
   -- Fractional: mulInv = recip
   -- Missing: fromInteger, or rather fromRational

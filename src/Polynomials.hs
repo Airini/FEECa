@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE UndecidableInstances#-}
 
 module Polynomials where
 
@@ -11,6 +12,17 @@ import Data.Maybe
 import Data.List
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
+
+
+-- TODO: relocate, here for now
+instance Floating a => Field a where
+    add = (+)
+    addId = 0
+    addInv = (0-)
+    mul = (*)
+    mulId = 1
+    mulInv = (1/)
+    fromInt = fromInteger . toInteger
 
 -- | Type synonym for multi-indices to specify monomials over R^n. The i-th integer
 -- | in the list specified the power of the corresponding component of R^n. The degree
