@@ -12,7 +12,7 @@ module Simplex(Simplex(Simplex),
 import Spaces
 import Data.List
 import Combinatorics
--- import Utility
+import Utility
 import Math.Combinatorics.Exact.Binomial
 
 -- | n-simplex represented by a list of vectors of given dimensionality
@@ -32,7 +32,7 @@ geometricalDimension (Simplex (l:ls)) = vspaceDim l
 topologicalDimension :: Simplex v -> Int
 topologicalDimension (Simplex []) =
     error "topologicalDimension: Encountered Simplex without vertices."
-topologicalDimension (Simplex l) = (length l) - 1
+topologicalDimension (Simplex l) = length l - 1
 
 -- | List of vertices of the simplex
 vertices :: Simplex v -> [v]
@@ -58,7 +58,7 @@ subsimplices s@(Simplex l) k
              | otherwise = map Simplex subsimplexLists
     where n = topologicalDimension s
           sublistIndices = map (unrankIndices (k+1)) [0..(n+1) `choose` (k+1) - 1]
-          subsimplexLists = undefined -- map (takeIndices l) sublistIndices
+          subsimplexLists = map (takeIndices l) sublistIndices
           err_dim = "subsimplices: Dimensionality of subsimplices is higher than that of the simplex."
 
 
