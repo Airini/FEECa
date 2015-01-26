@@ -10,7 +10,6 @@ import Polynomials
 import Utility (pairM)
 import Control.Applicative
 
-type DiffForm f = Form (Polynomial f)
 
 -- Maybe should wrap polynomials: finite degree => Field too + defined dimensionality
 instance (Field f) => VectorSpace (Polynomial f) where
@@ -37,50 +36,32 @@ mulP :: Field a => Polynomial a -> Polynomial a -> Polynomial a
 mulP (Polynomial ms) (Polynomial ns) = undefined
 
 -- | Constant == 0 polynomial in n indeterminates
-zerP :: Field a => Int -> Polynomial a
-zerP n = Polynomial [(addId, replicate n 0)]
+--zerP :: Field a => Int -> Polynomial a
+--zerP n = Polynomial [(addId, replicate n 0)]
+-- or: much better (needn't have the indeterminate number) + same as the other abstraction
+zerP :: Polynomial a
+zerP = Polynomial []
 
-data PolyN' f = Pn Int (Polynomial f)
-
--- :(  Either dependent types (could be hard, just like when we started) or
---     a more flexible implementation for Polynomials:
---       add actual type constructors for deg0P and zerP
-instance (Field f) => Field (PolyN' f) where
-  add     = undefined -- addP
-  addId   = undefined -- zerP :S ==> dependent types
-  addInv  = undefined --  :S  ==> rings after all better
+instance (Field f) => Field (Polynomial f) where
+  add     = addP
+  addId   = zerP
+  addInv  = undefined -- deg0P ... :S dims
   mul     = undefined -- mulP
-  mulId   = undefined
+  mulId   = undefined -- deg0P ... :S dims
   mulInv  = undefined
-  fromInt = undefined -- deg0P ...
- 
+  fromInt = undefined -- deg0P ... :S dims
+
+-- | Our working polynomial type: defined over some fixed number of indeterminates
+--   (even though not explicitly stated) and ready for space instantiation
 data PolyN f where
   Poln :: {- Dim -> -} Polynomial f -> PolyN f
-  ZerP :: PolyN f
   CttP :: f -> PolyN f
+ deriving Show
 
-instance (Field f) => Field (PolyN f) where
-  add ZerP p = p
-  add p ZerP = p -- (Poln x p) (Poln y q) | x == y = Poln n $ addP p q
-  add (CttP a) (CttP b)     = CttP (add a b)
-  add (CttP a) (Poln p)     = Poln $ addP (deg0P (indets p) a) p
-  add p@(Poln _) c@(CttP _) = add c p
-  add (Poln p) (Poln q)     = Poln $ addP p q
-
-  addId  = ZerP
-  addInv = fmap mulInv -- (Poln p) = Poln $ sclP (mul addId (addInv addId)) p -- lift...
-
-  -- recode: fmap
-  mul ZerP _ = ZerP
-  mul _ ZerP = ZerP
-  mul (CttP a) (CttP b) = CttP (mul a b)
-  mul (CttP a) (Poln p) = Poln (sclP a p)
-  mul p@(Poln _) c@(CttP _) = mul c p
-  mul (Poln p) (Poln q)     = Poln $ mulP p q
-  
-  mulId     = CttP mulId
-  mulInv    = undefined
-  fromInt x = CttP (fromInt x)
+instance Functor PolyN where
+  fmap f (Poln p) = Poln (fmap f p)
+  -- fmap f ZerP     = ZerP
+  fmap f (CttP a) = CttP $ f a
 
 instance (Field f) => VectorSpace (PolyN f) where
   type Fieldf (PolyN f) = f
@@ -91,14 +72,68 @@ instance (Field f) => VectorSpace (PolyN f) where
   --sclV a (CttP b)   = CttP (mul a b)
   --sclV a p@(Poln _) = fmap (mul a) p
 
-instance Functor PolyN where
-  fmap f (Poln p) = Poln (fmap f p)
-  fmap f ZerP     = ZerP
-  fmap f (CttP a) = CttP $ f a
+instance (Field f) => Field (PolyN f) where
+  -- add ZerP p = p
+  -- add p ZerP = p -- (Poln x p) (Poln y q) | x == y = Poln n $ addP p q
+  add (Poln p) (Poln q)     = Poln $ addP p q
+  add (CttP a) (CttP b)     = CttP (add a b)
+  add (CttP a) p@(Poln p')  = add (Poln $ deg0P (indets p') a) p -- Poln $ addP (deg0P (indets p) a) p
+  add p@(Poln _) c@(CttP _) = add c p
+
+  addId  = pure addId
+  addInv = fmap mulInv -- (Poln p) = Poln $ sclP (mul addId (addInv addId)) p -- lift...
+
+  -- recode: fmap
+  -- mul ZerP _ = ZerP
+  -- mul _ ZerP = ZerP
+  mul (Poln p) (Poln q)     = Poln $ mulP p q
+  mul (CttP a) p            = fmap (mul a) p --sclV (mul a) --(CttP b) = CttP (mul a b)
+  -- mul p (CttP a) = fmap (mul a) p
+  mul p@(Poln _) c@(CttP _) = mul c p
+  
+  mulId     = pure mulId
+  mulInv    = undefined
+  fromInt x = CttP (fromInt x)
 
 -- does it even make sense? cannot see immediate use
 instance Applicative PolyN where
   pure = CttP
   (<*>) = undefined
+
+
+-- | Differential forms
+--data DiffForm f where
+--  DForm :: Field f => Form (PolyN f) -> DiffForm f
+type DiffForm f = Form (PolyN f)
+-- Immediately "inherits" all class instantiations for 'Form' when an
+-- appropriate 'f' is used for Polynomial coefficients
+
+--instance (Field f) => VectorSpace (DiffForm f) where
+--  type Fieldf (DiffForm f) = PolyN f
+--  addV      = addV -- (addV :: Form (PolyN f) -> Form (PolyN f) -> Form (PolyN f))
+--  vspaceDim = undefined
+--  sclV      = undefined
+
+f :: Field f => DiffForm f
+f = dx 1
+
+g :: Field f => DiffForm f
+g = sclV (add mulId mulId) (dx 2)
+
+h :: Field f => DiffForm f
+h = sclV (CttP addId) (dx 3)
+
+t :: DiffForm Double
+t = sclV (Poln $ deg1P [0,2,3]) (dx 1)
+
+b = Vex 3 [1,2,0]
+y :: Vector Double
+y = Vex 3 [3,-2.3,1]
+
+dxVP = (fmap . fmap) CttP dxV
+expression = refine dxVP (t /\ g) [b, y]
+
+evalPn _ (CttP x) = x
+evalPn v (Poln p) = evalP v p
 
 
