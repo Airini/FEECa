@@ -14,7 +14,7 @@ import Data.List(intersect)
 import Data.Type.Natural
 import Spaces
 import Discrete
-
+import Utility (pairM)
 
 -- * Basic example implementation for generic vectors (coordinates with
 --   respect to a basis)
@@ -134,7 +134,7 @@ refine :: (Field f, VectorSpace v) =>
                                --   for the specific vector space
        -> Form f
        -> [v] -> f
-refine proj (Fform k cs) vs = sumF (map (($ vs) . (formify proj)) cs)
+refine proj (Fform k cs) vs = sumF (map (($ vs) . formify proj) cs)
 -- refine proj (Fform k cs) vs = sumF (map (\(cc,s) -> mul s ((formify proj (cc,s)) vs)) cs) -- ($ vs) . (formify proj)) cs)
 
 -- | Helper function in evaluation: given a 1-form basis, converts a single
@@ -149,7 +149,7 @@ formify proj (s, i:is)
                                   ((proj i . head) (choose w vs)))
                                   (formify proj (s,is) (choose e vs)))
                              (permutationPairs (length is + 1) 1 (length is)))
-  where choose ns vs = pick (differences ns) vs
+  where choose ns = pick (differences ns)
 
 
 -- If the function was actually a field, this part would be simplified
@@ -182,13 +182,9 @@ instance Field f => VectorSpace (Poly v f) where
 -- | Sign of a permutation defined by a pair of increasing permutations:
 --   specialised to an appropriate 'Field' type (required for operations)
 sign :: Field f => ([Int], [Int]) -> f
-sign (p1, p2) = if (sum [ length (filter (i <) p1) | i <- p2]) `mod` 2 == 0
+sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
                   then mulId
                   else addInv mulId
-
--- | Pair component-wise pair-function application
-pairM :: (a -> b) -> (c -> d) -> (a,c) -> (b,d)
-pairM f h (x,y) = (f x, h y)
 
 -- | Equivalent to 'sum' for 'Field' types
 -- To be moved
