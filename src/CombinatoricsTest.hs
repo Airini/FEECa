@@ -29,17 +29,17 @@ prop_increasing (OrderedIntPair (k,n)) = increasing (unrank k n)
 
 increasing :: [Int] -> Bool
 increasing (l:(m:ms)) = and [l<m,increasing ms]
-increasing (l:_) = True
-increasing [] = True
+increasing (l:_)      = True
+increasing []         = True
 
 -- | For each length k the list with index 0 is just 0..k
 prop_indexZero :: SmallInt -> Bool
-prop_indexZero (SmallInt i) = (unrank i 0) == [1..i]
+prop_indexZero (SmallInt i) = unrank i 0 == [1..i]
 
 -- | For an k-increasing list, the list containing the removed elements of the
 -- | k-1-sublists should reproduce the list
 prop_sublists :: OrderedIntPair -> Bool
-prop_sublists (OrderedIntPair (k,n)) = l ==  map head (map (l \\) subl)
+prop_sublists (OrderedIntPair (k,n)) = l ==  map (head . (l \\)) subl
     where l = unrank k n
           subl = map (unrank (k-1)) (sublists k n)
 

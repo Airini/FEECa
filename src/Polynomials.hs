@@ -59,8 +59,8 @@ decInd i a
 -- | length n list of coefficients.
 deg1P :: Field a => [a] -> Polynomial a
 deg1P ns = Polynomial $ zip ns linP
-        where dim = (length ns)
-              linP = [[if (i==j) then 1 else 0 | j <- [1..dim]] | i <- [1..dim]]
+        where dim = length ns
+              linP = [[if i==j then 1 else 0 | j <- [1..dim]] | i <- [1..dim]]
 
 -- | Create 0th degree polynomial from given scalar
 deg0P :: Int -> a -> Polynomial a
@@ -83,13 +83,13 @@ evalP v (Polynomial ((c,alpha):ls)) = add (mul c (powV v alpha))
 -- | as large as the geometrical dimension, i.e. the simplex must contain n+1
 -- | vertices if the underlying space has dimensionality n.
 barycentricCoord :: (Rn v, (Fieldf v) ~ Double) => Simplex v -> Int -> Polynomial (Fieldf v)
-barycentricCoord s i = addP (deg1P (drop 1 c)) (deg0P dim (c!!0))
+barycentricCoord s i = addP (deg1P (drop 1 c)) (deg0P dim (head c))
     where ns = vertices s
           dim = topologicalDimension s
           dim1 = dim + 1
-          a = foldr (\ x y -> (1:x) ++ y) [] (map toList ns)
-          b = ((replicate i addId) ++ [mulId]) ++ (replicate (dim - i) 0)
-          c = concat (M.toLists $ fromJust $ (M.linearSolve ((dim1 M.>< dim1) a)
-              ((dim1 M.>< 1) b)))
+          a = foldr ((\ x y -> (1:x) ++ y) . toList) [] ns
+          b = (replicate i addId ++ [mulId]) ++ replicate (dim - i) 0
+          c = concat (M.toLists $ fromJust $ M.linearSolve ((dim1 M.>< dim1) a)
+              ((dim1 M.>< 1) b))
 
 

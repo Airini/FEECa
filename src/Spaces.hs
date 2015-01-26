@@ -28,23 +28,23 @@ class (Field (Fieldf v)) => VectorSpace v where
 
 instance (Field a, Eq [a]) => VectorSpace [a] where
    type Fieldf [a] = a
-   vspaceDim v = length v
+   vspaceDim = length
 
    addV [] [] = []
-   addV (v:vs) (w:ws) = (add v w) : (addV vs ws)
+   addV (v:vs) (w:ws) = add v w : addV vs ws
    addV _ _ = error "addV: Lists do not have equal length"
 
    sclV _ [] = []
-   sclV a (v:vs) = (mul a v) : (sclV a vs)
+   sclV a (v:vs) = mul a v : sclV a vs
 
 class (VectorSpace v) => Rn v where
-    powV :: Integral i => v -> [i] -> (Fieldf v)
-    toList :: v -> [Fieldf v]
-    fromList :: [Fieldf v] -> v
+    powV      :: Integral i => v -> [i] -> Fieldf v
+    toList    :: v -> [Fieldf v]
+    fromList  :: [Fieldf v] -> v
 
 instance (VectorSpace [a], Floating a, Field a) => Rn [a] where
    powV [] [] = mulId
-   powV (v:vs) (i:is) = v**(fromIntegral i) * (powV vs is)
+   powV (v:vs) (i:is) = v ** (fromIntegral i) * powV vs is
    powV _ _ = error "powV: Lists do not have equal length"
    toList v = v
    fromList v = v
@@ -63,7 +63,7 @@ class (VectorSpace v, Field f) => Function h v f where -- h ~= v -> f
   -- integration too
   eval  :: v -> h -> f
 
-  ($$)  :: h -> (v -> f)
+  ($$)  :: h -> v -> f
   ($$) = flip eval
 
 

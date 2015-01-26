@@ -14,11 +14,11 @@ factorial n = n * factorial (n - 1)
 quotient :: Int -> Int -> Int
 --quotient Z _ = Z
 --quotient (S x) y = S (quotient (S x - y) y)
-quotient x y = div x y
+quotient = div
 
 --combinations :: Nat -> Nat -> Nat
 combinations :: Int -> Int -> Int
-combinations n k = quotient (factorial n) ((factorial k) * (factorial (n - k)))
+combinations n k = quotient (factorial n) (factorial k * factorial (n - k))
 
 
 -- Sign of a permutation defined by a pair of increasing permutations
@@ -47,7 +47,7 @@ permutations n k = [ j:xs | j <- [1..n], xs <- permutations n (k-1), head xs > j
 permutationPairs :: Int -> Int -> Int -> [([Int],[Int])]
 permutationPairs n k j =
     nub $ concatMap (\(f,ss) ->
-                      map (\ixs -> (f,pick ixs ss)) (map (differences) secondix))
+                      map ((\ixs -> (f,pick ixs ss)) . differences) secondix)
           pairedUp
   where firstperm = permutations n k
         secondix  = permutations (n-k) j

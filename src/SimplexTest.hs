@@ -22,7 +22,7 @@ instance Arbitrary v => Arbitrary (SubsimplexTest v) where
 
 instance Show (SubsimplexTest v) where
     show (SubsimplexTest l k i) = "Supersimplex n=" ++
-                                  show ((length (vertices l)) - 1)
+                                  show (length (vertices l) - 1)
                                   ++ ", k=" ++ show k ++ ", i=" ++ show i
 
 instance Arbitrary v => Arbitrary (Simplex v) where
@@ -34,7 +34,7 @@ instance Arbitrary v => Arbitrary (Simplex v) where
 -- and the length should be its topological dimension + 1.
 prop_subsimplex :: (Eq v, Show v) => SubsimplexTest v -> Bool
 prop_subsimplex (SubsimplexTest s@(Simplex l) k i) =
-    (length(subl) == k+1) && all (\x -> elem x l) subl
+    (length subl == k+1) && all (`elem` l) subl
     where n         = topologicalDimension s
           subs      = subsimplex s k i
           subl      = vertices subs
@@ -44,12 +44,12 @@ prop_subsimplex (SubsimplexTest s@(Simplex l) k i) =
 -- subsimplex should be the same as subsimplex k i
 prop_subsimplices :: Eq v => SubsimplexTest v -> Bool
 prop_subsimplices (SubsimplexTest s@(Simplex l) k _) =
-    (length subs == m) && (all ithSubsimplexVertices [0..m-1])
+    (length subs == m) && all ithSubsimplexVertices [0..m-1]
     where n    = topologicalDimension s
           m    = (n+1) `C.choose` (k+1)
           subs = subsimplices s k
           ithSubsimplexVertices i =
-              (vertices (subs!!i)) ==  vertices (subsimplex s k i)
+              vertices (subs!!i) ==  vertices (subsimplex s k i)
 
 main = do quickCheck (prop_subsimplex :: SubsimplexTest [Int] -> Bool)
           quickCheck (prop_subsimplices :: SubsimplexTest [Int] -> Bool)
