@@ -27,27 +27,27 @@ class (Field (Fieldf v)) => VectorSpace v where
   sclV  :: Fieldf v -> v -> v
 
 instance (Field a, Eq [a]) => VectorSpace [a] where
-   type Fieldf [a] = a
-   vspaceDim = length
+  type Fieldf [a] = a
+  vspaceDim = length
 
-   addV [] [] = []
-   addV (v:vs) (w:ws) = add v w : addV vs ws
-   addV _ _ = error "addV: Lists do not have equal length"
+  addV [] [] = []
+  addV (v:vs) (w:ws) = add v w : addV vs ws
+  addV _ _ = error "addV: Lists do not have equal length"
 
-   sclV _ [] = []
-   sclV a (v:vs) = mul a v : sclV a vs
+  sclV _ [] = []
+  sclV a (v:vs) = mul a v : sclV a vs
 
 class (VectorSpace v) => Rn v where
-    powV      :: Integral i => v -> [i] -> Fieldf v
-    toList    :: v -> [Fieldf v]
-    fromList  :: [Fieldf v] -> v
+  powV      :: Integral i => v -> [i] -> Fieldf v
+  toList    :: v -> [Fieldf v]
+  fromList  :: [Fieldf v] -> v
 
 instance (VectorSpace [a], Floating a, Field a) => Rn [a] where
-   powV [] [] = mulId
-   powV (v:vs) (i:is) = v ** (fromIntegral i) * powV vs is
-   powV _ _ = error "powV: Lists do not have equal length"
-   toList v = v
-   fromList v = v
+  powV [] [] = mulId
+  powV (v:vs) (i:is) = v ** (fromIntegral i) * powV vs is
+  powV _ _ = error "powV: Lists do not have equal length"
+  toList v = v
+  fromList v = v
 
 class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
   addA :: v -> v -> v
