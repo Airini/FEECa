@@ -54,7 +54,7 @@ library
   -- other-modules:       
   
   -- LANGUAGE extensions used by modules in this package.
-  other-extensions:    GADTs, FlexibleInstances, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, FlexibleContexts, UndecidableInstances
+  other-extensions:    GADTs, FlexibleInstances, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, FlexibleContexts, UndecidableInstances, OverlappingInstances
   
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.7 && <4.8, exact-combinatorics >=0.2 && <0.3, QuickCheck >=2.7 && <2.8, random >=1.0 && <1.1, hmatrix >=0.16 && <0.17, type-natural >=0.2 && <0.3  

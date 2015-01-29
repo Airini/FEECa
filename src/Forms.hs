@@ -1,11 +1,10 @@
--- {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ExistentialQuantification #-}
+
 module Forms (
   Dim, Vector (Vex), Form (Fform, arity)
-  , zeroForm, dx, dxV
+  , zeroForm, nullForm, dx, dxV
   , refine
   ) where
 
@@ -69,7 +68,8 @@ constituentsInv :: [(f, [Int])] -> Bool
 constituentsInv []          = True
 constituentsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
 
--- TODO: functor?
+instance Functor Form where
+  fmap f (Fform k cs) = Fform k (map (pairM f id) cs)
 
 instance (Show f) => Show (Form f) where
   show (Fform k cs) = show k ++ "-form: " ++ show cs
@@ -125,6 +125,9 @@ dx i | i <= 0    = error "dx: invalid projection of a negative component"
 zeroForm :: Form f
 zeroForm = Fform 0 []
 
+-- | The k-arity == 0 form
+nullForm :: Int -> Form f
+nullForm k = Fform k []
 
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it

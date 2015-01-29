@@ -2,6 +2,7 @@
 {-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
@@ -129,4 +130,13 @@ expression = refine dxVP (t /\ g) [b, y]
 
 eg1 = eval [-0.1,10,0] expression
 
+-- basisIx must be in agreement with the proj paramenter used in evaluation!
+-- TODO: remove ugly v parameter. Ugly possible solution: basisIx 0 returns some "tempalte"
+--       arbitrary vector from which dimension can be extracted...
+diff :: (VectorSpace v, Function (PolyN f) v) => (Int -> v) -> v -> DiffForm f -> DiffForm f
+diff basisIx x form =
+  foldr addA (nullForm (1 + arity form))
+             (map (\i -> fmap (deriv (basisIx i)) (dx i /\ form)) [1..vspaceDim x])
+
+b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 

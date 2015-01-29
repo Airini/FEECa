@@ -1,6 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -58,7 +57,7 @@ class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of diff
   sclA = sclV
 
 -- Maybe not necessary to have
-class (VectorSpace v, Field (Values h v)) => Function h v where -- h ~= v -> f
+class (VectorSpace v, Field (Values h v)) => Function h v where -- h ~= v -> Values h v
   type Values h v :: *
   deriv :: v -> h -> h
   -- integration too
