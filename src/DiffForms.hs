@@ -12,96 +12,13 @@ import Forms
 import Spaces
 import Polynomials
 import Utility (pairM)
-import Control.Applicative
 
-
--- Maybe should wrap polynomials: finite degree => Field too + defined dimensionality
-instance (Field f) => VectorSpace (Polynomial f) where
-  type Fieldf (Polynomial f) = f
-  vspaceDim _ = undefined
-  addV = addP
-  sclV = sclP
-
-instance Functor Polynomial where
-  fmap f (Polynomial ms) = Polynomial (map (pairM f id) ms)
-
--- | Gives the number of indeterminate variables of a polynomial
-indets :: Polynomial f -> Int
-indets (Polynomial ((_,is):_)) = length is
--- zero if none??
-indets _                       = error "indets: No monomials defining the number of indeterminates"
-
--- | Scaling of a polynomial
-sclP :: Field a => a -> Polynomial a -> Polynomial a
-sclP x = fmap (mul x)
-
--- | Multiply two polynomials
-mulP :: Field a => Polynomial a -> Polynomial a -> Polynomial a
-mulP (Polynomial ms) (Polynomial ns) = undefined
-
--- | Constant == 0 polynomial in n indeterminates
-zerP :: Polynomial a
-zerP = Polynomial []
-
-
--- | Our working polynomial type: defined over some fixed number of indeterminates
---   (even though not explicitly stated) and ready for space instantiation
-data PolyN f where
-    Poln :: {- Dim -> -} Polynomial f -> PolyN f
-    CttP :: f -> PolyN f
-  deriving Show
-
-instance Functor PolyN where
-  fmap f (Poln p) = Poln (fmap f p)
-  -- fmap f ZerP     = ZerP
-  fmap f (CttP a) = CttP $ f a
-
-instance (Field f) => VectorSpace (PolyN f) where
-  type Fieldf (PolyN f) = Fieldf (Polynomial f)  -- OR: f
-  vspaceDim _ = undefined
-  addV   = add
-  sclV a = fmap (mul a)
-
-instance (Field f) => Field (PolyN f) where
-  -- add ZerP p = p
-  -- add p ZerP = p -- (Poln x p) (Poln y q) | x == y = Poln n $ addP p q
-  add (Poln p) (Poln q)     = Poln $ addV p q  -- addP
-  add (CttP a) (CttP b)     = CttP (add a b)
-  add (CttP a) p@(Poln p')  = add (Poln $ deg0P (indets p') a) p -- Poln $ addP (deg0P (indets p) a) p
-  add p@(Poln _) c@(CttP _) = add c p
-
-  addId  = pure addId
-  addInv = fmap addInv -- (Poln p) = Poln $ sclP (addInv addId) p -- lift...
-
-  mul (Poln p) (Poln q)     = Poln $ mulP p q
-  mul (CttP a) p            = fmap (mul a) p
-  -- mul p (CttP a) = fmap (mul a) p
-  mul p@(Poln _) c@(CttP _) = mul c p
-  
-  mulId     = pure mulId
-  mulInv    = undefined
-  fromInt x = CttP (fromInt x)
-
--- does it even make sense? cannot see immediate use
-instance Applicative PolyN where
-  pure = CttP
-  (<*>) = undefined
-
-instance (Function (Polynomial f) v) => Function (PolyN f) v where
-  type Values (PolyN f) v = Values (Polynomial f) v
-  
-  -- Since we specify case by case, maybe it's better to avoid translation of CttP step?
-  deriv v (CttP c) = Poln $ deriv v (deg0P (vspaceDim v) c)
-  deriv v (Poln p) = Poln $ deriv v p
---deriv _ (CttP )  = CttP addId
-  eval v (CttP c)  = eval v $ deg0P (vspaceDim v) c -- (length $ toList v) c
-  eval v (Poln p)  = eval v p
---eval _ (CttP x)  = x
+import PolyN
 
 -- | Differential forms
 type DiffForm f = Form (PolyN f)
 -- Immediately "inherits" all class instantiations for 'Form' when an
--- appropriate 'f' is used for Polynomial coefficients
+-- appropriate 'f' is used for Polynomial coefficients (?)
 
 --data DiffForm f where
 --  DForm :: Field f => Form (PolyN f) -> DiffForm f
@@ -129,14 +46,24 @@ dxVP = (fmap . fmap) CttP dxV
 expression = refine dxVP (t /\ g) [b, y]
 
 eg1 = eval [-0.1,10,0] expression
+-- -479.74
 
 -- basisIx must be in agreement with the proj paramenter used in evaluation!
 -- TODO: remove ugly v parameter. Ugly possible solution: basisIx 0 returns some "tempalte"
 --       arbitrary vector from which dimension can be extracted...
-diff :: (VectorSpace v, Function (PolyN f) v) => (Int -> v) -> v -> DiffForm f -> DiffForm f
+--      OR: add zero-th vector to 'VectorSpace' class?
+diff :: (Function (PolyN f) v) => (Int -> v) -> v -> DiffForm f -> DiffForm f
 diff basisIx x form =
   foldr addA (nullForm (1 + arity form))
              (map (\i -> fmap (deriv (basisIx i)) (dx i /\ form)) [1..vspaceDim x])
+
+-- Generalised to any appropriate form (polynomial differential forms being but
+-- a case)
+df' :: (Function h v, Algebra (Form h)) => (Int -> v) -> v -> Form h -> Form h
+df' basisIx x form =
+  foldr addA (nullForm (1 + arity form))
+             (map (\i -> fmap (deriv (basisIx i)) (dx i /\ form)) [1..vspaceDim x])
+
 
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 
