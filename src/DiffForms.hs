@@ -1,6 +1,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE InstanceSigs #-}
 
 module DiffForms where
 
@@ -14,7 +19,7 @@ import Control.Applicative
 -- Maybe should wrap polynomials: finite degree => Field too + defined dimensionality
 instance (Field f) => VectorSpace (Polynomial f) where
   type Fieldf (Polynomial f) = f
-  vspaceDim _ = undefined
+  vspaceDim = indets
   addV = addP
   sclV = sclP
 
@@ -24,6 +29,7 @@ instance Functor Polynomial where
 -- | Gives the number of indeterminate variables of a polynomial
 indets :: Polynomial f -> Int
 indets (Polynomial ((_,is):_)) = length is
+-- zero if none??
 indets _                       = error "indets: No monomials defining the number of indeterminates"
 
 -- | Scaling of a polynomial
@@ -75,7 +81,7 @@ instance (Field f) => VectorSpace (PolyN f) where
 instance (Field f) => Field (PolyN f) where
   -- add ZerP p = p
   -- add p ZerP = p -- (Poln x p) (Poln y q) | x == y = Poln n $ addP p q
-  add (Poln p) (Poln q)     = Poln $ addP p q
+  add (Poln p) (Poln q)     = Poln $ add p q
   add (CttP a) (CttP b)     = CttP (add a b)
   add (CttP a) p@(Poln p')  = add (Poln $ deg0P (indets p') a) p -- Poln $ addP (deg0P (indets p) a) p
   add p@(Poln _) c@(CttP _) = add c p
@@ -124,8 +130,9 @@ h :: Field f => DiffForm f
 h = sclV (CttP addId) (dx 3)
 
 t :: DiffForm Double
-t = sclV (Poln $ deg1P [0,2,3]) (dx 1)
+t = sclV (add (CttP 8.9) (Poln $ deg1P [0,2,3])) (dx 1)
 
+b :: Vector Double
 b = Vex 3 [1,2,0]
 y :: Vector Double
 y = Vex 3 [3,-2.3,1]
@@ -133,7 +140,28 @@ y = Vex 3 [3,-2.3,1]
 dxVP = (fmap . fmap) CttP dxV
 expression = refine dxVP (t /\ g) [b, y]
 
-evalPn _ (CttP x) = x
-evalPn v (Poln p) = evalP v p
+--evalPn _ (CttP x) = x
+evalPn v (CttP c) = eval v $ deg0P (vspaceDim v) c -- (length $ toList v) c
+evalPn v (Poln p) = eval v p
+
+--derivPn :: (Rn v, f ~ (Fieldf v), Function (Polynomial f) v f) => v -> PolyN f -> PolyN f
+derivPn v (CttP c) = Poln $ deriv v (deg0P (length $ toList v) c)
+derivPn v (Poln p) = Poln $ deriv v p
+
+--eg1 = eval [-0.1,10,0] expression
+
+instance (Function (Polynomial f) v) => Function (PolyN f) v where
+  type Values (PolyN f) v = Values (Polynomial f) v
+  deriv v (CttP c) = Poln $ deriv v (deg0P (vspaceDim v) c)
+  deriv v (Poln p) = Poln $ deriv v p
+  eval v (CttP c) = eval v $ deg0P (vspaceDim v) c -- (length $ toList v) c
+  eval v (Poln p) = eval v p
+
+
+{-
+instance (Rn v, a ~ (Fieldf v), Floating a, Eq a) => Function (PolyN a) v a where
+  deriv = derivPn
+  eval  = evalPn
+-}
 
 

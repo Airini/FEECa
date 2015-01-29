@@ -32,7 +32,8 @@ type MultiIndex = [Int]
 -- | Polynomials as list of coefficient-monomial terms over R^n.
 data Polynomial a = Polynomial  [(a,MultiIndex)] deriving Show
 
-instance (Rn v, a ~ (Fieldf v), Floating a, Eq a) => Function (Polynomial a) v a where
+instance (Rn v, a ~ (Fieldf v), Floating a, Eq a) => Function (Polynomial a) v where
+    type Values (Polynomial a) v = a
     deriv = deriveP
     eval  = evalP
 

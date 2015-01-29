@@ -165,7 +165,8 @@ omega <> eta = undefined
 --- ONLY PLACEHOLDERS!!
 data Poly v f = Pp (v -> f)
 
-instance (VectorSpace v, Field f) => Function (Poly v f) v f where
+instance (VectorSpace v, f ~ (Fieldf v)) => Function (Poly v f) v where
+  type Values (Poly v f) v = f
   deriv = undefined
   eval x (Pp g) = g x
 
