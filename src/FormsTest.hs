@@ -113,7 +113,7 @@ x =~ y = abs (x-y) < threshold
 machEsp :: RealFrac a => a
 machEsp = until p (/2) 1
   where p eps = eps/2 + 1 == 1
-   
+
 main :: IO ()
 main = do
      putStrLn "Calculated machine epsilon:"
@@ -154,5 +154,3 @@ b3 = Vex 4 [208.0,770.0,-278.0,189.0]
 b4 = Vex 4 [601.0,862.0,989.0,-212.0]
 b5 = Vex 4 [694.0,669.0,1014.0,-303.0]
 b6 = Vex 4 [74.0,268.0,-963.0,-577.0]
-
-
