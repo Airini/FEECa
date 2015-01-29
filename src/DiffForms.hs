@@ -1,10 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE OverlappingInstances #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 
 module DiffForms where
 
