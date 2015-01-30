@@ -1,4 +1,8 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Demo where
 
@@ -37,7 +41,7 @@ type Binop t = t -> t -> t
 (¬) = mulInv
 
 (÷) :: Field f => Binop f 
-a ÷ b = a · (mulInv b)
+a ÷ b = a · mulInv b
 
 (†) :: Algebra a => Binop a
 (†) = addA
@@ -45,11 +49,14 @@ a ÷ b = a · (mulInv b)
 (∂) :: Function h v => v -> h -> h
 (∂) = deriv
 
-d :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
-d = flip df' undefined
+d' :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
+d' = flip df' undefined
 
 coordinate :: Field a => Int -> Int -> [a]
 coordinate i n = replicate (i-1) addId ++ mulId: replicate (n-i) addId
+
+hs n = pure mulId : fmap Poln (map (deg1P . flip coordinate n) [1..n])
+
 
 -------
 
@@ -64,14 +71,14 @@ v3' = Vex 3 [1,2,3]
 v4' = Vex 4 [1,2,3,4]
 
 x :: [PolyN Double]
-x = map (Poln . deg1P . (flip coordinate 2)) [1..2]
+x = map (Poln . deg1P . flip coordinate 2) [1..2]
 
 p :: PolyN Double
-p = 5 .* (x !! 0) · (x !! 0) .+. (3 .* (x !! 0))
--- TODO: fix precedences
+p = 5 .* head x · head x .+. (3 .* head x)
+-- TODO: solve precedences
 --p = 5 .* (x !! 0) · (x !! 0) .+. 3 .* (x !! 0)
 
-dxs :: [Form Double]
+--dxs :: [Form Double]
 dxs = map dx [0 .. 5]
 dx0 = dxs !! 1
 dx1 = dxs !! 2
@@ -93,6 +100,17 @@ val2 = (dx0 /\ dx1) # [Vex 2 [1,2], Vex 2 [3,4]]
 
 dxs' :: [DiffForm Double]
 dxs' = map (fmap pure) dxs
+
+w1' = (dxs' !! 1) /\ (dxs' !! 2)
+w2' = (dxs' !! 3) /\ (dxs' !! 5)
+dx1' = dxs' !! 2
+dx2' = dxs' !! 3
+
+u :: DiffForm Double
+u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (pure 0.5 .* dx1' /\ dx2')
 v = p .* (dxs' !! 1) .+. (2 .* p .* (dxs' !! 2))
+
+d = df' b1 (b1 0)
+du = d u
 
 
