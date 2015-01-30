@@ -51,8 +51,9 @@ d' = flip df' undefined
 coordinate :: Field a => Int -> Int -> [a]
 coordinate i n = replicate (i-1) addId ++ mulId: replicate (n-i) addId
 
-hs n = pure mulId : fmap Poln (map (deg1P . flip coordinate n) [1..n])
-
+hs n = pure mulId : rec pn1s
+  where pn1s = fmap Poln (map (deg1P . flip coordinate n) [1..n])
+        rec ps = ps ++ (concatMap (\q -> map (q ·) pn1s) ps)
 
 -------
 
@@ -106,7 +107,7 @@ u :: DiffForm Double
 u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (pure 0.5 .* dx1' /\ dx2')
 v = p .* (dxs' !! 1) .+. (2 .* p .* (dxs' !! 2))
 
-d = df' b1 (b1 0)
+d = df' (flip coordinate 2) (coordinate 0 2)
 du = d u
 
 
