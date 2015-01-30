@@ -1,3 +1,4 @@
+module CombinatoricsTest where
 import Combinatorics
 import qualified Math.Combinatorics.Exact.Binomial as Comb
 import Test.QuickCheck

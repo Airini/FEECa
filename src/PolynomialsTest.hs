@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-
+module PolynomialTest where
 import Data.Maybe
 import Polynomials
 import Test.QuickCheck

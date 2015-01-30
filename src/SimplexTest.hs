@@ -1,3 +1,4 @@
+module SimplexTest where
 import qualified Math.Combinatorics.Exact.Binomial as C
 
 import Data.Maybe
