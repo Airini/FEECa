@@ -62,6 +62,3 @@ subsimplices s@(Simplex l) k
           err_dim = "subsimplices: Dimensionality of subsimplices is higher than that of the simplex."
 
 
-
-
-

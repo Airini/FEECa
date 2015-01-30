@@ -91,8 +91,8 @@ val1, val2 :: Double
 val1 = w1 # [v2', v2']
 val2 = (dx0 /\ dx1) # [Vex 2 [1,2], Vex 2 [3,4]]
 
-dxs' :: [Form (PolyN Double)]
+dxs' :: [DiffForm Double]
 dxs' = map (fmap pure) dxs
---v = p .* dx1 + 2 .* p .* dx2
+v = p .* (dxs' !! 1) .+. (2 .* p .* (dxs' !! 2))
 
 
