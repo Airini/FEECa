@@ -74,4 +74,3 @@ subsimplices s@(Simplex l) k
 -- | Reference simplex in R^n
 referenceSimplex :: Int -> Simplex
 referenceSimplex n = Simplex $ (origin n) : [unitP n i | i <- [0..n-1]]
-
