@@ -3,6 +3,7 @@
    MultiParamTypeClasses #-}
 
 module Simplex(Simplex(Simplex),
+               simplex,
                geometricalDimension,
                topologicalDimension,
                vertices,
@@ -10,36 +11,41 @@ module Simplex(Simplex(Simplex),
                subsimplices) where
 
 import Spaces
+import Point
+import Vector
 import Data.List
 import Combinatorics
 import Utility
 import Math.Combinatorics.Exact.Binomial
 
 -- | n-simplex represented by a list of vectors of given dimensionality
--- Invariant: geometrical dimension = length of the vector - 1
-data Simplex v = Simplex [v] deriving ( Show )
+-- | Invariant: geometrical dimension = length of the vector - 1
+data Simplex = Simplex [Point] deriving ( Show )
+
+-- | Create simplex from a given list of points in R^n
+simplex :: [Point] -> Simplex
+simplex = Simplex
 
 -- | The geometrical dimension of a simplex is the dimensionality of the
 -- | underlying vector space.
-geometricalDimension :: Rn v => Simplex v -> Int
+geometricalDimension :: Simplex -> Int
 geometricalDimension (Simplex []) =
     error "geometricalDimension: Encountered Simplex without vertices."
-geometricalDimension (Simplex (l:ls)) = vspaceDim l
-
+geometricalDimension (Simplex (p:ps)) = dimP p
 
 -- | The topological dimension of a n-simplex is the number of vertices minus
 -- | one.
-topologicalDimension :: Simplex v -> Int
+topologicalDimension :: Simplex -> Int
 topologicalDimension (Simplex []) =
     error "topologicalDimension: Encountered Simplex without vertices."
 topologicalDimension (Simplex l) = length l - 1
 
 -- | List of vertices of the simplex
-vertices :: Simplex v -> [v]
+vertices :: Simplex -> [Point]
 vertices (Simplex l) = l
 
 -- | i:th k-dimensional subsimplex of given simplex
-subsimplex :: Simplex v -> Int -> Int -> Simplex v
+subsimplex :: Simplex -> Int -> Int -> Simplex
 subsimplex (Simplex []) _ _ =
                 error "subsimplex: Encountered Simplex without vertices."
 subsimplex s@(Simplex l) k i
@@ -52,7 +58,7 @@ subsimplex s@(Simplex l) k i
           err_dim = "subsimplex: Dimensionality of subsimplex is higher than that of the simplex."
 
 -- | subsimplices of given dimension d
-subsimplices :: Simplex v -> Int -> [Simplex v]
+subsimplices :: Simplex -> Int -> [Simplex]
 subsimplices s@(Simplex l) k
              | k > n = error err_dim
              | otherwise = map Simplex subsimplexLists

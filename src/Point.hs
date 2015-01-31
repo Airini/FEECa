@@ -1,23 +1,25 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Point where
 
 import Spaces
+import Vector
 
 -- | Points in R^n
-data Point a = Point [a]
+data Point = Point [Double] deriving (Eq, Show)
 
 -- | Create point from list of components
-point :: [a] -> Point a
+point :: [Double] -> Point
 point = Point
 
 -- TODO: Dimension class?
-dimP :: Point a -> Int
+dimP :: Point -> Int
 dimP (Point l) = length l
 
-origin :: (Num a) => Int -> Point a
+origin :: Int -> Point
 origin n = Point $ replicate n 0
 
 -- | Position vector of given point
-posVector :: (Rn v, Fieldf v ~ a) => Point a -> v
-posVector (Point l) = fromList l
+posVector :: Point -> Vector
+posVector (Point l) = vector l

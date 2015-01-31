@@ -9,14 +9,15 @@ import Test.QuickCheck.Random
 import qualified Test.QuickCheck.Property as QCP
 import Spaces
 import Simplex
+import Point
 import System.Random
 
-data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int
+data SubsimplexTest v = SubsimplexTest Simplex Int Int
 
 instance Arbitrary v => Arbitrary (SubsimplexTest v) where
     arbitrary = do
       n <- choose(0,10)
-      l <- vector (n+1)
+      l <- vectorOf (n+1) $ nPoint n
       k <- choose(0,n)
       i <- choose(0,max ((n+1) `C.choose` (k+1)-1) 0)
       return (SubsimplexTest (Simplex l) k i)
@@ -26,10 +27,10 @@ instance Show (SubsimplexTest v) where
                                   show (length (vertices l) - 1)
                                   ++ ", k=" ++ show k ++ ", i=" ++ show i
 
-instance Arbitrary v => Arbitrary (Simplex v) where
-    arbitrary = do
-      l <- arbitrary
-      return (Simplex l)
+nPoint :: Int -> Gen Point
+nPoint n = do
+  l <- vector n
+  return (Point l)
 
 -- A subsimplex should contain only vertices contained in the supersimplex,
 -- and the length should be its topological dimension + 1.
