@@ -7,17 +7,14 @@ import Spaces
 import Control.Monad (liftM, liftM2)
 import Discrete
 
--- Moved Field instance declaration for Double
--- to spaces to make it available everywhere
-
--- instance Field Double where
---   add = (+)
---   addId = 0
---   addInv = (0-)
---   mul = (*)
---   mulId = 1
---   mulInv = recip
---   fromInt = fromIntegral
+instance Field Double where
+  add = (+)
+  addId = 0
+  addInv = (0-)
+  mul = (*)
+  mulId = 1
+  mulInv = recip
+  fromInt = fromIntegral
 
 {-
 instance Field Int where
