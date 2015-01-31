@@ -29,7 +29,7 @@ printVector p v
           maxw = maxWidth p comps
 
 printVectorColl :: RenderVector v => Int -> [v] -> Doc
-printVectorColl p vs = vcat $ map hsep [[printComponent (ws!!i) p n i ((ls!!j)!!i)
+printVectorColl p vs = vcat $ map hsep [[printComponent (ws!!j) p n i ((ls!!j)!!i)
                                         | j <- [0..m-1]]
                                         | i <- [0..n-1]]
     where ls = map components vs

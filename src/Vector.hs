@@ -1,10 +1,10 @@
 {-# LANGUAGE TypeFamilies #-}
 
-module Vector(Vector(Vector),
+module Vector(Vector(..),
               vector,
               toList) where
 
-import Spaces
+import Spaces()
 import Text.PrettyPrint
 import Print
 
@@ -12,7 +12,7 @@ import Print
 data Vector = Vector [Double] deriving (Eq)
 
 instance RenderVector Vector where
-    dim = vspaceDim
+    dim (Vector l) = length l
     components = toList
 
 instance Show Vector where
@@ -26,9 +26,9 @@ vector = Vector
 toList :: Vector -> [Double]
 toList (Vector l) = l
 
-instance VectorSpace Vector where
-  type Fieldf Vector   = Double
-  vspaceDim (Vector l) = length l
-  addV (Vector l1) (Vector l2) = Vector $ zipWith (+) l1 l2
-  sclV c (Vector l) = Vector $ map (c*) l
+-- instance VectorSpace Vector where
+--   type Fieldf Vector   = Double
+--   vspaceDim (Vector l) = length l
+--   addV (Vector l1) (Vector l2) = Vector $ zipWith (+) l1 l2
+--   sclV c (Vector l) = Vector $ map (c*) l
 

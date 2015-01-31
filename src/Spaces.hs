@@ -13,7 +13,7 @@ class Field v where
   mulId   :: v
   mulInv  :: v -> v
   fromInt :: Int -> v
-  
+
   -- associative, distributive, ...
   -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate, but no mulInv
   -- Fractional: mulInv = recip

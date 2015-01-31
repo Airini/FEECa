@@ -39,4 +39,4 @@ unitP n i = Point $ concat [(replicate (i) 0.0), [1.0], (replicate (n-i-1) 0.0)]
 
 -- | Position vector of given point
 posVector :: Point -> Vector
-posVector (Point l) = vector l
+posVector (Point l) = Vector l

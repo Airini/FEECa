@@ -8,11 +8,11 @@ module Simplex(Simplex(Simplex),
                topologicalDimension,
                vertices,
                subsimplex,
-               subsimplices) where
+               subsimplices,
+               referenceSimplex) where
 
 import Spaces
 import Point
-import Vector
 import Data.List
 import Combinatorics
 import Print
@@ -24,7 +24,7 @@ import Math.Combinatorics.Exact.Binomial
 data Simplex = Simplex [Point]
 
 instance Show Simplex where
-    show (Simplex l) = "Simplex:\n" ++ (show $ printVectorColl 2 l)
+    show (Simplex l) = "Simplex:\n" ++ (show $ printVectorColl 2 l) ++ "\n"
 
 -- | Create simplex from a given list of points in R^n
 simplex :: [Point] -> Simplex
