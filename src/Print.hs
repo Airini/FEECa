@@ -5,7 +5,7 @@ import Text.Printf
 import Spaces
 
 class RenderVector v where
-    dim :: v -> Int
+    ncomps :: v -> Int
     components :: v -> [Double]
 
 -- | Print Double with precision p and padded to
@@ -24,7 +24,7 @@ printVector :: RenderVector v => Int -> v -> Doc
 printVector p v
     | n <= 1= space <> text (show comps)
     | otherwise = nest 1 $ vcat (zipWith (printComponent maxw p n) [0..n-1] comps)
-    where n = dim v
+    where n = ncomps v
           comps = components v
           maxw = maxWidth p comps
 
@@ -35,7 +35,7 @@ printVectorColl p vs = vcat $ map hsep [[printComponent (ws!!j) p n i ((ls!!j)!!
     where ls = map components vs
           ws = map (maxWidth p) ls
           m = length vs
-          n = minimum (map dim vs)
+          n = minimum (map ncomps vs)
 
 -- | Compute maximum width w required to print components of the vector
 -- | at given precision p.

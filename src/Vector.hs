@@ -14,8 +14,11 @@ import Print
 data Vector = Vector [Double] deriving (Eq)
 
 instance RenderVector Vector where
-    dim (Vector l) = length l
+    ncomps (Vector l) = length l
     components = toList
+
+instance Dimensioned Vector where
+    dim (Vector l) = length l
 
 instance Show Vector where
     show v = "Vector:\n" ++ (show $ printVector 2 v)

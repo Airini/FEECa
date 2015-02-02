@@ -16,8 +16,11 @@ import Print
 data Point = Point [Double] deriving (Eq)
 
 instance RenderVector Point where
-    dim = dimP
+    ncomps = dimP
     components (Point l) = l
+
+instance Dimensioned Point where
+    dim = dimP
 
 instance Show Point where
     show p = "Point:\n" ++ (show $ printVector 2 p)
