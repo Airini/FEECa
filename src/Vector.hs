@@ -2,9 +2,11 @@
 
 module Vector(Vector(..),
               vector,
-              toList) where
+              toList,
+              powV) where
 
-import Spaces()
+import Spaces hiding (toList)
+import FormsTest
 import Text.PrettyPrint
 import Print
 
@@ -26,9 +28,17 @@ vector = Vector
 toList :: Vector -> [Double]
 toList (Vector l) = l
 
--- instance VectorSpace Vector where
---   type Fieldf Vector   = Double
---   vspaceDim (Vector l) = length l
---   addV (Vector l1) (Vector l2) = Vector $ zipWith (+) l1 l2
---   sclV c (Vector l) = Vector $ map (c*) l
+
+powV :: Vector -> [Int] -> Double
+powV (Vector l) = powVList l
+
+powVList [] [] = mulId
+powVList (v:vs) (i:is) = v ** (fromIntegral i) * powVList vs is
+powVLint _ _ = error "powV: Lists do not have equal length"
+
+instance VectorSpace Vector where
+  type Fieldf Vector   = Double
+  vspaceDim (Vector l) = length l
+  addV (Vector l1) (Vector l2) = Vector $ zipWith (+) l1 l2
+  sclV c (Vector l) = Vector $ map (c*) l
 

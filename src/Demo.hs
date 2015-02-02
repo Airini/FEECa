@@ -109,5 +109,3 @@ v = p .* (dxs' !! 1) .+. (2 .* p .* (dxs' !! 2))
 
 d = df' (flip coordinate 2) (coordinate 0 2)
 du = d u
-
-

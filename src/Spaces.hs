@@ -36,18 +36,6 @@ instance (Field a, Eq [a]) => VectorSpace [a] where
   sclV _ [] = []
   sclV a (v:vs) = mul a v : sclV a vs
 
-class (VectorSpace v) => Rn v where
-  powV      :: Integral i => v -> [i] -> Fieldf v
-  toList    :: v -> [Fieldf v]
-  fromList  :: [Fieldf v] -> v
-
-instance (VectorSpace [a], Floating a, Field a) => Rn [a] where
-  powV [] [] = mulId
-  powV (v:vs) (i:is) = v ** (fromIntegral i) * powV vs is
-  powV _ _ = error "powV: Lists do not have equal length"
-  toList v = v
-  fromList v = v
-
 class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
   addA :: v -> v -> v
   (/\) :: v -> v -> v
