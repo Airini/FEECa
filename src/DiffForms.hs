@@ -2,11 +2,11 @@
 
 module DiffForms where
 
-import Forms
+import Forms hiding (Vector, dxV)
 import Spaces
 import Polynomials
 import Utility (pairM)
-
+import Vector
 import PolyN
 
 -- | Differential forms
@@ -31,22 +31,26 @@ h = sclV (CttP addId) (dx 3)
 t :: DiffForm Double
 t = sclV (add (CttP 8.9) (Poln $ deg1P [0,2,3])) (dx 1)
 
-b :: Vector Double
-b = Vex 3 [1,2,0]
-y :: Vector Double
-y = Vex 3 [3,-2.3,1]
+b :: Vector
+b = Vector [1,2,0]
+y :: Vector
+y = Vector [3,-2.3,1]
+
+dxV :: Int -> Vector -> Double
+dxV i (Vector x) = x !! (i-1)
 
 dxVP = (fmap . fmap) CttP dxV
 expression = refine dxVP (t /\ g) [b, y]
 
-eg1 = eval [-0.1,10,0] expression
+eg1 = eval (Vector [-0.1,10,0]) expression
 -- -479.74
 
 -- basisIx must be in agreement with the proj paramenter used in evaluation!
 -- TODO: remove ugly v parameter. Ugly possible solution: basisIx 0 returns some "tempalte"
 --       arbitrary vector from which dimension can be extracted...
 --      OR: add zero-th vector to 'VectorSpace' class?
-diff :: (Function (PolyN f) v) => (Int -> v) -> v -> DiffForm f -> DiffForm f
+-- Remark: reduced generality for our R^n types
+diff :: (Function (PolyN Double) v) => (Int -> v) -> v -> DiffForm Double -> DiffForm Double
 diff basisIx x form =
   foldr addA (nullForm (1 + arity form))
              (map (\i -> fmap (deriv (basisIx i)) (dx i /\ form)) [1..vspaceDim x])
