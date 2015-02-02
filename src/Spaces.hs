@@ -66,4 +66,7 @@ class (VectorSpace v, Field (Values h v)) => Function h v where -- h ~= v -> Val
   ($$)  :: h -> v -> Values h v
   ($$) = flip eval
 
+class Dimensioned t where
+  dim :: t -> Int
+
 
