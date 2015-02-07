@@ -5,11 +5,9 @@ module Point(Point(Point),
              point,
              dimP,
              origin,
-             unitP,
-             posVector) where
+             unitP) where
 
 import Spaces
-import Vector
 import Print
 
 -- | Points in R^n. A point describese a fixed position in space and
@@ -30,7 +28,6 @@ instance Show Point where
 point :: [Double] -> Point
 point = Point
 
--- TODO: Dimension class?
 dimP :: Point -> Int
 dimP (Point l) = length l
 
@@ -41,7 +38,3 @@ origin n = Point $ replicate n 0
 -- | Point with the ith component 1.0 and all other components 0.0.
 unitP :: Int -> Int -> Point
 unitP n i = Point $ concat [(replicate (i) 0.0), [1.0], (replicate (n-i-1) 0.0)]
-
--- | Position vector of given point.
-posVector :: Point -> Vector
-posVector (Point l) = Vector l

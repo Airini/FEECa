@@ -4,19 +4,25 @@
 
 module Simplex(Simplex(Simplex),
                simplex,
+               simplex',
                geometricalDimension,
                topologicalDimension,
                vertices,
+               referencePoint,
+               directionVectors,
                subsimplex,
                subsimplices,
-               referenceSimplex) where
+               referenceSimplex,
+               extendSimplex) where
 
 import Spaces
 import Point
+import Vector
 import Data.List
 import Combinatorics
 import Print
 import Utility
+import GramSchmidt
 import Math.Combinatorics.Exact.Binomial
 
 -- | n-simplex represented by a list of vectors of given dimensionality
@@ -29,6 +35,11 @@ instance Show Simplex where
 -- | Create simplex from a given list of points in R^n
 simplex :: [Point] -> Simplex
 simplex = Simplex
+
+-- | Create a n+1 simplex from a refence point and n direction vectors
+simplex' :: Point -> [Vector] -> Simplex
+simplex' p0 vs = Simplex (p0:l)
+    where l = map (\v -> toPoint $ addV (fromPoint p0) v) vs
 
 -- | The geometrical dimension of a simplex is the dimensionality of the
 -- | underlying vector space.
@@ -47,6 +58,19 @@ topologicalDimension (Simplex l) = length l - 1
 -- | List of vertices of the simplex
 vertices :: Simplex -> [Point]
 vertices (Simplex l) = l
+
+-- | Reference point of the simplex, i.e. the first point in the list
+-- | of vectors
+referencePoint :: Simplex -> Point
+referencePoint (Simplex (p:ps)) = p
+referencePoint (Simplex []) = error "reference Point: Simplex contains no points"
+
+-- | List of the n direction vector pointing from the first point of the
+-- | simplex to the others.
+directionVectors :: Simplex -> [Vector]
+directionVectors (Simplex (p:ps)) = map (\x -> subV (fromPoint x) v) ps
+    where v = fromPoint p
+directionVectors (Simplex _) = []
 
 -- | i:th k-dimensional subsimplex of given simplex
 subsimplex :: Simplex -> Int -> Int -> Simplex
@@ -74,3 +98,13 @@ subsimplices s@(Simplex l) k
 -- | Reference simplex in R^n
 referenceSimplex :: Int -> Simplex
 referenceSimplex n = Simplex $ (origin n) : [unitP n i | i <- [0..n-1]]
+
+extendSimplex :: Simplex -> Simplex
+extendSimplex s@(Simplex ps)
+              | n == nt = s
+              | otherwise = simplex' p0 (gramSchmidt' dirs unitvs)
+    where n = geometricalDimension s
+          nt = topologicalDimension s
+          dirs = directionVectors s
+          p0 = referencePoint s
+          unitvs = [unitV n i | i <- [0..n-1]]

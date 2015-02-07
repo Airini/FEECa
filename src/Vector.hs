@@ -3,10 +3,15 @@
 module Vector(Vector(..),
               vector,
               toList,
-              powV) where
+              powV,
+              dot,
+              unitV,
+              toPoint,
+              fromPoint) where
 
 import Spaces hiding (toList)
 import FormsTest
+import Point
 import Text.PrettyPrint
 import Print
 
@@ -36,6 +41,22 @@ vector = Vector
 -- | Return vector components as list.
 toList :: Vector -> [Double]
 toList (Vector l) = l
+
+-- | Point corresponding to given position vector.
+toPoint :: Vector -> Point
+toPoint (Vector l) = point l
+
+-- | Position vector of given point.
+fromPoint :: Point -> Vector
+fromPoint (Point l) = Vector l
+
+-- | Dot product
+dot :: Vector -> Vector -> Double
+dot (Vector l1) (Vector l2) = foldl (\s (x,y) -> s + x*y) 0  $ zip l1 l2
+
+-- | ith unit vector in R^n
+unitV :: Int -> Int -> Vector
+unitV n i = Vector $ concat [(replicate (i) 0.0), [1.0], (replicate (n-i-1) 0.0)]
 
 -- | Generalized power funciton for vectors. Given a list l of Int with
 -- | the same length as the dimension of the vector v and components cs, the

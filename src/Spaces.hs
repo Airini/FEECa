@@ -25,6 +25,14 @@ class (Field (Fieldf v)) => VectorSpace v where
   addV  :: v -> v -> v
   sclV  :: Fieldf v -> v -> v
 
+-- | General subtraction for vectors
+subV :: VectorSpace v => v -> v -> v
+subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
+
+-- | Zero vector
+zeroV :: VectorSpace v => v -> v
+zeroV v = sclV addId v
+
 instance (Field a, Eq [a]) => VectorSpace [a] where
   type Fieldf [a] = a
   vspaceDim = length
