@@ -12,7 +12,8 @@ import Spaces
 import Vector
 import Print
 
--- | Points in R^n
+-- | Points in R^n. A point describese a fixed position in space and
+-- | can not be computed with.
 data Point = Point [Double] deriving (Eq)
 
 instance RenderVector Point where
@@ -25,7 +26,7 @@ instance Dimensioned Point where
 instance Show Point where
     show p = "Point:\n" ++ (show $ printVector 2 p)
 
--- | Create point from list of components
+-- | Create point from list of components.
 point :: [Double] -> Point
 point = Point
 
@@ -33,13 +34,14 @@ point = Point
 dimP :: Point -> Int
 dimP (Point l) = length l
 
+-- | Return the origin in R^n.
 origin :: Int -> Point
 origin n = Point $ replicate n 0
 
--- | Point with the ith component 1 and all other components 0
+-- | Point with the ith component 1.0 and all other components 0.0.
 unitP :: Int -> Int -> Point
 unitP n i = Point $ concat [(replicate (i) 0.0), [1.0], (replicate (n-i-1) 0.0)]
 
--- | Position vector of given point
+-- | Position vector of given point.
 posVector :: Point -> Vector
 posVector (Point l) = Vector l
