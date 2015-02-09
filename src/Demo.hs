@@ -29,16 +29,33 @@ x54 = point [0, 0, 0, 1, 0]
 x55 = point [0, 0, 0, 0, 1]
 t5  = simplex [x50, x51, x52, x53, x54, x55]
 
+-- Reference simplices
+tr1 = referenceSimplex 1
+tr2 = referenceSimplex 2
+tr3 = referenceSimplex 3
+tr4 = referenceSimplex 4
+tr5 = referenceSimplex 5
 
---v2, v3, v4 :: [Double]
---v2 = [ı,2]
---v3 = [1,2,3]
---v4 = [1,2,3,4]
+-- Extraction of sub simplices
+tr51  = subsimplices t5 1
+tr52  = subsimplices t5 2
+tr53  = subsimplices t5 3
+tr54  = subsimplices t5 4
+tr55  = subsimplices t5 5
+tr532 = subsimplices (tr53 !! 0) 2
+
 
 -- v2', v3', v4' :: Vector
 v2 = vector [ı,2]
 v3 = vector [1,2,3]
 v4 = vector [1,2,3,4]
+
+-- Barycentric coordinates - not only on referenceSimplex but also on subsimplices
+b1 = barycentricCoords tr1
+b2 = barycentricCoords tr2  -- list of length 3 containing polynomials (of degree 1)
+b3 = barycentricCoords tr3
+b4 = barycentricCoords tr4
+b5 = barycentricCoords tr5
 
 -- x :: [PolyN Double]
 x = map (Poln . deg1P . flip coordinate 2) [1..2]
@@ -55,39 +72,38 @@ p = 5 .* head x · head x .+. (3 .* head x)
 --p = 5 .* (x !! 0) · (x !! 0) .+. 3 .* (x !! 0)
 
 --dxs :: [Form Double]
-dxs = map dx [0 .. 5]
-dx0 = dxs !! 1
-dx1 = dxs !! 2
-dx2 = dxs !! 3
-dx3 = dxs !! 4
-dx4 = dxs !! 5
-dx5 = dxs !! 6
+dxs = map dx [1 .. 5]
+dx1 = dxs !! 0
+dx2 = dxs !! 1
+dx3 = dxs !! 2
+dx4 = dxs !! 3
+dx5 = dxs !! 4
 
-w1 = dx0 /\ dx1
+w1 = dx1 /\ dx2
 w2 = dx3 /\ dx5
 w3 = w1  /\ w2
 
 -- val1, val2 :: Double
 val1 = w1 # [v2, v2]
-val2 = (dx0 /\ dx1) # [vector [1,2], vector [3,4]]
+val2 = (dx1 /\ dx2) # [vector [1,2], vector [3,4]]
 
 -- dxs' :: [DiffForm Double]
 dxs' = map (fmap pure) dxs
 
-w1' = (dxs' !! 1) /\ (dxs' !! 2)
-w2' = (dxs' !! 3) /\ (dxs' !! 5)
-dx1' = dxs' !! 1
-dx2' = dxs' !! 2
+w1' = (dxs' !! 0) /\ (dxs' !! 1)
+w2' = (dxs' !! 2) /\ (dxs' !! 4)
+dx1' = dxs' !! 0
+dx2' = dxs' !! 1
 
-w2_aux = (dxs' !! 2) /\ (dxs' !! 1)
+w2_aux = (dxs' !! 1) /\ (dxs' !! 0)
 -- u :: DiffForm Double
 --u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (pure 0.5 .* dx1' /\ dx2')
 u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2_aux) .+. (pure 0.5 .* dx1' /\ dx2')
-v = p .* (dxs' !! 1) .+. (2 .* p .* (dxs' !! 2))
+v = p .* (dxs' !! 0) .+. (2 .* p .* (dxs' !! 1))
 
 -- -- Evaluation of differential forms
 val3 = u § x20 # [v2, v2]
--- val4 = u[(dx0 /\ dx1) (vector [1, 2]) (vector [3, 4])
+val4 = (dx1' /\ dx2') § x22 # [vector [1, 2], vector [3, 4]]
 val5 = p .* dx1' § x21 # [v2]
 
 

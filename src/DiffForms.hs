@@ -57,8 +57,9 @@ eg1 = eval (Vector [-0.1,10,0]) expression
 -- Remark: reduced generality for our R^n types
 diff :: (Function (PolyN Double) v) => (Int -> v) -> v -> DiffForm Double -> DiffForm Double
 diff basisIx x form =
-  foldr addA (nullForm (1 + arity form))
-             (map (\i -> fmap (deriv (basisIx i)) (oneForm i /\ form)) [1..vspaceDim x])
+  foldr (addA . (\ i -> fmap (deriv (basisIx i)) (oneForm i /\ form)))
+        (nullForm (1 + arity form))
+        [1 .. vspaceDim x]
 
 -- Generalised to any appropriate form (polynomial differential forms being but
 -- a case)
