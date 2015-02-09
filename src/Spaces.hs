@@ -19,6 +19,16 @@ class Field v where
   -- Fractional: mulInv = recip
   -- Missing: fromInteger, or rather fromRational
 
+instance Field Double where
+  add = (+)
+  addId = 0
+  addInv = (0-)
+  mul = (*)
+  mulId = 1
+  mulInv = recip
+  fromInt = fromIntegral
+
+
 class (Field (Fieldf v)) => VectorSpace v where
   type Fieldf v :: *      -- Coefficient field
   vspaceDim :: v -> Int   -- Morally an associated constant, could be modelled with a type :: Nat

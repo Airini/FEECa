@@ -13,15 +13,6 @@ import Data.Maybe (fromJust)
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
---TODO: relocate, here for now
--- instance Floating a => Field a where
---     add = (+)
---     addId = 0
---     addInv = (0-)
---     mul = (*)
---     mulId = 1
---     mulInv = (1/)
---     fromInt = fromInteger . toInteger
 
 -- | Type synonym for multi-indices to specify monomials over R^n. The i-th integer
 -- | in the list specified the power of the corresponding component of R^n. The degree
@@ -82,7 +73,7 @@ evalP v (Polynomial []) = addId
 evalP v (Polynomial ((c,alpha):ls)) = add (mul c (powV v alpha))
                                           (evalP v (Polynomial ls))
 
-
+{-
 x50 = point [0, 0, 0, 0, 0]
 x51 = point [1, 0, 0, 0, 0]
 x52 = point [0, 1, 0, 0, 0]
@@ -98,6 +89,7 @@ tr53  = subsimplices t5 3
 tr54  = subsimplices t5 4
 tr55  = subsimplices t5 5
 tr532 = subsimplices (tr53 !! 0) 2
+-}
 
 -- | 1st degree polynomial taking value 1 on vertex n_i of the simplex and
 -- | 0 on all others. Requires the topological dimension of the simplex to be
@@ -123,8 +115,4 @@ vectorToPoly :: M.Vector Double -> Polynomial Double
 vectorToPoly v = addP (deg0P n (head l)) (deg1P (tail l))
     where l = M.toList v
           n = (length l)-1
-
-
-
-
 
