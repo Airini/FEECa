@@ -40,10 +40,10 @@ printVectorColl p vs = vcat $ map hsep [[printComponent (ws!!j) p n i ((ls!!j)!!
 -- | Compute maximum width w required to print components of the vector
 -- | at given precision p.
 maxWidth :: Int -> [Double] -> Int
-maxWidth p l = (maximum (map numLen l)) + 4
+maxWidth p l = (maximum (map numLen l)) + p + 1
     where numLen n
-              | n < 0.0 = (truncate (logBase 10 n)) + 1
-              | otherwise = (truncate (logBase 10 n))
+              | n < 0.0 = (truncate (logBase 10 n)) + 2
+              | otherwise = (truncate (logBase 10 n)) + 1
 
 printPower :: Int -> Doc
 printPower i
