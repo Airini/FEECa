@@ -10,10 +10,10 @@ module Vector(Vector(..),
               fromPoint) where
 
 import Spaces hiding (toList)
-import FormsTest
 import Point
 import Text.PrettyPrint
 import Print
+
 
 -- | Vectors in R^n
 data Vector = Vector [Double] deriving (Eq)

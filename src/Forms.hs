@@ -3,8 +3,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Forms (
-  Dim, Vector (Vex), Form (Fform, arity)
-  , zeroForm, nullForm, dx, dxV
+  Form (Fform, arity)
+  , zeroForm, nullForm, oneForm
   , refine
   ) where
 
@@ -14,40 +14,6 @@ import Data.Type.Natural
 import Spaces
 import Discrete
 import Utility (pairM)
-
--- * Basic example implementation for generic vectors (coordinates with
---   respect to a basis)
-
-type Dim = Int
-data Vector f = Vex Dim [f]
-
--- | Vector invariant: the number of components is valid
-vectorInvariant (Vex n xs) = n == length xs
-
-instance Show f => Show (Vector f) where
-  show (Vex n xs) = show n ++ "-vector " ++ show xs
-
-addList :: Field f => Vector f -> Vector f -> Vector f
-addList (Vex n xs) (Vex m ys)
-  | n /= m = error "addList: vectors must belong to the same space"
-  | otherwise = Vex n (zipWith add xs ys)
-
-scaleList :: Field f => f -> Vector f -> Vector f
-scaleList a (Vex n xs) = Vex n (map (mul a) xs)
-
-instance Field f => VectorSpace (Vector f) where
-  type Fieldf (Vector f) = f
-  vspaceDim (Vex n _) = n
-  addV = addList
-  sclV = scaleList
-  --toList (Vex _ cs) = cs
-
--- | Our basic projection for 'Vector f': usual 1-form basis == external
---   derivative of global coordinate functions
-dxV :: Int -> Vector f -> f
-dxV i (Vex n x) = x !! (i-1)
---dxV i _   = error "dxV: incorrect number of arguments; must only be 1"
-
 
 -- * General form: does not depend on the underlying vector space it works on
 --   in any way.
@@ -117,9 +83,9 @@ instance (Field f) => Algebra (Form f) where
   sclA = sclV
 
 -- | Basic abstract 1-form
-dx :: (Field f) => Int -> Form f
-dx i | i <= 0    = error "dx: invalid projection of a negative component"
-     | otherwise = Fform 1 [ (mulId,[i]) ]
+oneForm :: (Field f) => Int -> Form f
+oneForm i | i <= 0    = error "oneForm: invalid projection of a negative component"
+          | otherwise = Fform 1 [ (mulId,[i]) ]
 
 -- | The (normalised) == 0 form
 zeroForm :: Form f

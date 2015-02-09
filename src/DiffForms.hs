@@ -1,12 +1,17 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeFamilies #-}
 
-module DiffForms where
+module DiffForms (DiffForm, df', evalDF, dxV, dxVP) where
 
-import Forms hiding (Vector, dxV)
+import Forms
 import Spaces
 import Polynomials
 import Utility (pairM)
 import Vector
+import Point
 import PolyN
 
 -- | Differential forms
@@ -20,16 +25,16 @@ type DiffForm f = Form (PolyN f)
 
 -- Few examples to test how to write
 f :: Field f => DiffForm f
-f = dx 1
+f = oneForm 1
 
 g :: Field f => DiffForm f
-g = sclV (add mulId mulId) (dx 2)
+g = sclV (add mulId mulId) (oneForm 2)
 
 h :: Field f => DiffForm f
-h = sclV (CttP addId) (dx 3)
+h = sclV (CttP addId) (oneForm 3)
 
 t :: DiffForm Double
-t = sclV (add (CttP 8.9) (Poln $ deg1P [0,2,3])) (dx 1)
+t = sclV (add (CttP 8.9) (Poln $ deg1P [0,2,3])) (oneForm 1)
 
 b :: Vector
 b = Vector [1,2,0]
@@ -53,15 +58,19 @@ eg1 = eval (Vector [-0.1,10,0]) expression
 diff :: (Function (PolyN Double) v) => (Int -> v) -> v -> DiffForm Double -> DiffForm Double
 diff basisIx x form =
   foldr addA (nullForm (1 + arity form))
-             (map (\i -> fmap (deriv (basisIx i)) (dx i /\ form)) [1..vspaceDim x])
+             (map (\i -> fmap (deriv (basisIx i)) (oneForm i /\ form)) [1..vspaceDim x])
 
 -- Generalised to any appropriate form (polynomial differential forms being but
 -- a case)
-df' :: (Function h v, Algebra (Form h)) => (Int -> v) -> v -> Form h -> Form h
-df' basisIx x form =
+df' :: (Function h v, Algebra (Form h)) => (Int -> v) -> Form h -> Form h
+df' basisIx form =
   foldr addA (nullForm (1 + arity form))
-             (map (\i -> fmap (deriv (basisIx i)) (dx i /\ form)) [1..vspaceDim x])
+             (map (\i -> fmap (deriv (basisIx i)) (oneForm i /\ form)) [1..vspaceDim (basisIx 0)])
 
 
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
+
+evalDF :: DiffForm Double -> Point -> Form Double
+evalDF u = ($u) . fmap . eval . vectify
+  where vectify (Point q) = vector q
 

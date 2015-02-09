@@ -13,15 +13,6 @@ import Data.Maybe (fromJust)
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
---TODO: relocate, here for now
--- instance Floating a => Field a where
---     add = (+)
---     addId = 0
---     addInv = (0-)
---     mul = (*)
---     mulId = 1
---     mulInv = (1/)
---     fromInt = fromInteger . toInteger
 
 -- | Type synonym for multi-indices to specify monomials over R^n. The i-th integer
 -- | in the list specified the power of the corresponding component of R^n. The degree
@@ -58,16 +49,14 @@ decInd i a
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list
 -- | equals the coefficient of the ith variable of the returned polynomial.
-deg1P :: (Eq a, Field a) => [a] -> Polynomial a
-deg1P cs = Polynomial (zip cs linP)
-  where dim  = length cs
+deg1P :: Field a => [a] -> Polynomial a
+deg1P ns = Polynomial $ zip ns linP
+  where dim  = length ns
         linP = [[if i==j then 1 else 0 | j <- [1..dim]] | i <- [1..dim]]
 
 -- | Create 0th degree polynomial from given scalar
-deg0P :: (Eq a, Field a) => Int -> a -> Polynomial a
-deg0P n c
-    | c /= addId = Polynomial [(c,replicate n 0)]
-    | otherwise = Polynomial []
+deg0P :: Int -> a -> Polynomial a
+deg0P n c = Polynomial [(c,replicate n 0)]
 
 -- | The zero polynomial
 zeroP :: Polynomial a
@@ -76,7 +65,6 @@ zeroP = Polynomial []
 -- | Add two polynomials
 addP :: Polynomial a -> Polynomial a -> Polynomial a
 addP (Polynomial p1) (Polynomial p2) = Polynomial (p1 ++ p2)
-
 
 -- | Evaluate polynomial at given point in space
 evalP :: Vector -> Polynomial Double -> Double
@@ -108,8 +96,3 @@ vectorToPoly :: M.Vector Double -> Polynomial Double
 vectorToPoly v = addP (deg0P n (head l)) (deg1P (tail l))
     where l = M.toList v
           n = (length l)-1
-
-
-
-
-

@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Point(Point(Point),
              point,
@@ -17,6 +18,13 @@ data Point = Point [Double] deriving (Eq)
 instance RenderVector Point where
     ncomps = dimP
     components (Point l) = l
+
+-- TODO: abstract away via Functor+Applicative
+instance VectorSpace Point where
+  type Fieldf Point = Fieldf [Double]
+  vspaceDim (Point p) = vspaceDim p
+  addV (Point p) (Point q) = point $ addV p q
+  sclV x (Point p) = point $ sclV x p
 
 instance Dimensioned Point where
     dim = dimP
