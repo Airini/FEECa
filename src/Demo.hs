@@ -4,10 +4,11 @@ module Demo where
 
 import Spaces
 import Polynomials
-import Forms
+import Forms hiding (Vector, dxV)
 import DiffForms
 import PolyN
 import Control.Applicative
+import Vector
 
 type Monop t = t -> t
 type Binop t = t -> t -> t
@@ -62,10 +63,10 @@ v2 = [ı,2]
 v3 = [1,2,3]
 v4 = [1,2,3,4]
 
-v2', v3', v4' :: Vector Double
-v2' = Vex 2 [ı,2]
-v3' = Vex 3 [1,2,3]
-v4' = Vex 4 [1,2,3,4]
+v2', v3', v4' :: Vector
+v2' = vector [ı,2]
+v3' = vector [1,2,3]
+v4' = vector [1,2,3,4]
 
 x :: [PolyN Double]
 x = map (Poln . deg1P . flip coordinate 2) [1..2]
@@ -88,12 +89,12 @@ w1 = dx0 /\ dx1
 w2 = dx3 /\ dx5
 w3 = w1  /\ w2
 
-(#) :: Form Double -> [Vector Double] -> Double
+(#) :: Form Double -> [Vector] -> Double
 (#) = refine dxV
 
 val1, val2 :: Double
 val1 = w1 # [v2', v2']
-val2 = (dx0 /\ dx1) # [Vex 2 [1,2], Vex 2 [3,4]]
+val2 = (dx0 /\ dx1) # [vector [1,2], vector [3,4]]
 
 dxs' :: [DiffForm Double]
 dxs' = map (fmap pure) dxs
@@ -107,5 +108,5 @@ u :: DiffForm Double
 u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (pure 0.5 .* dx1' /\ dx2')
 v = p .* (dxs' !! 1) .+. (2 .* p .* (dxs' !! 2))
 
-d = df' (flip coordinate 2) (coordinate 0 2)
+d = df' (vector . flip coordinate 2) (vector $ coordinate 0 2)
 du = d u

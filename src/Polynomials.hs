@@ -64,7 +64,7 @@ deg1P ns = Polynomial $ zip ns linP
         linP = [[if i==j then 1 else 0 | j <- [1..dim]] | i <- [1..dim]]
 
 -- | Create 0th degree polynomial from given scalar
-deg0P :: Field a => Int -> a -> Polynomial a
+deg0P :: Int -> a -> Polynomial a
 deg0P n c = Polynomial [(c,replicate n 0)]
 
 -- | The zero polynomial
