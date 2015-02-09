@@ -5,7 +5,7 @@ import Spaces
 
 -- | Gram-Schmidt orthogonalization
 gramSchmidt :: [Vector] -> [Vector]
-gramSchmidt = gramSchmidt' []
+gramSchmidt = reverse . (gramSchmidt' [])
 
 gramSchmidt' :: [Vector] -> [Vector] -> [Vector]
 gramSchmidt' l (v:vs)

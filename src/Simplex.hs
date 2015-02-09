@@ -102,7 +102,7 @@ referenceSimplex n = Simplex $ (origin n) : [unitP n i | i <- [0..n-1]]
 extendSimplex :: Simplex -> Simplex
 extendSimplex s@(Simplex ps)
               | n == nt = s
-              | otherwise = simplex' p0 (gramSchmidt' dirs unitvs)
+              | otherwise = simplex' p0 (reverse (gramSchmidt' dirs unitvs))
     where n = geometricalDimension s
           nt = topologicalDimension s
           dirs = directionVectors s

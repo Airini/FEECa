@@ -66,37 +66,18 @@ zeroP = Polynomial []
 addP :: Polynomial a -> Polynomial a -> Polynomial a
 addP (Polynomial p1) (Polynomial p2) = Polynomial (p1 ++ p2)
 
-
 -- | Evaluate polynomial at given point in space
 evalP :: Vector -> Polynomial Double -> Double
 evalP v (Polynomial []) = addId
 evalP v (Polynomial ((c,alpha):ls)) = add (mul c (powV v alpha))
                                           (evalP v (Polynomial ls))
 
-{-
-x50 = point [0, 0, 0, 0, 0]
-x51 = point [1, 0, 0, 0, 0]
-x52 = point [0, 1, 0, 0, 0]
-x53 = point [0, 0, 1, 0, 0]
-x54 = point [0, 0, 0, 1, 0]
-x55 = point [0, 0, 0, 0, 1]
-t5  = simplex [x50, x51, x52, x53, x54, x55]
-
--- Extraction of sub simplices
-tr51  = subsimplices t5 1
-tr52  = subsimplices t5 2
-tr53  = subsimplices t5 3
-tr54  = subsimplices t5 4
-tr55  = subsimplices t5 5
-tr532 = subsimplices (tr53 !! 0) 2
--}
-
 -- | 1st degree polynomial taking value 1 on vertex n_i of the simplex and
 -- | 0 on all others. Requires the topological dimension of the simplex to be
 -- | as large as the geometrical dimension, i.e. the simplex must contain n+1
 -- | vertices if the underlying space has dimensionality n.
 barycentricCoords :: Simplex -> [Polynomial Double]
-barycentricCoords s = map vectorToPoly (drop (n-nt) (M.toColumns mat))
+barycentricCoords s = map vectorToPoly (take (nt+1) (M.toColumns mat))
     where mat = M.inv (simplexToMatrix (extendSimplex s))
           n = geometricalDimension s
           nt = topologicalDimension s
@@ -115,4 +96,3 @@ vectorToPoly :: M.Vector Double -> Polynomial Double
 vectorToPoly v = addP (deg0P n (head l)) (deg1P (tail l))
     where l = M.toList v
           n = (length l)-1
-

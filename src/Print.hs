@@ -40,7 +40,22 @@ printVectorColl p vs = vcat $ map hsep [[printComponent (ws!!j) p n i ((ls!!j)!!
 -- | Compute maximum width w required to print components of the vector
 -- | at given precision p.
 maxWidth :: Int -> [Double] -> Int
-maxWidth p l = (maximum (map (truncate . (logBase 10)) l)) + 4
+maxWidth p l = (maximum (map numLen l)) + p + 1
+    where numLen n
+              | n < 0.0 = (truncate (logBase 10 n)) + 2
+              | otherwise = (truncate (logBase 10 n)) + 1
+
+printPower :: Int -> Doc
+printPower i
+    | (i > 1) && (i < 4)  = (text "\00B") <> (int i)
+    | (i >= 4) =  (text "\207") <> (int i)
+    | (i > 9) = printPower ld  <> printPower (i - round (10.0**(fromIntegral ld)))
+    | otherwise = text ""
+    where ld = truncate (logBase 10 (fromIntegral i))
+
+
+
+
 
 brNW :: Doc
 brNW = text "\9121"
@@ -65,3 +80,4 @@ brL = text "\x005b"
 
 brR :: Doc
 brR = text "\x005d"
+
