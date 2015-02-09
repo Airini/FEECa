@@ -28,6 +28,7 @@ combinations n k = quotient (factorial n) (factorial k * factorial (n - k))
 
 -- Picks elements at given indices
 pick :: [Int] -> [a] -> [a]
+-- TODO: missing case: error?? eller controlled above
 pick [] xs         = []
 pick (1:is) (x:xs) = x : pick is xs
 pick (i:is) (x:xs) = pick (i-1:is) xs

@@ -34,6 +34,17 @@ prop_opId render f i = forAll arbitrary $ \x ->
                         prop_opLeftIdentity render f i x &&
                         prop_opRightIdentity render f i x
 
+prop_distributivityA :: Eq t => (g -> t) ->
+  Binop f -> Binop g -> (f -> g -> g) -> f -> f -> g -> Bool
+prop_distributivityA render add1 add2 dot x y u =
+  render (dot (add1 x y) u) == render (add2 (dot x u) (dot y u))
+
+prop_distributivityB :: Eq t => (g -> t) ->
+  Binop g -> (f -> g -> g) -> f -> g -> g -> Bool
+prop_distributivityB render plus dot a u v =
+  render (dot a (plus u v)) == render (plus (dot a u) (dot a v))
+
+
 -- | Field properties
 -- Addition commutativity
 propF_addComm :: (Eq f, Field f) => f -> f -> Bool
@@ -68,29 +79,28 @@ propV_addComm = prop_commutativity id addV--(addV x y) == (addV x y)
 propV_addAssoc :: (Eq v, VectorSpace v) => v -> v -> v -> Bool
 propV_addAssoc = prop_associativity id addV
 
---- etc
+propV_sclTwice :: (VectorSpace v, Eq v) => Fieldf v -> Fieldf v -> v -> Bool
+propV_sclTwice a b x = sclV a (sclV b x) == sclV (mul a b) x
+
+propV_scladdFDistr :: (VectorSpace v, Eq v) => Fieldf v -> Fieldf v -> v -> Bool
+propV_scladdFDistr = prop_distributivityA id add addV sclV
+
+propV_scladdVDistr :: (VectorSpace v, Eq v) => Fieldf v -> v -> v ->  Bool
+propV_scladdVDistr = prop_distributivityB id addV sclV
 
 
 -- | Alternating forms (... graded algebra properties): other than the vector space properties
--- TODO: add temporary wrapper for application of forms to 'Alternating'
---(%$) :: Form f -> Vector -> f
---(%$) = 
 
--- propA_wedgeAssoc ::
 --propA_wedgeAssoc x y z = \vs -> ((x /\ y) /\ z) #vs == (x /\ (y /\ z)) #vs
+-- TODO: Eq?? would have to implement simplification + "canonising"
+propA_wedgeAssoc :: [Vector] -> Form Double -> Form Double -> Form Double -> Bool
 propA_wedgeAssoc vs = prop_associativity (#vs) (/\) -- \vs -> ((x /\ y) /\ z) #vs == (x /\ (y /\ z)) #vs
 
--- NB: Cannot infer (no rules / type family / class instance) that k :+ j ~ j :+ k  ==> need for added constraint (second wedge product)
--- NB2: Fix ugly workaround for jk translation to an Int
--- (aside: some macro for this recurrent "undefined" pattern)
-{-propA_wedgeAntiComm :: (Field f, (k :+ j) :<= n, (j :+ k) :<= n, Num f) =>
-                       Form k n f -> Form j n f -> [Vex n f] -> Bool
-propA_wedgeAntiComm x y = \vs -> ((x /\ y) %$ vs) == ((-1)^(jk) * ((y /\ x) %$ vs))
-  where jv = (undefined :: j)
-        kv = (undefined :: k)
-        jk = (natToInt jv) * (natToInt kv)   -}
-        -- jk = jv :* kv
-        --jkb = (undefined :: j :* k)
+propA_wedgeAntiComm :: Form Double -> Form Double -> [Vector] -> Bool
+propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) == ((-1)^jk * (y /\ x # vs))
+  where j = arity x
+        k = arity y
+        jk = j * k
 
 {-
 (%#) :: (Field f, k ~ (S predK)) => Form k n f -> Vex n f -> Form predK n f
