@@ -57,7 +57,9 @@ dx = oneForm
 --d' = df'
 
 coordinate :: Field a => Int -> Int -> [a]
-coordinate i n = replicate (i-1) addId ++ mulId: replicate (n-i) addId
+coordinate i n
+  | i < 1 || i > n = replicate n addId
+  | otherwise      = replicate (i-1) addId ++ mulId: replicate (n-i) addId
 
 -- For now: dimensioned passed in
 d :: Int -> Monop (Form (PolyN Double))

@@ -42,7 +42,7 @@ sclP x = fmap (mul x)
 
 -- TODO: Multiply two polynomials
 mulP :: Field a => Polynomial a -> Polynomial a -> Polynomial a
-mulP (Polynomial ms) (Polynomial ns) = Polynomial $ [termMul x y | x <- ms, y <- ns]
+mulP (Polynomial ms) (Polynomial ns) = Polynomial [termMul x y | x <- ms, y <- ns]
   where termMul (a,as) (b,bs) = (mul a b, zipWith (+) as bs)
         
 
