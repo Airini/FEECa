@@ -40,7 +40,6 @@ instance Field f => VectorSpace (Vector f) where
   vspaceDim (Vex n _) = n
   addV = addList
   sclV = scaleList
-  --toList (Vex _ cs) = cs
 
 -- | Our basic projection for 'Vector f': usual 1-form basis == external
 --   derivative of global coordinate functions

@@ -58,16 +58,14 @@ decInd i a
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list
 -- | equals the coefficient of the ith variable of the returned polynomial.
-deg1P :: (Eq a, Field a) => [a] -> Polynomial a
-deg1P cs = Polynomial $ [(c,mind) | c <- cs, mind <- linP, c /= addId]
-  where dim  = length cs
+deg1P :: Field a => [a] -> Polynomial a
+deg1P ns = Polynomial $ zip ns linP
+  where dim  = length ns
         linP = [[if i==j then 1 else 0 | j <- [1..dim]] | i <- [1..dim]]
 
 -- | Create 0th degree polynomial from given scalar
-deg0P :: (Eq a, Field a) => Int -> a -> Polynomial a
-deg0P n c
-    | c /= addId = Polynomial [(c,replicate n 0)]
-    | otherwise = Polynomial []
+deg0P :: Field a => Int -> a -> Polynomial a
+deg0P n c = Polynomial [(c,replicate n 0)]
 
 -- | The zero polynomial
 zeroP :: Polynomial a
