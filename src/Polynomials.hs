@@ -9,10 +9,10 @@ import Spaces hiding (toList)
 import Simplex
 import Vector
 import Point
+import Print (printPolynomial)
 import Data.Maybe (fromJust)
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
-
 
 -- | Type synonym for multi-indices to specify monomials over R^n. The i-th integer
 -- | in the list specified the power of the corresponding component of R^n. The degree
@@ -20,12 +20,15 @@ import qualified Numeric.LinearAlgebra.Data as M
 type MultiIndex = [Int]
 
 -- | Polynomials as list of coefficient-monomial terms over R^n.
-data Polynomial a = Polynomial  [(a,MultiIndex)] deriving Show
+data Polynomial a = Polynomial  [(a,MultiIndex)]
 
 instance Function (Polynomial Double) Vector where
   type Values (Polynomial Double) Vector = Double
   deriv = deriveP
   eval  = evalP
+
+instance Show (Polynomial Double) where
+    show (Polynomial p) = show $ printPolynomial p
 
 -- | Directional derivative of a polynomial in a given space direction.
 deriveP :: Vector -> Polynomial Double -> Polynomial Double
