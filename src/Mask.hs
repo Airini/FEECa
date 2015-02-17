@@ -57,9 +57,14 @@ dx = oneForm
 --d' = df'
 
 coordinate :: Field a => Int -> Int -> [a]
-coordinate i n
-  | i < 1 || i > n = replicate n addId
-  | otherwise      = replicate (i-1) addId ++ mulId: replicate (n-i) addId
+coordinate i n = take n $
+                  (repeat addId : iterate (addId:) (mulId:repeat addId)) !! i
+
+bssIx n = vector . flip coordinate n
+
+(<>) :: Form Double -> Form Double -> Int -> Double
+(<>) omega eta n = inner dxV (bssIx n) omega eta
+-- n = max of the dx _i_ ?? enough?
 
 -- For now: dimensioned passed in
 d :: Int -> Monop (Form (PolyN Double))
