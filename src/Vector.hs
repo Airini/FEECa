@@ -62,7 +62,7 @@ unitV n i = Vector $ concat [(replicate (i) 0.0), [1.0], (replicate (n-i-1) 0.0)
 -- | the same length as the dimension of the vector v and components cs, the
 -- | function computes the product of each component (cs!!i) raised to (l!!i)th
 -- | power.
-powV :: Vector -> [Int] -> Double
+powV :: Vector -> [Integer] -> Double
 powV (Vector cs) l = powVList cs l
 
 powVList [] [] = mulId
