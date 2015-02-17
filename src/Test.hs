@@ -32,7 +32,7 @@ alternating w = refine dxV w
     otherwise: we can only know such a parameter n when applying to vectors
                entailing:
         -> all computation delayed until then (ext.deriv...)
-        -> now way of printing the result of an exterior derivative as a form,
+        -> no way of printing the result of an exterior derivative as a form,
            only when there is some witness of the vector space it is to be
            applied on
 
@@ -44,7 +44,7 @@ alternating w = refine dxV w
       form = refine dxV
       dx_1 = form dx1
     problem: those processed by form can no longer be used symbolically like
-             before (eg: canno compute the exterior derivative)
+             before (eg: cannot compute the exterior derivative)
     IF dependent types are used (for arity of forms) could probably still
     define addition and wedge product for those, but because of typing,
     correctness guarantees are reduced (if something defined freely as
@@ -54,9 +54,8 @@ alternating w = refine dxV w
     for Field, would be fine
     for vector spaces: import Num qualified, create new class with such ops
       (see very rough tt.hs); might run into trouble when instantiating
-      appropriately the different classes (scaling vectors...) .Could
+      appropriately the different classes (scaling vectors...). Could
       potentially become a pain to write other expressions
-
 
 -}
 

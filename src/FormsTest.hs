@@ -8,6 +8,8 @@ import Spaces
 import Control.Monad (liftM, liftM2)
 import Discrete
 import Utility (pairM)
+import Properties
+import Debug.Trace
 
 -- * Basic example implementation for generic vectors (coordinates with
 --   respect to a basis)
@@ -39,8 +41,6 @@ instance Field f => VectorSpace (Vector f) where
 --   derivative of global coordinate functions
 dxV :: Int -> Vector f -> f
 dxV i (Vex n x) = x !! (i-1)
---dxV i _   = error "dxV: incorrect number of arguments; must only be 1"
-
 
 {-
 instance Field Int where
@@ -86,8 +86,8 @@ kform :: Int  -- ^ n: vectorspace to be applied to dimension
 kform n k terms = do
   diffs  <- vectorOf terms (vectorOf k arbitrary)
   coeffs <- vectorOf terms (liftM fromIntegral (arbitrary :: Gen Int))
-  let capDs = map (map ((+1) . flip mod n)) diffs
-  return $ Fform k (zip coeffs capDs)
+  let capDs = trace ("gen: " ++ show diffs) $ map (map (trace "wom " $ (+1) . flip mod n)) diffs
+  return $ Fform k (trace ("fin: " ++ show capDs) $ zip coeffs capDs)
 
 instance Arbitrary (Vector Double) where
   arbitrary = sized nVecGen
@@ -120,6 +120,33 @@ prop_ n = p (mod (abs n) 5 +2)  -- manually limited the vectorspace dimension...
                 refine dxV (df1 /\ df2) vs ==  -- =~
                 ((-1) ^ (k * j)) * refine dxV (df2 /\ df1) vs
 
+te = [ calls (const propV_addComm) 2,
+       calls propV_addAssoc 3,
+       calls (\_ x y -> forAll intCofArb $ \a -> propV_scladdVDistr a x y) 2]
+     ++
+     map (\p -> calls (\_ _ v
+                  -> forAll (pairOf intCofArb intCofArb) $ \(a,b) -> p a b v) 1)
+           [propV_sclTwice, propV_scladdFDistr]
+
+aux :: Int -> Property
+aux n = p (mod (abs n) 5 + 2)
+  where p n = forAll (choose (1,n)) $ \k -> forAll (sized $ kform n k) $ \w ->
+              forAll (pairOf intCofArb intCofArb) $ \(a,b) ->
+                propV_sclTwice a b w
+
+ux = te !! 0
+
+intCofArb :: Gen Cof
+intCofArb = (arbitrary :: Gen Integer) >>= (return . fromInteger)
+
+calls prop forms n = p (mod (abs n) 5 + 2)
+  where p n = trace ("n: " ++ show n) $ forAll (choose (1,n)) $ \k -> cccs n k !! (forms-1)
+        -- ccp k = forAll (vectorOf forms (sized $ kform n k))
+        cccs n' k = [ trace ("k: " ++ show k) $ forAll (vectorOf forms (sized $ kform n' k)) $ \[x] ->
+                    trace ("k: " ++ show k ++ "x: " ++ show x) $ prop _o _o x,
+                   forAll (vectorOf forms (sized $ kform n' k)) $ \[x,y] -> prop _o x y,
+                   forAll (vectorOf forms (sized $ kform n' k)) $ \[x,y,z] -> prop x y z]
+        _o = undefined
 
 -- * Helper functions
 
