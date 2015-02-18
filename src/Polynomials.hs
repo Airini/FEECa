@@ -85,14 +85,14 @@ barycentricCoords s = map vectorToPoly (take (nt+1) (M.toColumns mat))
 -- | Simple wrapper for barycentricCoords that picks out the ith polynomial
 -- | in the list
 barycentricCoord :: Simplex -> Int -> Polynomial Double
-barycentricCoord s i = (barycentricCoords s) !! i
+barycentricCoord s i = barycentricCoords s !! i
 
 simplexToMatrix :: Simplex -> M.Matrix Double
 simplexToMatrix s@(Simplex l) = M.matrix (n+1) (concatMap append1 l)
     where n = geometricalDimension s
-          append1 p = 1:(toList (fromPoint p))
+          append1 p = 1 : toList (fromPoint p)
 
 vectorToPoly :: M.Vector Double -> Polynomial Double
 vectorToPoly v = addP (deg0P n (head l)) (deg1P (tail l))
     where l = M.toList v
-          n = (length l)-1
+          n = length l - 1

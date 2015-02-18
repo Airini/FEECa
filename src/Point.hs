@@ -54,4 +54,4 @@ origin n = Point $ replicate n 0
 
 -- | Point with the ith component 1.0 and all other components 0.0.
 unitP :: Int -> Int -> Point
-unitP n i = Point $ concat [(replicate (i) 0.0), [1.0], (replicate (n-i-1) 0.0)]
+unitP n i = Point $ concat [replicate i 0.0, [1.0], replicate (n-i-1) 0.0]

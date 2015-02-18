@@ -42,7 +42,7 @@ subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
 -- | Zero vector
 -- NB: we could add it as a member of the class?? for more "peculiar" types
 zeroV :: VectorSpace v => v -> v
-zeroV v = sclV addId v
+zeroV = sclV addId
 
 
 {- removed for now: shall we only have _data_ types instantiated as VectorSpace?

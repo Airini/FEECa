@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module DiffForms (DiffForm, df', evalDF, dxV, dxVP) where
+module DiffForms (DiffForm, df, evalDF, dxV, dxVP) where
 
 import Forms
 import Spaces
@@ -63,10 +63,11 @@ diff basisIx x form =
 
 -- Generalised to any appropriate form (polynomial differential forms being but
 -- a case)
-df' :: (Function h v, Algebra (Form h)) => (Int -> v) -> Form h -> Form h
-df' basisIx form =
-  foldr addA (nullForm (1 + arity form))
-             (map (\i -> fmap (deriv (basisIx i)) (oneForm i /\ form)) [1..vspaceDim (basisIx 0)])
+df :: (Function h v, Algebra (Form h)) => (Int -> v) -> Form h -> Form h
+df basisIx form =
+  foldr (addA . (\i -> fmap (deriv (basisIx i)) (oneForm i /\ form)))
+        (nullForm (1 + arity form))
+        [1..vspaceDim (basisIx 0)]
 
 
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId

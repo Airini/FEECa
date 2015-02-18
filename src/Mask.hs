@@ -68,7 +68,7 @@ bssIx n = vector . flip coordinate n
 
 -- For now: dimensioned passed in
 d :: Int -> Monop (Form (PolyN Double))
-d n = df' (vector . flip coordinate n) --(vector $ coordinate 0 2)
+d n = df (vector . flip coordinate n) --(vector $ coordinate 0 2)
 
 (§) :: Form (PolyN Double) -> Point -> Form Double
 (§) = evalDF

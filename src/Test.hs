@@ -20,7 +20,7 @@ alter (Add w t)     = alter
 -}
 alter = refine dxV
 alternating :: Form Double -> [Vector] -> Double
-alternating w = refine dxV w
+alternating = refine dxV
 
 
 {-

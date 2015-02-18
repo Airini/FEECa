@@ -39,7 +39,7 @@ simplex = Simplex
 -- | Create a n+1 simplex from a refence point and n direction vectors
 simplex' :: Point -> [Vector] -> Simplex
 simplex' p0 vs = Simplex (p0:l)
-    where l = map (\v -> toPoint $ addV (fromPoint p0) v) vs
+    where l = map (toPoint . addV (fromPoint p0)) vs
 
 -- | The geometrical dimension of a simplex is the dimensionality of the
 -- | underlying vector space.
@@ -97,7 +97,7 @@ subsimplices s@(Simplex l) k
 
 -- | Reference simplex in R^n
 referenceSimplex :: Int -> Simplex
-referenceSimplex n = Simplex $ (origin n) : [unitP n i | i <- [0..n-1]]
+referenceSimplex n = Simplex $ origin n : [unitP n i | i <- [0..n-1]]
 
 extendSimplex :: Simplex -> Simplex
 extendSimplex s@(Simplex ps)
