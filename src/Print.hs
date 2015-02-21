@@ -47,17 +47,17 @@ maxWidth p l = maximum (map numLen l) + p + 1
 
 
 -- | Pretty print polynomial
-printPolynomial :: [Char] -> [(Double,[Int])] -> Doc
+printPolynomial :: Integral a => [Char] -> [(Double,[a])] -> Doc
 printPolynomial sym [] = double 0.0
 printPolynomial sym ((c,mon):[]) = (double c) <+> (printMonomial sym mon)
 printPolynomial sym ((c,mon):ls) = s <+> (text "+") <+> (printPolynomial sym ls)
     where s = (double c) <+> (printMonomial sym mon)
 
 -- | Pretty print monomial using the sym for the components
-printMonomial :: [Char] -> [Int] -> Doc
+printMonomial :: Integral a => [Char] -> [a] -> Doc
 printMonomial sym = printMonomial' sym 1
 
-printMonomial' :: [Char] -> Int -> [Int] -> Doc
+printMonomial' :: Integral a => [Char] -> a -> [a] -> Doc
 printMonomial' sym i (l:ls)
     | l > 0 = s <> printMonomial' sym (i+1) ls
     | otherwise = printMonomial' sym (i+1) ls
@@ -66,9 +66,8 @@ printMonomial' _ _ [] = text ""
 
 -- | Pretty print exponent using unicode superscripts. Prints "" for
 -- | 0.
-printPower :: Int -> Doc
+printPower :: Integral a => a -> Doc
 printPower i
-<<<<<<< HEAD
     | (i==2) = (text "\x00B2")
     | (i==3) = (text "\x00B3")
     | (i==4) = (text "\x2074")
@@ -83,7 +82,7 @@ printPower i
 
 -- | Pretty print subscript using unicode superscripts. Prints "" for
 -- | 0.
-printSub :: Int -> Doc
+printSub :: Integral a => a -> Doc
 printSub i
     | (i==1) = (text "\x2081")
     | (i==2) = (text "\x2082")
