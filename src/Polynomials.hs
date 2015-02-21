@@ -3,7 +3,13 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances#-}
 
-module Polynomials where
+module Polynomials(Polynomial(..),
+                   deg1P,
+                   deg0P,
+                   zeroP,
+                   addP,
+                   barycentricCoords,
+                   barycentricCoord) where
 
 import Spaces hiding (toList)
 import Simplex
@@ -11,6 +17,8 @@ import Vector
 import Point
 import Print (printPolynomial)
 import Data.Maybe (fromJust)
+import Data.List
+import Utility(decInd)
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
@@ -28,7 +36,11 @@ instance Function (Polynomial Double) Vector where
   eval  = evalP
 
 instance Show (Polynomial Double) where
-    show (Polynomial p) = show $ printPolynomial p
+    show (Polynomial p) = show $ printPolynomial "x" p
+
+polynomial :: [(Double, MultiIndex)] -> Polynomial Double
+polynomial l = Polynomial $ removeZeros l
+    where removeZeros l = [(c,a) | (c,a) <- l, c /= 0.0]
 
 -- | Directional derivative of a polynomial in a given space direction.
 deriveP :: Vector -> Polynomial Double -> Polynomial Double
@@ -42,12 +54,14 @@ deriveMonomial vs (c,a)
                                   c' /= 0]
   | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
 
--- | Decrease element in multi-index
-decInd :: Int -> MultiIndex -> MultiIndex
-decInd i a
-  | (i >= 0) && (i < length a) = take i a ++ ((max 0 (a!!i)-1) : drop (i+1) a)
-  | otherwise = error "decInd: Illegal index"
+gradP :: Polynomial Double -> [Polynomial Double]
+gradP (Polynomial ps) = map polynomial (transpose grads)
+    where grads = map gradMonomial ps
 
+gradMonomial :: (Double,MultiIndex) -> [(Double,MultiIndex)]
+gradMonomial (c,a) = [(c', decInd i a)
+                          | i <- [0..length a-1],
+                            let c' = mul c (fromInt (a!!i))]
 
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list

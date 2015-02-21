@@ -27,7 +27,7 @@ import Math.Combinatorics.Exact.Binomial
 
 -- | n-simplex represented by a list of vectors of given dimensionality
 -- | Invariant: geometrical dimension = length of the vector - 1
-data Simplex = Simplex [Point]
+data Simplex = Simplex [Point] deriving (Eq)
 
 instance Show Simplex where
     show (Simplex l) = "Simplex:\n" ++ (show $ printVectorColl 2 l) ++ "\n"

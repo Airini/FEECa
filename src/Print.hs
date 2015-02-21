@@ -47,23 +47,22 @@ maxWidth p l = (maximum (map numLen l)) + p + 1
 
 
 -- | Pretty print polynomial
-printPolynomial :: [(Double,[Int])] -> Doc
-printPolynomial [] = double 0.0
-printPolynomial ((c,mon):[]) = (double c) <+> (printMonomial mon)
-printPolynomial ((c,mon):ls) = s <+> (text "+") <+> (printPolynomial ls)
-    where s = (double c) <+> (printMonomial mon)
+printPolynomial :: [Char] -> [(Double,[Int])] -> Doc
+printPolynomial sym [] = double 0.0
+printPolynomial sym ((c,mon):[]) = (double c) <+> (printMonomial sym mon)
+printPolynomial sym ((c,mon):ls) = s <+> (text "+") <+> (printPolynomial sym ls)
+    where s = (double c) <+> (printMonomial sym mon)
 
+-- | Pretty print monomial using the sym for the components
+printMonomial :: [Char] -> [Int] -> Doc
+printMonomial sym = printMonomial' sym 1
 
--- | Pretty print monomial using x_i as component
-printMonomial :: [Int] -> Doc
-printMonomial = printMonomial' 1
-
-printMonomial' :: Int -> [Int] -> Doc
-printMonomial' i (l:ls)
-    | l > 0 = s <> printMonomial' (i+1) ls
-    | otherwise = printMonomial' (i+1) ls
-    where s = (text "x") <> printSub i <> printPower l
-printMonomial' _ [] = text ""
+printMonomial' :: [Char] -> Int -> [Int] -> Doc
+printMonomial' sym i (l:ls)
+    | l > 0 = s <> printMonomial' sym (i+1) ls
+    | otherwise = printMonomial' sym (i+1) ls
+    where s = (text sym) <> printSub i <> printPower l
+printMonomial' _ _ [] = text ""
 
 -- | Pretty print exponent using unicode superscripts. Prints "" for
 -- | 0.
