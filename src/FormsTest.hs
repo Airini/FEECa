@@ -8,6 +8,91 @@ import Spaces
 import Control.Monad (liftM, liftM2)
 import Discrete
 import Utility (pairM)
+import Properties
+import Debug.Trace
+
+
+-- | Tests batch of properties
+main = do mapM_ quickCheck (checkList 10)
+          quickCheck prop_antiComm
+
+-- | Tests for algebraic operations involving no evaluation/refining of
+--   forms and for forms in the same vector space
+checkList :: Int -> [Int -> Property]
+checkList max = [
+        propT 3 propV_addAssoc,
+        propT 3 propA_wedgeAssoc,
+        propT 2 (const propV_addComm),
+        propT 2 (\_ x y -> forAll intCofG $ \a -> propV_scladdVDistr a x y)
+     ] ++
+     map (\p -> propT 1 (\_ _ v -> forAll (pairOf intCofG intCofG) (\(a,b) -> p a b v)))
+         [ propV_sclTwice, propV_scladdFDistr ]
+  where 
+    propT :: Testable prop => Int -> (Form Cof -> Form Cof -> Form Cof -> prop)
+                           -> Int -> Property
+    propT = calls 10
+
+-- | Property generation: header for appropriate form generation, all of the
+--   same degree, to precede the property test
+calls :: Testable prop =>
+         Int  -- ^ Maximum underlying vector space dimension to test for
+      -> Int  -- ^ Number of forms to generate for the given property
+      -> (Form Cof -> Form Cof -> Form Cof -> prop) -- ^ Boolean property
+      -> Int  -- ^ Dimension of underlying vector space (to be generated)
+      -> Property
+calls max argFs prop n = p (mod (abs n) max + 1)
+  where p n = forAll (choose (1,n)) $ \k -> propHolds n k !! (argFs - 1)
+        nkForms n k = vectorOf argFs (sized $ kform n k)
+        propHolds n k = [
+          forAll (nkForms n k) (\[x]      -> prop _o _o x),
+          forAll (nkForms n k) (\[x,y]    -> prop _o x  y),
+          forAll (nkForms n k) (\[x,y,z]  -> prop x  y  z) ]
+        _o = undefined
+
+-- | Anticommutativity property
+prop_antiComm :: Int -> Property
+prop_antiComm n = p (mod (abs n) 5 +2)  -- manually limited the vectorspace dimension...
+  where p n = forAll (elements (arityPairs n)) $ \(k,j) ->
+              forAll (pairOf (sized $ kform n k) (sized $ kform n j)) $ \(df1, df2) ->
+              forAll (knTupGen (k+j) n) $ \(Tp vs) ->
+                refine dxV (df1 /\ df2) vs ==  -- =~
+                ((-1) ^ (k * j)) * refine dxV (df2 /\ df1) vs
+
+-- | "Integer" coefficients generator
+intCofG :: Gen Cof
+intCofG = liftM fromInteger (arbitrary :: Gen Integer)
+
+-- | Form generator
+kform :: Int  -- ^ n: vectorspace to be applied to dimension
+      -> Int  -- ^ k: form arity
+      -> Int  -- ^ terms: number of terms (constituents)
+      -> Gen (Form Cof)
+kform n k terms = do
+  diffs  <- vectorOf terms (vectorOf k arbitrary)
+  coeffs <- vectorOf terms (liftM fromIntegral (arbitrary :: Gen Int))
+  let capDs = map (map ((+1) . flip mod n)) diffs
+  return $ Fform k (zip coeffs capDs)
+
+instance Arbitrary (Vector Double) where
+  arbitrary = sized nVecGen
+
+-- Truncating generator for vectors of 'Double': to avoid errors in computation
+-- dependent on order of function application when it comes to floating points
+-- OR: small values (overflows and sizing in testing... otherwise size number of terms)
+--    Also somewhat dependent on possibility of simplifying forms
+nVecGen :: Int -> Gen (Vector Cof)
+nVecGen n = liftM (Vex n) $ -- map (fromIntegral . round)) $
+                         vectorOf n (liftM fromInteger (choose (-11,11::Integer))) -- liftM fromIntegral (arbitrary :: Gen Int)) -- :: Gen Double)
+
+-- Tuples of vectors (for form argument generation)
+newtype Tuple = Tp [Vector Cof]
+
+instance Show Tuple where
+  show (Tp xs) = show xs
+
+knTupGen :: Int -> Int -> Gen Tuple
+knTupGen k n = liftM Tp $ vectorOf k (nVecGen n)
+
 
 -- * Basic example implementation for generic vectors (coordinates with
 --   respect to a basis)
@@ -39,8 +124,6 @@ instance Field f => VectorSpace (Vector f) where
 --   derivative of global coordinate functions
 dxV :: Int -> Vector f -> f
 dxV i (Vex n x) = x !! (i-1)
---dxV i _   = error "dxV: incorrect number of arguments; must only be 1"
-
 
 {-
 instance Field Int where
@@ -78,49 +161,6 @@ prop_first df1 df2 (V4 vs) =
     ((-1) ^ (arity df1 * arity df2)) * refine dxV (df2 /\ df1) vs
 
 
--- | Form generator
-kform :: Int  -- ^ n: vectorspace to be applied to dimension
-      -> Int  -- ^ k: form arity
-      -> Int  -- ^ terms: number of terms (constituents)
-      -> Gen (Form Cof)
-kform n k terms = do
-  diffs  <- vectorOf terms (vectorOf k arbitrary)
-  coeffs <- vectorOf terms (liftM fromIntegral (arbitrary :: Gen Int))
-  let capDs = map (map ((+1) . flip mod n)) diffs
-  return $ Fform k (zip coeffs capDs)
-
-instance Arbitrary (Vector Double) where
-  arbitrary = sized nVecGen
-
--- Truncating generator for vectors of 'Double': to avoid errors in computation
--- dependent on order of function application when it comes to floating points
--- OR: small values (overflows and sizing in testing... otherwise size number of terms)
---    Also somewhat dependent on possibility of simplifying forms
-nVecGen :: Int -> Gen (Vector Cof)
-nVecGen n = liftM (Vex n) $ -- map (fromIntegral . round)) $
-                         vectorOf n (liftM fromInteger (choose (-11,11::Integer))) -- liftM fromIntegral (arbitrary :: Gen Int)) -- :: Gen Double)
-
--- Tuples of vectors (for form argument generation)
-newtype Tuple = Tp [Vector Cof]
-
-instance Show Tuple where
-  show (Tp xs) = show xs
-
-knTupGen :: Int -> Int -> Gen Tuple
-knTupGen k n = liftM Tp $ vectorOf k (nVecGen n)
-
--- | Anticommutativity property
--- TODO: extract appropriately dimensioned generation heading as a driver for
--- testing for different form evaluation properties
-prop_ :: Int -> Property
-prop_ n = p (mod (abs n) 5 +2)  -- manually limited the vectorspace dimension...
-  where p n = forAll (elements (arityPairs n)) $ \(k,j) ->
-              forAll (pairOf (sized $ kform n k) (sized $ kform n j)) $ \(df1, df2) ->
-              forAll (knTupGen (k+j) n) $ \(Tp vs) ->
-                refine dxV (df1 /\ df2) vs ==  -- =~
-                ((-1) ^ (k * j)) * refine dxV (df2 /\ df1) vs
-
-
 -- * Helper functions
 
 -- | Pair generator from two generators
@@ -140,8 +180,8 @@ machEsp :: RealFrac a => a
 machEsp = until p (/2) 1
   where p eps = eps/2 + 1 == 1
 
-main :: IO ()
-main = do
+exeEsp :: IO ()
+exeEsp = do
      putStrLn "Calculated machine epsilon:"
      putStrLn ("  Float: " ++ show (machEsp :: Float))
      putStrLn ("  Double: " ++ show (machEsp :: Double))

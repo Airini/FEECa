@@ -56,15 +56,15 @@ dot (Vector l1) (Vector l2) = foldl (\s (x,y) -> s + x*y) 0  $ zip l1 l2
 
 -- | ith unit vector in R^n
 unitV :: Int -> Int -> Vector
-unitV n i = Vector $ concat [(replicate (i) 0.0), [1.0], (replicate (n-i-1) 0.0)]
+unitV n i = Vector $ concat [replicate i 0.0, [1.0], replicate (n-i-1) 0.0]
 
 -- | Generalized power funciton for vectors. Given a list l of Int with
 -- | the same length as the dimension of the vector v and components cs, the
 -- | function computes the product of each component (cs!!i) raised to (l!!i)th
 -- | power.
-powV :: Vector -> [Int] -> Double
-powV (Vector cs) l = powVList cs l
+powV :: Vector -> [Integer] -> Double
+powV (Vector cs) = powVList cs
 
 powVList [] [] = mulId
-powVList (v:vs) (i:is) = v ** (fromIntegral i) * powVList vs is
+powVList (v:vs) (i:is) = v ** fromIntegral i * powVList vs is
 powVLint _ _ = error "powV: Lists do not have equal length"

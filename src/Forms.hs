@@ -5,7 +5,7 @@
 module Forms (
   Form (Fform, arity)
   , zeroForm, nullForm, oneForm
-  , refine
+  , refine, inner
   ) where
 
 
@@ -20,8 +20,9 @@ import Utility (pairM)
 
 -- | Bilinear, alternating forms over vectorspaces
 data Form f =  -- we lose dependency on the type of vector! 
-  Fform { arity :: Int                    -- ^ For complete evaluation
-        , constituents :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
+    Fform { arity :: Int                    -- ^ For complete evaluation
+          , constituents :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
+  deriving Eq
 
 {- where the f in constituents might very well be changed to (v -> f) so as to
    englobe differential forms -}
@@ -127,9 +128,19 @@ contract omega | null (constituents omega) = const zeroForm
                | otherwise                 = undefined
 
 -- We need a basis here
-(<>) :: Form f -> Form f -> f
-omega <> eta = undefined
-
+inner :: (Field f, VectorSpace v) =>
+         (Int -> v -> f)  -- ^ Projection function in the specific vector space
+      -> (Int -> v)       -- ^ Basis of the specific vector space
+      -> Form f -> Form f -> f
+inner proj basisIx omega eta
+    | arity omega /= arity eta = error "inner: forms with different arity/degree" -- TODO
+    | otherwise = foldl
+            (flip $ \vs -> add (mul (apply omega vs) (apply eta vs)))
+            addId
+            (map choose (permutations n (arity omega)))
+  where choose is = pick (differences is) (map basisIx [1..n])
+        apply = refine proj
+        n = vspaceDim (basisIx 0)
 
 --- ONLY PLACEHOLDERS!!
 data Poly v f = Pp (v -> f)

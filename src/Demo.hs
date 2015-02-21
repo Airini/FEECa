@@ -109,3 +109,8 @@ val5 = p .* dx1' § x21 # [v2]
 
 du = d 2 u
 
+-- -- Inner product
+val6 = (w1 <> w2) 5 -- summation over the basis
+-- val7 = inner u v t3 -- same summation but also an integration over all x in t3
+
+

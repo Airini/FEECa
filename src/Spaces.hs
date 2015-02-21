@@ -12,7 +12,7 @@ class Field v where
   mul     :: v -> v -> v
   mulId   :: v
   mulInv  :: v -> v
-  fromInt :: Int -> v
+  fromInt :: Integer -> v
 
   -- associative, distributive, ...
   -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate, but no mulInv
@@ -42,8 +42,11 @@ subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
 -- | Zero vector
 -- NB: we could add it as a member of the class?? for more "peculiar" types
 zeroV :: VectorSpace v => v -> v
-zeroV v = sclV addId v
+zeroV = sclV addId
 
+
+{- removed for now: shall we only have _data_ types instantiated as VectorSpace?
+(cfr: tt) ==> likely to bring this instance back, just testing
 instance (Field a, Eq [a]) => VectorSpace [a] where
   type Fieldf [a] = a
   vspaceDim = length
@@ -54,7 +57,7 @@ instance (Field a, Eq [a]) => VectorSpace [a] where
 
   sclV _ [] = []
   sclV a (v:vs) = mul a v : sclV a vs
-
+-}
 class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
   addA :: v -> v -> v
   (/\) :: v -> v -> v

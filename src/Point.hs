@@ -20,11 +20,20 @@ instance RenderVector Point where
     components (Point l) = l
 
 -- TODO: abstract away via Functor+Applicative
+{-
 instance VectorSpace Point where
   type Fieldf Point = Fieldf [Double]
   vspaceDim (Point p) = vspaceDim p
   addV (Point p) (Point q) = point $ addV p q
   sclV x (Point p) = point $ sclV x p
+-}
+-- TODO: only for now
+-- could keep just Point or Vector and define one in terms of the other?
+instance VectorSpace Point where
+  type Fieldf Point = Double
+  vspaceDim = dim
+  addV (Point p) (Point q) = Point $ zipWith (+) p q
+  sclV x (Point p) = Point $ map (*x) p
 
 instance Dimensioned Point where
     dim = dimP
@@ -45,4 +54,4 @@ origin n = Point $ replicate n 0
 
 -- | Point with the ith component 1.0 and all other components 0.0.
 unitP :: Int -> Int -> Point
-unitP n i = Point $ concat [(replicate (i) 0.0), [1.0], (replicate (n-i-1) 0.0)]
+unitP n i = Point $ concat [replicate i 0.0, [1.0], replicate (n-i-1) 0.0]

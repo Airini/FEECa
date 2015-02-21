@@ -12,7 +12,8 @@ import Spaces
 import Forms
 import Vector
 import Mask
-import Test.QuickCheck
+import Test.QuickCheck as TQ
+import Control.Monad ((>=>))
 --import Data.Type.Natural
 
 
@@ -71,11 +72,11 @@ propF_mulId x = prop_opRightIdentity id mul mulId x && prop_opLeftIdentity id mu
 
 -- | Vector Space properties
 
--- Addition associativity : to be instantiated with an appropriate type
+-- Addition commutativity
 propV_addComm :: (VectorSpace v, Eq v) => v -> v -> Bool
 propV_addComm = prop_commutativity id addV--(addV x y) == (addV x y)
 
--- Addition commutativity
+-- Addition associativity : to be instantiated with an appropriate type
 propV_addAssoc :: (Eq v, VectorSpace v) => v -> v -> v -> Bool
 propV_addAssoc = prop_associativity id addV
 
@@ -91,11 +92,19 @@ propV_scladdVDistr = prop_distributivityB id addV sclV
 
 -- | Alternating forms (... graded algebra properties): other than the vector space properties
 
---propA_wedgeAssoc x y z = \vs -> ((x /\ y) /\ z) #vs == (x /\ (y /\ z)) #vs
--- TODO: Eq?? would have to implement simplification + "canonising"
-propA_wedgeAssoc :: [Vector] -> Form Double -> Form Double -> Form Double -> Bool
-propA_wedgeAssoc vs = prop_associativity (#vs) (/\) -- \vs -> ((x /\ y) /\ z) #vs == (x /\ (y /\ z)) #vs
+-- No need for evaluation on vectors for associativity
+propA_wedgeAssoc :: (Algebra a, Eq a) => a -> a -> a -> Bool
+propA_wedgeAssoc = prop_associativity id (/\)
 
+instance Arbitrary Vector where
+  arbitrary = sized (TQ.vector >=> return . Vector)
+
+-- TODO: Eq?? would have to implement simplification + "canonising"
+propA_wedgeAssocEvl :: [Vector] -> Form Double -> Form Double -> Form Double -> Bool
+propA_wedgeAssocEvl vs = prop_associativity (#vs) (/\)
+
+-- Will turn into check without evaluation if simplification + grouping of
+-- terms with canonicalization is done
 propA_wedgeAntiComm :: Form Double -> Form Double -> [Vector] -> Bool
 propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) == ((-1)^jk * (y /\ x # vs))
   where j = arity x

@@ -40,10 +40,10 @@ printVectorColl p vs = vcat $ map hsep [[printComponent (ws!!j) p n i ((ls!!j)!!
 -- | Compute maximum width w required to print components of the vector
 -- | at given precision p.
 maxWidth :: Int -> [Double] -> Int
-maxWidth p l = (maximum (map numLen l)) + p + 1
+maxWidth p l = maximum (map numLen l) + p + 1
     where numLen n
-              | n < 0.0 = (truncate (logBase 10 n)) + 2
-              | otherwise = (truncate (logBase 10 n)) + 1
+              | n < 0.0   = truncate (logBase 10 n) + 2
+              | otherwise = truncate (logBase 10 n) + 1
 
 
 -- | Pretty print polynomial
@@ -68,6 +68,7 @@ printMonomial' _ _ [] = text ""
 -- | 0.
 printPower :: Int -> Doc
 printPower i
+<<<<<<< HEAD
     | (i==2) = (text "\x00B2")
     | (i==3) = (text "\x00B3")
     | (i==4) = (text "\x2074")
@@ -96,10 +97,6 @@ printSub i
     | (i > 9) = printSub (div i 10)  <> printSub (mod i 10)
     | otherwise = text ""
     where ld = truncate (logBase 10 (fromIntegral i))
-
-
-
-
 
 brNW :: Doc
 brNW = text "\9121"

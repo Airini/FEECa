@@ -41,7 +41,7 @@ linearIndep vs = m == M.rank a
           a = (m M.>< n) (concatMap toList vs)
 
 linearIndep' :: [[Double]] -> [Double] -> Bool
-linearIndep' vs v = linearIndep ((Vector.vector v):(map Vector.vector vs))
+linearIndep' vs v = linearIndep (Vector.vector v : map Vector.vector vs)
 
 -- | Defining property of barycentric coordinates: The barycentric coordinate
 -- | function lambda_i takes value 1 on the vertex x_i of the simplex and 0 on
@@ -58,7 +58,7 @@ prop_pos (ConvexComb4 cs) s = all largerThan0 [0..3]
     where l = map fromPoint (vertices s)
           v = foldr (\ (c,v) s -> addV s (sclV c v)) (zeroV v) (zip cs l)
           lambda i v = evalP v (barycentricCoord s i)
-          largerThan0 i = (lambda i v) >= 0.0
+          largerThan0 i = lambda i v >= 0.0
 
 delta :: Int -> Int -> Double
 delta i j
