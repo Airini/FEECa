@@ -13,7 +13,7 @@ import Spaces hiding (toList)
 import Point
 import Text.PrettyPrint
 import Print
-
+import MultiIndex
 
 -- | Vectors in R^n
 data Vector = Vector [Double] deriving (Eq)
@@ -62,8 +62,8 @@ unitV n i = Vector $ concat [replicate i 0.0, [1.0], replicate (n-i-1) 0.0]
 -- | the same length as the dimension of the vector v and components cs, the
 -- | function computes the product of each component (cs!!i) raised to (l!!i)th
 -- | power.
-powV :: Vector -> [Integer] -> Double
-powV (Vector cs) = powVList cs
+powV :: Vector -> MultiIndex -> Double
+powV (Vector cs) = (powVList cs) . toListMI
 
 powVList [] [] = mulId
 powVList (v:vs) (i:is) = v ** fromIntegral i * powVList vs is

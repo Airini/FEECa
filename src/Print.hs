@@ -3,6 +3,7 @@ module Print where
 import Text.PrettyPrint
 import Text.Printf
 import Spaces
+import MultiIndex
 
 class RenderVector v where
     ncomps :: v -> Int
@@ -47,11 +48,11 @@ maxWidth p l = maximum (map numLen l) + p + 1
 
 
 -- | Pretty print polynomial
-printPolynomial :: Integral a => [Char] -> [(Double,[a])] -> Doc
+printPolynomial :: Integral a => [Char] -> [(Double,MultiIndex)] -> Doc
 printPolynomial sym [] = double 0.0
-printPolynomial sym ((c,mon):[]) = (double c) <+> (printMonomial sym mon)
+printPolynomial sym ((c,mon):[]) = (double c) <+> (printMonomial sym (toListMI mon))
 printPolynomial sym ((c,mon):ls) = s <+> (text "+") <+> (printPolynomial sym ls)
-    where s = (double c) <+> (printMonomial sym mon)
+    where s = (double c) <+> (printMonomial sym (toListMI mon))
 
 -- | Pretty print monomial using the sym for the components
 printMonomial :: Integral a => [Char] -> [a] -> Doc

@@ -18,14 +18,15 @@ import Point
 import Print (printPolynomial)
 import Data.Maybe (fromJust)
 import Data.List
-import Utility(decInd)
+
+import MultiIndex(MultiIndex, zeroMI, oneMI, decMI, toListMI)
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
 -- | Type synonym for multi-indices to specify monomials over R^n. The i-th integer
 -- | in the list specified the power of the corresponding component of R^n. The degree
 -- | of the monomial is given by the sum of the non-negative entries.
-type MultiIndex = [Integer]
+--type MultiIndex = [Integer]
 
 -- | Polynomials as list of coefficient-monomial terms over R^n.
 data Polynomial a = Polynomial  [(a,MultiIndex)]
@@ -48,32 +49,34 @@ deriveP v (Polynomial ps) = Polynomial $ concatMap (deriveMonomial (toList v)) p
 
 deriveMonomial :: [Double] -> (Double,MultiIndex) -> [(Double,MultiIndex)]
 deriveMonomial vs (c,a)
-  | length vs == length a = [(c', decInd i a)
-                                | i <- [0..length a-1],
-                                  let c' = mul (vs!!i) (mul c (fromInt (a!!i))),
+  | length vs == dim a = [(c', decMI i a)
+                                | i <- [0..(dim a)-1],
+                                  let c' = mul (vs!!i) (mul c (fromInt (a'!!i))),
                                   c' /= 0]
   | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
+  where a' = toListMI a
 
 gradP :: Polynomial Double -> [Polynomial Double]
 gradP (Polynomial ps) = map polynomial (transpose grads)
     where grads = map gradMonomial ps
 
 gradMonomial :: (Double,MultiIndex) -> [(Double,MultiIndex)]
-gradMonomial (c,a) = [(c', decInd i a)
-                          | i <- [0..length a-1],
-                            let c' = mul c (fromInt (a!!i))]
+gradMonomial (c,a) = [(c', decMI i a)
+                          | i <- [0..(dim a)-1],
+                            let c' = mul c (fromInt (a'!!i))]
+    where a' = toListMI a
 
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list
 -- | equals the coefficient of the ith variable of the returned polynomial.
 deg1P :: Field a => [a] -> Polynomial a
-deg1P ns = Polynomial $ zip ns linP
+deg1P ns = Polynomial $ zip ns [oneMI dim i | i <- [0..dim-1]]
   where dim  = length ns
-        linP = [[if i==j then 1 else 0 | j <- [1..dim]] | i <- [1..dim]]
+
 
 -- | Create 0th degree polynomial from given scalar
 deg0P :: Int -> a -> Polynomial a
-deg0P n c = Polynomial [(c,replicate n 0)]
+deg0P n c = Polynomial [(c, zeroMI n)]
 
 -- | The zero polynomial
 zeroP :: Polynomial a
