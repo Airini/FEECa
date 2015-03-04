@@ -4,10 +4,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE OverlappingInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 module PolyN  where
 
 import Polynomials
+import MultiIndex
 import Spaces
 
 import Control.Applicative
@@ -32,7 +34,7 @@ instance Functor Polynomial where
 
 -- | Gives the number of indeterminate variables of a polynomial
 indets :: Polynomial f -> Int
-indets (Polynomial ((_,is):_)) = length is
+indets (Polynomial ((_,is):_)) = dim is
 -- zero if none??
 indets _                       = error "indets: No monomials defining the number of indeterminates"
 
@@ -43,7 +45,7 @@ sclP x = fmap (mul x)
 -- TODO: Multiply two polynomials
 mulP :: Field a => Polynomial a -> Polynomial a -> Polynomial a
 mulP (Polynomial ms) (Polynomial ns) = Polynomial [termMul x y | x <- ms, y <- ns]
-  where termMul (a,as) (b,bs) = (mul a b, zipWith (+) as bs)
+  where termMul (a,as) (b,bs) = (mul a b, addMI as bs)
         
 
 -- | Constant == 0 polynomial in n indeterminates
@@ -60,7 +62,11 @@ zerP = Polynomial []
 data PolyN f where
     Poln :: {- Dim -> -} Polynomial f -> PolyN f
     CttP :: f -> PolyN f
-  deriving Show
+
+instance (Show (Polynomial f), Show f) => Show (PolyN f) where
+  show (Poln p) = show p
+  show (CttP a) = show a
+
 
 -- * Implementation related instances
 
