@@ -5,12 +5,12 @@
 module Forms (
   Form (Fform, arity)
   , zeroForm, nullForm, oneForm
-  , refine, inner
+  , refine, inner, contract
   ) where
 
 
 import Data.List(intersect)
-import Data.Type.Natural
+-- import Data.Type.Natural
 import Spaces
 import Discrete
 import Utility (pairM)
@@ -37,6 +37,9 @@ constituentsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
 
 instance Functor Form where
   fmap f (Fform k cs) = Fform k (map (pairM f id) cs)
+
+-- TODO: Applicative to simplify the following operations!!!
+
 
 instance (Show f) => Show (Form f) where
   show (Fform k cs) = show k ++ "-form: " ++ show cs
@@ -122,10 +125,19 @@ formify proj (s, i:is)
   where choose ns = pick (differences ns)
 
 
+-- Necesitamos una función de pinchado
+--  y así pinchar las consecutivas componentes 
 -- If the function was actually a field, this part would be simplified
-contract :: Form f -> v -> Form f
-contract omega | null (constituents omega) = const zeroForm
-               | otherwise                 = undefined
+contract :: (Field f, VectorSpace v) => (Int -> v -> f) -> Form f -> v -> Form f
+contract proj omega v = Fform (max 0 (arity omega - 1)) $
+    concatMap (\c -> map (pinchado c) [1..arity omega])
+              (constituents omega)
+  where pinchado (f,[]) _ = (f, []) -- error ??
+        pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
+                              (mul (fromInt ((-1)^(i+1))) (mul f (proj j v)), ds1 ++ ds2)
+  {- TODO:  no exponentiation
+            optimise
+            error handling: proj indexing beyond dimension of v -}
 
 -- We need a basis here
 inner :: (Field f, VectorSpace v) =>
@@ -141,6 +153,8 @@ inner proj basisIx omega eta
   where choose is = pick (differences is) (map basisIx [1..n])
         apply = refine proj
         n = vspaceDim (basisIx 0)
+
+
 
 --- ONLY PLACEHOLDERS!!
 data Poly v f = Pp (v -> f)

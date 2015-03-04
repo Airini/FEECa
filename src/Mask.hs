@@ -62,9 +62,18 @@ coordinate i n = take n $
 
 bssIx n = vector . flip coordinate n
 
+-- or <|> ?
 (<>) :: Form Double -> Form Double -> Int -> Double
 (<>) omega eta n = inner dxV (bssIx n) omega eta
 -- n = max of the dx _i_ ?? enough?
+
+(⌟) :: Form Double -> Vector -> Form Double
+(⌟) = contract dxV
+
+
+𝝹 :: Form (PolyN Double) -> Int -> Form (PolyN Double)
+𝝹 form n = contract (const . (Poln . deg1P . flip coordinate n)) form (undefined::Vector)
+-- TODO: extract degree from polynomial
 
 -- For now: dimensioned passed in
 d :: Int -> Monop (Form (PolyN Double))

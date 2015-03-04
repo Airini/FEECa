@@ -79,8 +79,11 @@ instance Functor PolyN where
 -- does it even make sense? cannot see immediate use
 instance Applicative PolyN where
   pure = CttP
-  (<*>) = undefined
+  (<*>) (CttP f)  = fmap f
+  (<*>) (Poln fs) = undefined -- Poln . fmap (concatMap (pairM ($) addMI) fs) -- map each function + add its indices?
 
+
+ttest u v w = pure (.) <*> u <*> v <*> w
 
 -- * Math related instances
 

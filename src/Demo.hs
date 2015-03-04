@@ -106,8 +106,11 @@ val3 = u § x20 # [v2, v2]
 val4 = (dx1' /\ dx2') § x22 # [vector [1, 2], vector [3, 4]]
 val5 = p .* dx1' § x21 # [v2]
 
-
+-- Differentiation
 du = d 2 u
+
+-- Koszul differential: TODO: remove n dependency (encode in form type)
+ku = 𝝹 u 2
 
 -- -- Inner product
 val6 = (w1 <> w2) 5 -- summation over the basis
