@@ -4,9 +4,11 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE OverlappingInstances #-}
-{-# LANGUAGE StandaloneDeriving #-}
 
-module PolyN  where
+module PolyN (
+  PolyN(Poln)
+  , zerP, deg1, poly, constant
+  , indets) where
 
 import Polynomials
 import MultiIndex
@@ -42,15 +44,10 @@ indets _                       = error "indets: No monomials defining the number
 sclP :: Field a => a -> Polynomial a -> Polynomial a
 sclP x = fmap (mul x)
 
--- TODO: Multiply two polynomials
+-- | Polynomial multiplication
 mulP :: Field a => Polynomial a -> Polynomial a -> Polynomial a
 mulP (Polynomial ms) (Polynomial ns) = Polynomial [termMul x y | x <- ms, y <- ns]
   where termMul (a,as) (b,bs) = (mul a b, addMI as bs)
-        
-
--- | Constant == 0 polynomial in n indeterminates
-zerP :: Polynomial a
-zerP = Polynomial []
 
 
 -- * Polynomials for use in forms
@@ -66,6 +63,21 @@ data PolyN f where
 instance (Show (Polynomial f), Show f) => Show (PolyN f) where
   show (Poln p) = show p
   show (CttP a) = show a
+
+
+-- For explicit polynomials
+poly :: [(f,MultiIndex)] -> PolyN f
+poly = Poln . Polynomial
+
+constant :: f -> PolyN f
+constant = pure
+
+-- | Constant == 0 polynomial in n indeterminates
+zerP :: PolyN a
+zerP = Poln $ Polynomial []
+
+deg1 :: Field f => [f] -> PolyN f
+deg1 = Poln . deg1P
 
 
 -- * Implementation related instances
@@ -99,7 +111,7 @@ instance (Field f) => Field (PolyN f) where
   -- add ZerP p = p
   -- add p ZerP = p -- (Poln x p) (Poln y q) | x == y = Poln n $ addP p q
   add (Poln p) (Poln q)     = Poln $ addV p q  -- addP
-  add (CttP a) (CttP b)     = CttP (add a b)
+  add (CttP a) (CttP b)     = pure (add a b)
   add (CttP a) p@(Poln p')  = add (Poln $ deg0P (indets p') a) p -- Poln $ addP (deg0P (indets p) a) p
   add p@(Poln _) c@(CttP _) = add c p
 
@@ -113,7 +125,7 @@ instance (Field f) => Field (PolyN f) where
   
   mulId     = pure mulId
   mulInv    = undefined
-  fromInt x = CttP (fromInt x)
+  fromInt x = pure (fromInt x)
 
 -- | 'PolyN' as a function type with directional derivative and point-evaluation
 instance (Function (Polynomial f) v) => Function (PolyN f) v where
@@ -127,4 +139,6 @@ instance (Function (Polynomial f) v) => Function (PolyN f) v where
   eval v (Poln p)  = eval v p
 --eval _ (CttP x)  = x
 
+-- NB: the fewer times we need to rely on v, the vector space type we act on,
+--   the better (eg: vspaceDim...)
 

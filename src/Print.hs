@@ -4,6 +4,8 @@ import Text.PrettyPrint
 import Text.Printf
 import Spaces
 import MultiIndex
+import Data.List (intersperse)
+
 
 class RenderVector v where
     ncomps :: v -> Int
@@ -63,7 +65,22 @@ printMonomial' sym i (l:ls)
     | l > 0 = s <> printMonomial' sym (i+1) ls
     | otherwise = printMonomial' sym (i+1) ls
     where s = (text sym) <> printSub i <> printPower l
-printMonomial' _ _ [] = text ""
+printMonomial' _ _ [] = baseD
+
+
+-- OR: unit as f + apply coeff
+printForm :: [Char] -> [Char] -> (f -> [Char]) -> [(f,[Int])] -> Doc
+printForm _  unit _     []   = text unit -- $ coeff addId
+printForm df _    coeff rest = hsep $ punctuate (text " +") $
+    map (\(a,cs) -> text "(" <> (text . coeff) a <> text ")" <+>
+                    hsep (intersperse wedgeD (map ((<>) (text df) . printSub) cs)))
+    rest
+
+
+-- * Auxiliary prints
+
+baseD :: Doc
+baseD = text ""
 
 -- | Pretty print exponent using unicode superscripts. Prints "" for
 -- | 0.
@@ -98,6 +115,9 @@ printSub i
     | otherwise = text ""
     where ld = truncate (logBase 10 (fromIntegral i))
 
+wedgeD :: Doc
+wedgeD = text "\x2227"
+
 brNW :: Doc
 brNW = text "\9121"
 
@@ -121,4 +141,5 @@ brL = text "\x005b"
 
 brR :: Doc
 brR = text "\x005d"
+
 

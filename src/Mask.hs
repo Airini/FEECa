@@ -72,7 +72,7 @@ bssIx n = vector . flip coordinate n
 
 
 𝝹 :: Form (PolyN Double) -> Int -> Form (PolyN Double)
-𝝹 form n = contract (const . (Poln . deg1P . flip coordinate n)) form (undefined::Vector)
+𝝹 form n = contract (const . deg1 . flip coordinate n) form (undefined::Vector)
 -- TODO: extract degree from polynomial
 
 -- For now: dimensioned passed in

@@ -13,6 +13,8 @@ import Utility (pairM)
 import Vector
 import Point
 import PolyN
+import Control.Applicative (pure)
+
 
 -- | Differential forms
 type DiffForm f = Form (PolyN f)
@@ -31,10 +33,10 @@ g :: Field f => DiffForm f
 g = sclV (add mulId mulId) (oneForm 2)
 
 h :: Field f => DiffForm f
-h = sclV (CttP addId) (oneForm 3)
+h = sclV (pure addId) (oneForm 3)
 
 t :: DiffForm Double
-t = sclV (add (CttP 8.9) (Poln $ deg1P [0,2,3])) (oneForm 1)
+t = sclV (add (constant 8.9) (Poln $ deg1P [0,2,3])) (oneForm 1)
 
 b :: Vector
 b = Vector [1,2,0]
@@ -44,7 +46,7 @@ y = Vector [3,-2.3,1]
 dxV :: Int -> Vector -> Double
 dxV i (Vector x) = x !! (i-1)
 
-dxVP = (fmap . fmap) CttP dxV
+dxVP = (fmap . fmap) pure dxV
 expression = refine dxVP (t /\ g) [b, y]
 
 eg1 = eval (Vector [-0.1,10,0]) expression
@@ -58,7 +60,7 @@ eg1 = eval (Vector [-0.1,10,0]) expression
 diff :: (Function (PolyN Double) v) => (Int -> v) -> v -> DiffForm Double -> DiffForm Double
 diff basisIx x form =
   foldr (addA . (\ i -> fmap (deriv (basisIx i)) (oneForm i /\ form)))
-        (nullForm (1 + arity form))
+        (zeroForm (1 + arity form))
         [1 .. vspaceDim x]
 
 -- Generalised to any appropriate form (polynomial differential forms being but
@@ -66,7 +68,7 @@ diff basisIx x form =
 df :: (Function h v, Algebra (Form h)) => (Int -> v) -> Form h -> Form h
 df basisIx form =
   foldr (addA . (\i -> fmap (deriv (basisIx i)) (oneForm i /\ form)))
-        (nullForm (1 + arity form))
+        (zeroForm (1 + arity form))
         [1..vspaceDim (basisIx 0)]
 
 

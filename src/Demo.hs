@@ -58,17 +58,18 @@ b4 = barycentricCoords tr4
 b5 = barycentricCoords tr5
 
 -- x :: [PolyN Double]
-x = map (Poln . deg1P . flip coordinate 2) [1..2]
+x = map (deg1 . flip coordinate 2) [1..2]
 
 -- hs :: Field a => Int -> [PolyN a]
 hs n = pure ı : rec pn1s
-  where pn1s = fmap Poln (map (deg1P . flip coordinate n) [1..n])
+  where pn1s = map (deg1 . flip coordinate n) [1..n]
         rec ps = ps ++ (concatMap (\q -> map (q ·) pn1s) ps)
 
 
 -- p :: PolyN Double
 p = 5 .* head x · head x .+. (3 .* head x)
 -- TODO: solve precedences
+-- TODO: purge null terms
 --p = 5 .* (x !! 0) · (x !! 0) .+. 3 .* (x !! 0)
 
 --dxs :: [Form Double]

@@ -14,6 +14,8 @@ import Data.List(intersect)
 import Spaces
 import Discrete
 import Utility (pairM)
+import Print (printForm)
+
 
 -- * General form: does not depend on the underlying vector space it works on
 --   in any way.
@@ -35,14 +37,26 @@ constituentsInv :: [(f, [Int])] -> Bool
 constituentsInv []          = True
 constituentsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
 
+-- NB: because of ((,) t) 's functorial nature, maybe it could make sense to
+--   rearrange our terms so as to have them be (inds,coeff) like they used to be?
 instance Functor Form where
   fmap f (Fform k cs) = Fform k (map (pairM f id) cs)
 
 -- TODO: Applicative to simplify the following operations!!!
-
+-- XXX: also to be able to lift polynomials easily into it
 
 instance (Show f) => Show (Form f) where
-  show (Fform k cs) = show k ++ "-form: " ++ show cs
+  show (Fform k cs) = show k ++ "-form: " ++ show (printForm "dx" "0" show cs)
+
+-- XXX: have combinator
+--        aggregate f p cs1 cs2
+--      where f :: a -> a -> a (or b -> c)
+--            p :: MultiIndex -> MultiIndex -> Bool
+--            cs1, cs2 :: [(a, MultiIndex)]
+--      such that combines elements from cs2 with those in cs1 (sequentially,
+--      no repeat, or filtering those appropriate) with p defining the "quotient"
+--      class, f defining the transformation on coeff's
+--      OPT: also a MultiIndex transformation? or a separte combinator for it?
 
 -- | Sum of forms
 -- Shall we do: permutation simplification/identification
@@ -60,8 +74,7 @@ omega +++ eta
 
 -- | Scaling of forms
 (***) :: Field f => f -> Form f -> Form f
-a *** omega = Fform (arity omega)
-                    (map (pairM (mul a) id) (constituents omega))
+(***) a = fmap (mul a)
 
 -- | Product of forms
 (//\\) :: Field f => Form f -> Form f -> Form f
@@ -92,12 +105,28 @@ oneForm i | i <= 0    = error "oneForm: invalid projection of a negative compone
           | otherwise = Fform 1 [ (mulId,[i]) ]
 
 -- | The (normalised) == 0 form
-zeroForm :: Form f
-zeroForm = Fform 0 []
+zeroForm :: Int -> Form f
+zeroForm k = Fform k []
 
 -- | The k-arity == 0 form
-nullForm :: Int -> Form f
-nullForm k = Fform k []
+nullForm :: Form f
+nullForm = Fform 0 []
+
+
+-- Necesitamos una función de pinchado
+--  y así pinchar las consecutivas componentes 
+-- If the function was actually a field, this part would be simplified
+contract :: (Field f, VectorSpace v) => (Int -> v -> f) -> Form f -> v -> Form f
+contract proj omega v = Fform (max 0 (arity omega - 1)) $
+    concatMap (\c -> map (pinchado c) [1..arity omega])
+              (constituents omega)
+  where pinchado (f,[]) _ = (f, []) -- error ??
+        pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
+                              (mul (fromInt ((-1)^(i+1))) (mul f (proj j v)), ds1 ++ ds2)
+  {- TODO:  no exponentiation
+            optimise
+            error handling: proj indexing beyond dimension of v -}
+
 
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
@@ -125,20 +154,6 @@ formify proj (s, i:is)
   where choose ns = pick (differences ns)
 
 
--- Necesitamos una función de pinchado
---  y así pinchar las consecutivas componentes 
--- If the function was actually a field, this part would be simplified
-contract :: (Field f, VectorSpace v) => (Int -> v -> f) -> Form f -> v -> Form f
-contract proj omega v = Fform (max 0 (arity omega - 1)) $
-    concatMap (\c -> map (pinchado c) [1..arity omega])
-              (constituents omega)
-  where pinchado (f,[]) _ = (f, []) -- error ??
-        pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
-                              (mul (fromInt ((-1)^(i+1))) (mul f (proj j v)), ds1 ++ ds2)
-  {- TODO:  no exponentiation
-            optimise
-            error handling: proj indexing beyond dimension of v -}
-
 -- We need a basis here
 inner :: (Field f, VectorSpace v) =>
          (Int -> v -> f)  -- ^ Projection function in the specific vector space
@@ -153,6 +168,21 @@ inner proj basisIx omega eta
   where choose is = pick (differences is) (map basisIx [1..n])
         apply = refine proj
         n = vspaceDim (basisIx 0)
+
+
+-- * Helper functions
+
+-- | Sign of a permutation defined by a pair of increasing permutations:
+--   specialised to an appropriate 'Field' type (required for operations)
+sign :: Field f => ([Int], [Int]) -> f
+sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
+                  then mulId
+                  else addInv mulId
+
+-- | Equivalent to 'sum' for 'Field' types
+-- To be moved
+sumF :: Field a => [a] -> a
+sumF = foldl add addId
 
 
 
@@ -172,17 +202,3 @@ instance Field f => VectorSpace (Poly v f) where
 --
 
 
--- * Helper functions
-
--- | Sign of a permutation defined by a pair of increasing permutations:
---   specialised to an appropriate 'Field' type (required for operations)
-sign :: Field f => ([Int], [Int]) -> f
-sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
-                  then mulId
-                  else addInv mulId
-
--- | Equivalent to 'sum' for 'Field' types
--- To be moved
-sumF :: Field a => [a] -> a
-sumF = foldl add addId
- 

@@ -13,8 +13,12 @@ import Debug.Trace
 
 
 -- | Tests batch of properties
-main = do mapM_ quickCheck (checkList 10)
-          quickCheck prop_antiComm
+main maxDim = do mapM_ quickCheck (checkList maxDim)
+                 quickCheck prop_antiComm
+
+-- TODO: inner + interior product properties
+--       DiffForm tests
+
 
 -- | Tests for algebraic operations involving no evaluation/refining of
 --   forms and for forms in the same vector space
@@ -50,6 +54,7 @@ calls max argFs prop n = p (mod (abs n) max + 1)
         _o = undefined
 
 -- | Anticommutativity property
+-- TODO: update to new property (propA_wedgeAntiComm)
 prop_antiComm :: Int -> Property
 prop_antiComm n = p (mod (abs n) 5 +2)  -- manually limited the vectorspace dimension...
   where p n = forAll (elements (arityPairs n)) $ \(k,j) ->
@@ -207,7 +212,7 @@ ex2 = Fform 1 [(3, [2])]
 swapP :: (a,b) -> (b,a)
 swapP (x,y) = (y,x)
 
-readjustLs = map (pairM id (map (+1)) . swapP) 
+readjustLs = map ({-pairM id-} fmap (map (+1)) . swapP) 
 
 t1 = Fform 1 $ map (pairM id (map (+1))) [(2.0,[2]),(-47.0,[0]),(-35.0,[2]),(-50.0,[1]),(-3.0,[1]),(29.0,[0]),(-11.0,[1]),(-17.0,[1]),(-6.0,[0]),(30.0,[1])]
 t2 = Fform 1 $ readjustLs [([2],-17.0),([2],53.0),([0],-36.0),([1],-51.0),([2],-47.0),([1],-28.0),([0],58.0),([0],-48.0),([0],-4.0),([1],20.0)]
