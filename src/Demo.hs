@@ -59,7 +59,7 @@ b5 = barycentricCoords tr5
 
 -- x :: [PolyN Double]
 x = map (deg1 . flip coordinate 2) [1..2]
-
+-- coordinate ==> coordinates
 -- hs :: Field a => Int -> [PolyN a]
 hs n = pure ı : rec pn1s
   where pn1s = map (deg1 . flip coordinate n) [1..n]
@@ -79,7 +79,7 @@ dx2 = dxs !! 1
 dx3 = dxs !! 2
 dx4 = dxs !! 3
 dx5 = dxs !! 4
-
+-- dx n i
 w1 = dx1 /\ dx2
 w2 = dx3 /\ dx5
 w3 = w1  /\ w2

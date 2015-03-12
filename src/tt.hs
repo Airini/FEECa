@@ -32,6 +32,7 @@ instance VectorSpace v => Op v where
   (+) = addV
 
 -- TODO: what is the conflict?
+-- XXX: consier a closed type family for Fieldf ??
 
 instance Field v => Op v where
   type Main v = v

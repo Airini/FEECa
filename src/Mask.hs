@@ -87,4 +87,5 @@ d n = df (vector . flip coordinate n) --(vector $ coordinate 0 2)
 (&) :: DiffForm Double -> Vector -> DiffForm Double
 (&) = contract dxVP
 -- ALSO: generalise Vector? that way we can have parameterised vectors :)
-
+-- kappa, etc. => explicit symbols
+-- integration, inner product
