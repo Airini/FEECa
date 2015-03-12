@@ -27,16 +27,16 @@ type DiffForm f = Form (PolyN f)
 
 -- Few examples to test how to write
 f :: Field f => DiffForm f
-f = oneForm 1
+f = oneForm 1 4
 
 g :: Field f => DiffForm f
-g = sclV (add mulId mulId) (oneForm 2)
+g = sclV (add mulId mulId) (oneForm 2 3)
 
 h :: Field f => DiffForm f
-h = sclV (pure addId) (oneForm 3)
+h = sclV (pure addId) (oneForm 3 3)
 
 t :: DiffForm Double
-t = sclV (add (constant 8.9) (Poln $ deg1P [0,2,3])) (oneForm 1)
+t = sclV (add (constant 8.9) (Poln $ deg1P [0,2,3])) (oneForm 1 5)
 
 b :: Vector
 b = Vector [1,2,0]
@@ -52,6 +52,7 @@ expression = refine dxVP (t /\ g) [b, y]
 eg1 = eval (Vector [-0.1,10,0]) expression
 -- -479.74
 
+
 -- basisIx must be in agreement with the proj paramenter used in evaluation!
 -- TODO: remove ugly v parameter. Ugly possible solution: basisIx 0 returns some "tempalte"
 --       arbitrary vector from which dimension can be extracted...
@@ -59,18 +60,19 @@ eg1 = eval (Vector [-0.1,10,0]) expression
 -- Remark: reduced generality for our R^n types
 diff :: (Function (PolyN Double) v) => (Int -> v) -> v -> DiffForm Double -> DiffForm Double
 diff basisIx x form =
-  foldr (addA . (\ i -> fmap (deriv (basisIx i)) (oneForm i /\ form)))
-        (zeroForm (1 + arity form))
-        [1 .. vspaceDim x]
+    foldr (addA . (\ i -> fmap (deriv (basisIx i)) (oneForm i n /\ form)))
+          (zeroForm (1 + arity form) n)
+          [1 .. vspaceDim x] -- XXX: shall we use dimVec (n) ?? and so avoid the ugly x
+  where n = dimVec form
 
 -- Generalised to any appropriate form (polynomial differential forms being but
 -- a case)
 df :: (Function h v, Algebra (Form h)) => (Int -> v) -> Form h -> Form h
 df basisIx form =
-  foldr (addA . (\i -> fmap (deriv (basisIx i)) (oneForm i /\ form)))
-        (zeroForm (1 + arity form))
-        [1..vspaceDim (basisIx 0)]
-
+    foldr (addA . (\i -> fmap (deriv (basisIx i)) (oneForm i n /\ form)))
+          (zeroForm (1 + arity form) n)
+          [1..vspaceDim (basisIx 0)]
+  where n = dimVec form
 
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 

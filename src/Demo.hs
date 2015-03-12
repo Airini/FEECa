@@ -58,49 +58,59 @@ b4 = barycentricCoords tr4
 b5 = barycentricCoords tr5
 
 -- x :: [PolyN Double]
-x = map (deg1 . flip coordinate 2) [1..2]
--- coordinate ==> coordinates
+xs = coordinates 2
+
 -- hs :: Field a => Int -> [PolyN a]
 hs n = pure ı : rec pn1s
-  where pn1s = map (deg1 . flip coordinate n) [1..n]
+  where pn1s = coordinates n
         rec ps = ps ++ (concatMap (\q -> map (q ·) pn1s) ps)
 
 
 -- p :: PolyN Double
-p = 5 .* head x · head x .+. (3 .* head x)
+p = constant 5 · x0 · x0 .+. (constant 3 · x0)
+  where x0 = head xs
+
 -- TODO: solve precedences
 -- TODO: purge null terms
---p = 5 .* (x !! 0) · (x !! 0) .+. 3 .* (x !! 0)
+
 
 --dxs :: [Form Double]
-dxs = map dx [1 .. 5]
-dx1 = dxs !! 0
-dx2 = dxs !! 1
-dx3 = dxs !! 2
-dx4 = dxs !! 3
-dx5 = dxs !! 4
--- dx n i
+-- dx for n = 5
+-- XXX: dx n k OR dx k n? which should be default (shorter)?
+dxs = dxN 5
+dx1 = dxs 1
+dx2 = dxs 2
+dx3 = dxs 3
+dx4 = dxs 4
+dx5 = dxs 5
+
+dxs2 = dxN 2
+dx1_2 = dxs2 1
+dx2_2 = dxs2 2
+
 w1 = dx1 /\ dx2
 w2 = dx3 /\ dx5
 w3 = w1  /\ w2
 
+w4 = dx1_2 /\ dx2_2
+
 -- val1, val2 :: Double
-val1 = w1 # [v2, v2]
-val2 = (dx1 /\ dx2) # [vector [1,2], vector [3,4]]
+val1 = w4 # [v2, v2]
+val2 = (dx 1 2 /\ dx 2 2) # [vector [1,2], vector [3,4]]
 
 -- dxs' :: [DiffForm Double]
-dxs' = map (fmap pure) dxs
+dxs' = (fmap pure) . dxs
 
-w1' = (dxs' !! 0) /\ (dxs' !! 1)
-w2' = (dxs' !! 2) /\ (dxs' !! 4)
-dx1' = dxs' !! 0
-dx2' = dxs' !! 1
+w1' = dxs' 1 /\ dxs' 2
+w2' = dxs' 3 /\ dxs' 5
+dx1' = dxs' 1
+dx2' = dxs' 2
 
-w2_aux = (dxs' !! 1) /\ (dxs' !! 0)
+w2_aux = dxs' 2 /\ dxs' 1
 -- u :: DiffForm Double
 --u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (pure 0.5 .* dx1' /\ dx2')
 u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2_aux) .+. (pure 0.5 .* dx1' /\ dx2')
-v = p .* (dxs' !! 0) .+. (2 .* p .* (dxs' !! 1))
+v = p .* dxs' 1 .+. (pure 2 · p .* dxs' 2)
 
 -- -- Evaluation of differential forms
 val3 = u § x20 # [v2, v2]
@@ -118,9 +128,10 @@ val6 = (w1 <> w2) 5 -- summation over the basis
 -- val7 = inner u v t3 -- same summation but also an integration over all x in t3
 
 -- Interior product/contraction
-val7 = w1 ⌟ v2
-val8 = u & v2
-val9 = w1' & v4
-val10 = v & v3
-
+v5 = vector [1..5]
+val7 = w1 ⌟ v5
+val8 = u & v5
+val9 = w1' & v5
+val10 = v & v5
+val11 = w4 ⌟ v2
 

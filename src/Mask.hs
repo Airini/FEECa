@@ -47,8 +47,13 @@ a ÷ b = a · mulInv b
 (∂) :: Function h v => v -> h -> h
 (∂) = deriv
 
-dx :: Field f => Int -> Form f
+-- dx k n
+dx :: Field f => Dim -> Dim -> Form f
 dx = oneForm
+
+-- dxN n k
+dxN :: Field f => Dim -> Dim -> Form f
+dxN = flip dx
 
 (#) :: Form Double -> [Vector] -> Double
 (#) = refine dxV
@@ -56,11 +61,21 @@ dx = oneForm
 --d' :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
 --d' = df'
 
-coordinate :: Field a => Int -> Int -> [a]
-coordinate i n = take n $
+canonCoord :: Field a => Int -> Int -> [a]
+canonCoord i n = take n $
                   (repeat addId : iterate (addId:) (mulId:repeat addId)) !! i
 
-bssIx n = vector . flip coordinate n
+canonCoords :: Field a => Int -> [[a]]
+canonCoords n = map (flip canonCoord n) [1..n]
+
+coordinate :: Field f => Int -> Int -> PolyN f
+coordinate i n = deg1 (canonCoord i n)
+
+coordinates :: Field f => Int -> [PolyN f]
+coordinates = fmap deg1 . canonCoords
+
+
+bssIx n = vector . flip canonCoord n
 
 -- or <|> ?
 (<>) :: Form Double -> Form Double -> Int -> Double
@@ -72,12 +87,12 @@ bssIx n = vector . flip coordinate n
 
 
 𝝹 :: Form (PolyN Double) -> Int -> Form (PolyN Double)
-𝝹 form n = contract (const . deg1 . flip coordinate n) form (undefined::Vector)
+𝝹 form n = contract (const . flip coordinate n) form (undefined::Vector)
 -- TODO: extract degree from polynomial
 
 -- For now: dimensioned passed in
 d :: Int -> Monop (Form (PolyN Double))
-d n = df (vector . flip coordinate n) --(vector $ coordinate 0 2)
+d n = df (vector . flip canonCoord n) --(vector $ coordinate 0 2)
 
 (§) :: Form (PolyN Double) -> Point -> Form Double
 (§) = evalDF

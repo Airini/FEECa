@@ -3,26 +3,33 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Forms (
-  Form (Fform, arity)
+  Dim, Form (Fform, arity, dimVec)
   , zeroForm, nullForm, oneForm
   , refine, inner, contract
   ) where
 
 
-import Data.List(intersect)
+import Data.List (intersect)
 -- import Data.Type.Natural
 import Spaces
 import Discrete
 import Utility (pairM)
 import Print (printForm)
+import Control.Applicative
 
 
 -- * General form: does not depend on the underlying vector space it works on
 --   in any way.
 
+type Dim = Int
+
+
+-- XXX: dimVec or dimSpa?
+
 -- | Bilinear, alternating forms over vectorspaces
 data Form f =  -- we lose dependency on the type of vector! 
-    Fform { arity :: Int                    -- ^ For complete evaluation
+    Fform { arity :: Dim                    -- ^ For complete evaluation
+          , dimVec :: Dim                   -- ^ Of the underlying vector space
           , constituents :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
   deriving Eq
 
@@ -40,13 +47,14 @@ constituentsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
 -- NB: because of ((,) t) 's functorial nature, maybe it could make sense to
 --   rearrange our terms so as to have them be (inds,coeff) like they used to be?
 instance Functor Form where
-  fmap f (Fform k cs) = Fform k (map (pairM f id) cs)
+  fmap f (Fform k n cs) = Fform k n (map (pairM f id) cs)
 
 -- TODO: Applicative to simplify the following operations!!!
 -- XXX: also to be able to lift polynomials easily into it
 
 instance (Show f) => Show (Form f) where
-  show (Fform k cs) = show k ++ "-form: " ++ show (printForm "dx" "0" show cs)
+  show (Fform k n cs) = show k ++ "-form in " ++ show n ++ " dimensions: " ++
+                        show (printForm "dx" "0" show cs)
 
 -- XXX: have combinator
 --        aggregate f p cs1 cs2
@@ -62,8 +70,9 @@ instance (Show f) => Show (Form f) where
 -- Shall we do: permutation simplification/identification
 (+++) :: (Field f') => Form f' -> Form f' -> Form f'
 omega +++ eta
-    | arity omega /= arity eta = error "(+++): forms must be of the same dimension"
-    | otherwise = Fform (arity eta)
+    | degNEq omega eta = errForm "(+++)" BiDegEq
+    | spaNEq omega eta = errForm "(+++)" BiSpaEq
+    | otherwise = Fform (arity eta) (dimVec eta)
                   (step (constituents omega) (constituents eta))
   where step [] ys = ys
         step xs [] = xs
@@ -78,8 +87,10 @@ omega +++ eta
 
 -- | Product of forms
 (//\\) :: Field f => Form f -> Form f -> Form f
-omega //\\ eta = Fform (arity omega + arity eta)
-                       (concatMap (\d -> map (combine d) (dxs d)) (constituents eta))
+omega //\\ eta
+    | spaNEq omega eta = errForm "(//\\\\)" BiSpaEq
+    | otherwise = Fform (arity omega + arity eta) (dimVec eta)
+                        (concatMap (\d -> map (combine d) (dxs d)) (constituents eta))
   where dxs (_,ys) = filter (null . intersect ys . snd) (constituents omega)
         combine (b,ys) (a,xs)
           | null (intersect xs ys) = (mul a b, xs++ys)
@@ -100,26 +111,33 @@ instance (Field f) => Algebra (Form f) where
   sclA = sclV
 
 -- | Basic abstract 1-form
-oneForm :: (Field f) => Int -> Form f
-oneForm i | i <= 0    = error "oneForm: invalid projection of a negative component"
-          | otherwise = Fform 1 [ (mulId,[i]) ]
+oneForm :: (Field f) => Dim -> Dim -> Form f
+oneForm i n | i <= 0 || i > n = errForm "oneForm" MoProjBd
+            | otherwise       = Fform 1 n [ (mulId,[i]) ]
+
+
+-- TODO: shall we have something special for these? no need to state dimension
+-- n since they will be constantly zero anyway
 
 -- | The (normalised) == 0 form
-zeroForm :: Int -> Form f
-zeroForm k = Fform k []
+zeroForm :: Dim -> Dim -> Form f
+zeroForm k n = Fform k n []
 
 -- | The k-arity == 0 form
-nullForm :: Form f
-nullForm = Fform 0 []
+nullForm :: Dim -> Form f
+nullForm n = Fform 0 n []
 
 
 -- Necesitamos una función de pinchado
 --  y así pinchar las consecutivas componentes 
 -- If the function was actually a field, this part would be simplified
-contract :: (Field f, VectorSpace v) => (Int -> v -> f) -> Form f -> v -> Form f
-contract proj omega v = Fform (max 0 (arity omega - 1)) $
-    concatMap (\c -> map (pinchado c) [1..arity omega])
-              (constituents omega)
+contract :: (Field f, VectorSpace v, Dimensioned v) =>
+              (Int -> v -> f) -> Form f -> v -> Form f
+contract proj omega v 
+    | vecNEq omega v = errForm "contract" MoVecEq
+    | otherwise      = Fform (max 0 (arity omega - 1)) (dimVec omega) $
+        concatMap (\c -> map (pinchado c) [1..arity omega])
+                  (constituents omega)
   where pinchado (f,[]) _ = (f, []) -- error ??
         pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
                               (mul (fromInt ((-1)^(i+1))) (mul f (proj j v)), ds1 ++ ds2)
@@ -136,8 +154,12 @@ refine :: (Field f, VectorSpace v) =>
                                --   for the specific vector space
        -> Form f
        -> [v] -> f
-refine proj (Fform k cs) vs = sumF (map (($ vs) . formify proj) cs)
--- refine proj (Fform k cs) vs = sumF (map (\(cc,s) -> mul s ((formify proj (cc,s)) vs)) cs) -- ($ vs) . (formify proj)) cs)
+refine proj eta@(Fform k n cs) vs = sumF (map (($ vs) . formify proj) cs)
+-- TODO: capture inconsistency between k and lenght vs here??
+-- ALSO: 0-forms... not evaluating correctly now! Cfr: formify does not accept
+--    empty cs
+-- XXX: for now proj should take care of the error... change later when settled
+
 
 -- | Helper function in evaluation: given a 1-form basis, converts a single
 --   'Form' constituent term into an actual function on vectors
@@ -160,7 +182,7 @@ inner :: (Field f, VectorSpace v) =>
       -> (Int -> v)       -- ^ Basis of the specific vector space
       -> Form f -> Form f -> f
 inner proj basisIx omega eta
-    | arity omega /= arity eta = error "inner: forms with different arity/degree" -- TODO
+    | degNEq omega eta = errForm "inner" BiDegEq -- TODO (??)
     | otherwise = foldl
             (flip $ \vs -> add (mul (apply omega vs) (apply eta vs)))
             addId
@@ -184,6 +206,35 @@ sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
 sumF :: Field a => [a] -> a
 sumF = foldl add addId
 
+-- | Checks arity equality
+degNEq :: Form f -> Form f -> Bool
+degNEq omega eta = arity omega /= arity eta
+
+-- | Checks combined arity bound
+degNBd :: Form f -> Form f -> Bool
+degNBd  omega eta = (arity omega + arity eta) <= dimVec omega
+
+-- | Checks compatible underlying vector space dimensions
+spaNEq :: Form f -> Form f -> Bool
+spaNEq omega eta = dimVec omega /= dimVec eta
+
+vecNEq :: Dimensioned v => Form f -> v -> Bool
+vecNEq omega v = dimVec omega /= dim v
+
+--errForm :: [Char] -> FormMust -> ()
+errForm callee obligation = error $ "Forms." ++ callee ++
+                                    ": forms must " ++ show obligation
+
+
+-- | Kinds of enforcements to the definitions and opertions between/for 'Form'
+data FormMust = BiDegEq | BiDegBd | BiSpaEq | MoProjBd | MoVecEq
+
+instance Show FormMust where
+  show BiDegEq = "be of the same degree"
+  show BiDegBd = "have joint degree bounded by the working vector space dimension"
+  show BiSpaEq = "act on the same vector space"
+  show MoProjBd = "project components of the underlying vector space"
+  show MoVecEq  = "act on vectors of the working vectors space"
 
 
 --- ONLY PLACEHOLDERS!!
