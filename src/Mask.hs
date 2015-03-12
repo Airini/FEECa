@@ -82,4 +82,9 @@ d n = df (vector . flip coordinate n) --(vector $ coordinate 0 2)
 (§) :: Form (PolyN Double) -> Point -> Form Double
 (§) = evalDF
 
+-- XXX: perhaps we could add to VectorSpace a function for projecting vectors
+--   (some kind of canonical projection)
+(&) :: DiffForm Double -> Vector -> DiffForm Double
+(&) = contract dxVP
+-- ALSO: generalise Vector? that way we can have parameterised vectors :)
 

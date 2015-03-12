@@ -113,8 +113,14 @@ du = d 2 u
 -- Koszul differential: TODO: remove n dependency (encode in form type)
 ku = 𝝹 u 2
 
--- -- Inner product
+-- Inner product
 val6 = (w1 <> w2) 5 -- summation over the basis
 -- val7 = inner u v t3 -- same summation but also an integration over all x in t3
+
+-- Interior product/contraction
+val7 = w1 ⌟ v2
+val8 = u & v2
+val9 = w1' & v4
+val10 = v & v3
 
 
