@@ -21,14 +21,18 @@ unrankIndices :: Int -> Int -> [Int]
 unrankIndices k n = map (\x -> x - 1) (unrankRec [] k n)
 
 -- | Compute the increasing list corresponding to a given index n and length k.
-unrank :: Int -> Int -> [Int]
-unrank = unrankRec []
+unrank :: Integral a => a -> a -> [a]
+unrank k n = unrankRec [] k n
 
-unrankRec :: [Int] -> Int -> Int -> [Int]
+unrankRec :: Integral a => [a] -> a -> a -> [a]
 unrankRec l 0 _ = l
 unrankRec l k 0 = unrankRec (k:l) (k-1) 0
 unrankRec l k n = unrankRec (c:l) (k-1) (n-((c - 1) `choose` k))
     where c = fromJust (find (\x -> n < (x `choose` k)) [k..])
+
+-- | List all length-k increasing subsequences of 1,...,n
+increasingLists :: Integral a => a -> a -> [[a]]
+increasingLists n k = map (unrank (fromIntegral k)) [0..n `choose` k -1]
 
 -- | Ranks of the k-1 increasing sublists of the k-increasing list given by its rank n
 sublists :: Int -> Int -> [Int]
