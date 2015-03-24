@@ -8,8 +8,8 @@ module Polynomials(Polynomial(..),
                    deg0P,
                    zeroP,
                    addP,
-                   barycentricCoords,
-                   barycentricCoord) where
+                   barycentricCoordinates,
+                   barycentricCoordinate) where
 
 import Spaces hiding (toList)
 import Simplex
@@ -96,16 +96,16 @@ evalP v (Polynomial ((c,alpha):ls)) = add (mul c (powV v alpha))
 -- | 0 on all others. Requires the topological dimension of the simplex to be
 -- | as large as the geometrical dimension, i.e. the simplex must contain n+1
 -- | vertices if the underlying space has dimensionality n.
-barycentricCoords :: Simplex -> [Polynomial Double]
-barycentricCoords s = map vectorToPoly (take (nt+1) (M.toColumns mat))
+barycentricCoordinates :: Simplex -> [Polynomial Double]
+barycentricCoordinates s = map vectorToPoly (take (nt+1) (M.toColumns mat))
     where mat = M.inv (simplexToMatrix (extendSimplex s))
           n = geometricalDimension s
           nt = topologicalDimension s
 
--- | Simple wrapper for barycentricCoords that picks out the ith polynomial
+-- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial
 -- | in the list
-barycentricCoord :: Simplex -> Int -> Polynomial Double
-barycentricCoord s i = barycentricCoords s !! i
+barycentricCoordinate :: Simplex -> Int -> Polynomial Double
+barycentricCoordinate s i = barycentricCoordinates s !! i
 
 simplexToMatrix :: Simplex -> M.Matrix Double
 simplexToMatrix s@(Simplex l) = M.matrix (n+1) (concatMap append1 l)

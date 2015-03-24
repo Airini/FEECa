@@ -50,14 +50,14 @@ prop_barycentric :: Simplex -> Bool
 prop_barycentric s@(Simplex l) = all equalsDelta [0..n]
     where n = topologicalDimension s
           equalsDelta i = all (\j -> lambda i (fromPoint (l!!j)) `eqNum` delta i j) [0..n]
-          lambda i v = eval v (barycentricCoord s i)
+          lambda i v = eval v (barycentricCoordinate s i)
 -- TODO: Currently fails, debug!
 -- | Barycentric coordinates should be positive everywhere inside the simplex.
 prop_pos :: ConvexComb4 -> Simplex -> Bool
 prop_pos (ConvexComb4 cs) s = all largerThan0 [0..3]
     where l = map fromPoint (vertices s)
           v = foldr (\ (c,v) s -> addV s (sclV c v)) (zeroV v) (zip cs l)
-          lambda i v = eval v (barycentricCoord s i)
+          lambda i v = eval v (barycentricCoordinate s i)
           largerThan0 i = lambda i v >= 0.0
 
 delta :: Int -> Int -> Double
