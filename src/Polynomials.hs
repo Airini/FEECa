@@ -15,16 +15,18 @@ import Spaces hiding (toList)
 import Simplex
 import Vector
 import Point
+import Utility(pairM)
 import Print (printPolynomial)
 import Data.Maybe (fromJust)
 import Data.List
 
-import MultiIndex(MultiIndex, zeroMI, oneMI, decMI, toListMI)
+import MultiIndex(MultiIndex, zeroMI, oneMI, decMI, toListMI, addMI)
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
 -- | Polynomials as list of coefficient-monomial terms over R^n.
-data Polynomial a = Polynomial  [(a,MultiIndex)]
+data Polynomial a = Polynomial Int [(a,MultiIndex)]
+                  | Constant a
 
 instance Function (Polynomial Double) Vector where
   type Values (Polynomial Double) Vector = Double
@@ -32,15 +34,39 @@ instance Function (Polynomial Double) Vector where
   eval  = evalP
 
 instance Show (Polynomial Double) where
-    show (Polynomial p) = show $ printPolynomial "x" p
+    show (Polynomial _ p) = show $ printPolynomial "x" p
 
-polynomial :: [(Double, MultiIndex)] -> Polynomial Double
-polynomial l = Polynomial $ removeZeros l
+-- | Polynomial type as a functor
+instance Functor Polynomial where
+  fmap f (Polynomial n ms) = Polynomial n (map (pairM f id) ms)
+  fmap f (Constant c) = Constant $ f c
+
+-- | Polynomial as a vector space
+instance (Field f) => VectorSpace (Polynomial f) where
+  type Fieldf (Polynomial f) = f
+  vspaceDim _ = undefined
+  addV = addP
+  sclV = sclP
+
+-- | 'PolyN' as a field
+instance (Field f) => Field (Polynomial f) where
+  add = addP
+  addId  = Constant addId
+  addInv  = sclP (addInv addId)
+
+  mul = mulP
+  mulId     = Constant mulId
+  mulInv    = undefined
+  fromInt x = Constant (fromInt x)
+
+polynomial :: Int -> [(Double, MultiIndex)] -> Polynomial Double
+polynomial n l = Polynomial n $ removeZeros l
     where removeZeros l = [(c,a) | (c,a) <- l, c /= 0.0]
 
 -- | Directional derivative of a polynomial in a given space direction.
 deriveP :: Vector -> Polynomial Double -> Polynomial Double
-deriveP v (Polynomial ps) = Polynomial $ concatMap (deriveMonomial (toList v)) ps
+deriveP v (Polynomial n ps) = Polynomial n $ concatMap (deriveMonomial (toList v)) ps
+deriveP _ (Constant _) = Constant 0
 
 deriveMonomial :: [Double] -> (Double,MultiIndex) -> [(Double,MultiIndex)]
 deriveMonomial vs (c,a)
@@ -51,41 +77,57 @@ deriveMonomial vs (c,a)
   | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
   where a' = toListMI a
 
-gradP :: Polynomial Double -> [Polynomial Double]
-gradP (Polynomial ps) = map polynomial (transpose grads)
-    where grads = map gradMonomial ps
+-- gradP :: Polynomial Double -> [Polynomial Double]
+-- gradP (Polynomial ps) = map polynomial (transpose grads)
+--     where grads = map gradMonomial ps
 
-gradMonomial :: (Double,MultiIndex) -> [(Double,MultiIndex)]
-gradMonomial (c,a) = [(c', decMI i a)
-                          | i <- [0..(dim a)-1],
-                            let c' = mul c (fromInt (a'!!i))]
-    where a' = toListMI a
+-- gradMonomial :: (Double,MultiIndex) -> [(Double,MultiIndex)]
+-- gradMonomial (c,a) = [(c', decMI i a)
+--                           | i <- [0..(dim a)-1],
+--                             let c' = mul c (fromInt (a'!!i))]
+--     where a' = toListMI a
 
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list
 -- | equals the coefficient of the ith variable of the returned polynomial.
 deg1P :: Field a => [a] -> Polynomial a
-deg1P ns = Polynomial $ zip ns [oneMI dim i | i <- [0..dim-1]]
+deg1P ns = Polynomial dim $ zip ns [oneMI dim i | i <- [0..dim-1]]
   where dim  = length ns
-
 
 -- | Create 0th degree polynomial from given scalar
 deg0P :: Int -> a -> Polynomial a
-deg0P n c = Polynomial [(c, zeroMI n)]
+deg0P n c = Polynomial n [(c, zeroMI n)]
 
 -- | The zero polynomial
-zeroP :: Polynomial a
-zeroP = Polynomial []
+zeroP :: Num a => Polynomial a
+zeroP = Constant (fromInteger 0)
 
 -- | Add two polynomials
-addP :: Polynomial a -> Polynomial a -> Polynomial a
-addP (Polynomial p1) (Polynomial p2) = Polynomial (p1 ++ p2)
+addP :: Field a => Polynomial a -> Polynomial a -> Polynomial a
+addP (Polynomial n1 p1) (Polynomial n2 p2)
+     | n1 == n2 = Polynomial n1 (p1 ++ p2)
+     | otherwise = error "addP: Polynomials have different dimensionalities."
+addP (Polynomial n1 p1) (Constant c) = Polynomial n1 $ (c,(zeroMI n1)):p1
+addP (Constant c1) (Constant c2) = Constant $ add c1 c2
+addP p1 p2 = addP p2 p1
+
+-- | Polynomial multiplication
+mulP :: Field a => Polynomial a -> Polynomial a -> Polynomial a
+mulP (Polynomial n1 ms) (Polynomial n2 ns) = Polynomial n1 [termMul x y | x <- ms, y <- ns]
+  where termMul (a,as) (b,bs) = (mul a b, addMI as bs)
+mulP (Constant a) p2 = sclP a p2
+mulP p1 p2 = mulP p2 p1
+
+-- | Scaling of a polynomial
+sclP :: Field a => a -> Polynomial a -> Polynomial a
+sclP x = fmap (mul x)
 
 -- | Evaluate polynomial at given point in space
 evalP :: Vector -> Polynomial Double -> Double
-evalP v (Polynomial []) = addId
-evalP v (Polynomial ((c,alpha):ls)) = add (mul c (powV v alpha))
-                                          (evalP v (Polynomial ls))
+evalP v (Polynomial n []) = addId
+evalP v (Polynomial n ((c,alpha):ls)) = add (mul c (powV v alpha))
+                                        (evalP v (Polynomial n ls))
+evalP _ (Constant c) = c
 
 -- | 1st degree polynomial taking value 1 on vertex n_i of the simplex and
 -- | 0 on all others. Requires the topological dimension of the simplex to be
