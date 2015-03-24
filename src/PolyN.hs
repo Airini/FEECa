@@ -122,7 +122,7 @@ instance (Field f) => Field (PolyN f) where
   mul (CttP a) p            = fmap (mul a) p
   -- mul p (CttP a) = fmap (mul a) p
   mul p@(Poln _) c@(CttP _) = mul c p
-  
+
   mulId     = pure mulId
   mulInv    = undefined
   fromInt x = pure (fromInt x)
@@ -130,7 +130,7 @@ instance (Field f) => Field (PolyN f) where
 -- | 'PolyN' as a function type with directional derivative and point-evaluation
 instance (Function (Polynomial f) v) => Function (PolyN f) v where
   type Values (PolyN f) v = Values (Polynomial f) v
-  
+
   -- Since we specify case by case, maybe it's better to avoid translation of CttP step?
   deriv v (CttP c) = Poln $ deriv v (deg0P (vspaceDim v) c)
   deriv v (Poln p) = Poln $ deriv v p
