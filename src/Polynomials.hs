@@ -23,11 +23,6 @@ import MultiIndex(MultiIndex, zeroMI, oneMI, decMI, toListMI)
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
--- | Type synonym for multi-indices to specify monomials over R^n. The i-th integer
--- | in the list specified the power of the corresponding component of R^n. The degree
--- | of the monomial is given by the sum of the non-negative entries.
---type MultiIndex = [Integer]
-
 -- | Polynomials as list of coefficient-monomial terms over R^n.
 data Polynomial a = Polynomial  [(a,MultiIndex)]
 
