@@ -1,4 +1,8 @@
-module Combinatorics(rank, unrank, unrankIndices, sublists) where
+module Combinatorics(rank,
+                     unrank,
+                     unrankIndices,
+                     sublists,
+                     sumRLists) where
 
 import Math.Combinatorics.Exact.Binomial
 import Data.Maybe(fromJust)
@@ -38,3 +42,10 @@ sublists' ls r k n = sublists' (n':ls) (r + ccc) (k-1) (n - cc)
           cc = (c-1) `choose` k
           ccc = (c-1) `choose` (k-1)
           n' = r + n - cc
+
+-- | Length n list of integers whos entries sum to r
+sumRLists :: Integral a => a -> a -> [[a]]
+sumRLists n r
+          | r == 0 = [replicate (fromIntegral n) 0]
+          | n == 1 = [[r]]
+          | otherwise = concat [[l:ls | ls <- sumRLists (n-1) (r-l)] | l <- [0..r]]

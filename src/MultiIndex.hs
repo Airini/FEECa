@@ -3,6 +3,7 @@ module MultiIndex where
 import Spaces(Dimensioned(..))
 import Data.Bits
 import Data.Traversable
+import Combinatorics(sumRLists)
 import Math.Combinatorics.Exact.Binomial
 import Math.Combinatorics.Exact.Factorial
 import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)
@@ -45,3 +46,9 @@ chooseMI a b =  foldr (*) 1 $ getZipList $ (liftA2 choose) a b
 -- | Generalized factorial for multi-indices
 factorialMI :: (Integral a, Bits a) => MultiIndex -> a
 factorialMI = (foldl (*) 1) . (map factorial) . toListMI
+
+-- | List of all length n multi-indices of degree r
+degRMI :: Integral a => a -> a -> [MultiIndex]
+degRMI n r = map ZipList $ sumRLists (fromIntegral n) (fromIntegral r)
+
+
