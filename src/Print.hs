@@ -56,6 +56,10 @@ printPolynomial sym ((c,mon):[]) = (double c) <+> (printMonomial sym (toListMI m
 printPolynomial sym ((c,mon):ls) = s <+> (text "+") <+> (printPolynomial sym ls)
     where s = (double c) <+> (printMonomial sym (toListMI mon))
 
+-- | Pretty print constant
+printConstant :: Double -> Doc
+printConstant = double
+
 -- | Pretty print monomial using the sym for the components
 printMonomial :: Integral a => [Char] -> [a] -> Doc
 printMonomial sym = printMonomial' sym 1

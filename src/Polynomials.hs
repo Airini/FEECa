@@ -9,14 +9,15 @@ module Polynomials(Polynomial(..),
                    zeroP,
                    addP,
                    barycentricCoordinates,
-                   barycentricCoordinate) where
+                   barycentricCoordinate,
+                   constant) where
 
 import Spaces hiding (toList)
 import Simplex
 import Vector
 import Point
 import Utility(pairM)
-import Print (printPolynomial)
+import Print (printPolynomial, printConstant)
 import Data.Maybe (fromJust)
 import Data.List
 
@@ -35,6 +36,7 @@ instance Function (Polynomial Double) Vector where
 
 instance Show (Polynomial Double) where
     show (Polynomial _ p) = show $ printPolynomial "x" p
+    show (Constant c) = show $ printConstant c
 
 -- | Polynomial type as a functor
 instance Functor Polynomial where
@@ -62,6 +64,9 @@ instance (Field f) => Field (Polynomial f) where
 polynomial :: Int -> [(Double, MultiIndex)] -> Polynomial Double
 polynomial n l = Polynomial n $ removeZeros l
     where removeZeros l = [(c,a) | (c,a) <- l, c /= 0.0]
+
+constant :: Double -> Polynomial Double
+constant c = Constant c
 
 -- | Directional derivative of a polynomial in a given space direction.
 deriveP :: Vector -> Polynomial Double -> Polynomial Double

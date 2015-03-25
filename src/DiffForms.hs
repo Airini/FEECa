@@ -12,12 +12,12 @@ import Polynomials
 import Utility (pairM)
 import Vector
 import Point
-import PolyN
+import Polynomials
 import Control.Applicative (pure)
 
 
 -- | Differential forms
-type DiffForm f = Form (PolyN f)
+type DiffForm f = Form (Polynomial f)
 -- Immediately "inherits" all class instantiations for 'Form' when an
 -- appropriate 'f' is used for Polynomial coefficients (?)
 
@@ -33,10 +33,10 @@ g :: Field f => DiffForm f
 g = sclV (add mulId mulId) (oneForm 2 3)
 
 h :: Field f => DiffForm f
-h = sclV (pure addId) (oneForm 3 3)
+h = sclV (Constant addId) (oneForm 3 3)
 
 t :: DiffForm Double
-t = sclV (add (constant 8.9) (Poln $ deg1P [0,2,3])) (oneForm 1 5)
+t = sclV (add (constant 8.9) (deg1P [0,2,3])) (oneForm 1 5)
 
 b :: Vector
 b = Vector [1,2,0]
@@ -46,7 +46,7 @@ y = Vector [3,-2.3,1]
 dxV :: Int -> Vector -> Double
 dxV i (Vector x) = x !! (i-1)
 
-dxVP = (fmap . fmap) pure dxV
+dxVP = (fmap . fmap) Constant dxV
 expression = refine dxVP (t /\ g) [b, y]
 
 eg1 = eval (Vector [-0.1,10,0]) expression
@@ -58,7 +58,7 @@ eg1 = eval (Vector [-0.1,10,0]) expression
 --       arbitrary vector from which dimension can be extracted...
 --      OR: add zero-th vector to 'VectorSpace' class?
 -- Remark: reduced generality for our R^n types
-diff :: (Function (PolyN Double) v) => (Int -> v) -> v -> DiffForm Double -> DiffForm Double
+diff :: (Function (Polynomial Double) v) => (Int -> v) -> v -> DiffForm Double -> DiffForm Double
 diff basisIx x form =
     foldr (addA . (\ i -> fmap (deriv (basisIx i)) (oneForm i n /\ form)))
           (zeroForm (1 + arity form) n)
