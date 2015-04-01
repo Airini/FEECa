@@ -5,7 +5,6 @@ import Spaces
 import Polynomials
 import Forms
 import DiffForms
-import PolyN
 import Control.Applicative
 import Vector
 import Point
@@ -51,17 +50,17 @@ v3 = vector [1,2,3]
 v4 = vector [1,2,3,4]
 
 -- Barycentric coordinates - not only on referenceSimplex but also on subsimplices
-b1 = barycentricCoords tr1
-b2 = barycentricCoords tr2  -- list of length 3 containing polynomials (of degree 1)
-b3 = barycentricCoords tr3
-b4 = barycentricCoords tr4
-b5 = barycentricCoords tr5
+b1 = barycentricCoordinates tr1
+b2 = barycentricCoordinates tr2  -- list of length 3 containing polynomials (of degree 1)
+b3 = barycentricCoordinates tr3
+b4 = barycentricCoordinates tr4
+b5 = barycentricCoordinates tr5
 
 -- x :: [PolyN Double]
 xs = coordinates 2
 
 -- hs :: Field a => Int -> [PolyN a]
-hs n = pure ı : rec pn1s
+hs n = Constant ı : rec pn1s
   where pn1s = coordinates n
         rec ps = ps ++ (concatMap (\q -> map (q ·) pn1s) ps)
 
@@ -99,7 +98,7 @@ val1 = w4 # [v2, v2]
 val2 = (dx 1 2 /\ dx 2 2) # [vector [1,2], vector [3,4]]
 
 -- dxs' :: [DiffForm Double]
-dxs' = (fmap pure) . dxs
+dxs' = (fmap Constant) . dxs
 
 w1' = dxs' 1 /\ dxs' 2
 w2' = dxs' 3 /\ dxs' 5
@@ -108,9 +107,9 @@ dx2' = dxs' 2
 
 w2_aux = dxs' 2 /\ dxs' 1
 -- u :: DiffForm Double
---u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (pure 0.5 .* dx1' /\ dx2')
-u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2_aux) .+. (pure 0.5 .* dx1' /\ dx2')
-v = p .* dxs' 1 .+. (pure 2 · p .* dxs' 2)
+--u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (Constant 0.5 .* dx1' /\ dx2')
+u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2_aux) .+. (Constant 0.5 .* dx1' /\ dx2')
+v = p .* dxs' 1 .+. (Constant 2 · p .* dxs' 2)
 
 -- -- Evaluation of differential forms
 val3 = u § x20 # [v2, v2]

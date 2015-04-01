@@ -5,7 +5,7 @@ import Spaces
 import Polynomials
 import Forms
 import DiffForms
-import PolyN
+import Polynomials
 import Control.Applicative
 import Vector
 import Point
@@ -68,11 +68,11 @@ canonCoord i n = take n $
 canonCoords :: Field a => Int -> [[a]]
 canonCoords n = map (flip canonCoord n) [1..n]
 
-coordinate :: Field f => Int -> Int -> PolyN f
-coordinate i n = deg1 (canonCoord i n)
+coordinate :: Field f => Int -> Int -> Polynomial f
+coordinate i n = deg1P (canonCoord i n)
 
-coordinates :: Field f => Int -> [PolyN f]
-coordinates = fmap deg1 . canonCoords
+coordinates :: Field f => Int -> [Polynomial f]
+coordinates = fmap deg1P . canonCoords
 
 
 bssIx n = vector . flip canonCoord n
@@ -86,15 +86,15 @@ bssIx n = vector . flip canonCoord n
 (⌟) = contract dxV
 
 
-𝝹 :: Form (PolyN Double) -> Int -> Form (PolyN Double)
+𝝹 :: Form (Polynomial Double) -> Int -> Form (Polynomial Double)
 𝝹 form n = contract (const . flip coordinate n) form (undefined::Vector)
 -- TODO: extract degree from polynomial
 
 -- For now: dimensioned passed in
-d :: Int -> Monop (Form (PolyN Double))
+d :: Int -> Monop (Form (Polynomial Double))
 d n = df (vector . flip canonCoord n) --(vector $ coordinate 0 2)
 
-(§) :: Form (PolyN Double) -> Point -> Form Double
+(§) :: Form (Polynomial Double) -> Point -> Form Double
 (§) = evalDF
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors

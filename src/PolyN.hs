@@ -10,7 +10,7 @@ module PolyN (
   , zerP, deg1, poly, constant
   , indets) where
 
-import Polynomials
+import Polynomials hiding (constant)
 import MultiIndex
 import Spaces
 
@@ -23,20 +23,9 @@ import Utility (pairM)
 
 -- * Underlying polynomials extras. TODO: migrate
 
--- | Underlying polynomials as a vector space
-instance (Field f) => VectorSpace (Polynomial f) where
-  type Fieldf (Polynomial f) = f
-  vspaceDim _ = undefined
-  addV = addP
-  sclV = sclP
-
--- | Underlying 'Polynomial' type as a functor
-instance Functor Polynomial where
-  fmap f (Polynomial ms) = Polynomial (map (pairM f id) ms)
-
 -- | Gives the number of indeterminate variables of a polynomial
 indets :: Polynomial f -> Int
-indets (Polynomial ((_,is):_)) = dim is
+indets (Polynomial _ ((_,is):_)) = dim is
 -- zero if none??
 indets _                       = error "indets: No monomials defining the number of indeterminates"
 
@@ -46,7 +35,7 @@ sclP x = fmap (mul x)
 
 -- | Polynomial multiplication
 mulP :: Field a => Polynomial a -> Polynomial a -> Polynomial a
-mulP (Polynomial ms) (Polynomial ns) = Polynomial [termMul x y | x <- ms, y <- ns]
+mulP (Polynomial n ms) (Polynomial _ ns) = Polynomial n [termMul x y | x <- ms, y <- ns]
   where termMul (a,as) (b,bs) = (mul a b, addMI as bs)
 
 
@@ -67,14 +56,14 @@ instance (Show (Polynomial f), Show f) => Show (PolyN f) where
 
 -- For explicit polynomials
 poly :: [(f,MultiIndex)] -> PolyN f
-poly = Poln . Polynomial
+poly = Poln . (Polynomial undefined)
 
 constant :: f -> PolyN f
 constant = pure
 
 -- | Constant == 0 polynomial in n indeterminates
 zerP :: PolyN a
-zerP = Poln $ Polynomial []
+zerP = Poln $ Polynomial undefined []
 
 deg1 :: Field f => [f] -> PolyN f
 deg1 = Poln . deg1P
