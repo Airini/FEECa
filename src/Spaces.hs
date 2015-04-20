@@ -13,6 +13,10 @@ class Field v where
   mulId   :: v
   mulInv  :: v -> v
   fromInt :: Integer -> v
+  pow     :: Integral a => v -> a -> v
+  -- no neg security!
+  pow t 0 = mulId
+  pow t n = mul t (pow t (n-1))
 
   -- associative, distributive, ...
   -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate, but no mulInv
@@ -27,7 +31,7 @@ instance Field Double where
   mulId = 1
   mulInv = recip
   fromInt = fromIntegral
-
+  pow = (^^)
 
 class (Field (Fieldf v)) => VectorSpace v where
   type Fieldf v :: *      -- Coefficient field

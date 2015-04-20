@@ -15,11 +15,11 @@ instance Dimensioned (ZipList a) where
 
 -- | Degree of a multi-index, i.e. the sum of all indices
 degMI :: Integral a => MultiIndex -> a
-degMI = fromIntegral . sum . getZipList
+degMI = fromInteger . sum . getZipList
 
 -- | Transform multi-index into list
 toListMI :: Integral a => MultiIndex -> [a]
-toListMI = (map fromIntegral) . getZipList
+toListMI = (map fromInteger) . getZipList
 
 -- | Degree zero multi-index
 zeroMI ::Int -> MultiIndex

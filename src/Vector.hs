@@ -67,4 +67,4 @@ powV (Vector cs) = (powVList cs) . toListMI
 
 powVList [] [] = mulId
 powVList (v:vs) (i:is) = v ** fromIntegral i * powVList vs is
-powVLint _ _ = error "powV: Lists do not have equal length"
+powVList _ _ = error "powV: Lists do not have equal length"

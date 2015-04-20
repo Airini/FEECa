@@ -60,6 +60,7 @@ instance (Field f) => Field (Polynomial f) where
   mulId     = Constant mulId
   mulInv    = undefined
   fromInt x = Constant (fromInt x)
+  -- add more efficient exponentiation?
 
 polynomial :: Int -> [(Double, MultiIndex)] -> Polynomial Double
 polynomial n l = Polynomial n $ removeZeros l
