@@ -1,146 +1,193 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE UndecidableInstances#-}
 
-module Polynomials(Polynomial(..),
+module Polynomials(Term(..),
+                   Polynomial(..),
                    deg1P,
                    deg0P,
-                   zeroP,
-                   addP,
+                   constant,
+                   expandTerm,
+                   derive,
+                   evaluate,
                    barycentricCoordinates,
                    barycentricCoordinate,
-                   constant) where
-
+                   barycentricGradient,
+                   barycentricGradients) where
 import Spaces hiding (toList)
 import Simplex
 import Vector
 import Point
 import Utility(pairM)
-import Print (printPolynomial, printConstant)
+import Print (printPolynomial)
+import Text.PrettyPrint
 import Data.Maybe (fromJust)
 import Data.List
-
-import MultiIndex(MultiIndex, zeroMI, oneMI, decMI, toListMI, addMI)
+import MultiIndex(MultiIndex, zeroMI, oneMI, decMI, toListMI, addMI, degMI)
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
--- | Polynomials as list of coefficient-monomial terms over R^n.
-data Polynomial a = Polynomial Int [(a,MultiIndex)]
-                  | Constant a
+-- | Represents terms of a n-dimensional polynomial. A Term is either a constant
+-- | with a given value or consists of a multi-index and a double representing a
+-- | monomial scaled by a scalar.
+data Term a = Constant a | Term a MultiIndex
+            deriving Eq
 
-instance Function (Polynomial Double) Vector where
-  type Values (Polynomial Double) Vector = Double
-  deriv = deriveP
-  eval  = evalP
+-- | Type synonym for a function to generalize the derivative of a monomial
+-- | in a given space direction. Required to generalize the polinomial code to
+-- | different bases.
+type Dx = Int -> MultiIndex -> [Term Double]
 
-instance Show (Polynomial Double) where
-    show (Polynomial _ p) = show $ printPolynomial "x" p
-    show (Constant c) = show $ printConstant c
+-- | Return the coefficient of a term of a polynomial.
+coeff :: Term a -> a
+coeff (Constant c) = c
+coeff (Term c _)   = c
 
--- | Polynomial type as a functor
-instance Functor Polynomial where
-  fmap f (Polynomial n ms) = Polynomial n (map (pairM f id) ms)
-  fmap f (Constant c) = Constant $ f c
+-- | Return the multi-index representing the monomial of a given term.
+monomial :: Term Double -> MultiIndex
+monomial (Constant _) = zeroMI 0
+monomial (Term _ mi)  = mi
 
--- | Polynomial as a vector space
-instance (Field f) => VectorSpace (Polynomial f) where
-  type Fieldf (Polynomial f) = f
+-- | Scale term by a scalar.
+sclTerm :: Field a => a -> Term a -> Term a
+sclTerm c1 (Term c2 mi) = Term (mul c1 c2) mi
+
+-- | Multiply two terms.
+mulTerm :: Field a => Term a -> Term a -> Term a
+mulTerm (Term c1 mi1) (Term c2 mi2) = Term (mul c1 c2) (addMI mi1 mi2)
+mulTerm (Term c1 mi) (Constant c2) = Term (mul c1 c2) mi
+mulTerm (Constant c2) (Term c1 mi) = Term (mul c1 c2) mi
+mulTerm (Constant c1) (Constant c2) = Constant (mul c1 c2)
+
+-- | Evaluate monomial over standard monomial basis.
+evalMonomial :: Vector -> MultiIndex -> Double
+evalMonomial v mi = powV v mi
+
+-- | General evaluation of a term. Given a function for the evaluation a
+-- | monomial, the function returns the corresponding value of the polynomial
+-- | scaled by the terms coefficient or simply the value of the term if the term
+-- | is constant.
+evalTerm :: (Vector -> MultiIndex -> Double) -> Vector -> Term Double -> Double
+evalTerm f v (Term c mi)  = c * (f v mi)
+evalTerm f v (Constant c) = c
+
+-- | General derivative of a term. Given a function for the derivative of a monomial
+-- | in a given space direction, the function computes the derivative of the given
+-- | term using the product rule.
+deriveTerm :: Dx -> Vector -> Term Double -> [Term Double]
+deriveTerm dx v (Constant _) = [Constant 0]
+deriveTerm dx v (Term c mi)  = concat [map (sclTerm (v' !! i)) (d i mi) |
+                                       i <- [0..n-1],
+                                       (degMI mi) > 0]
+    where
+      v' = toList v
+      d i mi = dx i mi
+      n = dim v
+
+-- | Derivative of a monomial over the standard monomial basis in given space
+-- | direction.
+deriveMonomial :: Dx
+deriveMonomial i mi
+  | i < dim mi = [Term c (decMI i mi)]
+  | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
+  where c  = fromInt ((toListMI mi) !! i)
+
+-- | General polynomial type. Represents a multi-dimensional polynomial of given
+-- | degree by a list of terms. A term may either be a monomial scaled by a scalar,
+-- | represented by Double and a MultiIndex, or a constant, represented simply by a
+-- | Double. The length of the multi-indices must match the dimensionality of the
+-- | underlying vector space.
+data Polynomial a =
+    Polynomial { degree :: Int,
+                 terms  :: [Term a] }
+    deriving Eq
+
+-- | Polynomials as vector spaces
+instance VectorSpace (Polynomial Double) where
+  type Fieldf (Polynomial Double) = Double
   vspaceDim _ = undefined
   addV = addP
   sclV = sclP
 
--- | 'PolyN' as a field
-instance (Field f) => Field (Polynomial f) where
-  add = addP
-  addId  = Constant addId
-  addInv  = sclP (addInv addId)
+-- | Polynomials as a field
+instance Field (Polynomial Double) where
+  add    = addP
+  addId  = constant 0
+  addInv = sclP (-1)
 
-  mul = mulP
-  mulId     = Constant mulId
+  mul       = mulP
+  mulId     = constant 1
   mulInv    = undefined
-  fromInt x = Constant (fromInt x)
-  -- add more efficient exponentiation?
 
-polynomial :: Int -> [(Double, MultiIndex)] -> Polynomial Double
-polynomial n l = Polynomial n $ removeZeros l
-    where removeZeros l = [(c,a) | (c,a) <- l, c /= 0.0]
+  fromInt x = Polynomial 0 [Constant (fromInt x)]
 
+-- | Create a constant polynomial with the given value.
 constant :: Double -> Polynomial Double
-constant c = Constant c
+constant c = Polynomial 0 [Constant c]
+
+-- | Pretty printing of polynomials.
+instance Show (Polynomial Double) where
+    show p = show $ printPolynomial "x" (map expandTerm (terms p))
+
+-- | Expand term to (Double, MultiIndex)-form suitable for printing.
+expandTerm :: Term Double -> (Double, MultiIndex)
+expandTerm (Constant c) = (c, zeroMI 0)
+expandTerm (Term c mi) = (c ,mi)
+
+instance Function (Polynomial Double) Vector where
+  type Values (Polynomial Double) Vector = Double
+  deriv = deriveP
+  eval = evalP
+
+-- | Add two polynomials.
+addP :: (Field a) => Polynomial a -> Polynomial a -> Polynomial a
+addP (Polynomial r1 ts1) (Polynomial r2 ts2) =
+    Polynomial (max r1 r2) (ts1 ++ ts2)
+
+-- | Scaling of a polynomial.
+sclP :: (Field a) => a -> Polynomial a -> Polynomial a
+sclP c (Polynomial r ts) = Polynomial r (map (sclTerm c) ts)
+
+-- | Polynomial multiplication.
+mulP :: (Field a) => Polynomial a -> Polynomial a -> Polynomial a
+mulP (Polynomial r1 ts1) (Polynomial r2 ts2) =
+    Polynomial (r1 + r2) [mulTerm t1 t2 | t1 <- ts1, t2 <- ts2]
+
+-- | General evaluation function of a polynomial using the given function for
+-- | the evaluation of monomials.
+evaluate :: (Vector -> MultiIndex -> Double) -> Vector -> Polynomial Double -> Double
+evaluate f v (Polynomial r ts) = foldl add addId (map (evalTerm f v) ts)
+
+-- | Evaluate polynomial at given point in space.
+evalP :: Vector -> Polynomial Double -> Double
+evalP = evaluate evalMonomial
+
+-- | General derivative for a polynomial with arbitrary basis.
+derive :: Dx -> Vector -> Polynomial Double -> Polynomial Double
+derive dx v (Polynomial r ts) = Polynomial (r - 1) (concatMap (deriveTerm dx v) ts)
 
 -- | Directional derivative of a polynomial in a given space direction.
 deriveP :: Vector -> Polynomial Double -> Polynomial Double
-deriveP v (Polynomial n ps) = Polynomial n $ concatMap (deriveMonomial (toList v)) ps
-deriveP _ (Constant _) = Constant 0
+deriveP = derive deriveMonomial
 
-deriveMonomial :: [Double] -> (Double,MultiIndex) -> [(Double,MultiIndex)]
-deriveMonomial vs (c,a)
-  | length vs == dim a = [(c', decMI i a)
-                                | i <- [0..(dim a)-1],
-                                  let c' = mul (vs!!i) (mul c (fromInt (a'!!i))),
-                                  c' /= 0]
-  | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
-  where a' = toListMI a
-
--- gradP :: Polynomial Double -> [Polynomial Double]
--- gradP (Polynomial ps) = map polynomial (transpose grads)
---     where grads = map gradMonomial ps
-
--- gradMonomial :: (Double,MultiIndex) -> [(Double,MultiIndex)]
--- gradMonomial (c,a) = [(c', decMI i a)
---                           | i <- [0..(dim a)-1],
---                             let c' = mul c (fromInt (a'!!i))]
---     where a' = toListMI a
+-- | Create constant polynomial
+deg0P :: Double -> Polynomial Double
+deg0P = constant
 
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list
 -- | equals the coefficient of the ith variable of the returned polynomial.
-deg1P :: Field a => [a] -> Polynomial a
-deg1P ns = Polynomial dim $ zip ns [oneMI dim i | i <- [0..dim-1]]
+deg1P :: [Double] -> Polynomial Double
+deg1P ns = Polynomial 1 $ zipWith Term ns [oneMI dim i | i <- [0..dim-1]]
   where dim  = length ns
-
--- | Create 0th degree polynomial from given scalar
-deg0P :: Int -> a -> Polynomial a
-deg0P n c = Polynomial n [(c, zeroMI n)]
-
--- | The zero polynomial
-zeroP :: Num a => Polynomial a
-zeroP = Constant (fromInteger 0)
-
--- | Add two polynomials
-addP :: Field a => Polynomial a -> Polynomial a -> Polynomial a
-addP (Polynomial n1 p1) (Polynomial n2 p2)
-     | n1 == n2 = Polynomial n1 (p1 ++ p2)
-     | otherwise = error "addP: Polynomials have different dimensionalities."
-addP (Polynomial n1 p1) (Constant c) = Polynomial n1 $ (c,(zeroMI n1)):p1
-addP (Constant c1) (Constant c2) = Constant $ add c1 c2
-addP p1 p2 = addP p2 p1
-
--- | Polynomial multiplication
-mulP :: Field a => Polynomial a -> Polynomial a -> Polynomial a
-mulP (Polynomial n1 ms) (Polynomial n2 ns) = Polynomial n1 [termMul x y | x <- ms, y <- ns]
-  where termMul (a,as) (b,bs) = (mul a b, addMI as bs)
-mulP (Constant a) p2 = sclP a p2
-mulP p1 p2 = mulP p2 p1
-
--- | Scaling of a polynomial
-sclP :: Field a => a -> Polynomial a -> Polynomial a
-sclP x = fmap (mul x)
-
--- | Evaluate polynomial at given point in space
-evalP :: Vector -> Polynomial Double -> Double
-evalP v (Polynomial n []) = addId
-evalP v (Polynomial n ((c,alpha):ls)) = add (mul c (powV v alpha))
-                                        (evalP v (Polynomial n ls))
-evalP _ (Constant c) = c
 
 -- | 1st degree polynomial taking value 1 on vertex n_i of the simplex and
 -- | 0 on all others. Requires the topological dimension of the simplex to be
 -- | as large as the geometrical dimension, i.e. the simplex must contain n+1
 -- | vertices if the underlying space has dimensionality n.
+-- TODO: check take
 barycentricCoordinates :: Simplex -> [Polynomial Double]
-barycentricCoordinates s = map vectorToPoly (take (nt+1) (M.toColumns mat))
+barycentricCoordinates s = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
     where mat = M.inv (simplexToMatrix (extendSimplex s))
           n = geometricalDimension s
           nt = topologicalDimension s
@@ -150,12 +197,33 @@ barycentricCoordinates s = map vectorToPoly (take (nt+1) (M.toColumns mat))
 barycentricCoordinate :: Simplex -> Int -> Polynomial Double
 barycentricCoordinate s i = barycentricCoordinates s !! i
 
+-- | Compute gradients of barycentric coordinates as a list of lists of Double
+-- | for the given simplex t
+barycentricGradients :: Simplex -> [[Double]]
+barycentricGradients t = map vectorToGradient (take (nt+1) (M.toColumns mat))
+    where mat = M.inv (simplexToMatrix (extendSimplex t))
+          n = geometricalDimension t
+          nt = topologicalDimension t
+
+-- | Compute gradient of the barycentric coordinate corresponding to edge i
+barycentricGradient :: Simplex -> Int -> [Double]
+barycentricGradient t i = (barycentricGradients t) !! i
+
+-- Transforms a given simplex into the matrix representing the linear
+-- equation system for the barycentric coordinates.
 simplexToMatrix :: Simplex -> M.Matrix Double
 simplexToMatrix s@(Simplex l) = M.matrix (n+1) (concatMap append1 l)
     where n = geometricalDimension s
           append1 p = 1 : toList (fromPoint p)
 
-vectorToPoly :: M.Vector Double -> Polynomial Double
-vectorToPoly v = addP (deg0P n (head l)) (deg1P (tail l))
+-- Transforms a solution vector of the linear equation system for the
+-- barycentric coordinates into the corresponding polynomial.
+vectorToPolynomial :: M.Vector Double -> Polynomial Double
+vectorToPolynomial v = add (sclV (head l) mulId) (deg1P (tail l))
     where l = M.toList v
           n = length l - 1
+
+-- Transforms a solution vector of the linear equation system into the
+-- gradients of the barycentric coordinates.
+vectorToGradient :: M.Vector Double -> [Double]
+vectorToGradient = tail . M.toList
