@@ -6,6 +6,10 @@ import Spaces
 import MultiIndex
 import Data.List (intersperse)
 
+-- Some symbols
+dlambda = "d\x03BB"
+lambda = "\x03BB"
+phi = "\x03D5"
 
 class RenderVector v where
     ncomps :: v -> Int
@@ -60,8 +64,8 @@ printPolynomial sym ((c,mon):ls) = s <+> (text "+") <+> (printPolynomial sym ls)
 printConstant :: Double -> Doc
 printConstant = double
 
--- | Pretty print monomial using the sym for the components
-printMonomial :: Integral a => [Char] -> [a] -> Doc
+-- | Pretty print monomial using sym for the components
+printMonomial :: [Char] -> [Int] -> Doc
 printMonomial sym = printMonomial' sym 1
 
 printMonomial' :: Integral a => [Char] -> a -> [a] -> Doc
@@ -71,6 +75,21 @@ printMonomial' sym i (l:ls)
     where s = (text sym) <> printSub i <> printPower l
 printMonomial' _ _ [] = baseD
 
+-- | Print symbol for PrLambdak space
+printPrLambdak :: Int -> Int -> Doc
+printPrLambdak r k = text "\x1D4DF" <> printSub r <> text "\x039B" <> printSuperscript k
+
+-- | Print symbol for PrMinusLambdak space
+printPrMinusLambdak :: Int -> Int -> Doc
+printPrMinusLambdak r k = text "\x1D4DF" <> text "\x207B" <> printSub r <> text "\x039B" <> printSuperscript k
+
+-- | Print Whitney form
+-- TODO: Print indices > 10 with brackets
+printWhitneyForm :: (f -> [Char]) -> [(f,[Int])] -> Doc
+printWhitneyForm p ls = hsep $ punctuate (text " + ") (map printPair ls)
+    where
+      printPair (a,b) = lparen <> (text (p a)) <> rparen <+> (printPhi b)
+      printPhi ls = (text phi) <> hcat (map printSub ls)
 
 -- OR: unit as f + apply coeff
 printForm :: [Char] -> [Char] -> (f -> [Char]) -> [(f,[Int])] -> Doc
@@ -102,10 +121,15 @@ printPower i
     | otherwise = text ""
     where ld = truncate (logBase 10 (fromIntegral i))
 
--- | Pretty print subscript using unicode superscripts. Prints "" for
--- | 0.
+printSuperscript :: Integral a => a -> Doc
+printSuperscript i
+    | (i==1) = (text "\x00B9")
+    | otherwise = printPower i
+
+-- | Pretty print subscript using unicode subscripts.
 printSub :: Integral a => a -> Doc
 printSub i
+    | (i==0) = (text "\x2080")
     | (i==1) = (text "\x2081")
     | (i==2) = (text "\x2082")
     | (i==3) = (text "\x2083")
