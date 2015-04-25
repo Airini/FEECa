@@ -50,3 +50,7 @@ factorialMI = (foldl (*) 1) . (map factorial) . toListMI
 -- | List of all length n multi-indices of degree r
 degRMI :: Integral a => a -> a -> [MultiIndex]
 degRMI n r = map ZipList $ sumRLists (fromIntegral n) (fromIntegral r)
+
+-- | Checks if the first n indices of the multi-index are zero
+isZeroMI :: Int -> MultiIndex -> Bool
+isZeroMI n = (all (0 ==)) . (take n) . toListMI

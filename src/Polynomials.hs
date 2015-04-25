@@ -2,18 +2,21 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Polynomials(Term(..),
-                   Polynomial(..),
-                   deg1P,
-                   deg0P,
-                   constant,
-                   expandTerm,
-                   derive,
-                   evaluate,
+module Polynomials(barycentricCoordinate,
                    barycentricCoordinates,
-                   barycentricCoordinate,
                    barycentricGradient,
-                   barycentricGradients) where
+                   barycentricGradients,
+                   constant,
+                   deg0P,
+                   deg1P,
+                   derive,
+                   expandTerm,
+                   evaluate,
+                   monomial,
+                   multiIndices,
+                   Term(..),
+                   Polynomial(..)) where
+
 import Spaces hiding (toList)
 import Simplex
 import Vector
@@ -42,11 +45,6 @@ type Dx = Int -> MultiIndex -> [Term Double]
 coeff :: Term a -> a
 coeff (Constant c) = c
 coeff (Term c _)   = c
-
--- | Return the multi-index representing the monomial of a given term.
-monomial :: Term Double -> MultiIndex
-monomial (Constant _) = zeroMI 0
-monomial (Term _ mi)  = mi
 
 -- | Scale term by a scalar.
 sclTerm :: Field a => a -> Term a -> Term a
@@ -102,14 +100,14 @@ data Polynomial a =
                  terms  :: [Term a] }
     deriving Eq
 
--- | Polynomials as vector spaces
+-- | Polynomials as vector spaces.
 instance VectorSpace (Polynomial Double) where
   type Fieldf (Polynomial Double) = Double
   vspaceDim _ = undefined
   addV = addP
   sclV = sclP
 
--- | Polynomials as a field
+-- | Polynomials as a field.
 instance Field (Polynomial Double) where
   add    = addP
   addId  = constant 0
@@ -121,9 +119,28 @@ instance Field (Polynomial Double) where
 
   fromInt x = Polynomial 0 [Constant (fromInt x)]
 
+-- | Polynomials as functions.
+instance Function (Polynomial Double) Vector where
+  type Values (Polynomial Double) Vector = Double
+  deriv = deriveP
+  eval = evalP
+
 -- | Create a constant polynomial with the given value.
 constant :: Double -> Polynomial Double
 constant c = Polynomial 0 [Constant c]
+
+-- | Create a polynomial consisting of a single monomial from a give
+-- | multi-index.
+monomial :: Field a => MultiIndex -> Polynomial a
+monomial mi = Polynomial (degMI mi) [Term mulId mi]
+
+-- | Returns a list of the multiindices in the polynomial.
+multiIndices :: Int -> Polynomial a -> [MultiIndex]
+multiIndices n (Polynomial _ ls) = multiIndices' n ls
+
+multiIndices' :: Int -> [Term a] -> [MultiIndex]
+multiIndices' n ((Term _ mi) : ls) = mi : (multiIndices' n ls)
+multiIndices' n ((Constant _) : ls) = (zeroMI n) : (multiIndices' n ls)
 
 -- | Pretty printing of polynomials.
 instance Show (Polynomial Double) where
@@ -133,11 +150,6 @@ instance Show (Polynomial Double) where
 expandTerm :: Term Double -> (Double, MultiIndex)
 expandTerm (Constant c) = (c, zeroMI 0)
 expandTerm (Term c mi) = (c ,mi)
-
-instance Function (Polynomial Double) Vector where
-  type Values (Polynomial Double) Vector = Double
-  deriv = deriveP
-  eval = evalP
 
 -- | Add two polynomials.
 addP :: (Field a) => Polynomial a -> Polynomial a -> Polynomial a
