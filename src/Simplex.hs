@@ -24,6 +24,8 @@ import Print
 import Utility
 import GramSchmidt
 import Math.Combinatorics.Exact.Binomial
+import Math.Combinatorics.Exact.Factorial
+import qualified Numeric.LinearAlgebra.HMatrix as M
 
 -- | n-simplex represented by a list of vectors of given dimensionality
 -- | Invariant: geometrical dimension = length of the vector - 1
@@ -108,3 +110,12 @@ extendSimplex s@(Simplex ps)
           dirs = directionVectors s
           p0 = referencePoint s
           unitvs = [unitV n i | i <- [0..n-1]]
+
+-- | Computes the k-dimensional volume (Lebesgue measure) of a simplex
+-- | in n dimensions using the Gram Determinant rule.
+volume :: Simplex -> Double
+volume t = (sqrt (abs (M.det (M.mul w wT)))) / (fromInteger (factorial k))
+    where k = (topologicalDimension t)
+          n = (geometricalDimension t)
+          w = M.matrix n (concatMap toList (directionVectors t))
+          wT = M.tr w

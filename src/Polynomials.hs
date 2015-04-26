@@ -14,7 +14,7 @@ module Polynomials(barycentricCoordinate,
                    evaluate,
                    monomial,
                    multiIndices,
-                   Term(..),
+                   Term(Term),
                    Polynomial(..)) where
 
 import Spaces hiding (toList)
