@@ -60,7 +60,7 @@ b5 = barycentricCoordinates tr5
 xs = coordinates 2
 
 -- hs :: Field a => Int -> [PolyN a]
-hs n = Constant ı : rec pn1s
+hs n = constant ı : rec pn1s
   where pn1s = coordinates n
         rec ps = ps ++ (concatMap (\q -> map (q ·) pn1s) ps)
 
@@ -98,7 +98,7 @@ val1 = w4 # [v2, v2]
 val2 = (dx 1 2 /\ dx 2 2) # [vector [1,2], vector [3,4]]
 
 -- dxs' :: [DiffForm Double]
-dxs' = (fmap Constant) . dxs
+dxs' = (fmap constant) . dxs
 
 w1' = dxs' 1 /\ dxs' 2
 w2' = dxs' 3 /\ dxs' 5
@@ -107,9 +107,9 @@ dx2' = dxs' 2
 
 w2_aux = dxs' 2 /\ dxs' 1
 -- u :: DiffForm Double
---u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (Constant 0.5 .* dx1' /\ dx2')
-u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2_aux) .+. (Constant 0.5 .* dx1' /\ dx2')
-v = p .* dxs' 1 .+. (Constant 2 · p .* dxs' 2)
+--u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (constant 0.5 .* dx1' /\ dx2')
+u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2_aux) .+. (constant 0.5 .* dx1' /\ dx2')
+v = p .* dxs' 1 .+. (constant 2 · p .* dxs' 2)
 
 -- -- Evaluation of differential forms
 val3 = u § x20 # [v2, v2]

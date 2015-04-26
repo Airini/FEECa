@@ -108,13 +108,13 @@ instance VectorSpace (Polynomial Double) where
   sclV = sclP
 
 -- | Polynomials as a field.
-instance Field (Polynomial Double) where
+instance Field f => Field (Polynomial f) where
   add    = addP
-  addId  = constant 0
-  addInv = sclP (-1)
+  addId  = constant addId
+  addInv = sclP (addInv addId)
 
   mul       = mulP
-  mulId     = constant 1
+  mulId     = constant mulId
   mulInv    = undefined
 
   fromInt x = Polynomial 0 [Constant (fromInt x)]
@@ -126,7 +126,7 @@ instance Function (Polynomial Double) Vector where
   eval = evalP
 
 -- | Create a constant polynomial with the given value.
-constant :: Double -> Polynomial Double
+constant :: a -> Polynomial a
 constant c = Polynomial 0 [Constant c]
 
 -- | Create a polynomial consisting of a single monomial from a give
@@ -183,13 +183,13 @@ deriveP :: Vector -> Polynomial Double -> Polynomial Double
 deriveP = derive deriveMonomial
 
 -- | Create constant polynomial
-deg0P :: Double -> Polynomial Double
+deg0P :: a -> Polynomial a
 deg0P = constant
 
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list
 -- | equals the coefficient of the ith variable of the returned polynomial.
-deg1P :: [Double] -> Polynomial Double
+deg1P :: [a] -> Polynomial a
 deg1P ns = Polynomial 1 $ zipWith Term ns [oneMI dim i | i <- [0..dim-1]]
   where dim  = length ns
 

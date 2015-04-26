@@ -33,7 +33,7 @@ g :: Field f => DiffForm f
 g = sclV (add mulId mulId) (oneForm 2 3)
 
 h :: Field f => DiffForm f
-h = sclV (Constant addId) (oneForm 3 3)
+h = sclV (constant addId) (oneForm 3 3)
 
 t :: DiffForm Double
 t = sclV (add (constant 8.9) (deg1P [0,2,3])) (oneForm 1 5)
@@ -46,7 +46,7 @@ y = Vector [3,-2.3,1]
 dxV :: Int -> Vector -> Double
 dxV i (Vector x) = x !! (i-1)
 
-dxVP = (fmap . fmap) Constant dxV
+dxVP = (fmap . fmap) constant dxV
 expression = refine dxVP (t /\ g) [b, y]
 
 eg1 = eval (Vector [-0.1,10,0]) expression

@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module PolynomialSpaces where
 
 import Bernstein
@@ -5,8 +7,12 @@ import Combinatorics
 import Forms
 import MultiIndex
 import Polynomials
+import Print
 import Simplex
 import Spaces
+
+instance Show (Form BernsteinPolynomial) where
+  show (Fform k n cs) = show (printForm dlambda "0" show cs)
 
 -- | Lists all basis functions of a basis of the space of degree-r
 -- | k-differential forms over the given vertex t.
