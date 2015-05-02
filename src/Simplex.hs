@@ -2,18 +2,19 @@
    GADTs,
    MultiParamTypeClasses #-}
 
-module Simplex(Simplex(Simplex),
-               simplex,
-               simplex',
-               geometricalDimension,
-               topologicalDimension,
-               vertices,
-               referencePoint,
-               directionVectors,
-               subsimplex,
-               subsimplices,
-               referenceSimplex,
-               extendSimplex) where
+module Simplex( extendSimplex,
+                directionVectors,
+                geometricalDimension,
+                referencePoint,
+                referenceSimplex,
+                simplex,
+                simplex',
+                Simplex(..),
+                subsimplex,
+                subsimplices,
+                topologicalDimension,
+                vertices,
+                volume ) where
 
 import Spaces
 import Point

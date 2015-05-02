@@ -12,6 +12,7 @@ import MultiIndex
 import Math.Combinatorics.Exact.Factorial
 import Math.Combinatorics.Exact.Binomial
 
+-- TODO: Enforce consistency of polynomial and simplex.
 
 -- | Bernstein polynomial over a simplex. Represented by a normal polynomial
 -- | internally and uses the generalized functions for evaluation and derivation.
@@ -20,7 +21,7 @@ data BernsteinPolynomial = Bernstein Simplex (Polynomial Double) |
 
 -- pretty printing for Bernstein polyonmials
 instance Show BernsteinPolynomial where
-    show (Bernstein t p) = show $ printPolynomial lambda (map expandTerm (terms p))
+    show (Bernstein t p) = show $ printPolynomial0 lambda (map expandTerm (terms p))
 
 -- | Bernstein polynomials as a vector space.
 instance VectorSpace BernsteinPolynomial where
@@ -112,3 +113,11 @@ proj t i v = Bernstein t (constant $ sum (zipWith (*) grad (toList v)))
 
 degRPolynomials :: Simplex -> Int -> Int -> [BernsteinPolynomial]
 degRPolynomials t n r = [Bernstein t (monomial mi) | mi <- degRMI n r]
+
+-- | Integrate Bernstein polynomial over the simplex it is defined over.
+integralB :: BernsteinPolynomial -> Double
+integralB (Constant _) = error "integral: Cannot integrate Bernstein polynomial without associated simplex."
+integralB (Bernstein t p) = integrate n f p
+    where n = geometricalDimension t
+          f mi = (volume t) / (fromIntegral ( (n + (degMI mi)) `choose` degMI mi))
+

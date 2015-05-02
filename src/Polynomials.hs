@@ -12,6 +12,7 @@ module Polynomials(barycentricCoordinate,
                    derive,
                    expandTerm,
                    evaluate,
+                   integrate,
                    monomial,
                    multiIndices,
                    Term(Term),
@@ -141,6 +142,14 @@ multiIndices n (Polynomial _ ls) = multiIndices' n ls
 multiIndices' :: Int -> [Term a] -> [MultiIndex]
 multiIndices' n ((Term _ mi) : ls) = mi : (multiIndices' n ls)
 multiIndices' n ((Constant _) : ls) = (zeroMI n) : (multiIndices' n ls)
+multiIndices' _ [] = []
+
+-- | Expands Constant types in the list of terms and returns a list of all
+-- | coefficient multi-index pairs in the polynomial.
+toPairs :: Int -> [Term a] -> [ (a, MultiIndex) ]
+toPairs n ((Term c mi) : ls) = (c, mi) : (toPairs n ls)
+toPairs n ((Constant c) : ls) = (c, (zeroMI n)) : (toPairs n ls)
+toPairs _ [] = []
 
 -- | Pretty printing of polynomials.
 instance Show (Polynomial Double) where
@@ -181,6 +190,10 @@ derive dx v (Polynomial r ts) = Polynomial (r - 1) (concatMap (deriveTerm dx v) 
 -- | Directional derivative of a polynomial in a given space direction.
 deriveP :: Vector -> Polynomial Double -> Polynomial Double
 deriveP = derive deriveMonomial
+
+-- | General integral of a polynomial.
+integrate :: Field a => Int -> ( MultiIndex -> a ) -> Polynomial a -> a
+integrate n f (Polynomial r ts) = foldl add addId [ mul c ( f mi ) | (c, mi) <- toPairs n ts ]
 
 -- | Create constant polynomial
 deg0P :: a -> Polynomial a

@@ -14,23 +14,17 @@ import Spaces
 instance Show (Form BernsteinPolynomial) where
   show (Fform k n cs) = show (printForm dlambda "0" show cs)
 
--- | Lists all basis functions of a basis of the space of degree-r
--- | k-differential forms over the given vertex t.
-prBasis :: Simplex -> Int -> Int -> [Form BernsteinPolynomial]
-prBasis t r k = [ Fform k n [ (p, sigma) ] | p <- degRPolynomials t n r,
-                                             sigma <- increasingLists n k]
+-- | List all basis function of the space of polynomials of degree r
+-- | over the simplex.
+prBasis :: Simplex -> Int -> [BernsteinPolynomial]
+prBasis t r = [ Bernstein t (monomial mi) | mi <- degRMI n r ]
     where n = geometricalDimension t
 
--- | Lists all basis functions of the space Pr minus space of k-differential
--- | forms over the given vertex.
-prMinusBasis :: Simplex -> Int -> Int -> [Form BernsteinPolynomial]
-prMinusBasis t r k = [ sclV (lambda mi) (wF sigma) | mi <- degRMI n k,
-                                                    sigma <- increasingLists' n k,
-                                                    cond mi  sigma]
-                     where cond mi sigma = isZeroMI (minimum sigma) mi
-                           lambda = bernsteinMonomial t
-                           wF = whitneyForm t
-                           n = geometricalDimension t
+-- | List all basis functions of the space of k-differential
+-- | forms of degree 1 over the given vertex.
+p1MinusBasis :: Simplex -> Int -> [Form BernsteinPolynomial]
+p1MinusBasis t k = [ whitneyForm t ls | ls <- increasingLists' n k ]
+    where n = geometricalDimension t
 
 whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
 whitneyForm t ls = Fform k n [( lambda' i, subsets !! i) | i <- [0..k]]
