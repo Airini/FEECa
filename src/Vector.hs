@@ -30,7 +30,7 @@ instance Show Vector where
 
 instance VectorSpace Vector where
   type Fieldf Vector   = Double
-  vspaceDim (Vector l) = length l
+--  vspaceDim (Vector l) = length l
   addV (Vector l1) (Vector l2) = Vector $ zipWith (+) l1 l2
   sclV c (Vector l) = Vector $ map (c*) l
 

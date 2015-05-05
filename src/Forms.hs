@@ -27,7 +27,7 @@ type Dim = Int
 -- XXX: dimVec or dimSpa?
 
 -- | Bilinear, alternating forms over vectorspaces
-data Form f =  -- we lose dependency on the type of vector! 
+data Form f =  -- we lose dependency on the type of vector!
     Fform { arity :: Dim                    -- ^ For complete evaluation
           , dimVec :: Dim                   -- ^ Of the underlying vector space
           , constituents :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
@@ -36,7 +36,7 @@ data Form f =  -- we lose dependency on the type of vector!
 {- where the f in constituents might very well be changed to (v -> f) so as to
    englobe differential forms -}
 
--- constituents [([1,2],17), ([1,3], 38)] = 17*dx1/\dx2 + 38*dx1/\dx3
+-- constituents [(17, [1,2]), (38, [1,3])] = 17*dx1/\dx2 + 38*dx1/\dx3
 
 -- | Invariant for constituents of a defined form: all terms have the same arity
 --   ie: each is the result of the exterior product of the same number of 1-forms
@@ -98,7 +98,7 @@ omega //\\ eta
 
 instance (Field f) => VectorSpace (Form f) where
   type Fieldf (Form f) = f
-  vspaceDim _ = undefined
+--   vspaceDim _ = undefined
   addV = (+++)
   sclV = (***)
 
@@ -129,11 +129,11 @@ nullForm n = Fform 0 n []
 
 
 -- Necesitamos una función de pinchado
---  y así pinchar las consecutivas componentes 
+--  y así pinchar las consecutivas componentes
 -- If the function was actually a field, this part would be simplified
 contract :: (Field f, VectorSpace v, Dimensioned v) =>
               (Int -> v -> f) -> Form f -> v -> Form f
-contract proj omega v 
+contract proj omega v
     | vecNEq omega v = errForm "contract" MoVecEq
     | otherwise      = Fform (max 0 (arity omega - 1)) (dimVec omega) $
         concatMap (\c -> map (pinchado c) [1..arity omega])
@@ -177,7 +177,7 @@ formify proj (s, i:is)
 
 
 -- We need a basis here
-inner :: (Field f, VectorSpace v) =>
+inner :: (Field f, VectorSpace v, Dimensioned v) =>
          (Int -> v -> f)  -- ^ Projection function in the specific vector space
       -> (Int -> v)       -- ^ Basis of the specific vector space
       -> Form f -> Form f -> f
@@ -189,7 +189,7 @@ inner proj basisIx omega eta
             (map choose (permutations n (arity omega)))
   where choose is = pick (differences is) (map basisIx [1..n])
         apply = refine proj
-        n = vspaceDim (basisIx 0)
+        n = dim (basisIx 0)
 
 
 -- * Helper functions
@@ -247,9 +247,7 @@ instance (VectorSpace v, f ~ (Fieldf v)) => Function (Poly v f) v where
 
 instance Field f => VectorSpace (Poly v f) where
   type Fieldf (Poly v f) = f
-  vspaceDim = undefined
+--  vspaceDim = undefined
   addV (Pp g) (Pp h) = Pp $ \vs -> add (g vs) (h vs)
   sclV a (Pp g) = Pp $ \vs -> mul a (g vs)
 --
-
-

@@ -104,7 +104,7 @@ data Polynomial a =
 -- | Polynomials as vector spaces.
 instance VectorSpace (Polynomial Double) where
   type Fieldf (Polynomial Double) = Double
-  vspaceDim _ = undefined
+--  vspaceDim _ = undefined
   addV = addP
   sclV = sclP
 

@@ -31,7 +31,7 @@ instance VectorSpace Point where
 -- could keep just Point or Vector and define one in terms of the other?
 instance VectorSpace Point where
   type Fieldf Point = Double
-  vspaceDim = dim
+--  vspaceDim = dim
   addV (Point p) (Point q) = Point $ zipWith (+) p q
   sclV x (Point p) = Point $ map (*x) p
 

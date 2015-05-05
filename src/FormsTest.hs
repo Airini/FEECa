@@ -31,7 +31,7 @@ checkList max = [
      ] ++
      map (\p -> propT 1 (\_ _ v -> forAll (pairOf intCofG intCofG) (\(a,b) -> p a b v)))
          [ propV_sclTwice, propV_scladdFDistr ]
-  where 
+  where
     propT :: Testable prop => Int -> (Form Cof -> Form Cof -> Form Cof -> prop)
                            -> Int -> Property
     propT = calls max
@@ -120,7 +120,7 @@ scaleList a (Vex n xs) = Vex n (map (mul a) xs)
 
 instance Field f => VectorSpace (Vector f) where
   type Fieldf (Vector f) = f
-  vspaceDim (Vex n _) = n
+--  vspaceDim (Vex n _) = n
   addV = addList
   sclV = scaleList
 
@@ -211,7 +211,7 @@ ex2 = Fform 1 3 [(3, [2])]
 swapP :: (a,b) -> (b,a)
 swapP (x,y) = (y,x)
 
-readjustLs = map ({-pairM id-} fmap (map (+1)) . swapP) 
+readjustLs = map ({-pairM id-} fmap (map (+1)) . swapP)
 
 t1 = Fform 1 3 $ map (pairM id (map (+1))) [(2.0,[2]),(-47.0,[0]),(-35.0,[2]),(-50.0,[1]),(-3.0,[1]),(29.0,[0]),(-11.0,[1]),(-17.0,[1]),(-6.0,[0]),(30.0,[1])]
 t2 = Fform 1 3 $ readjustLs [([2],-17.0),([2],53.0),([0],-36.0),([1],-51.0),([2],-47.0),([1],-28.0),([0],58.0),([0],-48.0),([0],-4.0),([1],20.0)]
@@ -241,5 +241,3 @@ w11 = Vex 4 [1.5773861993384442,-1.1460776866077544,1.7742616271614313,-0.901806
 w12 = Vex 4 [-0.21170692122026136,1.6632120262867778,-1.724037198208147,-1.6436320598605525]
 w13 = Vex 4 [2.410555890785659,0.7022275293697664,1.868784153110374,-2.395261069692179]
 w14 = Vex 4 [-1.8496042438381677,-1.931089886918443,-2.191543818895587,-2.3759625222802123]
-
-

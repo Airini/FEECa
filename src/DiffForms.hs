@@ -62,7 +62,7 @@ diff :: (Function (Polynomial Double) v) => (Int -> v) -> v -> DiffForm Double -
 diff basisIx x form =
     foldr (addA . (\ i -> fmap (deriv (basisIx i)) (oneForm i n /\ form)))
           (zeroForm (1 + arity form) n)
-          [1 .. vspaceDim x] -- XXX: shall we use dimVec (n) ?? and so avoid the ugly x
+          [1 .. n] -- XXX: shall we use dimVec (n) ?? and so avoid the ugly x: TODO: remove x
   where n = dimVec form
 
 -- Generalised to any appropriate form (polynomial differential forms being but
@@ -71,7 +71,7 @@ df :: (Function h v, Algebra (Form h)) => (Int -> v) -> Form h -> Form h
 df basisIx form =
     foldr (addA . (\i -> fmap (deriv (basisIx i)) (oneForm i n /\ form)))
           (zeroForm (1 + arity form) n)
-          [1..vspaceDim (basisIx 0)]
+          [1..n]
   where n = dimVec form
 
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
@@ -81,4 +81,3 @@ evalDF u = ($u) . fmap . eval . vectify
   where vectify (Point q) = vector q
 
 --- evalForm :: giving a polynomial
-

@@ -5,7 +5,7 @@
 
 module Spaces where
 
-class Field v where
+class Field v where  -- TODO: Actually Ring
   add     :: v -> v -> v
   addId   :: v
   addInv  :: v -> v
@@ -33,9 +33,10 @@ instance Field Double where
   fromInt = fromIntegral
   pow = (^^)
 
-class (Field (Fieldf v)) => VectorSpace v where
+class (Field (Fieldf v)) => VectorSpace v where -- Module over a Ring
   type Fieldf v :: *      -- Coefficient field
-  vspaceDim :: v -> Int   -- Morally an associated constant, could be modelled with a type :: Nat
+-- TODO: perhaps remove in favour of just "dim"
+--   vspaceDim :: v -> Int   -- Morally an associated constant, could be modelled with a type :: Nat
   addV  :: v -> v -> v
   sclV  :: Fieldf v -> v -> v
 
@@ -82,5 +83,3 @@ class (VectorSpace v, Field (Values h v)) => Function h v where -- h ~= v -> Val
 
 class Dimensioned t where
   dim :: t -> Int
-
-
