@@ -48,7 +48,7 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Combinatorics, CombinatoricsTest, Discrete, Forms, FormsTest, Polynomials, Simplex, SimplexTest, Spaces, PolyN, DiffForms, Point, Vector
+  exposed-modules:     Combinatorics, CombinatoricsTest, Discrete, Forms, FormsTest, Polynomials, Simplex, SimplexTest, Spaces, DiffForms, Point, Vector
   
   -- Modules included in this library but not exported.
   other-modules:       Demo
