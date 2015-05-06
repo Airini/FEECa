@@ -78,22 +78,27 @@ coordinates = fmap deg1P . canonCoords
 bssIx n = vector . flip canonCoord n
 
 -- or <|> ?
-(<>) :: Form Double -> Form Double -> Int -> Double
-(<>) omega eta n = inner dxV (bssIx n) omega eta
--- n = max of the dx _i_ ?? enough?
+(<>) :: Form Double -> Form Double -> Double
+(<>) omega eta = inner dxV (bssIx n) omega eta
+  where n = dimVec omega
 
 (⌟) :: Form Double -> Vector -> Form Double
 (⌟) = contract dxV
 
+interior = (⌟)
 
-𝝹 :: Form (Polynomial Double) -> Int -> Form (Polynomial Double)
-𝝹 form n = contract (const . flip coordinate n) form (undefined::Vector)
+𝝹 :: Form (Polynomial Double) -> Form (Polynomial Double)
+𝝹 form = contract (const . flip coordinate n) form (undefined::Vector)
+  where n = dimVec form
 -- TODO: extract degree from polynomial
+kappa = 𝝹
 
--- For now: dimensioned passed in
-d :: Int -> Monop (Form (Polynomial Double))
-d n = df (vector . flip canonCoord n) --(vector $ coordinate 0 2)
+-- | Exterior derivative
+d :: Monop (Form (Polynomial Double))
+d form = df (vector . flip canonCoord n) form
+  where n = dimVec form
 
+-- | Evaluation of differential forms at a given point to obtain an alternating form
 (§) :: Form (Polynomial Double) -> Point -> Form Double
 (§) = evalDF
 

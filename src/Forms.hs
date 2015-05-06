@@ -52,6 +52,8 @@ instance Functor Form where
 -- TODO: Applicative to simplify the following operations!!!
 -- XXX: also to be able to lift polynomials easily into it
 
+-- TODO: Pretty class
+
 instance (Show f) => Show (Form f) where
   show (Fform k n cs) = show k ++ "-form in " ++ show n ++ " dimensions: " ++
                         show (printForm "dx" "0" show cs)
@@ -98,7 +100,6 @@ omega //\\ eta
 
 instance (Field f) => VectorSpace (Form f) where
   type Fieldf (Form f) = f
---   vspaceDim _ = undefined
   addV = (+++)
   sclV = (***)
 
@@ -247,7 +248,6 @@ instance (VectorSpace v, f ~ (Fieldf v)) => Function (Poly v f) v where
 
 instance Field f => VectorSpace (Poly v f) where
   type Fieldf (Poly v f) = f
---  vspaceDim = undefined
   addV (Pp g) (Pp h) = Pp $ \vs -> add (g vs) (h vs)
   sclV a (Pp g) = Pp $ \vs -> mul a (g vs)
 --

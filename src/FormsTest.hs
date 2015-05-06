@@ -120,7 +120,6 @@ scaleList a (Vex n xs) = Vex n (map (mul a) xs)
 
 instance Field f => VectorSpace (Vector f) where
   type Fieldf (Vector f) = f
---  vspaceDim (Vex n _) = n
   addV = addList
   sclV = scaleList
 

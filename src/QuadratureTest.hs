@@ -6,6 +6,7 @@ import Test.QuickCheck
 -- | Evaluate Jacobi polynomials at the Gauss quadrature nodes and check
 -- | if they are approximately zeros as they should be. Does not check for
 -- | high a, b, n, but may be due to numerical instability.
+-- FIXME: fails!! input case: 1 2 0
 prop_jacobi_zeros :: Int -> Int -> Int -> Property
 prop_jacobi_zeros n a b  = ((n > 0) && (n < 10) && (a >= 1) && (a <= 10)) ==>
                  all (eqNum 0.0) [jacobiP n a a x | x <- gjnodes]

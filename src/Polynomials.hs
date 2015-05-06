@@ -49,7 +49,8 @@ coeff (Term c _)   = c
 
 -- | Scale term by a scalar.
 sclTerm :: Field a => a -> Term a -> Term a
-sclTerm c1 (Term c2 mi) = Term (mul c1 c2) mi
+sclTerm c1 (Term c2 mi)  = Term (mul c1 c2) mi
+sclTerm c1 (Constant c2) = Constant (mul c1 c2)
 
 -- | Multiply two terms.
 mulTerm :: Field a => Term a -> Term a -> Term a
@@ -104,7 +105,6 @@ data Polynomial a =
 -- | Polynomials as vector spaces.
 instance VectorSpace (Polynomial Double) where
   type Fieldf (Polynomial Double) = Double
---  vspaceDim _ = undefined
   addV = addP
   sclV = sclP
 

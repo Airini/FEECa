@@ -23,7 +23,6 @@ instance RenderVector Point where
 {-
 instance VectorSpace Point where
   type Fieldf Point = Fieldf [Double]
-  vspaceDim (Point p) = vspaceDim p
   addV (Point p) (Point q) = point $ addV p q
   sclV x (Point p) = point $ sclV x p
 -}
@@ -31,7 +30,6 @@ instance VectorSpace Point where
 -- could keep just Point or Vector and define one in terms of the other?
 instance VectorSpace Point where
   type Fieldf Point = Double
---  vspaceDim = dim
   addV (Point p) (Point q) = Point $ zipWith (+) p q
   sclV x (Point p) = Point $ map (*x) p
 

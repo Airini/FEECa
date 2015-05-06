@@ -58,8 +58,8 @@ eg1 = eval (Vector [-0.1,10,0]) expression
 --       arbitrary vector from which dimension can be extracted...
 --      OR: add zero-th vector to 'VectorSpace' class?
 -- Remark: reduced generality for our R^n types
-diff :: (Function (Polynomial Double) v) => (Int -> v) -> v -> DiffForm Double -> DiffForm Double
-diff basisIx x form =
+diff :: (Function (Polynomial Double) v) => (Int -> v) -> DiffForm Double -> DiffForm Double
+diff basisIx form =
     foldr (addA . (\ i -> fmap (deriv (basisIx i)) (oneForm i n /\ form)))
           (zeroForm (1 + arity form) n)
           [1 .. n] -- XXX: shall we use dimVec (n) ?? and so avoid the ugly x: TODO: remove x

@@ -32,5 +32,3 @@ QuadratureTest.hs
 SimplexTest.hs
 Test.hs -- dummy file?
 
-# To be removed
-PolyN.hs

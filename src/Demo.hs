@@ -99,16 +99,19 @@ val2 = (dx 1 2 /\ dx 2 2) # [vector [1,2], vector [3,4]]
 
 -- dxs' :: [DiffForm Double]
 dxs' = (fmap constant) . dxs
+dxs_2' = (fmap constant) . dxs2
 
 w1' = dxs' 1 /\ dxs' 2
 w2' = dxs' 3 /\ dxs' 5
-dx1' = dxs' 1
-dx2' = dxs' 2
 
-w2_aux = dxs' 2 /\ dxs' 1
+dx1' = dxs_2' 1
+dx2' = dxs_2' 2
+
+w1_2 = dxs_2' 1 /\ dxs_2' 2
+w2_2 = dxs_2' 2 /\ dxs' 1
+
 -- u :: DiffForm Double
---u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (constant 0.5 .* dx1' /\ dx2')
-u = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2_aux) .+. (constant 0.5 .* dx1' /\ dx2')
+u = (hs 2 !! 0) .* w1_2 .+. ((hs 2 !! 3) .* w2_2) .+. (constant 0.5 .* dx1' /\ dx2')
 v = p .* dxs' 1 .+. (constant 2 · p .* dxs' 2)
 
 -- -- Evaluation of differential forms
@@ -116,20 +119,21 @@ val3 = u § x20 # [v2, v2]
 val4 = (dx1' /\ dx2') § x22 # [vector [1, 2], vector [3, 4]]
 val5 = p .* dx1' § x21 # [v2]
 
--- Differentiation
-du = d 2 u
+-- Differentiation: TODO: control over arity? (bound by dimVec)
+du = d u
 
--- Koszul differential: TODO: remove n dependency (encode in form type)
-ku = 𝝹 u 2
+-- Koszul differential: TODO: undefined now => express X(x) as polynomial...
+-- ku = 𝝹 u
 
 -- Inner product
-val6 = (w1 <> w2) 5 -- summation over the basis
+val6 = (w1 <> w2) -- summation over the basis
 -- val7 = inner u v t3 -- same summation but also an integration over all x in t3
 
 -- Interior product/contraction
 v5 = vector [1..5]
+u5 = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (constant 0.5 .* dxs' 1 /\ dxs' 2)
 val7 = w1 ⌟ v5
-val8 = u & v5
+val8 = u5 & v5
 val9 = w1' & v5
 val10 = v & v5
 val11 = w4 ⌟ v2

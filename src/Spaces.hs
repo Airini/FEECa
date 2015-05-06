@@ -54,7 +54,6 @@ zeroV = sclV addId
 (cfr: tt) ==> likely to bring this instance back, just testing
 instance (Field a, Eq [a]) => VectorSpace [a] where
   type Fieldf [a] = a
-  vspaceDim = length
 
   addV [] [] = []
   addV (v:vs) (w:ws) = add v w : addV vs ws

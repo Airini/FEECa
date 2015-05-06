@@ -26,7 +26,6 @@ instance Show BernsteinPolynomial where
 -- | Bernstein polynomials as a vector space.
 instance VectorSpace BernsteinPolynomial where
     type Fieldf BernsteinPolynomial = Double
-    vspaceDim (Bernstein t p) = undefined
     addV = addB
     sclV = sclB
 
