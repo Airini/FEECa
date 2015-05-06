@@ -48,7 +48,7 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Combinatorics, CombinatoricsTest, Discrete, Forms, FormsTest, Polynomials, Simplex, SimplexTest, Spaces, DiffForms, Point, Vector
+  exposed-modules:     Combinatorics, CombinatoricsTest, Discrete, FiniteElementSpaces, Forms, FormsTest, Polynomials, Simplex, SimplexTest, Spaces, DiffForms, Point, Vector
   
   -- Modules included in this library but not exported.
   other-modules:       Demo
@@ -57,7 +57,7 @@ library
   other-extensions:    GADTs, FlexibleInstances, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, FlexibleContexts, UndecidableInstances, OverlappingInstances
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.7 && <4.8, exact-combinatorics >=0.2 && <0.3, QuickCheck >=2.7 && <2.8, random >=1.0 && <1.1, hmatrix >=0.16 && <0.17, type-natural >=0.2 && <0.3, pretty >= 1.1  
+  build-depends:       base >=4.7 && <4.8, exact-combinatorics >=0.2 && <0.3, QuickCheck >=2.7, random >=1.0 && <1.1, hmatrix >=0.16 && <0.17, type-natural >=0.2 && <0.3, pretty >= 1.1  
   
   -- Directories containing source files.
   -- hs-source-dirs:      
