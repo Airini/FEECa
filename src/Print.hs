@@ -1,6 +1,12 @@
-module Print where
+module Print (
+   RenderVector(..), Pretty(..)
+  , printDouble, printComponent, printVector, printVectorColl
+  , printPolynomial, printPolynomial0, printForm
+  , lambda
+  ) where
 
 import Text.PrettyPrint
+import Text.PrettyPrint.HughesPJClass
 import Text.Printf
 import Spaces
 import MultiIndex
@@ -55,17 +61,17 @@ maxWidth p l = maximum (map numLen l) + p + 1
 
 -- | Pretty print polynomial
 printPolynomial :: Integral a => [Char] -> [(Double,MultiIndex)] -> Doc
-printPolynomial sym [] = double 0.0
-printPolynomial sym ((c,mon):[]) = (double c) <+> (printMonomial sym (toListMI mon))
-printPolynomial sym ((c,mon):ls) = s <+> (text "+") <+> (printPolynomial sym ls)
-    where s = (double c) <+> (printMonomial sym (toListMI mon))
+printPolynomial sym []           = double 0.0
+printPolynomial sym [ (c,mon) ]  = double c <+> printMonomial sym (toListMI mon)
+printPolynomial sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
+    where s = double c <+> printMonomial sym (toListMI mon)
 
 -- | Pretty print polynomial
 printPolynomial0 :: Integral a => [Char] -> [(Double,MultiIndex)] -> Doc
-printPolynomial0 sym [] = double 0.0
-printPolynomial0 sym ((c,mon):[]) = (double c) <+> (printMonomial0 sym (toListMI mon))
-printPolynomial0 sym ((c,mon):ls) = s <+> (text "+") <+> (printPolynomial sym ls)
-    where s = (double c) <+> (printMonomial0 sym (toListMI mon))
+printPolynomial0 sym []           = double 0.0
+printPolynomial0 sym [ (c,mon) ]  = double c <+> printMonomial0 sym (toListMI mon)
+printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
+    where s = double c <+> printMonomial0 sym (toListMI mon)
 
 
 -- | Pretty print constant
@@ -82,9 +88,9 @@ printMonomial0 sym = printMonomial' sym 0
 
 printMonomial' :: Integral a => [Char] -> a -> [a] -> Doc
 printMonomial' sym i (l:ls)
-    | l > 0 = s <> printMonomial' sym (i+1) ls
+    | l > 0     = s <> printMonomial' sym (i+1) ls
     | otherwise = printMonomial' sym (i+1) ls
-    where s = (text sym) <> printSub i <> printPower l
+  where s = text sym <> printSub i <> printPower l
 printMonomial' _ _ [] = baseD
 
 -- | Print symbol for PrLambdak space
@@ -99,17 +105,17 @@ printPrMinusLambdak r k = text "\x1D4DF" <> text "\x207B" <> printSub r <> text 
 -- TODO: Print indices > 10 with brackets
 printWhitneyForm :: (f -> [Char]) -> [(f,[Int])] -> Doc
 printWhitneyForm p ls = hsep $ punctuate (text " + ") (map printPair ls)
-    where
-      printPair (a,b) = lparen <> (text (p a)) <> rparen <+> (printPhi b)
-      printPhi ls = (text phi) <> hcat (map printSub ls)
+  where
+    printPair (a,b) = lparen <> text (p a) <> rparen <+> printPhi b
+    printPhi ls = text phi <> hcat (map printSub ls)
 
 -- OR: unit as f + apply coeff
 printForm :: [Char] -> [Char] -> (f -> [Char]) -> [(f,[Int])] -> Doc
 printForm _  unit _     []   = text unit -- $ coeff addId
 printForm df _    coeff rest = hsep $ punctuate (text " +") $
-    map (\(a,cs) -> text "(" <> (text . coeff) a <> text ")" <+>
-                    hsep (intersperse wedgeD (map ((<>) (text df) . printSub) cs)))
-    rest
+  map (\(a,cs) -> text "(" <> (text . coeff) a <> text ")" <+>
+                  hsep (intersperse wedgeD (map ((<>) (text df) . printSub) cs)))
+      rest
 
 
 -- * Auxiliary prints
@@ -121,37 +127,37 @@ baseD = text ""
 -- | 0.
 printPower :: Integral a => a -> Doc
 printPower i
-    | (i==2) = (text "\x00B2")
-    | (i==3) = (text "\x00B3")
-    | (i==4) = (text "\x2074")
-    | (i==5) = (text "\x2075")
-    | (i==6) = (text "\x2076")
-    | (i==7) = (text "\x2077")
-    | (i==8) = (text "\x2078")
-    | (i==9) = (text "\x2079")
-    | (i > 9) = printPower (div i 10)  <> printPower (mod i 10)
+    | i==2  = text "\x00B2"
+    | i==3  = text "\x00B3"
+    | i==4  = text "\x2074"
+    | i==5  = text "\x2075"
+    | i==6  = text "\x2076"
+    | i==7  = text "\x2077"
+    | i==8  = text "\x2078"
+    | i==9  = text "\x2079"
+    | i > 9 = printPower (div i 10)  <> printPower (mod i 10)
     | otherwise = text ""
     where ld = truncate (logBase 10 (fromIntegral i))
 
 printSuperscript :: Integral a => a -> Doc
 printSuperscript i
-    | (i==1) = (text "\x00B9")
+    | i==1      = text "\x00B9"
     | otherwise = printPower i
 
 -- | Pretty print subscript using unicode subscripts.
 printSub :: Integral a => a -> Doc
 printSub i
-    | (i==0) = (text "\x2080")
-    | (i==1) = (text "\x2081")
-    | (i==2) = (text "\x2082")
-    | (i==3) = (text "\x2083")
-    | (i==4) = (text "\x2084")
-    | (i==5) = (text "\x2085")
-    | (i==6) = (text "\x2086")
-    | (i==7) = (text "\x2087")
-    | (i==8) = (text "\x2088")
-    | (i==9) = (text "\x2089")
-    | (i > 9) = printSub (div i 10)  <> printSub (mod i 10)
+    | i==0  = text "\x2080"
+    | i==1  = text "\x2081"
+    | i==2  = text "\x2082"
+    | i==3  = text "\x2083"
+    | i==4  = text "\x2084"
+    | i==5  = text "\x2085"
+    | i==6  = text "\x2086"
+    | i==7  = text "\x2087"
+    | i==8  = text "\x2088"
+    | i==9  = text "\x2089"
+    | i > 9 = printSub (div i 10)  <> printSub (mod i 10)
     | otherwise = text ""
     where ld = truncate (logBase 10 (fromIntegral i))
 

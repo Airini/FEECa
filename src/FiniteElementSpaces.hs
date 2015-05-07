@@ -28,7 +28,7 @@ p1MinusBasis t k = [ whitneyForm t ls | ls <- increasingLists' n k ]
 
 whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
 whitneyForm t ls = Fform k n [( lambda' i, subsets !! i) | i <- [0..k]]
-    where k = (length ls) - 1
+    where k = length ls - 1
           n = geometricalDimension t
           subsets = sublists1 ls
           lambda' i = sclV ((-1)^i) (Bernstein t (monomial (oneMI n i)))

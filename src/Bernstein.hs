@@ -47,13 +47,13 @@ bernsteinMonomial t mi = Bernstein t (monomial mi)
 
 -- | Create a constant bernstein monomial.
 constantB :: Double -> BernsteinPolynomial
-constantB c = Constant c
+constantB = Constant
 
 -- | Derivative of a Bernstein monomial
 deriveMonomial :: Simplex -> Int -> MultiIndex -> [Term Double]
 deriveMonomial t d mi
-  | d < dim mi = [Term ((r i) * (dbs i)) (decMI d mi) | i <- [0..n]]
-  | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
+    | d < dim mi = [Term (r i * dbs i) (decMI d mi) | i <- [0..n]]
+    | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
   where mi' = toListMI mi
         r i = fromInteger (mi' !! i)
         bs = barycentricCoordinates t
@@ -63,21 +63,21 @@ deriveMonomial t d mi
 -- | Derive Bernstein polynomial.
 deriveB :: Vector -> BernsteinPolynomial -> BernsteinPolynomial
 deriveB v (Bernstein t p) = Bernstein t (derive (deriveMonomial t) v p)
-deriveB v (Constant c) = (Constant 0)
+deriveB v (Constant c)    = Constant 0
 
 -- | Add Bernstein polynomials.
 addB :: BernsteinPolynomial -> BernsteinPolynomial -> BernsteinPolynomial
 addB (Bernstein t1 p1) (Bernstein t2 p2)
      | t1 /= t2 = error "addB: Cannot add Bernstein polynomials defined over different simplices."
      | otherwise = Bernstein t1 (add p1 p2)
-addB (Constant c) (Bernstein t  p) = Bernstein t (add p (constant c))
-addB (Bernstein t  p) (Constant c) = Bernstein t (add p (constant c))
-addB (Constant c1) (Constant c2) = Constant (c1 + c2)
+addB (Constant c)      (Bernstein t  p) = Bernstein t (add p (constant c))
+addB (Bernstein t p)   (Constant c)     = Bernstein t (add p (constant c))
+addB (Constant c1)     (Constant c2)    = Constant (c1 + c2)
 
 -- | Scale Bernstein polynomial.
 sclB :: Double -> BernsteinPolynomial -> BernsteinPolynomial
-sclB c (Bernstein t p) = (Bernstein t (sclV c p))
-sclB c1 (Constant c2) = Constant (c1 * c2)
+sclB c  (Bernstein t p) = Bernstein t (sclV c p)
+sclB c1 (Constant c2)   = Constant (c1 * c2)
 
 -- | Multiply two Bernstein polynomials.
 mulB :: BernsteinPolynomial -> BernsteinPolynomial -> BernsteinPolynomial
@@ -91,7 +91,7 @@ mulB (Constant c1) (Constant c2) = Constant (c1 * c2)
 -- | Evaluat a Bernstein monomial over a given simplex at Vector
 -- TODO: change vector to point
 evalMonomial :: Simplex -> Vector -> MultiIndex -> Double
-evalMonomial t v mi = (prefactor n mi) * (powV (vector lambda) mi)
+evalMonomial t v mi = prefactor n mi * powV (vector lambda) mi
     where lambda = map (eval v) (barycentricCoordinates t)
           n = geometricalDimension t
 
@@ -102,7 +102,7 @@ evalB v (Constant c) = c
 
 -- | Prefactor for Bernstein polynomials.
 prefactor :: Int -> MultiIndex -> Double
-prefactor n a = (fromInteger (factorial n)) / fromInteger (factorialMI a)
+prefactor n a = fromInteger (factorial n) / fromInteger (factorialMI a)
 
 -- | Projection fuction for gradients of barycentric coordinates as basis for
 -- | the space of alternating forms.
@@ -118,5 +118,5 @@ integralB :: BernsteinPolynomial -> Double
 integralB (Constant _) = error "integral: Cannot integrate Bernstein polynomial without associated simplex."
 integralB (Bernstein t p) = integrate n f p
     where n = geometricalDimension t
-          f mi = (volume t) / (fromIntegral ( (n + (degMI mi)) `choose` degMI mi))
+          f mi = volume t / fromIntegral ((n + degMI mi) `choose` degMI mi)
 

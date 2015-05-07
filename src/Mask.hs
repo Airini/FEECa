@@ -5,7 +5,6 @@ import Spaces
 import Polynomials
 import Forms
 import DiffForms
-import Polynomials
 import Control.Applicative
 import Vector
 import Point
@@ -66,7 +65,7 @@ canonCoord i n = take n $
                   (repeat addId : iterate (addId:) (mulId:repeat addId)) !! i
 
 canonCoords :: Field a => Int -> [[a]]
-canonCoords n = map (flip canonCoord n) [1..n]
+canonCoords n = map (`canonCoord` n) [1..n]
 
 coordinate :: Field f => Int -> Int -> Polynomial f
 coordinate i n = deg1P (canonCoord i n)

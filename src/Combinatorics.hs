@@ -25,7 +25,7 @@ unrankIndices k n = map (\x -> x - 1) (unrankRec [] k n)
 
 -- | Compute the increasing list corresponding to a given index n and length k.
 unrank :: Integral a => a -> a -> [a]
-unrank k n = unrankRec [] k n
+unrank = unrankRec []
 
 unrankRec :: Integral a => [a] -> a -> a -> [a]
 unrankRec l 0 _ = l
@@ -39,7 +39,7 @@ increasingLists n k = map (unrank (fromIntegral k)) [0..n `choose` k -1]
 
 -- | List all length-k increasing subsequences of 0,...,n
 increasingLists' :: (Integral a, Num a) => a -> a -> [[a]]
-increasingLists' n k = map (map ((-1) +)) (map (unrank (fromIntegral (k + 1))) [0..(n+1) `choose` (k+1)-1])
+increasingLists' n k = map (map ((-1) +) . unrank (fromIntegral (k + 1))) [0..(n+1) `choose` (k+1)-1]
 
 -- | Ranks of the k-1 increasing sublists of the k-increasing list given by its rank n
 sublists :: Int -> Int -> [Int]
@@ -55,14 +55,14 @@ sublists' ls r k n = sublists' (n':ls) (r + ccc) (k-1) (n - cc)
           n' = r + n - cc
 
 sublists1 :: [a] -> [[a]]
-sublists1 ls = [ (take i ls) ++ (drop (i+1) ls) | i <- [0 .. (length ls)-1]]
+sublists1 ls = [ take i ls ++ drop (i+1) ls | i <- [0 .. length ls - 1]]
 
 -- | All length n list of integers whose entries sum to r
 sumRListsStrict :: Integral a => a -> a -> [[a]]
 sumRListsStrict n r
-          | r == 0 = [replicate (fromIntegral n) 0]
-          | n == 1 = [[r]]
-          | otherwise = concat [[ls ++ [l] | ls <- sumRListsStrict (n-1) (r-l)] | l <- [0..r]]
+    | r == 0 = [replicate (fromIntegral n) 0]
+    | n == 1 = [[r]]
+    | otherwise = concat [[ls ++ [l] | ls <- sumRListsStrict (n-1) (r-l)] | l <- [0..r]]
 
 -- | All length n lists of integers whose sum to r or less
 sumRLists :: Integral a => a -> a -> [[a]]

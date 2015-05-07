@@ -9,10 +9,9 @@ module DiffForms (DiffForm, df, evalDF, dxV, dxVP) where
 import Forms
 import Spaces
 import Polynomials
-import Utility (pairM)
 import Vector
 import Point
-import Polynomials
+import Utility (pairM)
 import Control.Applicative (pure)
 
 

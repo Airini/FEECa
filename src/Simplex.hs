@@ -115,8 +115,8 @@ extendSimplex s@(Simplex ps)
 -- | Computes the k-dimensional volume (Lebesgue measure) of a simplex
 -- | in n dimensions using the Gram Determinant rule.
 volume :: Simplex -> Double
-volume t = (sqrt (abs (M.det (M.mul w wT)))) / (fromInteger (factorial k))
-    where k = (topologicalDimension t)
-          n = (geometricalDimension t)
+volume t = sqrt (abs (M.det (M.mul w wT))) / fromInteger (factorial k)
+    where k = topologicalDimension t
+          n = geometricalDimension t
           w = M.matrix n (concatMap toList (directionVectors t))
           wT = M.tr w

@@ -14,7 +14,7 @@ import Data.List (intersect)
 import Spaces
 import Discrete
 import Utility (pairM)
-import Print (printForm)
+import Print (Pretty(..), printForm)
 import Control.Applicative
 
 
@@ -31,7 +31,7 @@ data Form f =  -- we lose dependency on the type of vector!
     Fform { arity :: Dim                    -- ^ For complete evaluation
           , dimVec :: Dim                   -- ^ Of the underlying vector space
           , constituents :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
-  deriving Eq
+  deriving (Eq, Show)
 
 {- where the f in constituents might very well be changed to (v -> f) so as to
    englobe differential forms -}
@@ -52,11 +52,12 @@ instance Functor Form where
 -- TODO: Applicative to simplify the following operations!!!
 -- XXX: also to be able to lift polynomials easily into it
 
--- TODO: Pretty class
 
-instance (Show f) => Show (Form f) where
-  show (Fform k n cs) = show k ++ "-form in " ++ show n ++ " dimensions: " ++
-                        show (printForm "dx" "0" show cs)
+-- XXX: change to Pretty f once all other modules are up to date
+instance Show f => Pretty (Form f) where
+  pPrint (Fform k n cs) = printForm "dx" "0" show cs -- show or pPrint...
+  {- show k ++ "-form in " ++ show n ++ " dimensions: " ++
+                          show (printForm "dx" "0" show cs)-}
 
 -- XXX: have combinator
 --        aggregate f p cs1 cs2

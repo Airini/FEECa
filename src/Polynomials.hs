@@ -61,14 +61,14 @@ mulTerm (Constant c1) (Constant c2) = Constant (mul c1 c2)
 
 -- | Evaluate monomial over standard monomial basis.
 evalMonomial :: Vector -> MultiIndex -> Double
-evalMonomial v mi = powV v mi
+evalMonomial = powV
 
 -- | General evaluation of a term. Given a function for the evaluation a
 -- | monomial, the function returns the corresponding value of the polynomial
 -- | scaled by the terms coefficient or simply the value of the term if the term
 -- | is constant.
 evalTerm :: (Vector -> MultiIndex -> Double) -> Vector -> Term Double -> Double
-evalTerm f v (Term c mi)  = c * (f v mi)
+evalTerm f v (Term c mi)  = c * f v mi
 evalTerm f v (Constant c) = c
 
 -- | General derivative of a term. Given a function for the derivative of a monomial
@@ -76,21 +76,20 @@ evalTerm f v (Constant c) = c
 -- | term using the product rule.
 deriveTerm :: Dx -> Vector -> Term Double -> [Term Double]
 deriveTerm dx v (Constant _) = [Constant 0]
-deriveTerm dx v (Term c mi)  = concat [map (sclTerm (v' !! i)) (d i mi) |
+deriveTerm dx v (Term c mi)  = concat [map (sclTerm (v' !! i)) (dx i mi) |
                                        i <- [0..n-1],
-                                       (degMI mi) > 0]
+                                       degMI mi > 0]
     where
       v' = toList v
-      d i mi = dx i mi
       n = dim v
 
 -- | Derivative of a monomial over the standard monomial basis in given space
 -- | direction.
 deriveMonomial :: Dx
 deriveMonomial i mi
-  | i < dim mi = [Term c (decMI i mi)]
-  | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
-  where c  = fromInt ((toListMI mi) !! i)
+    | i < dim mi = [Term c (decMI i mi)]
+    | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
+  where c  = fromInt (toListMI mi !! i)
 
 -- | General polynomial type. Represents a multi-dimensional polynomial of given
 -- | degree by a list of terms. A term may either be a monomial scaled by a scalar,
@@ -140,15 +139,15 @@ multiIndices :: Int -> Polynomial a -> [MultiIndex]
 multiIndices n (Polynomial _ ls) = multiIndices' n ls
 
 multiIndices' :: Int -> [Term a] -> [MultiIndex]
-multiIndices' n ((Term _ mi) : ls) = mi : (multiIndices' n ls)
-multiIndices' n ((Constant _) : ls) = (zeroMI n) : (multiIndices' n ls)
+multiIndices' n (Term _ mi  : ls) = mi : multiIndices' n ls
+multiIndices' n (Constant _ : ls) = zeroMI n : multiIndices' n ls
 multiIndices' _ [] = []
 
 -- | Expands Constant types in the list of terms and returns a list of all
 -- | coefficient multi-index pairs in the polynomial.
 toPairs :: Int -> [Term a] -> [ (a, MultiIndex) ]
-toPairs n ((Term c mi) : ls) = (c, mi) : (toPairs n ls)
-toPairs n ((Constant c) : ls) = (c, (zeroMI n)) : (toPairs n ls)
+toPairs n (Term c mi  : ls) = (c, mi) : toPairs n ls
+toPairs n (Constant c : ls) = (c, zeroMI n) : toPairs n ls
 toPairs _ [] = []
 
 -- | Pretty printing of polynomials.
@@ -232,7 +231,7 @@ barycentricGradients t = map vectorToGradient (take (nt+1) (M.toColumns mat))
 
 -- | Compute gradient of the barycentric coordinate corresponding to edge i
 barycentricGradient :: Simplex -> Int -> [Double]
-barycentricGradient t i = (barycentricGradients t) !! i
+barycentricGradient t i = barycentricGradients t !! i
 
 -- Transforms a given simplex into the matrix representing the linear
 -- equation system for the barycentric coordinates.

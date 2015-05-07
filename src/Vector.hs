@@ -62,7 +62,7 @@ unitV n i = Vector $ concat [replicate i 0.0, [1.0], replicate (n-i-1) 0.0]
 -- | function computes the product of each component (cs!!i) raised to (l!!i)th
 -- | power.
 powV :: Vector -> MultiIndex -> Double
-powV (Vector cs) = (powVList cs) . toListMI
+powV (Vector cs) = powVList cs . toListMI
 
 powVList [] [] = mulId
 powVList (v:vs) (i:is) = v ** fromIntegral i * powVList vs is

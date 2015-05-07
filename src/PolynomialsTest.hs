@@ -29,7 +29,7 @@ instance Arbitrary Simplex where
       let l1 = head $ dropWhile (all (0==)) ls
           l2 = head $ dropWhile (not . linearIndep' [l1]) ls
           l3 = head $ dropWhile (not . linearIndep' [l1,l2]) ls
-          l4 = head $ drop 3 ls
+          l4 = ls !! 3
       return $ Simplex (map point [l1,l2,l3,l4])
 
 

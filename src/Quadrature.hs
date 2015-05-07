@@ -31,21 +31,21 @@ golubWelsch alpha beta n = extract $ eigSH' (buildMatrix n a b c)
           c = c_jac alpha beta
           extract (v, m) = zip (toList v)
                                (mulgamma (toList (head (toRows m))))
-          mulgamma = map (\x -> (gamma alpha beta) * x**2)
+          mulgamma = map (\x -> gamma alpha beta * x**2)
 
 gamma :: Int -> Int -> Double
-gamma a b = fromInteger (2^(a + b + 1) * (factorial a) * (factorial b)) /
+gamma a b = fromInteger (2^(a + b + 1) * factorial a * factorial b) /
             fromInteger (factorial (a + b + 1))
 
 -- Build the tridiagonal matrix used in the Golub-Welsch algorithm.
 buildMatrix :: Int -> Coeff Double -> Coeff Double -> Coeff Double -> Matrix Double
-buildMatrix n a b c = (n >< n) $ concat [ (p1 i) ++ [p2 i] ++ (p3 i) | i <- [1..n] ]
-    where p1 i = (replicate (i - 2) 0) ++ (f1 i)
-          p2 i = - (b i) / (a i)
-          p3 i = (f2 i) ++ (replicate (n - i - 1) 0)
-          beta i = sqrt ((c (i + 1)) / ((a i) * (a (i+1))))
-          f1 i = if (i > 1) then [ beta (i - 1) ] else []
-          f2 i = if (i < n) then [ beta i ] else []
+buildMatrix n a b c = (n >< n) $ concat [ p1 i ++ [p2 i] ++ p3 i | i <- [1..n] ]
+    where p1 i = replicate (i - 2) 0 ++ f1 i
+          p2 i = - (b i / a i)
+          p3 i = f2 i ++ replicate (n - i - 1) 0
+          beta i = sqrt (c (i + 1) / (a i* a (i+1)))
+          f1 i = [ beta (i-1) | i > 1 ]
+          f2 i = [ beta  i    | i < n ]
 
 
 -- | Evaluate an orthogonal Polynomial using the coefficient functions describing
@@ -69,7 +69,7 @@ orthogonalPolynomial' :: Int ->
 orthogonalPolynomial' n i a b c x pi1 pi2
     | n == i = pi
     | otherwise = orthogonalPolynomial' n (i+1) a b c x pi pi1
-    where pi = ((a i) * x + (b i)) * pi1 - (c i) * pi2
+    where pi = (a i * x + b i) * pi1 - c i * pi2
 
 -- a_i coefficient for Legendre polynomials as defined in the paper by
 -- Golub and Welsch.
@@ -90,14 +90,14 @@ c_leg i = (i' - 1) / i'
 
 -- | Evaluate Legendre polynomial of degree n at x.
 legendreP :: Int -> Double -> Double
-legendreP n x = orthogonalPolynomial n a_leg b_leg c_leg x
+legendreP n = orthogonalPolynomial n a_leg b_leg c_leg
 
 -- a_i coefficient for Jacobi polynomials as defined in the paper by
 -- Golub and Welsch.
 a_jac :: Int -> Int -> Coeff Double
 a_jac alpha beta i
     | (2*i + alpha + beta) <= 2 = 1
-    | otherwise = i2ab * (i2ab - 1) * (i2ab -2) / (den_jac alpha beta i)
+    | otherwise = i2ab * (i2ab - 1) * (i2ab -2) / den_jac alpha beta i
     where i2ab = fromIntegral (2 * i + alpha + beta)
 
 -- b_i coefficient for Jacobi polynomials as defined in the paper by
@@ -105,7 +105,7 @@ a_jac alpha beta i
 b_jac :: Int -> Int -> Coeff Double
 b_jac alpha beta i
     | (2*i + alpha + beta) <= 2 = 0
-    | otherwise = (2*i' + a' + b' - 1) * (a'*a' - b'*b') / (den_jac alpha beta i)
+    | otherwise = (2*i' + a' + b' - 1) * (a'*a' - b'*b') / den_jac alpha beta i
     where a' = fromIntegral alpha
           b' = fromIntegral beta
           i' = fromIntegral i
@@ -116,7 +116,7 @@ c_jac :: Int -> Int -> Coeff Double
 c_jac alpha beta i
     | (2*i + alpha + beta) <= 2 = 0
     | otherwise = 2 * (i' + a' - 1) * (i' + b' - 1) * (2 * i' + a' + b') /
-                  (den_jac alpha beta i)
+                  den_jac alpha beta i
     where a' = fromIntegral alpha
           b' = fromIntegral beta
           i' = fromIntegral i
