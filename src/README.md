@@ -18,7 +18,7 @@ Quadrature.hs
 Polynomials.hs         -- Polynomial ~= [(Scalar, MultiIndex)] (lin. comb. of MultiIndex)
 Bernstein.hs           -- ~= (Polynomial, Simplex)
 DiffForms.hs           --
-?FiniteElementSpaces.hs? -- should be in!
+FiniteElementSpaces.hs
 
 Mask.hs
 Demo.hs
