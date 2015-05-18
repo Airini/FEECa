@@ -13,6 +13,10 @@ type MultiIndex = ZipList Integer
 instance Dimensioned (ZipList a) where
     dim = length . getZipList
 
+-- | Create a multi-index from a given list of integers.
+multiIndex :: [Integer] -> MultiIndex
+multiIndex l = ZipList l
+
 -- | Degree of a multi-index, i.e. the sum of all indices
 degMI :: Integral a => MultiIndex -> a
 degMI = fromInteger . sum . getZipList

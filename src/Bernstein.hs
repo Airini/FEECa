@@ -14,6 +14,7 @@ import Spaces
 import Utility
 import Vector
 
+
 -- TODO: Enforce consistency of polynomial and simplex.
 
 -- | Bernstein polynomial over a simplex. Represented by a normal polynomial
@@ -93,16 +94,17 @@ mulB (Constant c1) (Constant c2) = Constant (c1 * c2)
 -- | Evaluate a Bernstein monomial over a given simplex at Vector
 -- TODO: change vector to point
 evalMonomial :: Simplex -> Vector -> MultiIndex -> Double
-evalMonomial t v mi = prefactor n mi * powV (vector lambda) mi
+evalMonomial t v mi = prefactor mi * powV (vector lambda) mi
     where lambda = map (eval v) (barycentricCoordinates t)
           n = geometricalDimension t
 
--- | Evaluate a Bernsteine monomial at a Duffy transformed point.
+-- | Evaluate a Bernstein monomial at a Duffy transformed point.
 evalMonomialDuffy :: Vector -> MultiIndex -> Double
-evalMonomialDuffy v mi = product [ (1 - x)^(n' - ai) * x^ai | (x, ai, n') <- zip3 v' mi' ns]
+evalMonomialDuffy v mi = product [ (pref n' ai) * (1 - x)^(n' - ai) * x^ai | (x, ai, n') <- zip3 v' mi' ns]
     where v' = toList v
           mi' = toListMI mi
           ns = snd $ mapAccumL ( \ acc x -> (acc + x, acc + x) ) 0 mi'
+          pref a b = fromInteger (a `choose` b)
 
 -- | Evaluation of Bernstein polynomials.
 evalB :: Vector -> BernsteinPolynomial -> Double
@@ -115,8 +117,8 @@ evalBDuffy v (Bernstein _ p) = evaluate evalMonomialDuffy v p
 evalBDuffy _ (Constant c) = c
 
 -- | Prefactor for Bernstein polynomials.
-prefactor :: Int -> MultiIndex -> Double
-prefactor n a = fromInteger (factorial n) / fromInteger (factorialMI a)
+prefactor :: MultiIndex -> Double
+prefactor mi = fromInteger (degMI mi) / fromInteger (factorialMI mi)
 
 -- | Projection fuction for gradients of barycentric coordinates as basis for
 -- | the space of alternating forms.

@@ -4,6 +4,7 @@
 
 module Simplex( extendSimplex,
                 directionVectors,
+                duffyTransform,
                 geometricalDimension,
                 referencePoint,
                 referenceSimplex,
@@ -130,5 +131,5 @@ barycentric2Euclidean t@(Simplex ps) p = foldl scaleAdd (origin n) (zip p' ps)
 
 -- | The inverse Duffy transform. Maps a point fromthe unit cube in R^{n+1}
 -- | to the given simplex.
-inverseDuffy :: Simplex -> Point -> Point
-inverseDuffy t = (barycentric2Euclidean t) . duffy2Barycentric
+duffyTransform :: Simplex -> Point -> Point
+duffyTransform t = (barycentric2Euclidean t) . duffy2Barycentric

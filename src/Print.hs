@@ -70,7 +70,7 @@ printPolynomial sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
 printPolynomial0 :: Integral a => [Char] -> [(Double,MultiIndex)] -> Doc
 printPolynomial0 sym []           = double 0.0
 printPolynomial0 sym [ (c,mon) ]  = double c <+> printMonomial0 sym (toListMI mon)
-printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
+printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial0 sym ls
     where s = double c <+> printMonomial0 sym (toListMI mon)
 
 
