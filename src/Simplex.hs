@@ -16,17 +16,17 @@ module Simplex( extendSimplex,
                 vertices,
                 volume ) where
 
-import Spaces
-import Point
-import Vector
-import Data.List
 import Combinatorics
-import Print
-import Utility
+import Data.List
 import GramSchmidt
 import Math.Combinatorics.Exact.Binomial
 import Math.Combinatorics.Exact.Factorial
 import qualified Numeric.LinearAlgebra.HMatrix as M
+import Point
+import Print
+import Spaces
+import Utility
+import Vector
 
 -- | n-simplex represented by a list of vectors of given dimensionality
 -- | Invariant: geometrical dimension = length of the vector - 1
@@ -120,3 +120,15 @@ volume t = sqrt (abs (M.det (M.mul w wT))) / fromInteger (factorial k)
           n = geometricalDimension t
           w = M.matrix n (concatMap toList (directionVectors t))
           wT = M.tr w
+
+-- | Convert a point given in barycentric coordinates to euclidean coordinates.
+barycentric2Euclidean :: Simplex -> Point -> Point
+barycentric2Euclidean t@(Simplex ps) p = foldl scaleAdd (origin n) (zip p' ps)
+    where scaleAdd p (c, p0) = addV p (sclV c p0)
+          p' = toList (fromPoint p)
+          n = geometricalDimension t
+
+-- | The inverse Duffy transform. Maps a point fromthe unit cube in R^{n+1}
+-- | to the given simplex.
+inverseDuffy :: Simplex -> Point -> Point
+inverseDuffy t = (barycentric2Euclidean t) . duffy2Barycentric

@@ -2,15 +2,17 @@
 
 module Bernstein where
 
-import Simplex
-import Spaces
-import Vector
-import Polynomials hiding(Constant)
-import Utility
-import Print
-import MultiIndex
+import Data.List
 import Math.Combinatorics.Exact.Factorial
 import Math.Combinatorics.Exact.Binomial
+import MultiIndex
+import Point
+import Polynomials hiding(Constant)
+import Print
+import Simplex
+import Spaces
+import Utility
+import Vector
 
 -- TODO: Enforce consistency of polynomial and simplex.
 
@@ -88,17 +90,29 @@ mulB (Constant c) (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
 mulB (Bernstein t1 p1) (Constant c) = Bernstein t1 (sclV c p1)
 mulB (Constant c1) (Constant c2) = Constant (c1 * c2)
 
--- | Evaluat a Bernstein monomial over a given simplex at Vector
+-- | Evaluate a Bernstein monomial over a given simplex at Vector
 -- TODO: change vector to point
 evalMonomial :: Simplex -> Vector -> MultiIndex -> Double
 evalMonomial t v mi = prefactor n mi * powV (vector lambda) mi
     where lambda = map (eval v) (barycentricCoordinates t)
           n = geometricalDimension t
 
+-- | Evaluate a Bernsteine monomial at a Duffy transformed point.
+evalMonomialDuffy :: Vector -> MultiIndex -> Double
+evalMonomialDuffy v mi = product [ (1 - x)^(n' - ai) * x^ai | (x, ai, n') <- zip3 v' mi' ns]
+    where v' = toList v
+          mi' = toListMI mi
+          ns = snd $ mapAccumL ( \ acc x -> (acc + x, acc + x) ) 0 mi'
+
 -- | Evaluation of Bernstein polynomials.
 evalB :: Vector -> BernsteinPolynomial -> Double
 evalB v (Bernstein t p) = evaluate (evalMonomial t) v p
-evalB v (Constant c) = c
+evalB _ (Constant c) = c
+
+-- | Evaluate Bernstein polynomial at Duffy transformed point.
+evalBDuffy :: Vector -> BernsteinPolynomial -> Double
+evalBDuffy v (Bernstein _ p) = evaluate evalMonomialDuffy v p
+evalBDuffy _ (Constant c) = c
 
 -- | Prefactor for Bernstein polynomials.
 prefactor :: Int -> MultiIndex -> Double
@@ -119,4 +133,3 @@ integralB (Constant _) = error "integral: Cannot integrate Bernstein polynomial 
 integralB (Bernstein t p) = integrate n f p
     where n = geometricalDimension t
           f mi = volume t / fromIntegral ((n + degMI mi) `choose` degMI mi)
-

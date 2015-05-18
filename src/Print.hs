@@ -1,12 +1,12 @@
 module Print (
-   RenderVector(..), Pretty(..)
+   RenderVector(..)--, Pretty(..)
   , printDouble, printComponent, printVector, printVectorColl
   , printPolynomial, printPolynomial0, printForm
   , lambda
   ) where
 
 import Text.PrettyPrint
-import Text.PrettyPrint.HughesPJClass
+import Text.PrettyPrint.HughesPJ
 import Text.Printf
 import Spaces
 import MultiIndex
