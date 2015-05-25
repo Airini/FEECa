@@ -9,7 +9,7 @@
 # Utilities
 * Combinatorics.hs
 * Print.hs               -- class RenderVector
-* Discrete.hs
+* Discrete.hs            -- To be merged with Combinatorics
 * GramSchmidt.hs
 * Utility.hs
 * Quadrature.hs
