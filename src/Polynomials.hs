@@ -28,20 +28,20 @@ import Print (printPolynomial)
 import Text.PrettyPrint
 import Data.Maybe (fromJust)
 import Data.List
-import MultiIndex(MultiIndex, zeroMI, oneMI, decMI, toListMI, addMI, degMI)
+import qualified MultiIndex as MI (MultiIndex, zero, one, dec, toList, add, deg)
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
 -- | Represents terms of a n-dimensional polynomial. A Term is either a constant
 -- | with a given value or consists of a multi-index and a double representing a
 -- | monomial scaled by a scalar.
-data Term a = Constant a | Term a MultiIndex
+data Term a = Constant a | Term a MI.MultiIndex
             deriving Eq
 
 -- | Type synonym for a function to generalize the derivative of a monomial
 -- | in a given space direction. Required to generalize the polinomial code to
 -- | different bases.
-type Dx = Int -> MultiIndex -> [Term Double]
+type Dx = Int -> MI.MultiIndex -> [Term Double]
 
 -- | Return the coefficient of a term of a polynomial.
 coeff :: Term a -> a
@@ -55,20 +55,20 @@ sclTerm c1 (Constant c2) = Constant (mul c1 c2)
 
 -- | Multiply two terms.
 mulTerm :: Field a => Term a -> Term a -> Term a
-mulTerm (Term c1 mi1) (Term c2 mi2) = Term (mul c1 c2) (addMI mi1 mi2)
+mulTerm (Term c1 mi1) (Term c2 mi2) = Term (mul c1 c2) (MI.add mi1 mi2)
 mulTerm (Term c1 mi) (Constant c2) = Term (mul c1 c2) mi
 mulTerm (Constant c2) (Term c1 mi) = Term (mul c1 c2) mi
 mulTerm (Constant c1) (Constant c2) = Constant (mul c1 c2)
 
 -- | Evaluate monomial over standard monomial basis.
-evalMonomial :: Vector -> MultiIndex -> Double
+evalMonomial :: Vector -> MI.MultiIndex -> Double
 evalMonomial = powV
 
 -- | General evaluation of a term. Given a function for the evaluation a
 -- | monomial, the function returns the corresponding value of the polynomial
 -- | scaled by the terms coefficient or simply the value of the term if the term
 -- | is constant.
-evalTerm :: (Vector -> MultiIndex -> Double) -> Vector -> Term Double -> Double
+evalTerm :: (Vector -> MI.MultiIndex -> Double) -> Vector -> Term Double -> Double
 evalTerm f v (Term c mi)  = c * f v mi
 evalTerm f v (Constant c) = c
 
@@ -79,7 +79,7 @@ deriveTerm :: Dx -> Vector -> Term Double -> [Term Double]
 deriveTerm dx v (Constant _) = [Constant 0]
 deriveTerm dx v (Term c mi)  = concat [map (sclTerm (v' !! i)) (dx i mi) |
                                        i <- [0..n-1],
-                                       degMI mi > 0]
+                                       MI.deg mi > 0]
     where
       v' = toList v
       n = dim v
@@ -88,13 +88,13 @@ deriveTerm dx v (Term c mi)  = concat [map (sclTerm (v' !! i)) (dx i mi) |
 -- | direction.
 deriveMonomial :: Dx
 deriveMonomial i mi
-    | i < dim mi = [Term c (decMI i mi)]
+    | i < dim mi = [Term c (MI.dec i mi)]
     | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
-  where c  = fromInt (toListMI mi !! i)
+  where c  = fromInt (MI.toList mi !! i)
 
 -- | General polynomial type. Represents a multi-dimensional polynomial of given
 -- | degree by a list of terms. A term may either be a monomial scaled by a scalar,
--- | represented by Double and a MultiIndex, or a constant, represented simply by a
+-- | represented by Double and a MI.MultiIndex, or a constant, represented simply by a
 -- | Double. The length of the multi-indices must match the dimensionality of the
 -- | underlying vector space.
 data Polynomial a =
@@ -134,32 +134,32 @@ constant c = Polynomial 0 [Constant c]
 
 -- | Create a polynomial consisting of a single monomial from a give
 -- | multi-index.
-monomial :: Field a => MultiIndex -> Polynomial a
-monomial mi = Polynomial (degMI mi) [Term mulId mi]
+monomial :: Field a => MI.MultiIndex -> Polynomial a
+monomial mi = Polynomial (MI.deg mi) [Term mulId mi]
 
 -- | Returns a list of the multiindices in the polynomial.
-multiIndices :: Int -> Polynomial a -> [MultiIndex]
+multiIndices :: Int -> Polynomial a -> [MI.MultiIndex]
 multiIndices n (Polynomial _ ls) = multiIndices' n ls
 
-multiIndices' :: Int -> [Term a] -> [MultiIndex]
+multiIndices' :: Int -> [Term a] -> [MI.MultiIndex]
 multiIndices' n (Term _ mi  : ls) = mi : multiIndices' n ls
-multiIndices' n (Constant _ : ls) = zeroMI n : multiIndices' n ls
+multiIndices' n (Constant _ : ls) = MI.zero n : multiIndices' n ls
 multiIndices' _ [] = []
 
 -- | Expands Constant types in the list of terms and returns a list of all
 -- | coefficient multi-index pairs in the polynomial.
-toPairs :: Int -> [Term a] -> [ (a, MultiIndex) ]
+toPairs :: Int -> [Term a] -> [ (a, MI.MultiIndex) ]
 toPairs n (Term c mi  : ls) = (c, mi) : toPairs n ls
-toPairs n (Constant c : ls) = (c, zeroMI n) : toPairs n ls
+toPairs n (Constant c : ls) = (c, MI.zero n) : toPairs n ls
 toPairs _ [] = []
 
 -- | Pretty printing of polynomials.
 instance Show (Polynomial Double) where
     show p = show $ printPolynomial "x" (map expandTerm (terms p))
 
--- | Expand term to (Double, MultiIndex)-form suitable for printing.
-expandTerm :: Term Double -> (Double, MultiIndex)
-expandTerm (Constant c) = (c, zeroMI 0)
+-- | Expand term to (Double, MI.MultiIndex)-form suitable for printing.
+expandTerm :: Term Double -> (Double, MI.MultiIndex)
+expandTerm (Constant c) = (c, MI.zero 0)
 expandTerm (Term c mi) = (c ,mi)
 
 -- | Add two polynomials.
@@ -178,7 +178,7 @@ mulP (Polynomial r1 ts1) (Polynomial r2 ts2) =
 
 -- | General evaluation function of a polynomial using the given function for
 -- | the evaluation of monomials.
-evaluate :: (Vector -> MultiIndex -> Double) -> Vector -> Polynomial Double -> Double
+evaluate :: (Vector -> MI.MultiIndex -> Double) -> Vector -> Polynomial Double -> Double
 evaluate f v (Polynomial r ts) = foldl add addId (map (evalTerm f v) ts)
 
 -- | Evaluate polynomial at given point in space.
@@ -194,7 +194,7 @@ deriveP :: Vector -> Polynomial Double -> Polynomial Double
 deriveP = derive deriveMonomial
 
 -- | General integral of a polynomial.
-integralP :: Field a => Int -> ( MultiIndex -> a ) -> Polynomial a -> a
+integralP :: Field a => Int -> ( MI.MultiIndex -> a ) -> Polynomial a -> a
 integralP n f (Polynomial r ts) = foldl add addId [ mul c ( f mi ) | (c, mi) <- toPairs n ts ]
 
 -- | Create constant polynomial
@@ -203,13 +203,13 @@ deg0P = constant
 
 -- | Create a constant polynomial in a specific n-dimension space
 constPInN :: a -> Int -> Polynomial a
-constPInN c n = Polynomial 0 [Term c $ zeroMI n]
+constPInN c n = Polynomial 0 [Term c $ MI.zero n]
 
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list
 -- | equals the coefficient of the ith variable of the returned polynomial.
 deg1P :: [a] -> Polynomial a
-deg1P ns = Polynomial 1 $ zipWith Term ns [oneMI dim i | i <- [0..dim-1]]
+deg1P ns = Polynomial 1 $ zipWith Term ns [MI.one dim i | i <- [0..dim-1]]
   where dim  = length ns
 
 -- | 1st degree polynomial taking value 1 on vertex n_i of the simplex and
@@ -258,3 +258,4 @@ vectorToPolynomial v = add (sclV (head l) mulId) (deg1P (tail l))
 -- gradients of the barycentric coordinates.
 vectorToGradient :: M.Vector Double -> [Double]
 vectorToGradient = tail . M.toList
+
