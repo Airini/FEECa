@@ -2,22 +2,31 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Polynomials(barycentricCoordinate,
-                   barycentricCoordinates,
-                   barycentricGradient,
-                   barycentricGradients,
-                   constant,
-                   constPInN,
-                   deg0P,
-                   deg1P,
-                   derive,
-                   expandTerm,
-                   evaluate,
-                   integralP,
-                   monomial,
-                   multiIndices,
-                   Term(Term),
-                   Polynomial(..)) where
+module Polynomial (
+  -- * Polynomial types
+  Polynomial(..), Term(Term)
+
+
+  -- * Predefined constructors
+
+  -- ** Primitive constructors
+  , constant, constPInN, deg0P, deg1P
+  
+  -- ** Derived constructors
+  , barycentricCoordinate, barycentricCoordinates
+
+
+  -- * Polynomial operations
+  
+  -- ** Mathematical operations
+  , derive, evaluate, integralP
+  
+  -- ** Manipulation operations
+  , expandTerm, monomial, multiIndices
+
+  -- ** Simplex dependent operations
+  , barycentricGradient, barycentricGradients
+  ) where
 
 import Spaces hiding (toList)
 import Simplex
@@ -137,7 +146,7 @@ constant c = Polynomial 0 [Constant c]
 monomial :: Field a => MI.MultiIndex -> Polynomial a
 monomial mi = Polynomial (MI.deg mi) [Term mulId mi]
 
--- | Returns a list of the multiindices in the polynomial.
+-- | Returns a list of the multi-indices in the polynomial.
 multiIndices :: Int -> Polynomial a -> [MI.MultiIndex]
 multiIndices n (Polynomial _ ls) = multiIndices' n ls
 
@@ -194,7 +203,7 @@ deriveP :: Vector -> Polynomial Double -> Polynomial Double
 deriveP = derive deriveMonomial
 
 -- | General integral of a polynomial.
-integralP :: Field a => Int -> ( MI.MultiIndex -> a ) -> Polynomial a -> a
+integralP :: Field a => Int -> (MI.MultiIndex -> a) -> Polynomial a -> a
 integralP n f (Polynomial r ts) = foldl add addId [ mul c ( f mi ) | (c, mi) <- toPairs n ts ]
 
 -- | Create constant polynomial
@@ -220,8 +229,8 @@ deg1P ns = Polynomial 1 $ zipWith Term ns [MI.one dim i | i <- [0..dim-1]]
 barycentricCoordinates :: Simplex -> [Polynomial Double]
 barycentricCoordinates s = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
     where mat = M.inv (simplexToMatrix (extendSimplex s))
-          n = geometricalDimension s
-          nt = topologicalDimension s
+          n   = geometricalDimension s
+          nt  = topologicalDimension s
 
 -- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial
 -- | in the list

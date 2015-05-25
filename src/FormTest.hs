@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
-module FormsTest where
+module FormTest where
 
-import Forms
+import Form
 import Test.QuickCheck
 import Spaces
 import Control.Monad (liftM, liftM2)

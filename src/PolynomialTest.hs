@@ -1,9 +1,10 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-module PolynomialsTest where
+module PolynomialTest where
+
 import Data.Maybe
-import Polynomials
+import Polynomial
 import Test.QuickCheck as Q
 import Simplex
 import Point

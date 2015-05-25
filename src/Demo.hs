@@ -2,9 +2,9 @@ module Demo where
 
 import Mask
 import Spaces
-import Polynomials
-import Forms
-import DiffForms
+import Polynomial
+import Form
+import DifferentialForm
 import Control.Applicative
 import Vector
 import Point
@@ -97,7 +97,7 @@ w4 = dx1_2 /\ dx2_2
 val1 = w4 # [v2, v2]
 val2 = (dx 1 2 /\ dx 2 2) # [vector [1,2], vector [3,4]]
 
--- dxs' :: [DiffForm Double]
+-- dxs' :: [DifferentialForm Double]
 dxs' = (fmap constant) . dxs
 dxs_2' = (fmap constant) . dxs2
 
@@ -110,7 +110,7 @@ dx2' = dxs_2' 2
 w1_2 = dxs_2' 1 /\ dxs_2' 2
 w2_2 = dxs_2' 2 /\ dxs' 1
 
--- u :: DiffForm Double
+-- u :: DifferentialForm Double
 u = (hs 2 !! 0) .* w1_2 .+. ((hs 2 !! 3) .* w2_2) .+. (constant 0.5 .* dx1' /\ dx2')
 v = p .* dxs' 1 .+. (constant 2 · p .* dxs' 2)
 

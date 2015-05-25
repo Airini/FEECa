@@ -9,7 +9,7 @@ import Text.PrettyPrint
 import Text.PrettyPrint.HughesPJClass
 import Text.Printf
 import Spaces
-import MultiIndex
+import qualified MultiIndex as MI
 import Data.List (intersperse)
 
 -- Some symbols
@@ -60,18 +60,18 @@ maxWidth p l = maximum (map numLen l) + p + 1
 
 
 -- | Pretty print polynomial
-printPolynomial :: Integral a => [Char] -> [(Double,MultiIndex)] -> Doc
+printPolynomial :: Integral a => [Char] -> [(Double,MI.MultiIndex)] -> Doc
 printPolynomial sym []           = double 0.0
-printPolynomial sym [ (c,mon) ]  = double c <+> printMonomial sym (toListMI mon)
+printPolynomial sym [ (c,mon) ]  = double c <+> printMonomial sym (MI.toList mon)
 printPolynomial sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
-    where s = double c <+> printMonomial sym (toListMI mon)
+    where s = double c <+> printMonomial sym (MI.toList mon)
 
 -- | Pretty print polynomial
-printPolynomial0 :: Integral a => [Char] -> [(Double,MultiIndex)] -> Doc
+printPolynomial0 :: Integral a => [Char] -> [(Double,MI.MultiIndex)] -> Doc
 printPolynomial0 sym []           = double 0.0
-printPolynomial0 sym [ (c,mon) ]  = double c <+> printMonomial0 sym (toListMI mon)
+printPolynomial0 sym [ (c,mon) ]  = double c <+> printMonomial0 sym (MI.toList mon)
 printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
-    where s = double c <+> printMonomial0 sym (toListMI mon)
+    where s = double c <+> printMonomial0 sym (MI.toList mon)
 
 
 -- | Pretty print constant

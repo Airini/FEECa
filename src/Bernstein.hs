@@ -6,10 +6,10 @@ module Bernstein where
 import Simplex
 import Spaces
 import Vector
-import Polynomials hiding(Constant)
+import Polynomial hiding (Constant)
 import Utility
 import Print
-import MultiIndex
+import qualified MultiIndex as MI
 import Math.Combinatorics.Exact.Factorial
 import Math.Combinatorics.Exact.Binomial
 
@@ -52,7 +52,7 @@ instance Function BernsteinPolynomial Vector where
 
 
 -- | Create a bernstein monomial.
-bernsteinMonomial :: Simplex -> MultiIndex -> BernsteinPolynomial
+bernsteinMonomial :: Simplex -> MI.MultiIndex -> BernsteinPolynomial
 bernsteinMonomial t mi = Bernstein t (monomial mi)
 
 -- | Create a constant bernstein monomial.
@@ -60,11 +60,11 @@ constantB :: Double -> BernsteinPolynomial
 constantB = Constant
 
 -- | Derivative of a Bernstein monomial
-deriveMonomial :: Simplex -> Int -> MultiIndex -> [Term Double]
+deriveMonomial :: Simplex -> Int -> MI.MultiIndex -> [Term Double]
 deriveMonomial t d mi
-    | d < dim mi = [Term (r i * dbs i) (decMI d mi) | i <- [0..n]]
+    | d < dim mi = [Term (r i * dbs i) (MI.dec d mi) | i <- [0..n]]
     | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
-  where mi' = toListMI mi
+  where mi' = MI.toList mi
         r i = fromInteger (mi' !! i)
         bs = barycentricCoordinates t
         dbs i = eval (unitV n d) (deriv (unitV n d) (bs !! i))
@@ -100,7 +100,7 @@ mulB (Constant c1)     (Constant c2)     = Constant (c1 * c2)
 
 -- | Evaluat a Bernstein monomial over a given simplex at Vector
 -- TODO: change vector to point
-evalMonomial :: Simplex -> Vector -> MultiIndex -> Double
+evalMonomial :: Simplex -> Vector -> MI.MultiIndex -> Double
 evalMonomial t v mi = prefactor n mi * powV (vector lambda) mi
     where lambda = map (eval v) (barycentricCoordinates t)
           n = geometricalDimension t
@@ -111,8 +111,8 @@ evalB v (Bernstein t p) = evaluate (evalMonomial t) v p
 evalB v (Constant c) = c
 
 -- | Prefactor for Bernstein polynomials.
-prefactor :: Int -> MultiIndex -> Double
-prefactor n a = fromInteger (factorial n) / fromInteger (factorialMI a)
+prefactor :: Int -> MI.MultiIndex -> Double
+prefactor n a = fromInteger (factorial n) / fromInteger (MI.factorial a)
 
 -- | Projection fuction for gradients of barycentric coordinates as basis for
 -- | the space of alternating forms.
@@ -121,12 +121,12 @@ proj t i v = Bernstein t (constant $ sum (zipWith (*) grad (toList v)))
     where grad = barycentricGradient t i
 
 degRPolynomials :: Simplex -> Int -> Int -> [BernsteinPolynomial]
-degRPolynomials t n r = [Bernstein t (monomial mi) | mi <- degRMI n r]
+degRPolynomials t n r = [Bernstein t (monomial mi) | mi <- MI.degR n r]
 
 -- | Integrate Bernstein polynomial over the simplex it is defined over.
 integralB :: BernsteinPolynomial -> Double
 integralB (Constant _) = error "integral: Cannot integrate Bernstein polynomial without associated simplex."
 integralB (Bernstein t p) = integralP n f p
     where n = geometricalDimension t
-          f mi = volume t / fromIntegral ((n + degMI mi) `choose` degMI mi)
+          f mi = volume t / fromIntegral ((n + MI.deg mi) `choose` MI.deg mi)
 

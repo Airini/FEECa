@@ -49,13 +49,13 @@ cabal-version:       >=1.10
 library
   -- Modules exported by the library.
   exposed-modules:     Mask,
-                       Polynomials, Bernstein, DiffForms, FiniteElementSpaces,
-                       Spaces, Point, Vector, Forms, MultiIndex, Simplex
+                       Polynomial, Bernstein, DifferentialForm, FiniteElementSpace,
+                       Spaces, Point, Vector, Form, MultiIndex, Simplex
 
   -- Modules included in this library but not exported.
   other-modules:       Demo, Properties,
                        Combinatorics, Print, Discrete, GramSchmidt, Utility, Quadrature,
-                       CombinatoricsTest, FormsTest, PolynomialsTest, QuadratureTest, SimplexTest
+                       CombinatoricsTest, FormTest, PolynomialTest, QuadratureTest, SimplexTest
 
   -- LANGUAGE extensions used by modules in this package.
   other-extensions:    GADTs, FlexibleInstances, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, FlexibleContexts, UndecidableInstances, OverlappingInstances

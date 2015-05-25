@@ -2,9 +2,14 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Forms (
+module Form (
+  -- * Generic form types
   Dim, Form (Fform, arity, dimVec)
+
+  -- * Predefined primitive constructors
   , zeroForm, nullForm, oneForm
+
+  -- * Form operations
   , refine, inner, contract
   ) where
 

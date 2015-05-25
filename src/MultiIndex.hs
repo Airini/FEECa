@@ -4,8 +4,8 @@ import Spaces(Dimensioned(..))
 import Data.Traversable
 import Data.Bits
 import Combinatorics(sumRLists)
-import Math.Combinatorics.Exact.Binomial
-import Math.Combinatorics.Exact.Factorial
+import qualified Math.Combinatorics.Exact.Binomial as CBin
+import qualified Math.Combinatorics.Exact.Factorial as CFac
 import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)
 
 type MultiIndex = ZipList Integer
@@ -41,11 +41,11 @@ add = liftA2 (+)
 -- | Generalized binomial coefficients for multi-indices as defined in the paper
 -- | by Kirby.
 choose :: (Integral a) => ZipList a -> ZipList a -> a
-choose a b = product $ getZipList $ liftA2 choose a b
+choose a b = product $ getZipList $ liftA2 CBin.choose a b
 
 -- | Generalized factorial for multi-indices
 factorial :: (Bits a, Integral a) => MultiIndex -> a
-factorial = product . map factorial . toList
+factorial = product . map CFac.factorial . toList
 
 -- | List of all length n multi-indices of degree r
 degR :: Integral a => a -> a -> [MultiIndex]
