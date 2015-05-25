@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Bernstein where
 
@@ -41,6 +42,15 @@ instance Field BernsteinPolynomial where
 
     fromInt = Constant . fromIntegral
 
+instance Function BernsteinPolynomial Vector where
+  type Values   BernsteinPolynomial Vector = Double
+  type GeomUnit BernsteinPolynomial Vector = Simplex
+  deriv = deriveB
+  integrate sx bp@(Constant a) = integralB $ Bernstein sx (constPInN a (geometricalDimension sx))
+  integrate _sx bp@(Bernstein _sx' p) = integralB bp -- TODO: check equality for sx and sx'??
+  eval = evalB
+
+
 -- | Create a bernstein monomial.
 bernsteinMonomial :: Simplex -> MultiIndex -> BernsteinPolynomial
 bernsteinMonomial t mi = Bernstein t (monomial mi)
@@ -70,9 +80,9 @@ addB :: BernsteinPolynomial -> BernsteinPolynomial -> BernsteinPolynomial
 addB (Bernstein t1 p1) (Bernstein t2 p2)
      | t1 /= t2 = error "addB: Cannot add Bernstein polynomials defined over different simplices."
      | otherwise = Bernstein t1 (add p1 p2)
-addB (Constant c)      (Bernstein t  p) = Bernstein t (add p (constant c))
-addB (Bernstein t p)   (Constant c)     = Bernstein t (add p (constant c))
-addB (Constant c1)     (Constant c2)    = Constant (c1 + c2)
+addB (Constant c)    (Bernstein t p) = Bernstein t (add p (constant c))
+addB (Bernstein t p) (Constant c)    = Bernstein t (add p (constant c))
+addB (Constant c1)   (Constant c2)   = Constant (c1 + c2)
 
 -- | Scale Bernstein polynomial.
 sclB :: Double -> BernsteinPolynomial -> BernsteinPolynomial
@@ -84,9 +94,9 @@ mulB :: BernsteinPolynomial -> BernsteinPolynomial -> BernsteinPolynomial
 mulB (Bernstein t1 p1) (Bernstein t2 p2)
      | t1 /= t1 = error "mulB: Cannot multiply two Bernstein polynomials defined over different simplices."
      | otherwise = Bernstein t1 (mul p1 p2)
-mulB (Constant c) (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
-mulB (Bernstein t1 p1) (Constant c) = Bernstein t1 (sclV c p1)
-mulB (Constant c1) (Constant c2) = Constant (c1 * c2)
+mulB (Constant c)      (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
+mulB (Bernstein t1 p1) (Constant c)      = Bernstein t1 (sclV c p1)
+mulB (Constant c1)     (Constant c2)     = Constant (c1 * c2)
 
 -- | Evaluat a Bernstein monomial over a given simplex at Vector
 -- TODO: change vector to point
@@ -116,7 +126,7 @@ degRPolynomials t n r = [Bernstein t (monomial mi) | mi <- degRMI n r]
 -- | Integrate Bernstein polynomial over the simplex it is defined over.
 integralB :: BernsteinPolynomial -> Double
 integralB (Constant _) = error "integral: Cannot integrate Bernstein polynomial without associated simplex."
-integralB (Bernstein t p) = integrate n f p
+integralB (Bernstein t p) = integralP n f p
     where n = geometricalDimension t
           f mi = volume t / fromIntegral ((n + degMI mi) `choose` degMI mi)
 

@@ -7,12 +7,13 @@ module Polynomials(barycentricCoordinate,
                    barycentricGradient,
                    barycentricGradients,
                    constant,
+                   constPInN,
                    deg0P,
                    deg1P,
                    derive,
                    expandTerm,
                    evaluate,
-                   integrate,
+                   integralP,
                    monomial,
                    multiIndices,
                    Term(Term),
@@ -122,6 +123,8 @@ instance Field f => Field (Polynomial f) where
 -- | Polynomials as functions.
 instance Function (Polynomial Double) Vector where
   type Values (Polynomial Double) Vector = Double
+  type GeomUnit (Polynomial Double) Vector = Simplex
+  integrate = undefined
   deriv = deriveP
   eval = evalP
 
@@ -191,12 +194,16 @@ deriveP :: Vector -> Polynomial Double -> Polynomial Double
 deriveP = derive deriveMonomial
 
 -- | General integral of a polynomial.
-integrate :: Field a => Int -> ( MultiIndex -> a ) -> Polynomial a -> a
-integrate n f (Polynomial r ts) = foldl add addId [ mul c ( f mi ) | (c, mi) <- toPairs n ts ]
+integralP :: Field a => Int -> ( MultiIndex -> a ) -> Polynomial a -> a
+integralP n f (Polynomial r ts) = foldl add addId [ mul c ( f mi ) | (c, mi) <- toPairs n ts ]
 
 -- | Create constant polynomial
 deg0P :: a -> Polynomial a
 deg0P = constant
+
+-- | Create a constant polynomial in a specific n-dimension space
+constPInN :: a -> Int -> Polynomial a
+constPInN c n = Polynomial 0 [Term c $ zeroMI n]
 
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list

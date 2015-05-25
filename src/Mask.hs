@@ -56,7 +56,8 @@ dxN = flip dx
 
 (#) :: Form Double -> [Vector] -> Double
 (#) = refine dxV
-
+-- TODO: unify
+-- complete (##) :: (Field h, VectorSpace v) => Form h -> [v] -> h
 --d' :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
 --d' = df'
 

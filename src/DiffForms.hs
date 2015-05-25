@@ -79,4 +79,4 @@ evalDF :: DiffForm Double -> Point -> Form Double
 evalDF u = ($u) . fmap . eval . vectify
   where vectify (Point q) = vector q
 
---- evalForm :: giving a polynomial
+
