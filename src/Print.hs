@@ -2,7 +2,7 @@ module Print (
    RenderVector(..)--, Pretty(..)
   , printDouble, printComponent, printVector, printVectorColl
   , printPolynomial, printPolynomial0, printForm
-  , lambda
+  , lambda, dlambda
   ) where
 
 import Text.PrettyPrint

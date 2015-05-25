@@ -239,6 +239,7 @@ instance Show FormMust where
   show MoVecEq  = "act on vectors of the working vectors space"
 
 
+{-
 --- ONLY PLACEHOLDERS!!
 data Poly v f = Pp (v -> f)
 
@@ -252,3 +253,5 @@ instance Field f => VectorSpace (Poly v f) where
   addV (Pp g) (Pp h) = Pp $ \vs -> add (g vs) (h vs)
   sclV a (Pp g) = Pp $ \vs -> mul a (g vs)
 --
+-}
+

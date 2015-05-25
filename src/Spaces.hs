@@ -73,8 +73,12 @@ class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of diff
 -- Maybe not necessary to have
 class (VectorSpace v, Field (Values h v)) => Function h v where -- h ~= v -> Values h v
   type Values h v :: *
+  type GeomUnit h v :: *  -- not the best option: will lead to different class instantiations, per geometrical object => not possible here"
+  -- Suggestion : new class? ADT to represent them?
+
   deriv :: v -> h -> h
-  -- integration too
+  integrate :: GeomUnit h v -> h -> Values h v
+
   eval  :: v -> h -> Values h v
 
   ($$)  :: h -> v -> Values h v
@@ -82,3 +86,4 @@ class (VectorSpace v, Field (Values h v)) => Function h v where -- h ~= v -> Val
 
 class Dimensioned t where
   dim :: t -> Int
+
