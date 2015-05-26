@@ -4,7 +4,7 @@
 
 module Form (
   -- * Generic form types
-  Dim, Form (Fform, arity, dimVec)
+  Dim, Form (Form, arity, dimVec)
 
   -- * Predefined primitive constructors
   , zeroForm, nullForm, oneForm
@@ -33,7 +33,7 @@ type Dim = Int
 
 -- | Bilinear, alternating forms over vectorspaces
 data Form f =  -- we lose dependency on the type of vector!
-    Fform { arity :: Dim                    -- ^ For complete evaluation
+    Form  { arity :: Dim                    -- ^ For complete evaluation
           , dimVec :: Dim                   -- ^ Of the underlying vector space
           , constituents :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
   deriving (Eq, Show)
@@ -52,7 +52,7 @@ constituentsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
 -- NB: because of ((,) t) 's functorial nature, maybe it could make sense to
 --   rearrange our terms so as to have them be (inds,coeff) like they used to be?
 instance Functor Form where
-  fmap f (Fform k n cs) = Fform k n (map (pairM f id) cs)
+  fmap f (Form k n cs) = Form k n (map (pairM f id) cs)
 
 -- TODO: Applicative to simplify the following operations!!!
 -- XXX: also to be able to lift polynomials easily into it
@@ -60,7 +60,7 @@ instance Functor Form where
 
 -- XXX: change to Pretty f once all other modules are up to date
 instance Show f => Pretty (Form f) where
-  pPrint (Fform k n cs) = printForm "dx" "0" show cs -- show or pPrint...
+  pPrint (Form k n cs) = printForm "dx" "0" show cs -- show or pPrint...
   {- show k ++ "-form in " ++ show n ++ " dimensions: " ++
                           show (printForm "dx" "0" show cs)-}
 
@@ -80,7 +80,7 @@ instance Show f => Pretty (Form f) where
 omega +++ eta
     | degNEq omega eta = errForm "(+++)" BiDegEq
     | spaNEq omega eta = errForm "(+++)" BiSpaEq
-    | otherwise = Fform (arity eta) (dimVec eta)
+    | otherwise = Form (arity eta) (dimVec eta)
                   (step (constituents omega) (constituents eta))
   where step [] ys = ys
         step xs [] = xs
@@ -97,7 +97,7 @@ omega +++ eta
 (//\\) :: Field f => Form f -> Form f -> Form f
 omega //\\ eta
     | spaNEq omega eta = errForm "(//\\\\)" BiSpaEq
-    | otherwise = Fform (arity omega + arity eta) (dimVec eta)
+    | otherwise = Form (arity omega + arity eta) (dimVec eta)
                         (concatMap (\d -> map (combine d) (dxs d)) (constituents eta))
   where dxs (_,ys) = filter (null . intersect ys . snd) (constituents omega)
         combine (b,ys) (a,xs)
@@ -120,7 +120,7 @@ instance (Field f) => Algebra (Form f) where
 -- | Basic abstract 1-form
 oneForm :: (Field f) => Dim -> Dim -> Form f
 oneForm i n | i <= 0 || i > n = errForm "oneForm" MoProjBd
-            | otherwise       = Fform 1 n [ (mulId,[i]) ]
+            | otherwise       = Form 1 n [ (mulId,[i]) ]
 
 
 -- TODO: shall we have something special for these? no need to state dimension
@@ -128,11 +128,11 @@ oneForm i n | i <= 0 || i > n = errForm "oneForm" MoProjBd
 
 -- | The (normalised) == 0 form
 zeroForm :: Dim -> Dim -> Form f
-zeroForm k n = Fform k n []
+zeroForm k n = Form k n []
 
 -- | The k-arity == 0 form
 nullForm :: Dim -> Form f
-nullForm n = Fform 0 n []
+nullForm n = Form 0 n []
 
 
 -- Necesitamos una función de pinchado
@@ -142,7 +142,7 @@ contract :: (Field f, VectorSpace v, Dimensioned v) =>
               (Int -> v -> f) -> Form f -> v -> Form f
 contract proj omega v
     | vecNEq omega v = errForm "contract" MoVecEq
-    | otherwise      = Fform (max 0 (arity omega - 1)) (dimVec omega) $
+    | otherwise      = Form (max 0 (arity omega - 1)) (dimVec omega) $
         concatMap (\c -> map (pinchado c) [1..arity omega])
                   (constituents omega)
   where pinchado (f,[]) _ = (f, []) -- error ??
@@ -161,7 +161,7 @@ refine :: (Field f, VectorSpace v) =>
                                --   for the specific vector space
        -> Form f
        -> [v] -> f
-refine proj eta@(Fform k n cs) vs = sumF (map (($ vs) . formify proj) cs)
+refine proj eta@(Form k n cs) vs = sumF (map (($ vs) . formify proj) cs)
 -- TODO: capture inconsistency between k and lenght vs here??
 -- ALSO: 0-forms... not evaluating correctly now! Cfr: formify does not accept
 --    empty cs

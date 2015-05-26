@@ -2,7 +2,7 @@
 * Spaces.hs              -- General class definitions
 * Point.hs
 * Vector.hs
-* Forms.hs
+* Form.hs                -- Form Scalar ~= [(Scalar, k-permutation of n)] (lin. comb. of k-permuations)
 * Simplex.hs
 * MultiIndex.hs
 
@@ -15,18 +15,18 @@
 * Quadrature.hs
 
 # Actual user should import:
-* Polynomials.hs         -- Polynomial ~= [(Scalar, MultiIndex)] (lin. comb. of MultiIndex)
+* Polynomial.hs          -- Polynomial ~= [(Scalar, MultiIndex)] (lin. comb. of MultiIndex)
 * Bernstein.hs           -- ~= (Polynomial, Simplex)
-* DiffForms.hs           --
-* FiniteElementSpaces.hs
+* DifferentialForm.hs    -- ~= Form Polynomial
+* FiniteElementSpace.hs
 
 * Mask.hs
 * Demo.hs
 
 # Less import / testing:
 * CombinatoricsTest.hs
-* FormsTest.hs
-* PolynomialsTest.hs
+* FormTest.hs
+* PolynomialTest.hs
 * Properties.hs
 * QuadratureTest.hs
 * SimplexTest.hs
