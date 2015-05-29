@@ -58,4 +58,3 @@ permutationPairs n k j =
 -- All possible k-j pairs such that k+j <= n
 arityPairs :: Int -> [(Int,Int)]
 arityPairs n = [ (k, j) | k <- [1..n], j <- [1..(n-k)] ]
-
