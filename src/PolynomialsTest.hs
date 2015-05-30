@@ -9,6 +9,7 @@ import Simplex
 import Point
 import Vector
 import Spaces
+import Utility
 import qualified Numeric.LinearAlgebra.HMatrix as M
 
 newtype ConvexComb4 = ConvexComb4 [Double] deriving Show
@@ -65,7 +66,3 @@ delta :: Int -> Int -> Double
 delta i j
       | i == j = 1
       | otherwise = 0
-
--- | Numerical equality accounting for round-off errors
-eqNum :: Double -> Double -> Bool
-eqNum a b = abs (a - b) < 2e-13

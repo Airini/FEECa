@@ -1,11 +1,13 @@
 {-# LANGUAGE
    GADTs,
-   MultiParamTypeClasses #-}
+   MultiParamTypeClasses,
+   FlexibleContexts #-}
 
 module Simplex( extendSimplex,
+                cubic2Euclidean,
                 directionVectors,
-                duffyTransform,
                 geometricalDimension,
+                integral,
                 referencePoint,
                 referenceSimplex,
                 simplex,
@@ -25,6 +27,7 @@ import Math.Combinatorics.Exact.Factorial
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import Point
 import Print
+import Quadrature
 import Spaces
 import Utility
 import Vector
@@ -116,7 +119,7 @@ extendSimplex s@(Simplex ps)
 -- | Computes the k-dimensional volume (Lebesgue measure) of a simplex
 -- | in n dimensions using the Gram Determinant rule.
 volume :: Simplex -> Double
-volume t = sqrt (abs (M.det (M.mul w wT))) / fromInteger (factorial k)
+volume t = sqrt (abs (M.det w)) / fromInteger (factorial k)
     where k = topologicalDimension t
           n = geometricalDimension t
           w = M.matrix n (concatMap toList (directionVectors t))
@@ -129,7 +132,26 @@ barycentric2Euclidean t@(Simplex ps) p = foldl scaleAdd (origin n) (zip p' ps)
           p' = toList (fromPoint p)
           n = geometricalDimension t
 
--- | The inverse Duffy transform. Maps a point fromthe unit cube in R^{n+1}
+-- | The inverse Duffy transform. Maps a point from the unit cube in R^{n+1}
 -- | to the given simplex.
-duffyTransform :: Simplex -> Point -> Point
-duffyTransform t = (barycentric2Euclidean t) . duffy2Barycentric
+cubic2Euclidean :: Simplex -> Point -> Point
+cubic2Euclidean t = (barycentric2Euclidean t) . cubic2Barycentric
+
+-- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
+-- | quadrature rule of degree k.
+integral :: (Function h Vector, Values h Vector ~ Double)
+            => Int -> Simplex -> h -> Double
+integral k t f = (volume t) / (fromInteger (factorial n)) * (integral' k (n-1) [] t f)
+    where n = topologicalDimension t
+
+-- Recursion for the computation of the nested integral as given in formula (3.6)
+-- in "Bernstein-Bezier Finite Elements of Arbitrary Order and Optimal Assembly
+-- Procedues" by Ainsworth et al.
+integral' :: (Function h Vector, Values h Vector ~ Double)
+             => Int -> Int -> [Double] -> Simplex -> h -> Double
+integral' k d ls t f
+          | d == 0 = sum [ w * (eval x f ) | (w, x) <- zip weights xs ]
+          | otherwise = sum [ w * (integral' k (d-1) (x:ls) t f) | (w, x) <- zip weights nodes ]
+    where xs = map fromPoint [ cubic2Euclidean t (point (xi : ls)) | xi <- nodes ]
+          (nodes, weights) = unzip $ gaussJacobiQuadrature d 0 k
+

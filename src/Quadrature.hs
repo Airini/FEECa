@@ -16,7 +16,15 @@ type Coeff a = (Int -> a)
 -- | Compute the Gauss-Jacobi quadrature of degree n and parameters alpha = a
 -- | and beta = b.
 gaussJacobiQuadrature :: Int -> Int -> Int -> Quadrature
-gaussJacobiQuadrature alpha beta n = golubWelsch n alpha beta
+gaussJacobiQuadrature alpha beta n = golubWelsch alpha beta n
+
+-- | Compute the Gauss-Jacobi quadrature of degree n and parameters alpha = a
+-- | and beta = b shifted and scaled to the interval [0,1].
+gaussJacobiQuadrature' :: Int -> Int -> Int -> Quadrature
+gaussJacobiQuadrature' alpha beta n = transform (gaussJacobiQuadrature alpha beta n)
+    where transform = map (\(x,y) -> ( scale1 x, scale2 y))
+          scale1 x = x / 2 + 0.5
+          scale2 y = y / 2
 
 -- | Compute the Gauss-Legendre quadrature of degree n.
 gaussLegendreQuadrature :: Int -> Quadrature
@@ -30,8 +38,11 @@ golubWelsch alpha beta n = extract $ eigSH' (buildMatrix n a b c)
           b = b_jac alpha beta
           c = c_jac alpha beta
           extract (v, m) = zip (toList v)
-                               (mulgamma (toList (head (toRows m))))
-          mulgamma = map (\x -> gamma alpha beta * x**2)
+                               (square (toList (head (toRows m))))
+          square  = map (\x -> x**2)
+          normalize l = map ((*) (2 / (sum l))) l
+          alpha' = fromIntegral alpha
+          scale = map ((*) (2.0**(1.0+ alpha') / (1 + alpha')))
 
 gamma :: Int -> Int -> Double
 gamma a b = fromInteger (2^(a + b + 1) * factorial a * factorial b) /

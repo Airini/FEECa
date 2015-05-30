@@ -7,7 +7,7 @@ module Point(Point(Point),
              dimP,
              origin,
              unitP,
-             duffy2Barycentric) where
+             cubic2Barycentric) where
 
 import Data.List
 import Print
@@ -56,8 +56,8 @@ origin n = Point $ replicate n 0
 unitP :: Int -> Int -> Point
 unitP n i = Point $ concat [replicate i 0.0, [1.0], replicate (n-i-1) 0.0]
 
--- | Convert point given in Duffy coordinates to barycentric coordinates.
-duffy2Barycentric :: Point -> Point
-duffy2Barycentric (Point ts) = Point $ ls ++ [l]
+-- | Convert point given in cubic coordinates to barycentric coordinates.
+cubic2Barycentric :: Point -> Point
+cubic2Barycentric (Point ts) = Point $ ls ++ [l]
     where (l,ls) = mapAccumL f 1 ts
           f acc t = (acc * (1 - t), t * acc)
