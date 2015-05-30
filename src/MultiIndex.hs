@@ -4,8 +4,8 @@ import Spaces(Dimensioned(..))
 import Data.Traversable
 import Data.Bits
 import Combinatorics(sumRLists)
-import Math.Combinatorics.Exact.Binomial
-import Math.Combinatorics.Exact.Factorial
+import qualified Math.Combinatorics.Exact.Binomial as CBin
+import qualified Math.Combinatorics.Exact.Factorial as CFac
 import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)
 
 type MultiIndex = ZipList Integer
@@ -18,43 +18,43 @@ multiIndex :: [Integer] -> MultiIndex
 multiIndex l = ZipList l
 
 -- | Degree of a multi-index, i.e. the sum of all indices
-degMI :: Integral a => MultiIndex -> a
-degMI = fromInteger . sum . getZipList
+deg :: Integral a => MultiIndex -> a
+deg = fromInteger . sum . getZipList
 
 -- | Transform multi-index into list
-toListMI :: Integral a => MultiIndex -> [a]
-toListMI = map fromInteger . getZipList
+toList :: Integral a => MultiIndex -> [a]
+toList = map fromInteger . getZipList
 
 -- | Degree zero multi-index
-zeroMI ::Int -> MultiIndex
-zeroMI n = ZipList (replicate n 0)
+zero ::Int -> MultiIndex
+zero n = ZipList (replicate n 0)
 
 -- | Degree one multi-index with i-th element equal to one and all other zero
-oneMI :: Int -> Int -> MultiIndex
-oneMI n i = ZipList $ concat [replicate i 0,[1],replicate (n-i-1) 0]
+one :: Int -> Int -> MultiIndex
+one n i = ZipList $ concat [replicate i 0,[1],replicate (n-i-1) 0]
 
 -- | Decrease element in multi-index
-decMI :: Integral a =>  Int -> ZipList a -> ZipList a
-decMI i alpha  = pure f <*> ZipList [0..] <*> alpha
+dec :: Integral a =>  Int -> ZipList a -> ZipList a
+dec i alpha  = pure f <*> ZipList [0..] <*> alpha
     where f j a = if j == i then max 0 (a-1) else a
 
 -- | Add two multi-indices
-addMI :: (Integral a) => ZipList a -> ZipList a -> ZipList a
-addMI = liftA2 (+)
+add :: (Integral a) => ZipList a -> ZipList a -> ZipList a
+add = liftA2 (+)
 
 -- | Generalized binomial coefficients for multi-indices as defined in the paper
 -- | by Kirby.
-chooseMI :: (Integral a) => ZipList a -> ZipList a -> a
-chooseMI a b = product $ getZipList $ liftA2 choose a b
+choose :: (Integral a) => ZipList a -> ZipList a -> a
+choose a b = product $ getZipList $ liftA2 CBin.choose a b
 
 -- | Generalized factorial for multi-indices
-factorialMI :: (Bits a, Integral a) => MultiIndex -> a
-factorialMI = product . map factorial . toListMI
+factorial :: (Bits a, Integral a) => MultiIndex -> a
+factorial = product . map CFac.factorial . toList
 
 -- | List of all length n multi-indices of degree r
-degRMI :: Integral a => a -> a -> [MultiIndex]
-degRMI n r = map ZipList $ sumRLists (fromIntegral n) (fromIntegral r)
+degR :: Integral a => a -> a -> [MultiIndex]
+degR n r = map ZipList $ sumRLists (fromIntegral n) (fromIntegral r)
 
 -- | Checks if the first n indices of the multi-index are zero
-isZeroMI :: Int -> MultiIndex -> Bool
-isZeroMI n = all (0 ==) . take n . toListMI
+isZero :: Int -> MultiIndex -> Bool
+isZero n = all (0 ==) . take n . toList

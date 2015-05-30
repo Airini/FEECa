@@ -1,8 +1,8 @@
 {-# LANGUAGE GADTs #-}
 module Test where
 
-import Forms
-import DiffForms
+import Form
+import DifferentialForm
 import Vector
 
 --type Form f = (Int -> Int -> [(f, [Int])])

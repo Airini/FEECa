@@ -2,9 +2,9 @@
 module Mask where
 
 import Spaces
-import Polynomials
-import Forms
-import DiffForms
+import Polynomial
+import Form
+import DifferentialForm
 import Control.Applicative
 import Vector
 import Point
@@ -104,7 +104,7 @@ d form = df (vector . flip canonCoord n) form
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors
 --   (some kind of canonical projection)
-(&) :: DiffForm Double -> Vector -> DiffForm Double
+(&) :: DifferentialForm Double -> Vector -> DifferentialForm Double
 (&) = contract dxVP
 -- ALSO: generalise Vector? that way we can have parameterised vectors :)
 -- kappa, etc. => explicit symbols

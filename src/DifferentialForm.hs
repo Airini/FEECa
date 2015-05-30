@@ -4,11 +4,20 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module DiffForms (DiffForm, df, evalDF, dxV, dxVP) where
+module DifferentialForm (
+  -- * Differential form type
+  DifferentialForm
+  
+  -- * Mathematical differential form operations
+  , df, evalDF
+  
+  -- * Projection operations: into scalara and polynomial values respectively
+  , dxV, dxVP
+  ) where
 
-import Forms
+import Form
 import Spaces
-import Polynomials
+import Polynomial
 import Vector
 import Point
 import Utility (pairM)
@@ -16,25 +25,25 @@ import Control.Applicative (pure)
 
 
 -- | Differential forms
-type DiffForm f = Form (Polynomial f)
+type DifferentialForm f = Form (Polynomial f)
 -- Immediately "inherits" all class instantiations for 'Form' when an
 -- appropriate 'f' is used for Polynomial coefficients (?)
 
---data DiffForm f where
---  DForm :: Field f => Form (PolyN f) -> DiffForm f
+--data DifferentialForm f where
+--  DForm :: Field f => Form (PolyN f) -> DifferentialForm f
 
 
 -- Few examples to test how to write
-f :: Field f => DiffForm f
+f :: Field f => DifferentialForm f
 f = oneForm 1 4
 
-g :: Field f => DiffForm f
+g :: Field f => DifferentialForm f
 g = sclV (add mulId mulId) (oneForm 2 3)
 
-h :: Field f => DiffForm f
+h :: Field f => DifferentialForm f
 h = sclV (constant addId) (oneForm 3 3)
 
-t :: DiffForm Double
+t :: DifferentialForm Double
 t = sclV (add (constant 8.9) (deg1P [0,2,3])) (oneForm 1 5)
 
 b :: Vector
@@ -57,7 +66,7 @@ eg1 = eval (Vector [-0.1,10,0]) expression
 --       arbitrary vector from which dimension can be extracted...
 --      OR: add zero-th vector to 'VectorSpace' class?
 -- Remark: reduced generality for our R^n types
-diff :: (Function (Polynomial Double) v) => (Int -> v) -> DiffForm Double -> DiffForm Double
+diff :: (Function (Polynomial Double) v) => (Int -> v) -> DifferentialForm Double -> DifferentialForm Double
 diff basisIx form =
     foldr (addA . (\ i -> fmap (deriv (basisIx i)) (oneForm i n /\ form)))
           (zeroForm (1 + arity form) n)
@@ -75,7 +84,7 @@ df basisIx form =
 
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 
-evalDF :: DiffForm Double -> Point -> Form Double
+evalDF :: DifferentialForm Double -> Point -> Form Double
 evalDF u = ($u) . fmap . eval . vectify
   where vectify (Point q) = vector q
 

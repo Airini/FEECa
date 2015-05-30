@@ -9,7 +9,7 @@ module Properties where
 
 --import Definitions
 import Spaces
-import Forms
+import Form
 import Vector
 import Mask
 import Test.QuickCheck as TQ
