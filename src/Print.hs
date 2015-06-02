@@ -6,7 +6,7 @@ module Print (
   ) where
 
 import Text.PrettyPrint
-import Text.PrettyPrint.HughesPJClass
+import Text.PrettyPrint.HughesPJ
 import Text.Printf
 import Spaces
 import qualified MultiIndex as MI
@@ -20,6 +20,10 @@ phi = "\x03D5"
 class RenderVector v where
     ncomps :: v -> Int
     components :: v -> [Double]
+
+-- | Pretty class prtotype.
+class Pretty p where
+    pPrint :: p -> Doc
 
 -- | Print Double with precision p and padded to
 -- | width w and precision.

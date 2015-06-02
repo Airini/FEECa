@@ -58,12 +58,12 @@ sublists1 :: [a] -> [[a]]
 sublists1 ls = [ take i ls ++ drop (i+1) ls | i <- [0 .. length ls - 1]]
 
 -- | All length n list of integers whose entries sum to r
-sumRListsStrict :: Integral a => a -> a -> [[a]]
-sumRListsStrict n r
+sumRLists :: Integral a => a -> a -> [[a]]
+sumRLists n r
     | r == 0 = [replicate (fromIntegral n) 0]
     | n == 1 = [[r]]
-    | otherwise = concat [[ls ++ [l] | ls <- sumRListsStrict (n-1) (r-l)] | l <- [0..r]]
+    | otherwise = concat [[ls ++ [l] | ls <- sumRLists (n-1) (r-l)] | l <- [0..r]]
 
 -- | All length n lists of integers whose sum to r or less
-sumRLists :: Integral a => a -> a -> [[a]]
-sumRLists n r = concat [ sumRListsStrict n r' | r' <- [0..r]]
+sumRLists' :: Integral a => a -> a -> [[a]]
+sumRLists' n r = concat [ sumRLists n r' | r' <- [0..r]]

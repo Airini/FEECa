@@ -4,7 +4,7 @@
 
 module Form (
   -- * Generic form types
-  Dim, Form (Form, arity, dimVec)
+  Dim, Form (Form, arity, dimVec, constituents)
 
   -- * Predefined primitive constructors
   , zeroForm, nullForm, oneForm
@@ -131,8 +131,8 @@ zeroForm :: Dim -> Dim -> Form f
 zeroForm k n = Form k n []
 
 -- | The k-arity == 0 form
-nullForm :: Dim -> Form f
-nullForm n = Form 0 n []
+nullForm :: Dim -> f -> Form f
+nullForm n f = Form 0 n [(f, [])]
 
 
 -- Necesitamos una función de pinchado

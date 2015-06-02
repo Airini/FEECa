@@ -15,8 +15,8 @@ module Simplex( extendSimplex,
                 Simplex(..),
                 subsimplex,
                 subsimplices,
+                subsimplices',
                 topologicalDimension,
-                vertices,
                 volume ) where
 
 import Combinatorics
@@ -34,80 +34,85 @@ import Vector
 
 -- | n-simplex represented by a list of vectors of given dimensionality
 -- | Invariant: geometrical dimension = length of the vector - 1
-data Simplex = Simplex [Point] deriving (Eq)
+data Simplex =  Simplex { sigma :: [Int],
+                          vertices :: [Point] }
+                deriving (Eq)
 
 instance Show Simplex where
-    show (Simplex l) = "Simplex:\n" ++ (show $ printVectorColl 2 l) ++ "\n"
+    show (Simplex _ l) = "Simplex:\n" ++ (show $ printVectorColl 2 l) ++ "\n"
 
 -- | Create simplex from a given list of points in R^n
 simplex :: [Point] -> Simplex
-simplex = Simplex
+simplex l = Simplex [0..n] l
+    where n = length l
 
 -- | Create a n+1 simplex from a refence point and n direction vectors
 simplex' :: Point -> [Vector] -> Simplex
-simplex' p0 vs = Simplex (p0:l)
+simplex' p0 vs = Simplex [0..n] (p0:l)
     where l = map (toPoint . addV (fromPoint p0)) vs
+          n = (length vs) + 1
 
 -- | The geometrical dimension of a simplex is the dimensionality of the
 -- | underlying vector space.
 geometricalDimension :: Simplex -> Int
-geometricalDimension (Simplex []) =
+geometricalDimension (Simplex _ []) =
     error "geometricalDimension: Encountered Simplex without vertices."
-geometricalDimension (Simplex (p:ps)) = dimP p
+geometricalDimension (Simplex _ (p:ps)) = dimP p
 
 -- | The topological dimension of a n-simplex is the number of vertices minus
 -- | one.
 topologicalDimension :: Simplex -> Int
-topologicalDimension (Simplex []) =
+topologicalDimension (Simplex _ []) =
     error "topologicalDimension: Encountered Simplex without vertices."
-topologicalDimension (Simplex l) = length l - 1
-
--- | List of vertices of the simplex
-vertices :: Simplex -> [Point]
-vertices (Simplex l) = l
+topologicalDimension (Simplex _ l) = length l - 1
 
 -- | Reference point of the simplex, i.e. the first point in the list
 -- | of vectors
 referencePoint :: Simplex -> Point
-referencePoint (Simplex (p:ps)) = p
-referencePoint (Simplex []) = error "reference Point: Simplex contains no points"
+referencePoint (Simplex _ (p:ps)) = p
+referencePoint (Simplex _ []) = error "reference Point: Simplex contains no points"
 
 -- | List of the n direction vector pointing from the first point of the
 -- | simplex to the others.
 directionVectors :: Simplex -> [Vector]
-directionVectors (Simplex (p:ps)) = map (\x -> subV (fromPoint x) v) ps
+directionVectors (Simplex _ (p:ps)) = map (\x -> subV (fromPoint x) v) ps
     where v = fromPoint p
-directionVectors (Simplex _) = []
+directionVectors (Simplex _ _) = []
 
 -- | i:th k-dimensional subsimplex of given simplex
 subsimplex :: Simplex -> Int -> Int -> Simplex
-subsimplex (Simplex []) _ _ =
+subsimplex (Simplex _ []) _ _ =
                 error "subsimplex: Encountered Simplex without vertices."
-subsimplex s@(Simplex l) k i
+subsimplex s@(Simplex _ l) k i
            | k > n = error err_dim
            | i >= (n+1) `choose` (k+1) = error err_ind
-           | otherwise = Simplex (map (l !!) indices)
+           | otherwise = Simplex indices (map (l !!) indices)
     where n = topologicalDimension s
           indices = unrankIndices (k+1) i
           err_ind = "subsimplex: Index of subsimplex exceeds (n+1) choose (k+1)."
           err_dim = "subsimplex: Dimensionality of subsimplex is higher than that of the simplex."
 
--- | subsimplices of given dimension d
+-- | List subsimplices of given simplex with dimension k.
 subsimplices :: Simplex -> Int -> [Simplex]
-subsimplices s@(Simplex l) k
+subsimplices t@(Simplex _ l) k
              | k > n = error err_dim
-             | otherwise = map Simplex subsimplexLists
-    where n = topologicalDimension s
-          sublistIndices = map (unrankIndices (k+1)) [0..(n+1) `choose` (k+1) - 1]
-          subsimplexLists = map (takeIndices l) sublistIndices
+             | otherwise = [Simplex i vs | (i, vs) <- zip indices subvertices]
+    where n = topologicalDimension t
+          indices = map (unrankIndices (k+1)) [0..(n+1) `choose` (k+1) - 1]
+          subvertices = map (takeIndices l) indices
           err_dim = "subsimplices: Dimensionality of subsimplices is higher than that of the simplex."
+
+-- | List subsimplices of given simplex with dimension larger or equal to k.
+subsimplices' :: Simplex -> Int -> [Simplex]
+subsimplices' t k = concat [ subsimplices t k' | k' <- [k..n] ]
+    where n = topologicalDimension t
 
 -- | Reference simplex in R^n
 referenceSimplex :: Int -> Simplex
-referenceSimplex n = Simplex $ origin n : [unitP n i | i <- [0..n-1]]
+referenceSimplex n = Simplex [0..n] (origin n : [unitP n i | i <- [0..n-1]])
 
 extendSimplex :: Simplex -> Simplex
-extendSimplex s@(Simplex ps)
+extendSimplex s@(Simplex _ ps)
               | n == nt = s
               | otherwise = simplex' p0 (reverse (gramSchmidt' dirs unitvs))
     where n = geometricalDimension s
@@ -127,7 +132,7 @@ volume t = sqrt (abs (M.det w)) / fromInteger (factorial k)
 
 -- | Convert a point given in barycentric coordinates to euclidean coordinates.
 barycentric2Euclidean :: Simplex -> Point -> Point
-barycentric2Euclidean t@(Simplex ps) p = foldl scaleAdd (origin n) (zip p' ps)
+barycentric2Euclidean t@(Simplex _ ps) p = foldl scaleAdd (origin n) (zip p' ps)
     where scaleAdd p (c, p0) = addV p (sclV c p0)
           p' = toList (fromPoint p)
           n = geometricalDimension t
