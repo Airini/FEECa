@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 
-module Vector(Vector(..),
+module FEEC.Internal.Vector(Vector(..),
               vector,
               toList,
               powV,
@@ -9,11 +9,11 @@ module Vector(Vector(..),
               toPoint,
               fromPoint) where
 
-import Spaces hiding (toList)
-import Point
+import FEEC.Internal.Spaces hiding (toList)
+import FEEC.Internal.Point
+import FEEC.Utility.Print
+import qualified FEEC.Internal.MultiIndex as MI
 import Text.PrettyPrint
-import Print
-import qualified MultiIndex as MI
 
 -- | Vectors in R^n
 data Vector = Vector [Double] deriving (Eq)

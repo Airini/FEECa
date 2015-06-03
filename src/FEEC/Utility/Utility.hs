@@ -1,4 +1,4 @@
-module Utility( takeIndices,
+module FEEC.Utility.Utility( takeIndices,
                 pairM,
                 eqNum ) where
 

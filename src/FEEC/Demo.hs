@@ -1,14 +1,17 @@
-module Demo where
+module FEEC.Demo where
 
-import Mask
-import Spaces
-import Polynomial
-import Form
-import DifferentialForm
 import Control.Applicative
-import Vector
-import Point
-import Simplex
+
+import FEEC.DifferentialForm
+import FEEC.Internal.Form
+import FEEC.Internal.Point
+import FEEC.Internal.Simplex
+import FEEC.Internal.Spaces
+import FEEC.Internal.Vector
+import FEEC.Mask
+import FEEC.Polynomial
+
+
 
 -------
 

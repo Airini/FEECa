@@ -1,12 +1,11 @@
-module Combinatorics(rank,
-                     unrank,
-                     unrankIndices,
-                     increasingLists,
-                     increasingLists',
-                     sublists,
-                     sublists1,
-                     sumRLists) where
-
+module FEEC.Utility.Combinatorics( rank,
+                                   unrank,
+                                   unrankIndices,
+                                   increasingLists,
+                                   increasingLists',
+                                   sublists,
+                                   sublists1,
+                                   sumRLists ) where
 import Math.Combinatorics.Exact.Binomial
 import Data.Maybe(fromJust)
 import Data.List (find)

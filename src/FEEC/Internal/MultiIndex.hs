@@ -1,9 +1,9 @@
-module MultiIndex where
+module FEEC.Internal.MultiIndex where
 
-import Spaces(Dimensioned(..))
 import Data.Traversable
 import Data.Bits
-import Combinatorics(sumRLists)
+import FEEC.Internal.Spaces(Dimensioned(..))
+import FEEC.Utility.Combinatorics(sumRLists)
 import qualified Math.Combinatorics.Exact.Binomial as CBin
 import qualified Math.Combinatorics.Exact.Factorial as CFac
 import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)

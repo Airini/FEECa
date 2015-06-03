@@ -1,4 +1,4 @@
-module Discrete where
+module FEEC.Utility.Discrete where
 
 --import Data.Type.Natural
 import Data.List ((\\),nub)

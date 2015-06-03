@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Polynomial (
+module FEEC.Polynomial (
   -- * Polynomial types
   Polynomial(..), Term(Term)
 
@@ -28,16 +28,19 @@ module Polynomial (
   , barycentricGradient, barycentricGradients
   ) where
 
-import Spaces hiding (toList)
-import Simplex
-import Vector
-import Point
-import Utility(pairM)
-import Print (printPolynomial)
-import Text.PrettyPrint
 import Data.Maybe (fromJust)
 import Data.List
-import qualified MultiIndex as MI (MultiIndex, zero, one, dec, toList, add, deg, valid)
+
+import qualified FEEC.Internal.MultiIndex as MI (MultiIndex, zero, one, dec, toList, add, deg, valid)
+import FEEC.Internal.Simplex
+import FEEC.Internal.Spaces hiding (toList)
+import FEEC.Internal.Point
+import FEEC.Internal.Vector
+import FEEC.Utility.Print(printPolynomial)
+import FEEC.Utility.Utility(pairM)
+
+import Text.PrettyPrint
+
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 

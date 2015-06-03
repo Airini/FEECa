@@ -1,4 +1,4 @@
-module CombinatoricsTest where
+module Combinatorics.Test where
 import Combinatorics
 import qualified Math.Combinatorics.Exact.Binomial as Comb
 import Test.QuickCheck

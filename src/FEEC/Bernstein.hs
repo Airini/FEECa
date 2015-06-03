@@ -1,16 +1,19 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Bernstein where
+module FEEC.Bernstein where
 
-import Simplex
-import Spaces
-import Vector
-import Polynomial hiding (Constant, constant, monomial)
-import qualified Polynomial as P (multiIndices, monomial, constant)
-import Utility
-import Print
-import qualified MultiIndex as MI
+import qualified FEEC.Internal.MultiIndex as MI
+import FEEC.Internal.Simplex
+import FEEC.Internal.Spaces
+import FEEC.Internal.Vector
+
+import FEEC.Polynomial hiding (Constant, constant, monomial)
+import qualified FEEC.Polynomial as P (multiIndices, monomial, constant)
+
+import FEEC.Utility.Utility
+import FEEC.Utility.Print
+
 import Math.Combinatorics.Exact.Factorial
 import Math.Combinatorics.Exact.Binomial
 

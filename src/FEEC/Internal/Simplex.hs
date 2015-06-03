@@ -3,34 +3,36 @@
    MultiParamTypeClasses,
    FlexibleContexts #-}
 
-module Simplex( extendSimplex,
-                cubic2Euclidean,
-                directionVectors,
-                geometricalDimension,
-                integral,
-                referencePoint,
-                referenceSimplex,
-                simplex,
-                simplex',
-                Simplex(..),
-                subsimplex,
-                subsimplices,
-                subsimplices',
-                topologicalDimension,
-                volume ) where
+module FEEC.Internal.Simplex( extendSimplex,
+                              cubic2Euclidean,
+                              directionVectors,
+                              geometricalDimension,
+                              integral,
+                              referencePoint,
+                              referenceSimplex,
+                              simplex,
+                              simplex',
+                              Simplex(..),
+                              subsimplex,
+                              subsimplices,
+                              subsimplices',
+                              topologicalDimension,
+                              volume ) where
 
-import Combinatorics
+
 import Data.List
-import GramSchmidt
+import FEEC.Internal.Spaces
+import FEEC.Internal.Point
+import FEEC.Internal.Vector
+import FEEC.Utility.GramSchmidt
+import FEEC.Utility.Print
+import FEEC.Utility.Quadrature
+import FEEC.Utility.Combinatorics
+import FEEC.Utility.Utility
 import Math.Combinatorics.Exact.Binomial
 import Math.Combinatorics.Exact.Factorial
 import qualified Numeric.LinearAlgebra.HMatrix as M
-import Point
-import Print
-import Quadrature
-import Spaces
-import Utility
-import Vector
+
 
 -- | n-simplex represented by a list of vectors of given dimensionality
 -- | Invariant: geometrical dimension = length of the vector - 1

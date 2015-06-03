@@ -1,21 +1,21 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module FiniteElementSpace (
+module FEEC.FiniteElementSpace (
  -- * Introduction
  -- $intro
 )where
 
-import Bernstein (BernsteinPolynomial(..), monomial, multiIndices)
-import qualified Bernstein as B (extend)
-import Combinatorics
 import Data.List
-import DifferentialForm
-import Form hiding (arity)
+import FEEC.Bernstein (BernsteinPolynomial(..), monomial, multiIndices)
+import qualified FEEC.Bernstein as B (extend)
+import FEEC.Utility.Combinatorics
+import FEEC.DifferentialForm
+import FEEC.Internal.Form hiding (arity)
+import FEEC.Utility.Print
+import FEEC.Internal.Simplex
+import FEEC.Internal.Spaces
+import qualified FEEC.Internal.MultiIndex as MI
 import qualified Math.Combinatorics.Exact.Binomial as CBin
-import qualified MultiIndex as MI
-import Print
-import Simplex
-import Spaces
 
 -- $intro
 -- This file implements the finite element space $P_r\Lambda^k$ and $P_r^-\Lambda^k$

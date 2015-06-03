@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Point(Point(Point),
+module FEEC.Internal.Point(Point(Point),
              point,
              dimP,
              origin,
@@ -10,8 +10,8 @@ module Point(Point(Point),
              cubic2Barycentric) where
 
 import Data.List
-import Print
-import Spaces
+import FEEC.Internal.Spaces
+import FEEC.Utility.Print
 
 -- | Points in R^n. A point describes a fixed position in space and
 -- | can not be computed with.
