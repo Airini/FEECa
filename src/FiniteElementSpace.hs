@@ -32,7 +32,8 @@ type BasisFunction = Form BernsteinPolynomial
 data FiniteElementSpace = PrLk Int Int Simplex
                         | PrmLk Int Int Simplex
 
--- | Name data type to represent the named finite elements.
+-- | Name data type to represent the named finite elements. See
+-- | <http://www.femtable.org Periodic Table of the Finite Elements>.
 data Name = P
           | Pm
           | DP
@@ -44,31 +45,31 @@ data Name = P
           | N2e
           | N2f
 
+-- | Create named finite element space of given polynomial degree over the
+-- | given simplex.
 finiteElementSpace :: Name -> Int -> Simplex -> FiniteElementSpace
 finiteElementSpace P r t = PrLk r 0 t
 finiteElementSpace Pm r t = PrmLk r 0 t
 finiteElementSpace DP r t = PrLk r (topologicalDimension t) t
 finiteElementSpace DPm r t = PrmLk r (topologicalDimension t) t
 finiteElementSpace RT r t
-    | (topologicalDimension t) == 2 = PrLk r 1 t
+    | (topologicalDimension t) == 2 = PrmLk r 1 t
     | otherwise = error "RT elements are defined in two dimensions."
 finiteElementSpace N1e r t
-    | (topologicalDimension t) == 3 = PrLk r 1 t
+    | (topologicalDimension t) == 3 = PrmLk r 1 t
     | otherwise = error "N1e1 elements are defined in three dimensions."
 finiteElementSpace N1f r t
-    | (topologicalDimension t) == 3 = PrLk r 2 t
+    | (topologicalDimension t) == 3 = PrmLk r 2 t
     | otherwise = error "N1f1 elements are defined in three dimensions."
 finiteElementSpace BDM r t
-    | (topologicalDimension t) == 2 = PrmLk r 1 t
+    | (topologicalDimension t) == 2 = PrLk r 1 t
     | otherwise = error "BDM elements are defined in two dimensions."
 finiteElementSpace N2e r t
-    | (topologicalDimension t) == 3 = PrmLk r 1 t
+    | (topologicalDimension t) == 3 = PrLk r 1 t
     | otherwise = error "N2e1 elements are defined in three dimensions."
 finiteElementSpace N2f r t
-    | (topologicalDimension t) == 3 = PrmLk r 2 t
+    | (topologicalDimension t) == 3 = PrLk r 2 t
     | otherwise = error "N2f1 elements are defined in three dimensions."
-
-finiteElementSpace Pm r t = PrmLk r 0 t
 
 -- | The degree of the finite element space.
 degree :: FiniteElementSpace -> Int
@@ -92,21 +93,23 @@ instance Dimensioned FiniteElementSpace where
     dim (PrLk r k t) = ((r + k) `CBin.choose` r ) * ((n + r) `CBin.choose` (n - k))
         where n = geometricalDimension t
 
+-- | List the basis functions of the given finite element space.
 basis :: FiniteElementSpace -> [Form BernsteinPolynomial]
 basis (PrmLk r k t) = prmLkBasis r k t
 basis (PrLk r k t) = prLkBasis r k t
 
--- instance Show (Form BernsteinPolynomial) where
---   show (Form k n cs) = show (printForm dlambda "0" show cs)
-
-
--- | Extend a differential Form defined on a face of a simplex to the given simplex.
+-- | Extend a differential Form defined on a face of a simplex to the full simplex.
+-- | Implements the barycentric extension operator defined in eq. (7.1) in
+-- | Arnold, Falk, Winther.
 extend :: Simplex -> Form BernsteinPolynomial -> Form BernsteinPolynomial
 extend t (Form k n' cs) = Form k n (extend' cs)
     where extend' = map (\ (x,y) -> (B.extend t x, extendFace n y))
           n = topologicalDimension t
 
--- | Extend a subsimplex of a face of a simplex to the simplex.
+-- | Extend the face of a subsimplex of a simplex of topological dimension n to the
+-- | the simplex. That is, for a face given as an increasing list of vertices of the
+-- | subsimplex, return the list of vertices of the simplex that corresponds to that
+-- | face.
 extendFace :: Int -> [Int] -> [Int]
 extendFace n f = [ [0..n] !! (i) | i <- f ]
 
@@ -170,13 +173,14 @@ prLkFace' r k t = [Form k n [((b alpha), sigma)] | alpha <- alphas,
 
 
 
--- | The psi forms that implementing the extension operator as given in
--- | equations (8.1) and (8.2).
+-- | The psi forms that implement the extension operator for the $P_r\Lambda^k$
+-- | spaces as given in equations (8.1) and (8.2) in Arnold, Falk, Winther.
 psi :: MI.MultiIndex -> [Int] -> Form BernsteinPolynomial
 psi alpha sigma  = foldl (/\) unit [psi' alpha i | i <- sigma]
     where unit = nullForm (n+1) mulId
           n = dim alpha
 
+-- TODO: Check form indices.
 psi' :: MI.MultiIndex -> Int -> Form BernsteinPolynomial
 psi' alpha i = subV (db i) (foldl addV zero [sclV (c j) (db j) | j <- [0..n]])
     where db j = oneForm (j+1) (n+1)
@@ -192,4 +196,4 @@ t1 = subsimplex t 1 3
 b = monomial t1 (MI.multiIndex [1,2])
 omega = Form 2 2 [(b, [0,1])]
 
-s1 = PrmLk 3 3 t
+s1 = finiteElementSpace N2f 3 t
