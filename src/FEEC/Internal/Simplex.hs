@@ -90,7 +90,7 @@ subsimplex s@(Simplex _ l) k i
            | i >= (n+1) `choose` (k+1) = error err_ind
            | otherwise = Simplex indices (map (l !!) indices)
     where n = topologicalDimension s
-          indices = unrankIndices (k+1) i
+          indices = unrank (k+1) n i
           err_ind = "subsimplex: Index of subsimplex exceeds (n+1) choose (k+1)."
           err_dim = "subsimplex: Dimensionality of subsimplex is higher than that of the simplex."
 
@@ -100,7 +100,7 @@ subsimplices t@(Simplex _ l) k
              | k > n = error err_dim
              | otherwise = [Simplex i vs | (i, vs) <- zip indices subvertices]
     where n = topologicalDimension t
-          indices = map (unrankIndices (k+1)) [0..(n+1) `choose` (k+1) - 1]
+          indices = map (unrank (k+1) n) [0..(n+1) `choose` (k+1) - 1]
           subvertices = map (takeIndices l) indices
           err_dim = "subsimplices: Dimensionality of subsimplices is higher than that of the simplex."
 

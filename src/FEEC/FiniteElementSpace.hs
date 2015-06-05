@@ -130,7 +130,7 @@ prmLkFace r k t = [sclV (b alpha) (whitneyForm t sigma) | alpha <- alphas,
     where n = topologicalDimension t
           b = monomial t
           alphas = MI.degR n (r-1)
-          sigmas alpha = [ sigma | sigma <- increasingLists' n k,
+          sigmas alpha = [ sigma | sigma <- increasingLists n k,
                                    range alpha sigma == [0..n],
                                    zero alpha sigma ]
           zero alpha sigma = all (0==) (take ((minimum sigma)) (MI.toList alpha))
@@ -140,7 +140,7 @@ whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
 whitneyForm t ls = Form k n [( lambda' (ls !! i), subsets !! i) | i <- [0..k]]
     where k = length ls - 1
           n = geometricalDimension t
-          subsets = sublists1 ls
+          subsets = sublists ls
           lambda' i = sclV ((-1)^i) (monomial t (MI.one n i))
 
 -- | Basis of the $P_r\Lambda^k$ space over the given simplex constructed using
@@ -165,7 +165,7 @@ prLkFace' r k t = [Form k n [((b alpha), sigma)] | alpha <- alphas,
     where n = topologicalDimension t
           b = monomial t
           alphas = MI.degR n r
-          sigmas alpha = [ sigma | sigma <- increasingLists' n (k-1),
+          sigmas alpha = [ sigma | sigma <- increasingLists n (k-1),
                                    range alpha sigma == [0..n],
                                    zero alpha sigma ]
           zero alpha sigma = all (0==) (take ((minimum' sigma)) (MI.toList alpha))
