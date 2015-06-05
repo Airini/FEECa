@@ -23,7 +23,7 @@ module FEEC.Utility.Combinatorics(
   -- ** Indexing
   unrank,
   -- * Lists of degree r
-  sublists,  sumRLists
+  sublists,  sumRLists, sumRLists'
   ) where
 
 import Math.Combinatorics.Exact.Binomial
@@ -116,7 +116,7 @@ unrank :: Integral a
        -> a -- n
        -> a -- the index i
        -> [a]
-unrank k n i = (increasingLists n k) !! (fromIntegral i)
+unrank k n i = (increasingLists k n) !! (fromIntegral i)
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -176,6 +176,7 @@ sumRLists :: Integral a
 sumRLists n r
     | r == 0 = [replicate (fromIntegral n) 0]
     | n == 1 = [[r]]
+    | n < 1 = []
     | otherwise = concat [[ls ++ [l] | ls <- sumRLists (n-1) (r-l)] | l <- [0..r]]
 
 -- | All length n lists of integers whose sum to r or less.
