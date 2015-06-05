@@ -39,7 +39,8 @@ import Data.List (find)
 
 The \module{Combinatorics} module re-exports the function \code{choose} for the
 computation of binomial coefficients and the function \code{factorial} for the
- computation of factorials from the \code{exact-combinatorics}\cite{ec} package.
+ computation of factorials from the \code{exact-combinatorics}\cite{package:ec}
+package.
 
 \subsection{Increasing Lists}
 
@@ -91,6 +92,7 @@ increasingLists' :: Integral a
                  -> a -- x0
                  -> [[a]]
 increasingLists' k n x0
+    | k < 1 = [[]]
     | k == 1 = [[x] | x <- [x0 .. n]]
     | otherwise = [ x : xs | x <- [x0 .. (n - k) + 1],
                              xs <- increasingLists' (k - 1) n (x + 1)]
