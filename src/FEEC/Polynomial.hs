@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Polynomial (
+module FEEC.Polynomial (
   -- * Polynomial types
   Polynomial(..), Term(Term)
 
@@ -10,7 +10,7 @@ module Polynomial (
   -- * Predefined constructors
 
   -- ** Primitive constructors
-  , constant, constPInN, deg0P, deg1P
+  , polynomial, constant, constPInN, deg0P, deg1P
   
   -- ** Derived constructors
   , barycentricCoordinate, barycentricCoordinates
@@ -22,22 +22,25 @@ module Polynomial (
   , derive, evaluate, integralP
   
   -- ** Manipulation operations
-  , expandTerm, monomial, multiIndices
+  , expandTerm, monomial, multiIndices, toPairs
 
   -- ** Simplex dependent operations
   , barycentricGradient, barycentricGradients
   ) where
 
-import Spaces hiding (toList)
-import Simplex
-import Vector
-import Point
-import Utility(pairM)
-import Print (printPolynomial)
-import Text.PrettyPrint
 import Data.Maybe (fromJust)
 import Data.List
-import qualified MultiIndex as MI (MultiIndex, zero, one, dec, toList, add, deg)
+
+import qualified FEEC.Internal.MultiIndex as MI (MultiIndex, zero, one, dec, toList, add, deg, valid)
+import FEEC.Internal.Simplex
+import FEEC.Internal.Spaces hiding (toList)
+import FEEC.Internal.Point
+import FEEC.Internal.Vector
+import FEEC.Utility.Print(printPolynomial)
+import FEEC.Utility.Utility(pairM)
+
+import Text.PrettyPrint
+
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
@@ -146,6 +149,31 @@ constant c = Polynomial 0 [Constant c]
 monomial :: Field a => MI.MultiIndex -> Polynomial a
 monomial mi = Polynomial (MI.deg mi) [Term mulId mi]
 
+-- | Create a term of a polynomial consisting of a scaled monomial.
+term :: Field a => (a, MI.MultiIndex) -> Term a
+term (c, mi) = Term c mi
+
+-- | Create a polynomial from a list of coefficient-multi-index pairs.
+polynomial :: Field a => [(a, MI.MultiIndex)] -> Polynomial a
+polynomial l = if (checkPolynomial l)
+               then Polynomial r (map term l)
+               else error "Given coefficients and multi-indices do not define a valid polynomial."
+    where r = maximum (map (MI.deg . snd) l)
+
+-- | Check whether a list of coefficient-multi-index pairs represents a
+-- | polynomial.
+checkPolynomial :: [(a, MI.MultiIndex)] -> Bool
+checkPolynomial ls = (all (MI.valid . snd) ls) && (sameLength (map snd ls))
+
+-- | Check if all multi-indices in the list have the same dimension.
+sameLength :: [MI.MultiIndex] -> Bool
+sameLength (l:ls) = sameLength' (dim l) ls
+sameLength [] = True
+
+sameLength' :: Int -> [MI.MultiIndex] -> Bool
+sameLength' i (l:ls) = (i == (dim l)) && (sameLength' (dim l) ls)
+sameLength' _ [] = True
+
 -- | Returns a list of the multi-indices in the polynomial.
 multiIndices :: Int -> Polynomial a -> [MI.MultiIndex]
 multiIndices n (Polynomial _ ls) = multiIndices' n ls
@@ -157,10 +185,13 @@ multiIndices' _ [] = []
 
 -- | Expands Constant types in the list of terms and returns a list of all
 -- | coefficient multi-index pairs in the polynomial.
-toPairs :: Int -> [Term a] -> [ (a, MI.MultiIndex) ]
-toPairs n (Term c mi  : ls) = (c, mi) : toPairs n ls
-toPairs n (Constant c : ls) = (c, MI.zero n) : toPairs n ls
-toPairs _ [] = []
+toPairs :: Int -> Polynomial a -> [ (a, MI.MultiIndex) ]
+toPairs n p = toPairs' n (terms p)
+
+toPairs' :: Int -> [Term a] -> [ (a, MI.MultiIndex) ]
+toPairs' n (Term c mi  : ls) = (c, mi) : toPairs' n ls
+toPairs' n (Constant c : ls) = (c, MI.zero n) : toPairs' n ls
+toPairs' _ [] = []
 
 -- | Pretty printing of polynomials.
 instance Show (Polynomial Double) where
@@ -204,7 +235,7 @@ deriveP = derive deriveMonomial
 
 -- | General integral of a polynomial.
 integralP :: Field a => Int -> (MI.MultiIndex -> a) -> Polynomial a -> a
-integralP n f (Polynomial r ts) = foldl add addId [ mul c ( f mi ) | (c, mi) <- toPairs n ts ]
+integralP n f p@(Polynomial r ts) = foldl add addId [ mul c ( f mi ) | (c, mi) <- toPairs n p ]
 
 -- | Create constant polynomial
 deg0P :: a -> Polynomial a
@@ -252,7 +283,7 @@ barycentricGradient t i = barycentricGradients t !! i
 -- Transforms a given simplex into the matrix representing the linear
 -- equation system for the barycentric coordinates.
 simplexToMatrix :: Simplex -> M.Matrix Double
-simplexToMatrix s@(Simplex l) = M.matrix (n+1) (concatMap append1 l)
+simplexToMatrix s@(Simplex _ l) = M.matrix (n+1) (concatMap append1 l)
     where n = geometricalDimension s
           append1 p = 1 : toList (fromPoint p)
 

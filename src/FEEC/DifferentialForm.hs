@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module DifferentialForm (
+module FEEC.DifferentialForm (
   -- * Differential form type
   DifferentialForm
   
@@ -15,13 +15,13 @@ module DifferentialForm (
   , dxV, dxVP
   ) where
 
-import Form
-import Spaces
-import Polynomial
-import Vector
-import Point
-import Utility (pairM)
 import Control.Applicative (pure)
+import FEEC.Internal.Form
+import FEEC.Internal.Point
+import FEEC.Internal.Spaces
+import FEEC.Internal.Vector
+import FEEC.Polynomial
+import FEEC.Utility.Utility (pairM)
 
 
 -- | Differential forms

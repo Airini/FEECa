@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Spaces where
+module FEEC.Internal.Spaces where
 
 class Field v where  -- TODO: Actually Ring
   add     :: v -> v -> v

@@ -2,16 +2,18 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Point(Point(Point),
+module FEEC.Internal.Point(Point(Point),
              point,
              dimP,
              origin,
-             unitP) where
+             unitP,
+             cubic2Barycentric) where
 
-import Spaces
-import Print
+import Data.List
+import FEEC.Internal.Spaces
+import FEEC.Utility.Print
 
--- | Points in R^n. A point describese a fixed position in space and
+-- | Points in R^n. A point describes a fixed position in space and
 -- | can not be computed with.
 data Point = Point [Double] deriving (Eq)
 
@@ -53,3 +55,9 @@ origin n = Point $ replicate n 0
 -- | Point with the ith component 1.0 and all other components 0.0.
 unitP :: Int -> Int -> Point
 unitP n i = Point $ concat [replicate i 0.0, [1.0], replicate (n-i-1) 0.0]
+
+-- | Convert point given in cubic coordinates to barycentric coordinates.
+cubic2Barycentric :: Point -> Point
+cubic2Barycentric (Point ts) = Point $ ls ++ [l]
+    where (l,ls) = mapAccumL f 1 ts
+          f acc t = (acc * (1 - t), t * acc)

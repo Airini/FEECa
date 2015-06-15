@@ -2,9 +2,9 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Form (
+module FEEC.Internal.Form (
   -- * Generic form types
-  Dim, Form (Form, arity, dimVec)
+  Dim, Form (Form, arity, dimVec, constituents)
 
   -- * Predefined primitive constructors
   , zeroForm, nullForm, oneForm
@@ -14,13 +14,14 @@ module Form (
   ) where
 
 
-import Data.List (intersect)
+
 -- import Data.Type.Natural
-import Spaces
-import Discrete
-import Utility (pairM)
-import Print (Pretty(..), printForm)
 import Control.Applicative
+import Data.List (intersect)
+import FEEC.Internal.Spaces
+import FEEC.Utility.Discrete
+import FEEC.Utility.Utility (pairM)
+import FEEC.Utility.Print (Pretty(..), printForm)
 
 
 -- * General form: does not depend on the underlying vector space it works on
@@ -131,8 +132,8 @@ zeroForm :: Dim -> Dim -> Form f
 zeroForm k n = Form k n []
 
 -- | The k-arity == 0 form
-nullForm :: Dim -> Form f
-nullForm n = Form 0 n []
+nullForm :: Dim -> f -> Form f
+nullForm n f = Form 0 n [(f, [])]
 
 
 -- Necesitamos una función de pinchado

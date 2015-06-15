@@ -1,14 +1,14 @@
 {-# LANGUAGE FlexibleContexts #-}
-module Mask where
+module FEEC.Mask where
 
-import Spaces
-import Polynomial
-import Form
-import DifferentialForm
 import Control.Applicative
-import Vector
-import Point
 
+import FEEC.DifferentialForm
+import FEEC.Internal.Form
+import FEEC.Internal.Spaces
+import FEEC.Internal.Point
+import FEEC.Internal.Vector
+import FEEC.Polynomial
 
 type Monop t = t -> t
 type Binop t = t -> t -> t

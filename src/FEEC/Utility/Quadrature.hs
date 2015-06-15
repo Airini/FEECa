@@ -1,4 +1,4 @@
-module Quadrature where
+module FEEC.Utility.Quadrature where
 
 import Math.Combinatorics.Exact.Factorial
 import Numeric.LinearAlgebra.HMatrix
@@ -16,7 +16,15 @@ type Coeff a = (Int -> a)
 -- | Compute the Gauss-Jacobi quadrature of degree n and parameters alpha = a
 -- | and beta = b.
 gaussJacobiQuadrature :: Int -> Int -> Int -> Quadrature
-gaussJacobiQuadrature alpha beta n = golubWelsch n alpha beta
+gaussJacobiQuadrature alpha beta n = golubWelsch alpha beta n
+
+-- | Compute the Gauss-Jacobi quadrature of degree n and parameters alpha = a
+-- | and beta = b shifted and scaled to the interval [0,1].
+gaussJacobiQuadrature' :: Int -> Int -> Int -> Quadrature
+gaussJacobiQuadrature' alpha beta n = transform (gaussJacobiQuadrature alpha beta n)
+    where transform = map (\(x,y) -> ( scale1 x, scale2 y))
+          scale1 x = x / 2 + 0.5
+          scale2 y = y / 2
 
 -- | Compute the Gauss-Legendre quadrature of degree n.
 gaussLegendreQuadrature :: Int -> Quadrature
@@ -30,8 +38,11 @@ golubWelsch alpha beta n = extract $ eigSH' (buildMatrix n a b c)
           b = b_jac alpha beta
           c = c_jac alpha beta
           extract (v, m) = zip (toList v)
-                               (mulgamma (toList (head (toRows m))))
-          mulgamma = map (\x -> gamma alpha beta * x**2)
+                               (square (toList (head (toRows m))))
+          square  = map (\x -> x**2)
+          normalize l = map ((*) (2 / (sum l))) l
+          alpha' = fromIntegral alpha
+          scale = map ((*) (2.0**(1.0+ alpha') / (1 + alpha')))
 
 gamma :: Int -> Int -> Double
 gamma a b = fromInteger (2^(a + b + 1) * factorial a * factorial b) /
@@ -50,47 +61,28 @@ buildMatrix n a b c = (n >< n) $ concat [ p1 i ++ [p2 i] ++ p3 i | i <- [1..n] ]
 
 -- | Evaluate an orthogonal Polynomial using the coefficient functions describing
 -- | its recurrence relation.
-orthogonalPolynomial :: Int -> Coeff Double -> Coeff Double -> Coeff Double -> Double -> Double
-orthogonalPolynomial n a b c x
+orthogonalPolynomial :: Int -> Int -> Int -> Double -> Double
+orthogonalPolynomial n alpha beta x
     | n == 0 = 1.0
-    | n > 0 = orthogonalPolynomial' n 1 a b c x 1.0 0.0
+    | n > 0 = orthogonalPolynomial' n 1 alpha beta x 1.0 0.0
 
 -- Iterative implementation of the recursion relations for orthogonal polynomials.
 -- See article by Golub and Welsch.
 orthogonalPolynomial' :: Int ->
                          Int ->
-                         Coeff Double ->
-                         Coeff Double ->
-                         Coeff Double ->
+                         Int ->
+                         Int ->
                          Double ->
                          Double ->
                          Double ->
                          Double
-orthogonalPolynomial' n i a b c x pi1 pi2
+orthogonalPolynomial' n i alpha beta x pi1 pi2
     | n == i = pi
-    | otherwise = orthogonalPolynomial' n (i+1) a b c x pi pi1
+    | otherwise = orthogonalPolynomial' n (i+1) alpha beta x pi pi1
     where pi = (a i * x + b i) * pi1 - c i * pi2
-
--- a_i coefficient for Legendre polynomials as defined in the paper by
--- Golub and Welsch.
-a_leg :: Coeff Double
-a_leg i = (2*i' - 1) / i'
-    where i' = fromIntegral i
-
--- b_i coefficient for Legendre polynomials as defined in the paper by
--- Golub and Welsch.
-b_leg :: Coeff Double
-b_leg _ = 0
-
--- c_i coefficient for Legendre polynomials as defined in the paper by
--- Golub and Welsch.
-c_leg :: Coeff Double
-c_leg i = (i' - 1) / i'
-    where i' = fromIntegral i
-
--- | Evaluate Legendre polynomial of degree n at x.
-legendreP :: Int -> Double -> Double
-legendreP n = orthogonalPolynomial n a_leg b_leg c_leg
+          a = a_jac alpha beta
+          b = b_jac alpha beta
+          c = c_jac alpha beta
 
 -- a_i coefficient for Jacobi polynomials as defined in the paper by
 -- Golub and Welsch.
@@ -129,13 +121,8 @@ den_jac alpha beta i =
 
 -- | Evaluate Jacobi Polynomial.
 jacobiP :: Int -> Int -> Int -> Double -> Double
-jacobiP alpha beta n = orthogonalPolynomial n a b c
-    where a = a_jac alpha beta
-          b = b_jac alpha beta
-          c = c_jac alpha beta
+jacobiP alpha beta n = orthogonalPolynomial n alpha beta
 
-
-
-
-
-
+-- | Evaluate Legendre polynomial of degree n at x.
+legendreP :: Int -> Double -> Double
+legendreP n = orthogonalPolynomial n 0 0

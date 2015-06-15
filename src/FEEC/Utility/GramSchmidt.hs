@@ -1,7 +1,7 @@
-module GramSchmidt where
+module FEEC.Utility.GramSchmidt where
 
-import Vector
-import Spaces
+import FEEC.Internal.Vector
+import FEEC.Internal.Spaces
 
 -- | Gram-Schmidt orthogonalization
 gramSchmidt :: [Vector] -> [Vector]
