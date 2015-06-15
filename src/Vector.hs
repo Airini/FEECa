@@ -26,7 +26,7 @@ instance Dimensioned Vector where
     dim (Vector l) = length l
 
 instance Show Vector where
-    show v = "Vector:\n" ++ (show $ printVector 2 v)
+    show v = "Vector:\n" ++ show (printVector 2 v)
 
 instance VectorSpace Vector where
   type Fieldf Vector   = Double

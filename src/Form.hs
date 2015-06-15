@@ -101,8 +101,8 @@ omega //\\ eta
                         (concatMap (\d -> map (combine d) (dxs d)) (constituents eta))
   where dxs (_,ys) = filter (null . intersect ys . snd) (constituents omega)
         combine (b,ys) (a,xs)
-          | null (intersect xs ys) = (mul a b, xs++ys)
-          | otherwise              = (addId, [])
+          | null (xs `intersect` ys) = (mul a b, xs++ys)
+          | otherwise                = (addId, [])
 
 instance (Field f) => VectorSpace (Form f) where
   type Fieldf (Form f) = f

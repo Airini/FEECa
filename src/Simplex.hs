@@ -33,7 +33,7 @@ import qualified Numeric.LinearAlgebra.HMatrix as M
 data Simplex = Simplex [Point] deriving (Eq)
 
 instance Show Simplex where
-    show (Simplex l) = "Simplex:\n" ++ (show $ printVectorColl 2 l) ++ "\n"
+    show (Simplex l) = "Simplex:\n" ++ show (printVectorColl 2 l) ++ "\n"
 
 -- | Create simplex from a given list of points in R^n
 simplex :: [Point] -> Simplex

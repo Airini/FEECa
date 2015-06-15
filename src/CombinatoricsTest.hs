@@ -29,7 +29,7 @@ prop_increasing :: OrderedIntPair -> Bool
 prop_increasing (OrderedIntPair (k,n)) = increasing (unrank k n)
 
 increasing :: [Int] -> Bool
-increasing (l:(m:ms)) = and [l<m,increasing ms]
+increasing (l:(m:ms)) = l<m && increasing ms
 increasing (l:_)      = True
 increasing []         = True
 

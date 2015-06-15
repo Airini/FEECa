@@ -37,7 +37,7 @@ instance Dimensioned Point where
     dim = dimP
 
 instance Show Point where
-    show p = "Point:\n" ++ (show $ printVector 2 p)
+    show p = "Point:\n" ++ show (printVector 2 p)
 
 -- | Create point from list of components.
 point :: [Double] -> Point
