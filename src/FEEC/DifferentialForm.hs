@@ -30,17 +30,17 @@ type DifferentialForm f = Form (Polynomial f)
 -- appropriate 'f' is used for Polynomial coefficients (?)
 
 --data DifferentialForm f where
---  DForm :: Field f => Form (PolyN f) -> DifferentialForm f
+--  DForm :: Ring f => Form (PolyN f) -> DifferentialForm f
 
 
 -- Few examples to test how to write
-f :: Field f => DifferentialForm f
+f :: Ring f => DifferentialForm f
 f = oneForm 1 4
 
-g :: Field f => DifferentialForm f
+g :: Ring f => DifferentialForm f
 g = sclV (add mulId mulId) (oneForm 2 3)
 
-h :: Field f => DifferentialForm f
+h :: Ring f => DifferentialForm f
 h = sclV (constant addId) (oneForm 3 3)
 
 t :: DifferentialForm Double

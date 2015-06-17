@@ -33,19 +33,18 @@ instance Show BernsteinPolynomial where
 
 -- | Bernstein polynomials as a vector space.
 instance VectorSpace BernsteinPolynomial where
-    type Fieldf BernsteinPolynomial = Double
+    type Scalar BernsteinPolynomial = Double
     addV = addB
     sclV = sclB
 
--- | Bernstein polynomials as a field.
-instance Field BernsteinPolynomial where
+-- | Bernstein polynomials as a ring.
+instance Ring BernsteinPolynomial where
     add = addB
     addId = Constant 0.0
     addInv = sclB (-1)
 
     mul = mulB
     mulId = Constant 1.0
-    mulInv = undefined
 
     fromInt = Constant . fromIntegral
 

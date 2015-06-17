@@ -24,7 +24,7 @@ instance RenderVector Point where
 -- TODO: abstract away via Functor+Applicative
 {-
 instance VectorSpace Point where
-  type Fieldf Point = Fieldf [Double]
+  type Scalar Point = Scalar [Double]
   addV (Point p) (Point q) = point $ addV p q
   sclV x (Point p) = point $ sclV x p
 -}
@@ -32,7 +32,7 @@ instance VectorSpace Point where
 -- could keep just Point or Vector and define one in terms of the other?
 -- Use newtype
 instance VectorSpace Point where
-  type Fieldf Point = Double
+  type Scalar Point = Double
   addV (Point p) (Point q) = Point $ zipWith (+) p q
   sclV x (Point p) = Point $ map (*x) p
 
