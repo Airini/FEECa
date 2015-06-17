@@ -13,32 +13,33 @@ import FEEC.Polynomial
 type Monop t = t -> t
 type Binop t = t -> t -> t
 
-(.*) :: VectorSpace v => Fieldf v -> v -> v
+(.*) :: VectorSpace v => Scalar v -> v -> v
 (.*) = sclV
 
 (.+.) :: VectorSpace v => Binop v
 (.+.) = addV
 
-(.+) :: Field f => Binop f
+(.+) :: Ring f => Binop f
 (.+) = add
 
-º :: Field f => f
+º :: Ring f => f
 º = addId
 
-(.-) :: Field f => Monop f
+(.-) :: Ring f => Monop f
 (.-) = addInv
 
-(·) :: Field f => Binop f
+(·) :: Ring f => Binop f
 (·) = mul
 
-ı :: Field f => f
+ı :: Ring f => f
 ı = mulId
 
-(¬) :: Field f => Monop f
+{- No inverses for rings
+(¬) :: Ring f => Monop f
 (¬) = mulInv
 
-(÷) :: Field f => Binop f 
-a ÷ b = a · mulInv b
+(÷) :: Ring f => Binop f 
+a ÷ b = a · mulInv b  -}
 
 (†) :: Algebra a => Binop a
 (†) = addA
@@ -47,31 +48,31 @@ a ÷ b = a · mulInv b
 (∂) = deriv
 
 -- dx k n
-dx :: Field f => Dim -> Dim -> Form f
+dx :: Ring f => Dim -> Dim -> Form f
 dx = oneForm
 
 -- dxN n k
-dxN :: Field f => Dim -> Dim -> Form f
+dxN :: Ring f => Dim -> Dim -> Form f
 dxN = flip dx
 
 (#) :: Form Double -> [Vector] -> Double
 (#) = refine dxV
 -- TODO: unify
--- complete (##) :: (Field h, VectorSpace v) => Form h -> [v] -> h
+-- complete (##) :: (Ringh, VectorSpace v) => Form h -> [v] -> h
 --d' :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
 --d' = df'
 
-canonCoord :: Field a => Int -> Int -> [a]
+canonCoord :: Ring a => Int -> Int -> [a]
 canonCoord i n = take n $
                   (repeat addId : iterate (addId:) (mulId:repeat addId)) !! i
 
-canonCoords :: Field a => Int -> [[a]]
+canonCoords :: Ring a => Int -> [[a]]
 canonCoords n = map (`canonCoord` n) [1..n]
 
-coordinate :: Field f => Int -> Int -> Polynomial f
+coordinate :: Ring f => Int -> Int -> Polynomial f
 coordinate i n = deg1P (canonCoord i n)
 
-coordinates :: Field f => Int -> [Polynomial f]
+coordinates :: Ring f => Int -> [Polynomial f]
 coordinates = fmap deg1P . canonCoords
 
 

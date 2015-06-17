@@ -77,7 +77,7 @@ instance Show f => Pretty (Form f) where
 
 -- | Sum of forms
 -- Shall we do: permutation simplification/identification
-(+++) :: (Field f') => Form f' -> Form f' -> Form f'
+(+++) :: (Ring f') => Form f' -> Form f' -> Form f'
 omega +++ eta
     | degNEq omega eta = errForm "(+++)" BiDegEq
     | spaNEq omega eta = errForm "(+++)" BiSpaEq
@@ -91,11 +91,11 @@ omega +++ eta
           | otherwise      = y : step (x:xs) ys
 
 -- | Scaling of forms
-(***) :: Field f => f -> Form f -> Form f
+(***) :: Ring f => f -> Form f -> Form f
 (***) a = fmap (mul a)
 
 -- | Product of forms
-(//\\) :: Field f => Form f -> Form f -> Form f
+(//\\) :: Ring f => Form f -> Form f -> Form f
 omega //\\ eta
     | spaNEq omega eta = errForm "(//\\\\)" BiSpaEq
     | otherwise = Form (arity omega + arity eta) (dimVec eta)
@@ -105,21 +105,21 @@ omega //\\ eta
           | null (xs `intersect` ys) = (mul a b, xs++ys)
           | otherwise                = (addId, [])
 
-instance (Field f) => VectorSpace (Form f) where
-  type Fieldf (Form f) = f
+instance (Ring f) => VectorSpace (Form f) where
+  type Scalar (Form f) = f
   addV = (+++)
   sclV = (***)
 
 -- This is instance is valid this way since we do not have a restrictive typing
 -- for forms and hence addition is blind to arity *type-wise* - however,
 -- runtime errors will take place if invalid addition is attempted
-instance (Field f) => Algebra (Form f) where
+instance (Ring f) => Algebra (Form f) where
   addA = addV
   (/\) = (//\\)
   sclA = sclV
 
 -- | Basic abstract 1-form
-oneForm :: (Field f) => Dim -> Dim -> Form f
+oneForm :: (Ring f) => Dim -> Dim -> Form f
 oneForm i n | i <= 0 || i > n = errForm "oneForm" MoProjBd
             | otherwise       = Form 1 n [ (mulId,[i]) ]
 
@@ -139,7 +139,7 @@ nullForm n f = Form 0 n [(f, [])]
 -- Necesitamos una función de pinchado
 --  y así pinchar las consecutivas componentes
 -- If the function was actually a field, this part would be simplified
-contract :: (Field f, VectorSpace v, Dimensioned v) =>
+contract :: (Ring f, VectorSpace v, Dimensioned v) =>
               (Int -> v -> f) -> Form f -> v -> Form f
 contract proj omega v
     | vecNEq omega v = errForm "contract" MoVecEq
@@ -157,7 +157,7 @@ contract proj omega v
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
-refine :: (Field f, VectorSpace v) =>
+refine :: (Ring f, VectorSpace v) =>
           (Int -> v -> f)      -- ^ The definition for the projection function
                                --   for the specific vector space
        -> Form f
@@ -171,7 +171,7 @@ refine proj eta@(Form k n cs) vs = sumF (map (($ vs) . formify proj) cs)
 
 -- | Helper function in evaluation: given a 1-form basis, converts a single
 --   'Form' constituent term into an actual function on vectors
-formify :: (Field f, VectorSpace v) =>
+formify :: (Ring f, VectorSpace v) =>
               (i -> v -> f) -> (f,[i]) -> [v] -> f
 formify proj (s, i:is)
     | null is   = mul s . proj i . head
@@ -185,7 +185,7 @@ formify proj (s, i:is)
 
 
 -- We need a basis here
-inner :: (Field f, VectorSpace v, Dimensioned v) =>
+inner :: (Ring f, VectorSpace v, Dimensioned v) =>
          (Int -> v -> f)  -- ^ Projection function in the specific vector space
       -> (Int -> v)       -- ^ Basis of the specific vector space
       -> Form f -> Form f -> f
@@ -203,15 +203,15 @@ inner proj basisIx omega eta
 -- * Helper functions
 
 -- | Sign of a permutation defined by a pair of increasing permutations:
---   specialised to an appropriate 'Field' type (required for operations)
-sign :: Field f => ([Int], [Int]) -> f
+--   specialised to an appropriate 'Ring' type (required for operations)
+sign :: Ring f => ([Int], [Int]) -> f
 sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
                   then mulId
                   else addInv mulId
 
--- | Equivalent to 'sum' for 'Field' types
+-- | Equivalent to 'sum' for 'Ring' types
 -- To be moved
-sumF :: Field a => [a] -> a
+sumF :: Ring a => [a] -> a
 sumF = foldl add addId
 
 -- | Checks arity equality
@@ -249,13 +249,13 @@ instance Show FormMust where
 --- ONLY PLACEHOLDERS!!
 data Poly v f = Pp (v -> f)
 
-instance (VectorSpace v, f ~ (Fieldf v)) => Function (Poly v f) v where
+instance (VectorSpace v, f ~ (Scalar v)) => Function (Poly v f) v where
   type Values (Poly v f) v = f
   deriv = undefined
   eval x (Pp g) = g x
 
-instance Field f => VectorSpace (Poly v f) where
-  type Fieldf (Poly v f) = f
+instance Ring f => VectorSpace (Poly v f) where
+  type Scalar (Poly v f) = f
   addV (Pp g) (Pp h) = Pp $ \vs -> add (g vs) (h vs)
   sclV a (Pp g) = Pp $ \vs -> mul a (g vs)
 --

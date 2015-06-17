@@ -61,12 +61,12 @@ coeff (Constant c) = c
 coeff (Term c _)   = c
 
 -- | Scale term by a scalar.
-sclTerm :: Field a => a -> Term a -> Term a
+sclTerm :: Ring a => a -> Term a -> Term a
 sclTerm c1 (Term c2 mi)  = Term (mul c1 c2) mi
 sclTerm c1 (Constant c2) = Constant (mul c1 c2)
 
 -- | Multiply two terms.
-mulTerm :: Field a => Term a -> Term a -> Term a
+mulTerm :: Ring a => Term a -> Term a -> Term a
 mulTerm (Term c1 mi1) (Term c2 mi2) = Term (mul c1 c2) (MI.add mi1 mi2)
 mulTerm (Term c1 mi) (Constant c2) = Term (mul c1 c2) mi
 mulTerm (Constant c2) (Term c1 mi) = Term (mul c1 c2) mi
@@ -116,19 +116,18 @@ data Polynomial a =
 
 -- | Polynomials as vector spaces.
 instance VectorSpace (Polynomial Double) where
-  type Fieldf (Polynomial Double) = Double
+  type Scalar (Polynomial Double) = Double
   addV = addP
   sclV = sclP
 
 -- | Polynomials as a field.
-instance Field f => Field (Polynomial f) where
+instance Ring f => Ring (Polynomial f) where
   add    = addP
   addId  = constant addId
   addInv = sclP (addInv addId)
 
   mul       = mulP
   mulId     = constant mulId
-  mulInv    = undefined
 
   fromInt x = Polynomial 0 [Constant (fromInt x)]
 
@@ -146,15 +145,15 @@ constant c = Polynomial 0 [Constant c]
 
 -- | Create a polynomial consisting of a single monomial from a give
 -- | multi-index.
-monomial :: Field a => MI.MultiIndex -> Polynomial a
+monomial :: Ring a => MI.MultiIndex -> Polynomial a
 monomial mi = Polynomial (MI.deg mi) [Term mulId mi]
 
 -- | Create a term of a polynomial consisting of a scaled monomial.
-term :: Field a => (a, MI.MultiIndex) -> Term a
+term :: Ring a => (a, MI.MultiIndex) -> Term a
 term (c, mi) = Term c mi
 
 -- | Create a polynomial from a list of coefficient-multi-index pairs.
-polynomial :: Field a => [(a, MI.MultiIndex)] -> Polynomial a
+polynomial :: Ring a => [(a, MI.MultiIndex)] -> Polynomial a
 polynomial l = if (checkPolynomial l)
                then Polynomial r (map term l)
                else error "Given coefficients and multi-indices do not define a valid polynomial."
@@ -203,16 +202,16 @@ expandTerm (Constant c) = (c, MI.zero 0)
 expandTerm (Term c mi) = (c ,mi)
 
 -- | Add two polynomials.
-addP :: (Field a) => Polynomial a -> Polynomial a -> Polynomial a
+addP :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
 addP (Polynomial r1 ts1) (Polynomial r2 ts2) =
     Polynomial (max r1 r2) (ts1 ++ ts2)
 
 -- | Scaling of a polynomial.
-sclP :: (Field a) => a -> Polynomial a -> Polynomial a
+sclP :: (Ring a) => a -> Polynomial a -> Polynomial a
 sclP c (Polynomial r ts) = Polynomial r (map (sclTerm c) ts)
 
 -- | Polynomial multiplication.
-mulP :: (Field a) => Polynomial a -> Polynomial a -> Polynomial a
+mulP :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
 mulP (Polynomial r1 ts1) (Polynomial r2 ts2) =
     Polynomial (r1 + r2) [mulTerm t1 t2 | t1 <- ts1, t2 <- ts2]
 
@@ -234,7 +233,7 @@ deriveP :: Vector -> Polynomial Double -> Polynomial Double
 deriveP = derive deriveMonomial
 
 -- | General integral of a polynomial.
-integralP :: Field a => Int -> (MI.MultiIndex -> a) -> Polynomial a -> a
+integralP :: Ring a => Int -> (MI.MultiIndex -> a) -> Polynomial a -> a
 integralP n f p@(Polynomial r ts) = foldl add addId [ mul c ( f mi ) | (c, mi) <- toPairs n p ]
 
 -- | Create constant polynomial

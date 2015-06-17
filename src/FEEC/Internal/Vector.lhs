@@ -40,7 +40,7 @@ data Vector = Vector [Double] deriving (Eq)
 
 -- | R^n as a vector space.
 instance VectorSpace Vector where
-  type Fieldf Vector   = Double
+  type Scalar Vector   = Double
   addV (Vector l1) (Vector l2) = Vector $ zipWith (+) l1 l2
   sclV c (Vector l) = Vector $ map (c*) l
 

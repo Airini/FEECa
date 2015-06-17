@@ -11,7 +11,8 @@ UTILITY_DIR  := $(join $(BASE_DIR), /Utility)
 
 INTERNALS := /Vector.lhs
 UTILITIES := /Combinatorics.lhs
-TOP_LEVEL := /Mask.lhs
+TOP_LEVEL :=
+# /Mask.lhs
 
 PREP := $(join $($(1)), $($(2)))
 

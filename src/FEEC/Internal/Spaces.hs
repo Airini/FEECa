@@ -5,40 +5,39 @@
 
 module FEEC.Internal.Spaces where
 
-class Field v where  -- TODO: Actually Ring
+class Ring v where  -- TODO: Actually Ring
   add     :: v -> v -> v
   addId   :: v
   addInv  :: v -> v
+  
   mul     :: v -> v -> v
   mulId   :: v
-  mulInv  :: v -> v
-  fromInt :: Integer -> v
+  
+  fromInt :: Integer -> v  -- XXX: or fromRational?
+  
   pow     :: Integral a => v -> a -> v
   -- no neg security!
   pow t 0 = mulId
   pow t n = mul t (pow t (n-1))
 
   -- associative, distributive, ...
-  -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate, but no mulInv
-  -- Fractional: mulInv = recip
-  -- Missing: fromInteger, or rather fromRational
+  -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate
 
-instance Field Double where
+instance Ring Double where
   add = (+)
   addId = 0
   addInv = (0-)
   mul = (*)
   mulId = 1
-  mulInv = recip
   fromInt = fromIntegral
   pow = (^^)
 
-class (Field (Fieldf v)) => VectorSpace v where -- Module over a Ring
-  type Fieldf v :: *      -- Coefficient field
+class (Ring (Scalar v)) => VectorSpace v where -- Module over a Ring
+  type Scalar v :: *      -- Coefficient field
 -- TODO: perhaps remove in favour of just "dim"
 --   vspaceDim :: v -> Int   -- Morally an associated constant, could be modelled with a type :: Nat
   addV  :: v -> v -> v
-  sclV  :: Fieldf v -> v -> v
+  sclV  :: Scalar v -> v -> v
 
 -- | General subtraction for vectors
 subV :: VectorSpace v => v -> v -> v
@@ -52,8 +51,8 @@ zeroV = sclV addId
 
 {- removed for now: shall we only have _data_ types instantiated as VectorSpace?
 (cfr: tt) ==> likely to bring this instance back, just testing
-instance (Field a, Eq [a]) => VectorSpace [a] where
-  type Fieldf [a] = a
+instance (Ring a, Eq [a]) => VectorSpace [a] where
+  type Scalar [a] = a
 
   addV [] [] = []
   addV (v:vs) (w:ws) = add v w : addV vs ws
@@ -65,13 +64,13 @@ instance (Field a, Eq [a]) => VectorSpace [a] where
 class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
   addA :: v -> v -> v
   (/\) :: v -> v -> v
-  sclA :: Fieldf v -> v -> v
+  sclA :: Scalar v -> v -> v
 
   addA = addV
   sclA = sclV
 
 -- Maybe not necessary to have
-class (VectorSpace v, Field (Values h v)) => Function h v where -- h ~= v -> Values h v
+class (VectorSpace v, Ring (Values h v)) => Function h v where -- h ~= v -> Values h v
   type Values h v :: *
   type GeomUnit h v :: *  -- not the best option: will lead to different class instantiations, per geometrical object => not possible here"
   -- Suggestion : new class? ADT to represent them?
