@@ -99,6 +99,8 @@ and the suitability of functional languages for mathematical representation.
 \section{Basic Mathematical Components}
 \label{sec:internal}
 
+% Irene
+
 %%%include internal.lhs
 
 Introduction of the basic constructs and structures relevant to the implementation, both from the
@@ -106,8 +108,6 @@ mathematics and programming points of view.
 %
 These correspond to (most of the) internal components of the package, covering
 \begin{itemize}
-\item |Vector| and |Point| representations
-\item |MultiIndex| operations
 \item type classes structuring the package (in \module{Spaces})
 \end{itemize}
 
@@ -117,8 +117,6 @@ The aim towards the reader's understanding will be two-fold:
 \begin{itemize}
 \item explain general aspects of the implementation that tie in with simpler mathematical concepts
       (e.g.: vector spaces and our type class representation of them)
-\item describe the most simple datatypes and operations on them, as examples to serve as a gentle
-      introduction to the non- functional programmer mathematician.
 \end{itemize}
 
 
@@ -126,7 +124,14 @@ The aim towards the reader's understanding will be two-fold:
 \section{Geometrical Constructs}
 \label{sec:elements}
 
+% Simon
+
 %%%include elements.lhs
+
+NB: start with |Vector| and |Point| representations % Simon
+
+% item describe the most simple datatypes and operations on them, as examples to serve as a gentle
+%     introduction to the non- functional programmer mathematician.
 
 Geometrical elements implemented (so far, simplices; if extended, will include cubes too) are
 described.
@@ -142,7 +147,11 @@ a reference simplex will be covered.
 \section{Polynomials}
 \label{sec:polyns}
 
+%Simon
+
 %%%include polyns.lhs
+
+NB: start with: |MultiIndex| operations
 
 The generic implementation for polynomials |Polynomial a| is introduced first, giving those defined
 over the canonical (monomial) basis as the first basic option.
@@ -156,19 +165,10 @@ This section should also introduce coordinate functions.
 
 
 %------------------------------------------------------------------------------
-\section{Mathematical Algorithms}
-\label{sec:utility}
-
-% XXX: shall we keep this?
-
-%%%include utility.lhs
-
-A brief overview of Gram-Scmidt and quadrature algorithms (as in our implementation).
-
-
-%------------------------------------------------------------------------------
 \section{Differential Forms}
 \label{sec:forms}
+
+% Irene
 
 %%%include forms.lhs
 
@@ -189,6 +189,8 @@ The built-in Whitney form implementation is also given (towards building the neg
 \section{Finite Element Spaces}
 \label{sec:FEspaces}
 
+% Simon
+
 %%%include FEspaces.lhs
 
 Both $\mathcal{P}_r^-\Lambda^n$ and $\mathcal{P}_r\Lambda^n$ finite element spaces implementations
@@ -201,6 +203,8 @@ documented too.
 %------------------------------------------------------------------------------
 \section{The Top-Level Language}
 \label{sec:lang-mask}
+
+% Irene
 
 %%%include lang-mask.lhs
 
