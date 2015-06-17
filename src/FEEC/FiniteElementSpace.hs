@@ -31,6 +31,7 @@ type BasisFunction = Form BernsteinPolynomial
 -- | $P_r^-\Lambda^k$ defined over a simplex.
 data FiniteElementSpace = PrLk Int Int Simplex
                         | PrmLk Int Int Simplex
+                        | GenSpace [BasisFunction]
 
 -- | Name data type to represent the named finite elements. See
 -- | <http://www.femtable.org Periodic Table of the Finite Elements>.
@@ -171,21 +172,19 @@ prLkFace' r k t = [Form k n [((b alpha), sigma)] | alpha <- alphas,
           zero alpha sigma = all (0==) (take ((minimum' sigma)) (MI.toList alpha))
           minimum' sigma = minimum ([0..n] \\ sigma)
 
-
-
 -- | The psi forms that implement the extension operator for the $P_r\Lambda^k$
 -- | spaces as given in equations (8.1) and (8.2) in Arnold, Falk, Winther.
 psi :: MI.MultiIndex -> [Int] -> Form BernsteinPolynomial
 psi alpha sigma  = foldl (/\) unit [psi' alpha i | i <- sigma]
-    where unit = nullForm (n+1) mulId
+    where unit = nullForm n mulId
           n = dim alpha
 
 -- TODO: Check form indices.
 psi' :: MI.MultiIndex -> Int -> Form BernsteinPolynomial
 psi' alpha i = subV (db i) (foldl addV zero [sclV (c j) (db j) | j <- [0..n]])
-    where db j = oneForm (j+1) (n+1)
+    where db j = oneForm (j+1) n -- Dimension should be n ?
           c j = sclV ((fromIntegral (alpha' !! j)) / (fromIntegral r)) mulId
-          zero = zeroForm 1 (n+1)
+          zero = zeroForm 1 n
           r = (MI.deg alpha) :: Int
           alpha' = (MI.toList alpha) :: [Int]
           n = dim alpha

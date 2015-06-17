@@ -30,6 +30,7 @@ instance VectorSpace Point where
 -}
 -- TODO: only for now
 -- could keep just Point or Vector and define one in terms of the other?
+-- Use newtype
 instance VectorSpace Point where
   type Fieldf Point = Double
   addV (Point p) (Point q) = Point $ zipWith (+) p q

@@ -5,7 +5,7 @@ module FEEC.Bernstein where
 
 import qualified FEEC.Internal.MultiIndex as MI
 import FEEC.Internal.Simplex
-import FEEC.Internal.Spaces
+import FEEC.Internal.Spaces hiding (pow)
 import FEEC.Internal.Vector
 
 import FEEC.Polynomial hiding (Constant, constant, monomial)
@@ -109,7 +109,7 @@ mulB (Constant c1)     (Constant c2)     = Constant (c1 * c2)
 -- | Evaluat a Bernstein monomial over a given simplex at Vector
 -- TODO: change vector to point
 evalMonomial :: Simplex -> Vector -> MI.MultiIndex -> Double
-evalMonomial t v mi = prefactor n mi * powV (vector lambda) mi
+evalMonomial t v mi = prefactor n mi * pow (vector lambda) mi
     where lambda = map (eval v) (barycentricCoordinates t)
           n = geometricalDimension t
 

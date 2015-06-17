@@ -12,16 +12,22 @@ a single or a $k$-tuple of vectors into $\mathbf R$.
 
 {-# LANGUAGE TypeFamilies #-}
 
-module FEEC.Internal.Vector(Vector(..),
-              vector,
-              toList,
-              powV,
-              dot,
-              unitV,
-              toPoint,
-              fromPoint) where
+module FEEC.Internal.Vector(
+                             -- * The Vector Type
+                             Vector, Dimensioned(..), vector,
 
-import FEEC.Internal.Spaces hiding (toList)
+                             -- * Manipulating Vectors
+                             apply, toList,
+
+                             -- * Mathematical Functions
+                             dot, pow, unitVector,
+
+                             -- * Conversion to Point
+                             toPoint, fromPoint
+
+                           ) where
+
+import FEEC.Internal.Spaces hiding (toList, pow)
 import FEEC.Internal.Point
 import FEEC.Utility.Print
 import qualified FEEC.Internal.MultiIndex as MI
@@ -156,10 +162,10 @@ $n$-dimensional euclidean space.
 
 \begin{code}
 -- | ith unit vector in R^n
-unitV :: Int -- n
-      -> Int -- i
-      -> Vector
-unitV n i = Vector $ concat [replicate i 0.0, [1.0], replicate (n-i-1) 0.0]
+unitVector :: Int -- n
+           -> Int -- i
+           -> Vector
+unitVector n i = Vector $ concat [replicate i 0.0, [1.0], replicate (n-i-1) 0.0]
 
 \end{code}
 
@@ -176,15 +182,14 @@ The function \code{powV} implements powers of $n$-dimensional vectors.
 %------------------------------------------------------------------------------%
 
 \begin{code}
-
 -- | Generalized power funciton for vectors. Given a list l of Int with
 -- | the same length as the dimension of the vector v and components cs, the
 -- | function computes the product of each component (cs!!i) raised to (l!!i)th
 -- | power.
-powV :: Vector -> MI.MultiIndex -> Double
-powV (Vector cs) = powVList cs . MI.toList
+pow :: Vector -> MI.MultiIndex -> Double
+pow (Vector cs) = pow' cs . MI.toList
 
-powVList [] [] = mulId
-powVList (v:vs) (i:is) = v ** fromIntegral i * powVList vs is
-powVList _ _ = error "powV: Lists do not have equal length"
+pow' [] [] = mulId
+pow' (v:vs) (i:is) = v ** fromIntegral i * pow' vs is
+pow' _ _ = error "powV: Lists do not have equal length"
 \end{code}

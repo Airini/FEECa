@@ -47,17 +47,17 @@ t :: DifferentialForm Double
 t = sclV (add (constant 8.9) (deg1P [0,2,3])) (oneForm 1 5)
 
 b :: Vector
-b = Vector [1,2,0]
+b = vector [1,2,0]
 y :: Vector
-y = Vector [3,-2.3,1]
+y = vector [3,-2.3,1]
 
 dxV :: Int -> Vector -> Double
-dxV i (Vector x) = x !! (i-1)
+dxV i x = (toList x) !! (i-1)
 
 dxVP = (fmap . fmap) constant dxV
 expression = refine dxVP (t /\ g) [b, y]
 
-eg1 = eval (Vector [-0.1,10,0]) expression
+eg1 = eval (vector [-0.1,10,0]) expression
 -- -479.74
 
 

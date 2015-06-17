@@ -8,10 +8,11 @@ module to be used with the \code{QuickCheck}\cite{package:qc} module.
 
 \ignore{
 \begin{code}
+
 {-# LANGUAGE TemplateHaskell #-}
 
 module CombinatoricsTest (
-                          test_combinatorics
+                          testCombinatorics
                           ) where
 
 import FEEC.Utility.Combinatorics ( increasingLists,
@@ -37,7 +38,7 @@ To test all properties in the module use \code{test_combinatorics}.
 \begin{code}
 
 return []
-test_combinatorics = $quickCheckAll
+testCombinatorics = $quickCheckAll
 
 \end{code}
 

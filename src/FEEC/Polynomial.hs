@@ -33,7 +33,7 @@ import Data.List
 
 import qualified FEEC.Internal.MultiIndex as MI (MultiIndex, zero, one, dec, toList, add, deg, valid)
 import FEEC.Internal.Simplex
-import FEEC.Internal.Spaces hiding (toList)
+import FEEC.Internal.Spaces hiding (toList, pow)
 import FEEC.Internal.Point
 import FEEC.Internal.Vector
 import FEEC.Utility.Print(printPolynomial)
@@ -74,7 +74,7 @@ mulTerm (Constant c1) (Constant c2) = Constant (mul c1 c2)
 
 -- | Evaluate monomial over standard monomial basis.
 evalMonomial :: Vector -> MI.MultiIndex -> Double
-evalMonomial = powV
+evalMonomial = pow
 
 -- | General evaluation of a term. Given a function for the evaluation a
 -- | monomial, the function returns the corresponding value of the polynomial
