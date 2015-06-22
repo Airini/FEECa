@@ -8,10 +8,10 @@
 module Properties where
 
 --import Definitions
-import Spaces
-import Form
-import Vector
-import Mask
+import FEEC.Internal.Form
+import FEEC.Internal.Spaces
+import FEEC.Internal.Vector
+import FEEC.Mask
 import Test.QuickCheck as TQ
 import Control.Monad ((>=>))
 --import Data.Type.Natural
@@ -46,25 +46,25 @@ prop_distributivityB render plus dot a u v =
   render (dot a (plus u v)) == render (plus (dot a u) (dot a v))
 
 
--- | Field properties
+-- | Ring properties
 -- Addition commutativity
-propF_addComm :: (Eq f, Field f) => f -> f -> Bool
+propF_addComm :: (Eq f, Ring f) => f -> f -> Bool
 propF_addComm = prop_commutativity id add
 -- Addition associativity
-propF_addAssoc :: (Eq f, Field f) => f -> f -> f -> Bool
+propF_addAssoc :: (Eq f, Ring f) => f -> f -> f -> Bool
 propF_addAssoc = prop_associativity id add -- (add x y) z == add x (add y z)
 -- Addition identity element
-propF_addId :: (Eq f, Field f) => f -> Bool
+propF_addId :: (Eq f, Ring f) => f -> Bool
 propF_addId x = (add x addId == x) && (add addId x == x)
 
 -- Product commutativity
-propF_mulComm :: (Eq f, Field f) => f -> f -> Bool
+propF_mulComm :: (Eq f, Ring f) => f -> f -> Bool
 propF_mulComm = prop_commutativity id mul --mul x y == mul y x
 -- Product  associativity
-propF_mulAssoc :: (Eq f, Field f) => f -> f -> f -> Bool
+propF_mulAssoc :: (Eq f, Ring f) => f -> f -> f -> Bool
 propF_mulAssoc = prop_associativity id mul --mul (mul x y) z == mul x (mul y z)
 -- Addition identity element
-propF_mulId :: (Eq f, Field f) => f -> Bool
+propF_mulId :: (Eq f, Ring f) => f -> Bool
 propF_mulId x = prop_opRightIdentity id mul mulId x && prop_opLeftIdentity id mul mulId x
 
 -- inverses, distributivity
@@ -80,15 +80,14 @@ propV_addComm = prop_commutativity id addV--(addV x y) == (addV x y)
 propV_addAssoc :: (Eq v, VectorSpace v) => v -> v -> v -> Bool
 propV_addAssoc = prop_associativity id addV
 
-propV_sclTwice :: (VectorSpace v, Eq v) => Fieldf v -> Fieldf v -> v -> Bool
+propV_sclTwice :: (VectorSpace v, Eq v) => Scalar v -> Scalar v -> v -> Bool
 propV_sclTwice a b x = sclV a (sclV b x) == sclV (mul a b) x
 
-propV_scladdFDistr :: (VectorSpace v, Eq v) => Fieldf v -> Fieldf v -> v -> Bool
+propV_scladdFDistr :: (VectorSpace v, Eq v) => Scalar v -> Scalar v -> v -> Bool
 propV_scladdFDistr = prop_distributivityA id add addV sclV
 
-propV_scladdVDistr :: (VectorSpace v, Eq v) => Fieldf v -> v -> v ->  Bool
+propV_scladdVDistr :: (VectorSpace v, Eq v) => Scalar v -> v -> v ->  Bool
 propV_scladdVDistr = prop_distributivityB id addV sclV
-
 
 -- | Alternating forms (... graded algebra properties): other than the vector space properties
 
@@ -96,8 +95,8 @@ propV_scladdVDistr = prop_distributivityB id addV sclV
 propA_wedgeAssoc :: (Algebra a, Eq a) => a -> a -> a -> Bool
 propA_wedgeAssoc = prop_associativity id (/\)
 
-instance Arbitrary Vector where
-  arbitrary = sized (TQ.vector >=> return . Vector)
+-- instance Arbitrary Vector where
+--   arbitrary = sized (TQ.vector >=> return . vector)
 
 -- TODO: Eq?? would have to implement simplification + "canonising"
 propA_wedgeAssocEvl :: [Vector] -> Form Double -> Form Double -> Form Double -> Bool
@@ -112,13 +111,13 @@ propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) == ((-1)^jk * (y /\ x # vs))
         jk = j * k
 
 {-
-(%#) :: (Field f, k ~ (S predK)) => Form k n f -> Vex n f -> Form predK n f
+(%#) :: (Ring f, k ~ (S predK)) => Form k n f -> Vex n f -> Form predK n f
 (%#) = contract -- contraction
 -}
 
 -- Abstract Leibniz rule away
 {-
-propA_contractLeibniz :: (Field f, Num f, k ~ (S k'), l ~ (S l'), (k :+ l) :<= n) => 
+propA_contractLeibniz :: (Ring f, Num f, k ~ (S k'), l ~ (S l'), (k :+ l) :<= n) => 
                          -- S (k' :+ l') ~ (k' :+ l)) =>
                          Form k n f -> Form l n f -> Vex n f -> [Vex n f] -> Bool
 propA_contractLeibniz w t v vs = ((w /\ t) %# v) %$ vs == (addV ((w %# v) /\ t) (sclV ((-1)^kv) (w /\ (t %# v)))) %$ vs

@@ -25,6 +25,8 @@
 
 \usepackage{url}
 \usepackage[utf8]{inputenc}
+% math environments and symbols
+\usepackage{amsmath, amsfonts}
 \usepackage[toc,page]{appendix}
 
 %if techreport
@@ -122,26 +124,11 @@ The aim towards the reader's understanding will be two-fold:
 
 %------------------------------------------------------------------------------
 \section{Geometrical Constructs}
-\label{sec:elements}
+\label{sec:geo}
 
 % Simon
 
-%%%include elements.lhs
-
-NB: start with |Vector| and |Point| representations % Simon
-
-% item describe the most simple datatypes and operations on them, as examples to serve as a gentle
-%     introduction to the non- functional programmer mathematician.
-
-Geometrical elements implemented (so far, simplices; if extended, will include cubes too) are
-described.
-%
-Implementation aspects will be covered and computation of subs-structures (subsimplices)
-explained.
-
-In addition, barycentric coordinates (necessary for \refSec{sec:polyns}) and the purpose of having
-a reference simplex will be covered.
-
+%include Geometry.lhs
 
 %------------------------------------------------------------------------------
 \section{Polynomials}

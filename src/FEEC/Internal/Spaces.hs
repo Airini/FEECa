@@ -48,7 +48,6 @@ subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
 zeroV :: VectorSpace v => v -> v
 zeroV = sclV addId
 
-
 {- removed for now: shall we only have _data_ types instantiated as VectorSpace?
 (cfr: tt) ==> likely to bring this instance back, just testing
 instance (Ring a, Eq [a]) => VectorSpace [a] where

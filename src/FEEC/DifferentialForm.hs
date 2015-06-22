@@ -85,7 +85,7 @@ df basisIx form =
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 
 evalDF :: DifferentialForm Double -> Point -> Form Double
-evalDF u = ($u) . fmap . eval . vectify
-  where vectify (Point q) = vector q
+evalDF u = ($u) . fmap . eval . fromPoint
+
 
 

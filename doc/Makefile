@@ -4,6 +4,8 @@ NAME    := tech-report
 LHS2TEX := lhs2TeX
 LATEXMK := latexmk
 
+DEPS := Geometry.lhs
+
 BASE_DIR := ../src/FEEC
 
 INTERNAL_DIR := $(join $(BASE_DIR), /Internal)
@@ -18,7 +20,7 @@ PREP := $(join $($(1)), $($(2)))
 
 default : $(NAME).pdf
 
-%.tex : %.lhs %.format
+%.tex : %.lhs %.format $(DEPS)
 	$(LHS2TEX) --poly $< > $@
 
 #	$(LHS2TEX) --agda $< > $@

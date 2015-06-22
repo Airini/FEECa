@@ -4,7 +4,7 @@
    FlexibleContexts #-}
 
 module FEEC.Internal.Simplex( extendSimplex,
-                              cubic2Euclidean,
+                              cubicToEuclidean,
                               directionVectors,
                               geometricalDimension,
                               integral,
@@ -41,7 +41,8 @@ data Simplex =  Simplex { sigma :: [Int],
                 deriving (Eq)
 
 instance Show Simplex where
-    show (Simplex _ l) = "Simplex:\n" ++ (show $ printVectorColl 2 l) ++ "\n"
+    show (Simplex _ l) = "Simplex:\n" ++ (show $ printVectorRow 2 cs) ++ "\n"
+        where cs = map (components . fromPoint) l
 
 -- | Create simplex from a given list of points in R^n
 simplex :: [Point] -> Simplex
@@ -59,7 +60,7 @@ simplex' p0 vs = Simplex [0..n] (p0:l)
 geometricalDimension :: Simplex -> Int
 geometricalDimension (Simplex _ []) =
     error "geometricalDimension: Encountered Simplex without vertices."
-geometricalDimension (Simplex _ (p:ps)) = dimP p
+geometricalDimension (Simplex _ (p:ps)) = dim p
 
 -- | The topological dimension of a n-simplex is the number of vertices minus
 -- | one.
@@ -111,7 +112,7 @@ subsimplices' t k = concat [ subsimplices t k' | k' <- [k..n] ]
 
 -- | Reference simplex in R^n
 referenceSimplex :: Int -> Simplex
-referenceSimplex n = Simplex [0..n] (origin n : [unitP n i | i <- [0..n-1]])
+referenceSimplex n = Simplex [0..n] (origin n : [unitPoint n i | i <- [0..n-1]])
 
 extendSimplex :: Simplex -> Simplex
 extendSimplex s@(Simplex _ ps)
@@ -121,7 +122,7 @@ extendSimplex s@(Simplex _ ps)
           nt = topologicalDimension s
           dirs = directionVectors s
           p0 = referencePoint s
-          unitvs = [unitV n i | i <- [0..n-1]]
+          unitvs = [unitVector n i | i <- [0..n-1]]
 
 -- | Computes the k-dimensional volume (Lebesgue measure) of a simplex
 -- | in n dimensions using the Gram Determinant rule.
@@ -133,16 +134,22 @@ volume t = sqrt (abs (M.det w)) / fromInteger (factorial k)
           wT = M.tr w
 
 -- | Convert a point given in barycentric coordinates to euclidean coordinates.
-barycentric2Euclidean :: Simplex -> Point -> Point
-barycentric2Euclidean t@(Simplex _ ps) p = foldl scaleAdd (origin n) (zip p' ps)
-    where scaleAdd p (c, p0) = addV p (sclV c p0)
-          p' = toList (fromPoint p)
+barycentricToEuclidean :: Simplex -> Point -> Point
+barycentricToEuclidean t p = toPoint $ barycentricToEuclidean' t (fromPoint p)
+
+-- | Convert a point given in barycentric coordinates to euclidean coordinates.
+barycentricToEuclidean' :: Simplex -> Vector -> Vector
+barycentricToEuclidean' t@(Simplex _ ps) v = foldl sclAdd zero (zip v' vs')
+    where sclAdd p (c, p0) = addV p (sclV c p0)
+          zero = zeroVector n
+          vs' = map fromPoint ps
+          v' = components v
           n = geometricalDimension t
 
 -- | The inverse Duffy transform. Maps a point from the unit cube in R^{n+1}
 -- | to the given simplex.
-cubic2Euclidean :: Simplex -> Point -> Point
-cubic2Euclidean t = (barycentric2Euclidean t) . cubic2Barycentric
+cubicToEuclidean :: Simplex -> Point -> Point
+cubicToEuclidean t = (barycentricToEuclidean t) . cubicToBarycentric
 
 -- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
 -- | quadrature rule of degree k.
@@ -159,6 +166,6 @@ integral' :: (Function h Vector, Values h Vector ~ Double)
 integral' k d ls t f
           | d == 0 = sum [ w * (eval x f ) | (w, x) <- zip weights xs ]
           | otherwise = sum [ w * (integral' k (d-1) (x:ls) t f) | (w, x) <- zip weights nodes ]
-    where xs = map fromPoint [ cubic2Euclidean t (point (xi : ls)) | xi <- nodes ]
+    where xs = map fromPoint [ cubicToEuclidean t (point (xi : ls)) | xi <- nodes ]
           (nodes, weights) = unzip $ gaussJacobiQuadrature d 0 k
 

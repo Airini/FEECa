@@ -13,8 +13,10 @@ pairM :: (a -> b) -> (c -> d) -> (a,c) -> (b,d)
 pairM f h (x,y) = (f x, h y)
 
 -- | Numerical equality accounting for round-off errors
-eqNum :: Double -> Double -> Bool
-eqNum a b = abs (a - b) < 2e-11
+eqNum :: RealFloat a => a -> a -> Bool
+eqNum a b
+    | (a /= 0) && (b /= 0) = (abs ((a - b) / (max a b))) < 2e-9
+    | otherwise = True
 
 -- | Data type for dimension. Used to generate reasonably small dimensions to
 -- | use in testing.

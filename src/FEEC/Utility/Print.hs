@@ -1,8 +1,8 @@
 module FEEC.Utility.Print (
-   RenderVector(..), Pretty(..)
-  , printDouble, printComponent, printVector, printVectorColl
+   Pretty(..)
+  , printDouble, printComponent, printVector, printVectorRow
   , printPolynomial, printPolynomial0, printForm
-  , lambda, dlambda
+  , lambda, dlambda, (<>), text, rn
   ) where
 
 import Text.PrettyPrint
@@ -25,6 +25,10 @@ class RenderVector v where
 class Pretty p where
     pPrint :: p -> Doc
 
+-- | Render the symbol for Euclidean space of dimension n.
+rn :: Int -> Doc
+rn n = text "\x211D" <> (printSuperscript n)
+
 -- | Print Double with precision p and padded to
 -- | width w and precision.
 printDouble :: Int -> Int -> Double -> Doc
@@ -37,22 +41,20 @@ printComponent w p n i f
     | otherwise=  brW <> printDouble w p f <> brE
 
 -- | Print vector using precision p for the components
-printVector :: RenderVector v => Int -> v -> Doc
-printVector p v
-    | n <= 1= space <> text (show comps)
-    | otherwise = nest 1 $ vcat (zipWith (printComponent maxw p n) [0..n-1] comps)
-    where n = ncomps v
-          comps = components v
-          maxw = maxWidth p comps
+printVector :: Int -> [Double] -> Doc
+printVector p cs
+    | n <= 1= space <> text (show cs)
+    | otherwise = nest 1 $ vcat (zipWith (printComponent maxw p n) [0..n-1] cs)
+    where n = length cs
+          maxw = maxWidth p cs
 
-printVectorColl :: RenderVector v => Int -> [v] -> Doc
-printVectorColl p vs = vcat $ map hsep [[printComponent (ws!!j) p n i ((ls!!j)!!i)
+printVectorRow :: Int -> [[Double]] -> Doc
+printVectorRow p ls = vcat $ map hsep [[printComponent (ws!!j) p n i ((ls!!j)!!i)
                                         | j <- [0..m-1]]
                                         | i <- [0..n-1]]
-    where ls = map components vs
-          ws = map (maxWidth p) ls
-          m = length vs
-          n = minimum (map ncomps vs)
+    where ws = map (maxWidth p) ls
+          m = length ls
+          n = minimum (map length ls)
 
 -- | Compute maximum width w required to print components of the vector
 -- | at given precision p.

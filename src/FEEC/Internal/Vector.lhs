@@ -1,9 +1,8 @@
 \section{Vectors}
 
 The \module{Vector} implements vectors in $n$-dimensional euclidean space
- $\mathbf R^n$. In finite element exterior calculus, vectors are the elementary
-unit of computation. Functions, alternating forms and differential forms all map
-a single or a $k$-tuple of vectors into $\mathbf R$.
+ $\mathbf R^n$. Vectors, as opposed to points, describe directions in space.
+Vectors are used for the evaluation of alternating forms.
 
 %------------------------------------------------------------------------------%
 
@@ -14,35 +13,35 @@ a single or a $k$-tuple of vectors into $\mathbf R$.
 
 module FEEC.Internal.Vector(
                              -- * The Vector Type
-                             Vector, Dimensioned(..), vector,
+                             Vector(components), Dimensioned(..), vector,
 
                              -- * Manipulating Vectors
                              apply, toList,
 
-                             -- * Mathematical Functions
-                             dot, pow, unitVector,
+                             -- * Convenience functions
+                             unitVector,
 
-                             -- * Conversion to Point
-                             toPoint, fromPoint
+                             -- * Mathematical Functions
+                             dot, pow
 
                            ) where
 
 import FEEC.Internal.Spaces hiding (toList, pow)
-import FEEC.Internal.Point
 import FEEC.Utility.Print
 import qualified FEEC.Internal.MultiIndex as MI
-import Text.PrettyPrint
 \end{code}
 }
 
 %------------------------------------------------------------------------------%
 
-In Haskell, we use lists of type \code{Double} to represent vectors over
- $\mathbf R^n$.
+ Vectors in $\R{n}$ are represented using lists of type \code{Double}. The
+ dimension $n$ is inferred from the length of the list. Since vectors from
+ Euclidean spaces of different dimension are of the same type, it is up to the
+ user not to mix vectors from different spaces, which will lead to runtime errors.
 
 \begin{code}
 -- | Vectors in n-dimensional euclidean space.
-data Vector = Vector [Double] deriving (Eq)
+data Vector = Vector { components :: [Double] } deriving (Eq, Show)
 
 -- | R^n as a vector space.
 instance VectorSpace Vector where
@@ -65,12 +64,9 @@ Vectors can be displayed on the command line in two ways. As an instance of
 %------------------------------------------------------------------------------%
 
 \begin{code}
-instance RenderVector Vector where
-    ncomps (Vector l) = length l
-    components = toList
+instance Pretty Vector where
+    pPrint v =  (text "Vector:\n") <> (printVector 2 (components v))
 
-instance Show Vector where
-    show v = "Vector:\n" ++ (show $ printVector 2 v)
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -110,26 +106,6 @@ toList (Vector l) = l
 
 %------------------------------------------------------------------------------%
 
-Points are used to represent position in n-dimensional euclidean space.
- Some computation require the conversion of points to vectors and vice versa.
- This can be done using the \code{toPoint} and \code{fromPoint} functions.
-
-%------------------------------------------------------------------------------%
-
-\begin{code}
-
--- | Point corresponding to given position vector.
-toPoint :: Vector -> Point
-toPoint (Vector l) = point l
-
--- | Position vector of given point.
-fromPoint :: Point -> Vector
-fromPoint (Point l) = Vector l
-
-\end{code}
-
-%------------------------------------------------------------------------------%
-
 The function \code{dot} implements the dot product
 
 \begin{align}
@@ -155,17 +131,22 @@ dot (Vector l1) (Vector l2) = foldl (\s (x,y) -> s + x*y) 0  $ zip l1 l2
 
 %------------------------------------------------------------------------------%
 
-The functions \code{unitV} creates the unit vector along the $i$th dimension in
-$n$-dimensional euclidean space.
+The function \code{unitVector} creates the unit vector along the $i$th dimension
+ in $n$-dimensional euclidean space.
 
 %------------------------------------------------------------------------------%
 
 \begin{code}
+
 -- | ith unit vector in R^n
 unitVector :: Int -- n
            -> Int -- i
            -> Vector
-unitVector n i = Vector $ concat [replicate i 0.0, [1.0], replicate (n-i-1) 0.0]
+unitVector n i
+    | (n > 0) && (i >= 0) && (i < n) = Vector $ concat [replicate i 0.0,
+                                                        [1.0],
+                                                        replicate (n-i-1) 0.0]
+    | otherwise = error "unitVector: invalid input!"
 
 \end{code}
 
