@@ -9,6 +9,7 @@ positions in n-dimensional Euclidean space.
 \begin{code}
 
 module FEEC.Internal.Point(
+
              -- * The Point Type
              Point, point,
 

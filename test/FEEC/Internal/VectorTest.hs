@@ -3,9 +3,8 @@
 
 module FEEC.Internal.VectorTest where
 
-
-import FEEC.Internal.Vector
 import FEEC.Internal.Spaces
+import FEEC.Internal.Vector
 import FEEC.Utility.Utility
 import Test.QuickCheck (Arbitrary(..), (==>), Property, quickCheck)
 import qualified Test.QuickCheck as Q(vector)
