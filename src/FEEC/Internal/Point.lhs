@@ -16,9 +16,6 @@ module FEEC.Internal.Point(
              -- * Convenience functions
              origin, unitPoint,
 
-             -- * Coordinate transformations
-             cubicToBarycentric,
-
              -- * Conversion to and from 'Vector' where
              fromPoint, toPoint
 
@@ -50,7 +47,7 @@ instance Dimensioned Point where
     dim (Point v) = dim v
 
 instance Pretty Point where
-    pPrint (Point v) = text "Point in"
+    pPrint (Point v) = text "Point in "
                        <> rn (dim v)
                        <> text ":\n"
                        <> printVector 2 (components v)
@@ -85,39 +82,6 @@ unitPoint n i = Point (unitVector n i)
 
 %------------------------------------------------------------------------------%
 
-\subsection{Coordinate Transformations}
-
-A mapping between the n-dimensional unit cube $(t_0,\ldots,t_{n-1})$ and the
- barycentric coordinates of a simplex is defined by
-
-\begin{subequations}
-  \begin{align}
-    \lambda_0 &= t_0 \\
-    \lambda_1 &= t_1(1 - \lambda_0) \\
-    \lambda_2 &= t_2(1 - \lambda_1 - \lambda_0) \\
-    & \vdots \\
-    \lambda_{n-1} &= t_{n-1}(1 - \lambda_{n-1} - \cdots - \lambda_0) \\
-    \lambda_{n} &= 1 - \lambda_{n-1} - \cdots - \lambda_0
-  \end{align}
-\end{subequations}
-
-The \code{cubicToBarycentric} function implements this transformation for the
-\code{Point} data type.
-
-%------------------------------------------------------------------------------%
-
-\begin{code}
-
--- | Convert point given in cubic coordinates to barycentric coordinates.
-cubicToBarycentric :: Point -> Point
-cubicToBarycentric (Point v) = Point $ (vector (ls ++ [l]))
-    where ts = components v
-          (l,ls) = mapAccumL f 1 ts
-          f acc t = (acc * (1 - t), t * acc)
-
-\end{code}
-
-%------------------------------------------------------------------------------%
 
 \subsection{Conversion to and from Vectors}
 

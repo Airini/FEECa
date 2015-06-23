@@ -16,7 +16,7 @@ tasks that arise in FEEC. Those are
 
 module FEEC.Utility.Combinatorics(
   -- * Mathematical Functions
-  choose, factorial,
+  choose, factorial, factorial',
   -- * Increasing Lists
   -- ** Generation
   increasingLists,  increasingLists1,
@@ -39,8 +39,19 @@ import Data.List (find)
 
 The \module{Combinatorics} module re-exports the function \code{choose} for the
 computation of binomial coefficients and the function \code{factorial} for the
- computation of factorials from the \code{exact-combinatorics}\cite{package:ec}
-package.
+ computation of factorials from the \code{exact-combinatorics}
+ \cite{WrenGauleRomano} package.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+-- | Simple wrapper for 'factorial' that returns Num types.
+factorial' :: (Num a) => Int -> a
+factorial' = fromInteger . factorial
+
+\end{code}
+
+%------------------------------------------------------------------------------%
 
 \subsection{Increasing Lists}
 

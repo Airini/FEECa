@@ -74,7 +74,7 @@ deriveMonomial t d mi
   where mi' = MI.toList mi
         r i = fromInteger (mi' !! i)
         bs = barycentricCoordinates t
-        dbs i = eval (unitV n d) (deriv (unitV n d) (bs !! i))
+        dbs i = eval (unitVector n d) (deriv (unitVector n d) (bs !! i))
         n = geometricalDimension t
 
 -- | Derive Bernstein polynomial.

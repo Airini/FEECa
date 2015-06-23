@@ -65,8 +65,10 @@ Vectors can be displayed on the command line in two ways. As an instance of
 
 \begin{code}
 instance Pretty Vector where
-    pPrint v =  (text "Vector:\n") <> (printVector 2 (components v))
-
+    pPrint v = text "Vector in "
+               <> rn (dim v)
+               <> text ":\n"
+               <> printVector 2 (components v)
 \end{code}
 
 %------------------------------------------------------------------------------%
