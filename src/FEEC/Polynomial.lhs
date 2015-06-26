@@ -53,7 +53,7 @@ module FEEC.Polynomial (
 
 import Data.Maybe (fromJust)
 import Data.List
-import qualified FEEC.Internal.MultiIndex as MI (MultiIndex, zero, one, dec, toList, add, degree, valid)
+import qualified FEEC.Internal.MultiIndex as MI (MultiIndex, zero, one, decrease, toList, add, degree, valid)
 import FEEC.Internal.Simplex
 import FEEC.Internal.Spaces(VectorSpace(..), Ring(..), Dimensioned(..))
 import qualified FEEC.Internal.Spaces as S(Function(..))
@@ -183,8 +183,8 @@ instance S.Function (Polynomial Double) Vector where
   type Values (Polynomial Double) Vector = Double
   type GeomUnit (Polynomial Double) Vector = Simplex
   integrate = integratePolynomial
-  deriv = derivePolynomial deriveMonomial
-  eval = evaluatePolynomial evaluateMonomial
+  derive    = derivePolynomial deriveMonomial
+  evaluate  = evaluatePolynomial evaluateMonomial
 
 \end{code}
 

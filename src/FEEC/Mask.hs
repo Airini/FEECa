@@ -101,7 +101,7 @@ d form = df (vector . flip canonCoord n) form
 
 -- | Evaluation of differential forms at a given point to obtain an alternating form
 (§) :: Form (Polynomial Double) -> Point -> Form Double
-(§) = evalDF
+(§) = eval
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors
 --   (some kind of canonical projection)
