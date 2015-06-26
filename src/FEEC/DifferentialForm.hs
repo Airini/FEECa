@@ -9,7 +9,7 @@ module FEEC.DifferentialForm (
   DifferentialForm
   
   -- * Mathematical differential form operations
-  , df, evalDF
+  , df, eval
   
   -- * Projection operations: into scalara and polynomial values respectively
   , dxV, dxVP
@@ -57,20 +57,18 @@ dxV i x = (toList x) !! (i-1)
 dxVP = (fmap . fmap) constant dxV
 expression = refine dxVP (t /\ g) [b, y]
 
-eg1 = eval (vector [-0.1,10,0]) expression
+eg1 = evaluate (vector [-0.1,10,0]) expression
 -- -479.74
 
 
 -- basisIx must be in agreement with the proj paramenter used in evaluation!
--- TODO: remove ugly v parameter. Ugly possible solution: basisIx 0 returns some "tempalte"
---       arbitrary vector from which dimension can be extracted...
 --      OR: add zero-th vector to 'VectorSpace' class?
 -- Remark: reduced generality for our R^n types
 diff :: (Function (Polynomial Double) v) => (Int -> v) -> DifferentialForm Double -> DifferentialForm Double
 diff basisIx form =
-    foldr (addA . (\ i -> fmap (deriv (basisIx i)) (oneForm i n /\ form)))
+    foldr (addA . (\ i -> fmap (derive (basisIx i)) (oneForm i n /\ form)))
           (zeroForm (1 + arity form) n)
-          [1 .. n] -- XXX: shall we use dimVec (n) ?? and so avoid the ugly x: TODO: remove x
+          [1 .. n]
   where n = dimVec form
 
 -- Generalised to any appropriate form (polynomial differential forms being but
@@ -84,8 +82,8 @@ df basisIx form =
 
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 
-evalDF :: DifferentialForm Double -> Point -> Form Double
-evalDF u = ($u) . fmap . eval . fromPoint
+eval :: DifferentialForm Double -> Point -> Form Double
+eval u = ($u) . fmap . evaluate . fromPoint
 
 
 
