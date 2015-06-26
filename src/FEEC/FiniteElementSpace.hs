@@ -142,7 +142,7 @@ whitneyForm t ls = Form k n [( lambda' (ls !! i), subsets !! i) | i <- [0..k]]
     where k = length ls - 1
           n = geometricalDimension t
           subsets = sublists ls
-          lambda' i = sclV ((-1)^i) (monomial t (MI.one n i))
+          lambda' i = sclV ((-1)^i) (monomial t (MI.unit n i))
 
 -- | Basis of the $P_r\Lambda^k$ space over the given simplex constructed using
 -- | the geometric decomposition given by Arnold, Falk, Winther.

@@ -37,16 +37,16 @@ is defined as
 module FEEC.Internal.MultiIndex(
 
   -- * The MultiIndex type
-  MultiIndex, toList,
+  MultiIndex, toList, valid,
 
   -- ** Constructors
-  multiIndex, zero, one, degreeR,
+  multiIndex, zero, unit, degreeR,
 
   -- * Extension
   extend,
 
   -- * Mathematical Operations
-  add, decrease, factorial, choose
+  add, decrease, factorial, choose, degree
 
   ) where
 
@@ -161,10 +161,10 @@ zero n = ZipList (replicate n 0)
 
 -- | Degree one multi-index of diemension n with i-th element equal to one and
 -- | all others zero.
-one :: Int -- n
-    -> Int -- i
-    -> MultiIndex
-one n i = ZipList $ concat [replicate i 0,[1],replicate (n-i) 0]
+unit :: Int -- n
+     -> Int -- i
+     -> MultiIndex
+unit n i = ZipList $ concat [replicate i 0,[1],replicate (n-i) 0]
 
 \end{code}
 

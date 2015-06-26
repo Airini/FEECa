@@ -1,4 +1,4 @@
-\section{Polynomial}
+\section{Polynomials}
 
 The \module{Polynomial} module provides data types and functions for polynomials
  in $\R{n}$. Given a vector $\vec{x} \in \R{n}$, the power $\vec{x}$ with
@@ -53,7 +53,7 @@ module FEEC.Polynomial (
 
 import Data.Maybe (fromJust)
 import Data.List
-import qualified FEEC.Internal.MultiIndex as MI (MultiIndex, zero, one, dec, toList, add, degree, valid)
+import qualified FEEC.Internal.MultiIndex as MI (MultiIndex, zero, unit, decrease, toList, add, degree, valid)
 import FEEC.Internal.Simplex
 import FEEC.Internal.Spaces(VectorSpace(..), Ring(..), Dimensioned(..))
 import qualified FEEC.Internal.Spaces as S(Function(..))
@@ -301,7 +301,7 @@ contains the slope of the $n$ variables of the polynomials.
 -- | length n list of coefficients. The coefficient with index i in the list
 -- | equals the coefficient of the ith variable of the returned polynomial.
 linearPolynomial :: [a] -> Polynomial a
-linearPolynomial l = Polynomial 1 $ zipWith Term l [MI.one n i | i <- [0..n - 1]]
+linearPolynomial l = Polynomial 1 $ zipWith Term l [MI.unit n i | i <- [0..n - 1]]
   where n  = length l
 
 \end{code}

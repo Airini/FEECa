@@ -40,7 +40,7 @@ module FEEC.Internal.Simplex(
 import Data.List
 import FEEC.Internal.Spaces
 
-import FEEC.Internal.Point(Point, fromPoint, toPoint)
+import FEEC.Internal.Point(Point, point, fromPoint, toPoint)
 import qualified FEEC.Internal.Point as Point( unit, zero )
 
 import FEEC.Internal.Vector
@@ -337,7 +337,7 @@ nestedSum :: (Function h Vector, Values h Vector ~ Double)
 nestedSum k d ls t f
           | d == 0 = sum [ w * (eval x f ) | (w, x) <- zip weights xs ]
           | otherwise = sum [ w * (nestedSum k (d-1) (x:ls) t f) | (w, x) <- zip weights nodes ]
-    where xs = map fromPoint [ cubicToCartesian t (P.point (xi : ls)) | xi <- nodes ]
+    where xs = map fromPoint [ cubicToCartesian t (point (xi : ls)) | xi <- nodes ]
           (nodes, weights) = unzip $ gaussJacobiQuadrature d 0 k
 
 \end{code}
