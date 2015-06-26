@@ -128,7 +128,7 @@ The aim towards the reader's understanding will be two-fold:
 
 % Simon
 
-%%% include Geometry.lhs
+%include Geometry.lhs
 
 %------------------------------------------------------------------------------
 \section{Polynomials}

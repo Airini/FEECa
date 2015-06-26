@@ -7,7 +7,7 @@ The discretization of the domain is performed by tesselation into simplices or c
 %
 Up to now, only simplicial triangulations are supported.
 %
-The geometrical objects that we are dealing with in \FEEC are thus points, vectors and
+The geometrical objects that we are dealing with in \FEEC  are thus points, vectors and
 simplices.
 
 \subsection{Points and Vectors}
