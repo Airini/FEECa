@@ -19,7 +19,7 @@ that generalized the notion of an exponent for vectors in $\R{n}$. The power of
 The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
 
 \begin{align}
-  \text{degree}(\vec{\alpha}) &= \sum_{i=0}^{n-1} \alpha_i
+  |\vec{\alpha}| &= \sum_{i=0}^{n-1} \alpha_i
 \end{align}
 
 The support $\llbracket \vec{\alpha} \rrbracket$ of a multi-index $\vec{\alpha}$
