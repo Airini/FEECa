@@ -45,7 +45,7 @@ a ÷ b = a · mulInv b  -}
 (†) = addA
 
 (∂) :: Function h v => v -> h -> h
-(∂) = deriv
+(∂) = derive
 
 -- dx k n
 dx :: Ring f => Dim -> Dim -> Form f
@@ -70,10 +70,10 @@ canonCoords :: Ring a => Int -> [[a]]
 canonCoords n = map (`canonCoord` n) [1..n]
 
 coordinate :: Ring f => Int -> Int -> Polynomial f
-coordinate i n = deg1P (canonCoord i n)
+coordinate i n = linearPolynomial (canonCoord i n)
 
 coordinates :: Ring f => Int -> [Polynomial f]
-coordinates = fmap deg1P . canonCoords
+coordinates = fmap linearPolynomial . canonCoords
 
 
 bssIx n = vector . flip canonCoord n

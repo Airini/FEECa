@@ -44,7 +44,7 @@ h :: Ring f => DifferentialForm f
 h = sclV (constant addId) (oneForm 3 3)
 
 t :: DifferentialForm Double
-t = sclV (add (constant 8.9) (deg1P [0,2,3])) (oneForm 1 5)
+t = sclV (add (constant 8.9) (linearPolynomial [0,2,3])) (oneForm 1 5)
 
 b :: Vector
 b = vector [1,2,0]
@@ -75,7 +75,7 @@ diff basisIx form =
 -- a case)
 df :: (Function h v, Algebra (Form h)) => (Int -> v) -> Form h -> Form h
 df basisIx form =
-    foldr (addA . (\i -> fmap (deriv (basisIx i)) (oneForm i n /\ form)))
+    foldr (addA . (\i -> fmap (derive (basisIx i)) (oneForm i n /\ form)))
           (zeroForm (1 + arity form) n)
           [1..n]
   where n = dimVec form
