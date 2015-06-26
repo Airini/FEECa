@@ -14,7 +14,7 @@ module FEEC.Internal.Point(
              Point, point,
 
              -- * Convenience functions
-             origin, unitPoint,
+             zero, unit,
 
              -- * Conversion to and from 'Vector' where
              fromPoint, toPoint
@@ -62,8 +62,8 @@ point = Point . vector
 \subsection{Convenience Functions}
 
 The \code{Point} data type provides convenience functions for the creation of
- special points in $\R{n}$. The \code{origin} function returns the \code{Point}
- instance representing the origin in $\R{n}$. \code{unitPoint} returns the point
+ special points in $\R{n}$. The \code{zero} function returns the \code{Point}
+ instance representing the origin in $\R{n}$. \code{unit} returns the point
 in $\R{n}$ that lies at a distance of 1 from the origin on the given axis.
 
 %------------------------------------------------------------------------------%
@@ -71,12 +71,12 @@ in $\R{n}$ that lies at a distance of 1 from the origin on the given axis.
 \begin{code}
 
 -- | Return the origin in R^n.
-origin :: Int -> Point
-origin n = Point $ vector (replicate n 0)
+zero :: Int -> Point
+zero n = Point $ vector (replicate n 0)
 
 -- | Point with the ith component 1.0 and all other components 0.0.
-unitPoint :: Int -> Int -> Point
-unitPoint n i = Point (unitVector n i)
+unit :: Int -> Int -> Point
+unit n i = Point (unitVector n i)
 
 \end{code}
 
