@@ -130,7 +130,7 @@ prmLkFace r k t = [sclV (b alpha) (whitneyForm t sigma) | alpha <- alphas,
                                                           sigma <- sigmas alpha]
     where n = topologicalDimension t
           b = monomial t
-          alphas = MI.degR n (r-1)
+          alphas = MI.degreeR n (r-1)
           sigmas alpha = [ sigma | sigma <- increasingLists n k,
                                    range alpha sigma == [0..n],
                                    zero alpha sigma ]
@@ -165,7 +165,7 @@ prLkFace' r k t = [Form k n [((b alpha), sigma)] | alpha <- alphas,
                                                    sigma <- sigmas alpha]
     where n = topologicalDimension t
           b = monomial t
-          alphas = MI.degR n r
+          alphas = MI.degreeR n r
           sigmas alpha = [ sigma | sigma <- increasingLists n (k-1),
                                    range alpha sigma == [0..n],
                                    zero alpha sigma ]
@@ -185,7 +185,7 @@ psi' alpha i = subV (db i) (foldl addV zero [sclV (c j) (db j) | j <- [0..n]])
     where db j = oneForm (j+1) n -- Dimension should be n ?
           c j = sclV ((fromIntegral (alpha' !! j)) / (fromIntegral r)) mulId
           zero = zeroForm 1 n
-          r = (MI.deg alpha) :: Int
+          r = (MI.degree alpha) :: Int
           alpha' = (MI.toList alpha) :: [Int]
           n = dim alpha
 

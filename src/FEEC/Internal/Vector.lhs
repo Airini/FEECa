@@ -12,19 +12,20 @@ Vectors are used for the evaluation of alternating forms.
 {-# LANGUAGE TypeFamilies #-}
 
 module FEEC.Internal.Vector(
-                             -- * The Vector Type
-                             Vector(components), Dimensioned(..), vector,
 
-                             -- * Manipulating Vectors
-                             apply, toList,
+  -- * The Vector Type
+  Vector(components), Dimensioned(..), vector,
 
-                             -- * Convenience functions
-                             unitVector,
+  -- * Manipulating Vectors
+  apply, toList,
 
-                             -- * Mathematical Functions
-                             dot, pow
+  -- * Convenience functions
+  unitVector,
 
-                           ) where
+  -- * Mathematical Functions
+  dot, pow
+
+  ) where
 
 import FEEC.Internal.Spaces hiding (toList, pow)
 import FEEC.Utility.Print
@@ -52,6 +53,11 @@ instance VectorSpace Vector where
 -- | The dimension of vectors.
 instance Dimensioned Vector where
     dim (Vector l) = length l
+
+-- | Comparing vectors by length.
+instance Ord Vector where
+    v1 <= v2 = (dot v1 v1) <= (dot v2 v2)
+
 \end{code}
 
 %------------------------------------------------------------------------------%

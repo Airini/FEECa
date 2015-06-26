@@ -134,12 +134,19 @@ proj t i v = Bernstein t (P.constant $ sum (zipWith (*) grad (toList v)))
 
 -- TODO: Check if really needed?
 degRPolynomials :: Simplex -> Int -> Int -> [BernsteinPolynomial]
-degRPolynomials t n r = [monomial t mi | mi <- MI.degR n r]
+degRPolynomials t n r = [monomial t mi | mi <- MI.degreeR n r]
+
+-- | Closed-form integration of Bernstein polynomials over the simplex they are
+-- | defined over.
+integrateBernstein :: BernsteinPolynomial -> Double
+integrateBernstein (BernsteinPolynomial t p)  = sum (map f (degrees p))
+    where f mi = vol / ((n + MI.deg mi) `choose` n)
+          vol = volume t 
 
 -- | Integrate Bernstein polynomial over the simplex it is defined over.
 integralB :: BernsteinPolynomial -> Double
 integralB (Constant _) = error "integral: Cannot integrate Bernstein polynomial without associated simplex."
-integralB (Bernstein t p) = integralP n f p
+integralB (Bernstein t p) = integrate n f p
     where n = geometricalDimension t
           f mi = volume t / fromIntegral ((n + MI.deg mi) `choose` MI.deg mi)
 
