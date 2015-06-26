@@ -335,7 +335,7 @@ integrateOverSimplex q t f = vol * fac * (nestedSum q (n-1) [] t f)
 nestedSum :: (Function h Vector, Values h Vector ~ Double)
              => Int -> Int -> [Double] -> Simplex -> h -> Double
 nestedSum k d ls t f
-          | d == 0 = sum [ w * (eval x f ) | (w, x) <- zip weights xs ]
+          | d == 0 = sum [ w * (evaluate x f ) | (w, x) <- zip weights xs ]
           | otherwise = sum [ w * (nestedSum k (d-1) (x:ls) t f) | (w, x) <- zip weights nodes ]
     where xs = map fromPoint [ cubicToCartesian t (point (xi : ls)) | xi <- nodes ]
           (nodes, weights) = unzip $ gaussJacobiQuadrature d 0 k

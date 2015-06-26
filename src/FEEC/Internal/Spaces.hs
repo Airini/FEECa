@@ -74,13 +74,13 @@ class (VectorSpace v, Ring (Values h v)) => Function h v where -- h ~= v -> Valu
   type GeomUnit h v :: *  -- not the best option: will lead to different class instantiations, per geometrical object => not possible here"
   -- Suggestion : new class? ADT to represent them?
 
-  deriv :: v -> h -> h
+  derive    :: v -> h -> h
   integrate :: GeomUnit h v -> h -> Values h v
 
-  eval  :: v -> h -> Values h v
+  evaluate  :: v -> h -> Values h v
 
   ($$)  :: h -> v -> Values h v
-  ($$) = flip eval
+  ($$) = flip evaluate
 
 class Dimensioned t where
   dim :: t -> Int
