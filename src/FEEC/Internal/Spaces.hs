@@ -13,7 +13,7 @@ class Ring v where  -- TODO: Actually Ring
   mul     :: v -> v -> v
   mulId   :: v
   
-  fromInt :: Integer -> v  -- XXX: or fromRational?
+  fromInt :: Integral a => a -> v  -- XXX: or fromRational?
   
   pow     :: Integral a => v -> a -> v
   -- no neg security!

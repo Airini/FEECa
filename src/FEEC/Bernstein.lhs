@@ -83,10 +83,10 @@ instance Ring BernsteinPolynomial where
 instance Function BernsteinPolynomial Vector where
   type Values   BernsteinPolynomial Vector = Double
   type GeomUnit BernsteinPolynomial Vector = Simplex
-  deriv = deriveB
-  integrate sx bp@(Constant a) = integralB $ Bernstein sx (constPInN a (geometricalDimension sx))
+  derive = deriveB
+  integrate sx bp@(Constant a) = integralB $ Bernstein sx (sclV a (P.monomial (MI.zero (geometricalDimension sx))))
   integrate _sx bp@(Bernstein _sx' p) = integralB bp -- TODO: check equality for sx and sx'??
-  eval = evalB
+  evaluate = evalB
 
 
 -- | Create a Bernstein monomial over a given simplex from a given
@@ -101,17 +101,17 @@ constant = Constant
 -- | Derivative of a Bernstein monomial
 deriveMonomial :: Simplex -> Int -> MI.MultiIndex -> [Term Double]
 deriveMonomial t d mi
-    | d < dim mi = [Term (r i * dbs i) (MI.dec d mi) | i <- [0..n]]
+    | d < dim mi = [Term (r i * dbs i) (MI.decrease d mi) | i <- [0..n]]
     | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
   where mi' = MI.toList mi
         r i = fromInteger (mi' !! i)
         bs = barycentricCoordinates t
-        dbs i = eval (unitVector n d) (deriv (unitVector n d) (bs !! i))
+        dbs i = evaluate (unitVector n d) (derive (unitVector n d) (bs !! i))
         n = geometricalDimension t
 
 -- | Derive Bernstein polynomial.
 deriveB :: Vector -> BernsteinPolynomial -> BernsteinPolynomial
-deriveB v (Bernstein t p) = Bernstein t (derive (deriveMonomial t) v p)
+deriveB v (Bernstein t p) = Bernstein t (derivePolynomial (deriveMonomial t) v p)
 deriveB v (Constant c)    = Constant 0
 
 -- | Add Bernstein polynomials.
@@ -141,12 +141,12 @@ mulB (Constant c1)     (Constant c2)     = Constant (c1 * c2)
 -- TODO: change vector to point
 evalMonomial :: Simplex -> Vector -> MI.MultiIndex -> Double
 evalMonomial t v mi = prefactor n mi * pow (vector lambda) mi
-    where lambda = map (eval v) (barycentricCoordinates t)
+    where lambda = map (evaluate v) (barycentricCoordinates t)
           n = geometricalDimension t
 
 -- | Evaluation of Bernstein polynomials.
 evalB :: Vector -> BernsteinPolynomial -> Double
-evalB v (Bernstein t p) = evaluate (evalMonomial t) v p
+evalB v (Bernstein t p) = evaluatePolynomial (evalMonomial t) v p
 evalB v (Constant c) = c
 
 -- | List multi-indices of the terms in the polynomial.
@@ -171,20 +171,21 @@ degRPolynomials t n r = [monomial t mi | mi <- MI.degreeR n r]
 -- | Closed-form integration of Bernstein polynomials over the simplex they are
 -- | defined over.
 integrateBernstein :: BernsteinPolynomial -> Double
-integrateBernstein (BernsteinPolynomial t p)  = sum (map f (degrees p))
-    where f mi = vol / ((n + MI.degree mi) `choose` n)
-          vol = volume t 
+integrateBernstein (Bernstein t p)  = sum (map f (undefined {-XXX: check :Sdegrees p-}))
+    where f mi = vol / (fromIntegral ((fromIntegral n + MI.degree mi) `choose` fromIntegral n))
+          vol = volume t
+          n = geometricalDimension t -- check (cf: below)
 
 -- | Integrate Bernstein polynomial over the simplex it is defined over.
 integralB :: BernsteinPolynomial -> Double
 integralB (Constant _) = error "integral: Cannot integrate Bernstein polynomial without associated simplex."
-integralB (Bernstein t p) = integrate n f p
+integralB (Bernstein t p) = undefined -- integrate n f p
     where n = geometricalDimension t
-          f mi = volume t / fromIntegral ((n + MI.degree mi) `choose` MI.deg mi)
+          f mi = volume t / fromIntegral ((n + MI.degree mi) `choose` MI.degree mi)
 
 -- | Extend a Bernstein polynomial defined on a subsimplex f to the simplex t.
 extend :: Simplex -> BernsteinPolynomial -> BernsteinPolynomial
-extend t (Bernstein f p) = Bernstein t (polynomial (extend' (toPairs n' p)))
+extend t (Bernstein f p) = Bernstein t (polynomial (extend' (undefined n' p))) -- XXX: toPairs!! gone missing
     where extend' = map (\(c, mi) -> (c, MI.extend n (sigma f) mi))
           n = topologicalDimension t
           n' = topologicalDimension f
