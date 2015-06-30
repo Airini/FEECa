@@ -30,9 +30,9 @@ import FEEC.Internal.Spaces hiding (pow)
 import FEEC.Internal.Vector
 
 import FEEC.Polynomial (Polynomial(..), Term, term, terms, expandTerm,
-                        evaluatePolynomial, derivePolynomial, multiplyPolynomial,
+                        evaluatePolynomial, derivePolynomial,
                         barycentricCoordinates, barycentricGradient,
-                        barycentricGradients, toPairs)
+                        barycentricGradients)
 import qualified FEEC.Polynomial as P (multiIndices, monomial, constant, polynomial)
 
 
@@ -66,9 +66,9 @@ data BernsteinPolynomial = Bernstein Simplex (Polynomial Double)
                            deriving (Eq, Show)
 
 -- pretty printing for Bernstein polyonmials
-instance Pretty BernsteinPolynomial where
-    pPrint (Bernstein t p) = printPolynomial0 lambda (map (expandTerm 0) (terms p))
-    pPrint (Constant p) = printPolynomial0 lambda (map (expandTerm 0) (terms (P.constant p)))
+-- instance Pretty BernsteinPolynomial where
+--     pPrint (Bernstein t p) = printPolynomial0 lambda (map (expandTerm 0) (terms p))
+--     pPrint (Constant p) = printPolynomial0 lambda (map (expandTerm 0) (terms (P.constant p)))
 
 -- | List multi-indices of the terms in the polynomial.
 multiIndices :: BernsteinPolynomial -> [MI.MultiIndex]
@@ -106,7 +106,7 @@ instance Ring BernsteinPolynomial where
     addId = Constant 0.0
     addInv = scaleBernstein (-1)
 
-    mul = multiplyBernstein
+    mul = undefined 
     mulId = Constant 1.0
 
     fromInt = Constant . fromIntegral
@@ -114,7 +114,7 @@ instance Ring BernsteinPolynomial where
 instance Function BernsteinPolynomial Vector where
   type Values   BernsteinPolynomial Vector = Double
   type GeomUnit BernsteinPolynomial Vector = Simplex
-  evaluate v (Bernstein t p) = evaluatePolynomial (evaluateMonomial lambda) p
+  evaluate v (Bernstein t p) = undefined
       where lambda = vector (map (evaluate v) (barycentricCoordinates t))
   derive = deriveBernstein
   integrate t b@(Bernstein _ p) = integrateOverSimplex q t b
@@ -216,20 +216,20 @@ scaleBernstein :: Double -> BernsteinPolynomial -> BernsteinPolynomial
 scaleBernstein c  (Bernstein t p) = Bernstein t (sclV c p)
 scaleBernstein c1 (Constant c2)   = Constant (c1 * c2)
 
-multiplyMonomial :: (Ring a, Fractional a) => MI.MultiIndex -> MI.MultiIndex -> Term a
-multiplyMonomial mi1 mi2 = term (c, (MI.add mi1 mi2))
-    where c = ((MI.add mi1 mi2) `MI.choose` mi1) / ((r1 + r2) `choose` r1)
-          r1 = (MI.degree mi1) :: Integer
-          r2 = (MI.degree mi2) :: Integer
+-- multiplyMonomial :: (Ring a, Fractional a) => MI.MultiIndex -> MI.MultiIndex -> Term a
+-- multiplyMonomial mi1 mi2 = term (c, (MI.add mi1 mi2))
+--     where c = ((MI.add mi1 mi2) `MI.choose` mi1) / ((r1 + r2) `choose` r1)
+--           r1 = (MI.degree mi1) :: Integer
+--           r2 = (MI.degree mi2) :: Integer
 
 -- | Multiply two Bernstein polynomials.
-multiplyBernstein :: BernsteinPolynomial -> BernsteinPolynomial -> BernsteinPolynomial
-multiplyBernstein (Bernstein t1 p1) (Bernstein t2 p2)
-     | t1 /= t1 = error "multiplyBernstein: Inconsistent simplices."
-     | otherwise = Bernstein t1 (multiplyPolynomial multiplyMonomial p1 p2)
-multiplyBernstein (Constant c)      (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
-multiplyBernstein (Bernstein t1 p1) (Constant c)      = Bernstein t1 (sclV c p1)
-multiplyBernstein (Constant c1)     (Constant c2)     = Constant (c1 * c2)
+-- Multiplybernstein :: BernsteinPolynomial -> BernsteinPolynomial -> BernsteinPolynomial
+-- multiplyBernstein (Bernstein t1 p1) (Bernstein t2 p2)
+--      | t1 /= t1 = error "multiplyBernstein: Inconsistent simplices."
+--      | otherwise = Bernstein t1 (multiplyPolynomial multiplyMonomial p1 p2)
+-- multiplyBernstein (Constant c)      (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
+-- multiplyBernstein (Bernstein t1 p1) (Constant c)      = Bernstein t1 (sclV c p1)
+-- multiplyBernstein (Constant c1)     (Constant c2)     = Constant (c1 * c2)
 
 \end{code}
 
@@ -324,14 +324,14 @@ where $k$ is the topological dimension of the simplex.
 -- | Closed-form integration of Bernstein polynomials over the simplex they are
 -- | defined over. Falls back to standard integration if the provided simplex
 -- | does not equal the simplex the bernstein polynomial is defined over. 
-integrateBernstein :: Simplex -> BernsteinPolynomial -> Double
-integrateBernstein t1 b@(Bernstein t2 p)
-    | t1 == t2  = sum (map f (toPairs k p))
-    | otherwise = integrate t1 b
-    where f (c, mi) = c * vol / ((k + MI.degree mi) `choose` k)
-          k = topologicalDimension t1
-          vol = volume t1
-integrateBernstein t (Constant c) = c * (volume t)
+-- integrateBernstein :: Simplex -> BernsteinPolynomial -> Double
+-- integrateBernstein t1 b@(Bernstein t2 p)
+--     | t1 == t2  = sum (map f (toPairs k p))
+--     | otherwise = integrate t1 b
+--     where f (c, mi) = c * vol / ((k + MI.degree mi) `choose` k)
+--           k = topologicalDimension t1
+--           vol = volume t1
+-- integrateBernstein t (Constant c) = c * (volume t)
 
 -- | Redefined Bernstein polynomial over a different simplex or define simplex
 -- | for constant bernstein polynomial.
@@ -380,12 +380,16 @@ see \ref{sec:mi_extension}.
 
 \begin{code}
 
--- | Extend a Bernstein polynomial defined on a subsimplex f to the simplex t.
-extend :: Simplex -> BernsteinPolynomial -> BernsteinPolynomial
-extend t (Bernstein f p) = polynomial t (extend' (toPairs n' p))
-    where extend' = map (\(c, mi) -> (c, MI.extend n (sigma f) mi))
-          n = topologicalDimension t
-          n' = topologicalDimension f
-extend _ c = c
+-- -- | Extend a Bernstein polynomial defined on a subsimplex f to the simplex t.
+-- extend :: Simplex -> BernsteinPolynomial -> BernsteinPolynomial
+-- extend t (Bernstein f p) = polynomial t (extend' (toPairs n' p))
+--     where extend' = map (\(c, mi) -> (c, MI.extend n (sigma f) mi))
+--           n = topologicalDimension t
+--           n' = topologicalDimension f
+-- extend _ c = c
+
+t = referenceSimplex 3
+f = constant 1
+i = integrate t f
 
 \end{code}

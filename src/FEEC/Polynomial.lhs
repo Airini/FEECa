@@ -36,7 +36,7 @@ module FEEC.Polynomial (
   Polynomial(..), Term(Term)
 
   -- ** Constructors
-  , polynomial, constant, linearPolynomial
+  , polynomial, constant, linearPolynomial, term
 
   -- ** Manipulation operations
   , expandTerm, monomial, multiIndices, degrees

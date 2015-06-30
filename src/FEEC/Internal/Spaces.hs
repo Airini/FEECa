@@ -23,6 +23,12 @@ class Ring v where  -- TODO: Actually Ring
   -- associative, distributive, ...
   -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate
 
+class Ring f => Field f where
+    mulInv :: f -> f
+
+divide :: Field f => f -> f -> f
+divide a b = mul a (mulInv b)
+
 instance Ring Double where
   add = (+)
   addId = 0
@@ -38,6 +44,8 @@ class (Ring (Scalar v)) => VectorSpace v where -- Module over a Ring
 --   vspaceDim :: v -> Int   -- Morally an associated constant, could be modelled with a type :: Nat
   addV  :: v -> v -> v
   sclV  :: Scalar v -> v -> v
+
+
 
 -- | General subtraction for vectors
 subV :: VectorSpace v => v -> v -> v
