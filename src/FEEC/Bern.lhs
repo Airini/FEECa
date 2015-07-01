@@ -22,7 +22,7 @@ polynomials of degree $r$ over $\R{n}$.
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module FEEC.Bernstein where
+module FEEC.Bern where
 
 import qualified FEEC.Internal.MultiIndex as MI
 import FEEC.Internal.Simplex
@@ -30,9 +30,9 @@ import FEEC.Internal.Spaces hiding (pow)
 import FEEC.Internal.Vector
 
 import FEEC.Polynomial (Polynomial(..), Term, term, terms, expandTerm,
-                        evaluatePolynomial, derivePolynomial, multiplyPolynomial,
+                        evaluatePolynomial, derivePolynomial, -- multiplyPolynomial,
                         barycentricCoordinates, barycentricGradient,
-                        barycentricGradients, toPairs)
+                        barycentricGradients) -- , toPairs)
 import qualified FEEC.Polynomial as P (multiIndices, monomial, constant, polynomial)
 
 
@@ -226,7 +226,7 @@ multiplyMonomial mi1 mi2 = term (c, (MI.add mi1 mi2))
 multiplyBernstein :: BernsteinPolynomial -> BernsteinPolynomial -> BernsteinPolynomial
 multiplyBernstein (Bernstein t1 p1) (Bernstein t2 p2)
      | t1 /= t1 = error "multiplyBernstein: Inconsistent simplices."
-     | otherwise = Bernstein t1 (multiplyPolynomial multiplyMonomial p1 p2)
+     | otherwise = Bernstein t1 (undefined multiplyMonomial p1 p2)
 multiplyBernstein (Constant c)      (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
 multiplyBernstein (Bernstein t1 p1) (Constant c)      = Bernstein t1 (sclV c p1)
 multiplyBernstein (Constant c1)     (Constant c2)     = Constant (c1 * c2)
@@ -326,7 +326,7 @@ where $k$ is the topological dimension of the simplex.
 -- | does not equal the simplex the bernstein polynomial is defined over. 
 integrateBernstein :: Simplex -> BernsteinPolynomial -> Double
 integrateBernstein t1 b@(Bernstein t2 p)
-    | t1 == t2  = sum (map f (toPairs k p))
+    | t1 == t2  = sum (map f (undefined k p))
     | otherwise = integrate t1 b
     where f (c, mi) = c * vol / ((k + MI.degree mi) `choose` k)
           k = topologicalDimension t1
@@ -382,7 +382,7 @@ see \ref{sec:mi_extension}.
 
 -- | Extend a Bernstein polynomial defined on a subsimplex f to the simplex t.
 extend :: Simplex -> BernsteinPolynomial -> BernsteinPolynomial
-extend t (Bernstein f p) = polynomial t (extend' (toPairs n' p))
+extend t (Bernstein f p) = polynomial t (extend' (undefined n' p))
     where extend' = map (\(c, mi) -> (c, MI.extend n (sigma f) mi))
           n = topologicalDimension t
           n' = topologicalDimension f
