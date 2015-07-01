@@ -63,12 +63,12 @@ for constant Bernstein polynomials.
 -- | internally and uses the generalized functions for evaluation and derivation.
 data BernsteinPolynomial = Bernstein Simplex (Polynomial Double)
                          | Constant Double
-                           deriving (Eq, Show)
+  deriving (Eq, Show)
 
 -- pretty printing for Bernstein polyonmials
 instance Pretty BernsteinPolynomial where
-    pPrint (Bernstein t p) = printPolynomial0 lambda (map (expandTerm 0) (terms p))
-    pPrint (Constant p) = printPolynomial0 lambda (map (expandTerm 0) (terms (P.constant p)))
+    pPrint (Bernstein t p) = printPolynomial0 lambda (map (expandTerm {-0-}) (terms p))
+    pPrint (Constant p) = printPolynomial0 lambda (map (expandTerm {-0-}) (terms (P.constant p)))
 
 -- | List multi-indices of the terms in the polynomial.
 multiIndices :: BernsteinPolynomial -> [MI.MultiIndex]
@@ -114,7 +114,7 @@ instance Ring BernsteinPolynomial where
 instance Function BernsteinPolynomial Vector where
   type Values   BernsteinPolynomial Vector = Double
   type GeomUnit BernsteinPolynomial Vector = Simplex
-  evaluate v (Bernstein t p) = evaluatePolynomial (evaluateMonomial lambda) p
+  evaluate v (Bernstein t p) = evaluatePolynomial evaluateMonomial lambda p
       where lambda = vector (map (evaluate v) (barycentricCoordinates t))
   derive = deriveBernstein
   integrate t b@(Bernstein _ p) = integrateOverSimplex q t b
@@ -216,9 +216,9 @@ scaleBernstein :: Double -> BernsteinPolynomial -> BernsteinPolynomial
 scaleBernstein c  (Bernstein t p) = Bernstein t (sclV c p)
 scaleBernstein c1 (Constant c2)   = Constant (c1 * c2)
 
-multiplyMonomial :: (Ring a, Fractional a) => MI.MultiIndex -> MI.MultiIndex -> Term a
+multiplyMonomial :: (Integral a, Ring a, Fractional a) => MI.MultiIndex -> MI.MultiIndex -> Term a
 multiplyMonomial mi1 mi2 = term (c, (MI.add mi1 mi2))
-    where c = ((MI.add mi1 mi2) `MI.choose` mi1) / ((r1 + r2) `choose` r1)
+    where c = fromInt ((MI.add mi1 mi2) `MI.choose` mi1) / fromInt ((r1 + r2) `choose` r1)
           r1 = (MI.degree mi1) :: Integer
           r2 = (MI.degree mi2) :: Integer
 
@@ -328,7 +328,7 @@ integrateBernstein :: Simplex -> BernsteinPolynomial -> Double
 integrateBernstein t1 b@(Bernstein t2 p)
     | t1 == t2  = sum (map f (undefined k p))
     | otherwise = integrate t1 b
-    where f (c, mi) = c * vol / ((k + MI.degree mi) `choose` k)
+    where f (c, mi) = c * vol / fromIntegral ((k + MI.degree mi) `choose` k)
           k = topologicalDimension t1
           vol = volume t1
 integrateBernstein t (Constant c) = c * (volume t)
