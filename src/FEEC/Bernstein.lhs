@@ -179,7 +179,7 @@ integrateBernstein (Bernstein t p)  = sum (map f (undefined {-XXX: check :Sdegre
 -- | Integrate Bernstein polynomial over the simplex it is defined over.
 integralB :: BernsteinPolynomial -> Double
 integralB (Constant _) = error "integral: Cannot integrate Bernstein polynomial without associated simplex."
-integralB (Bernstein t p) = undefined -- integrate n f p
+integralB (Bernstein t p) = integrate {-n f-} t p
     where n = geometricalDimension t
           f mi = volume t / fromIntegral ((n + MI.degree mi) `choose` MI.degree mi)
 

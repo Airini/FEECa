@@ -318,7 +318,7 @@ The function \code{integral} uses (\ref{eq:integral}) to approximate the
 
 -- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
 -- | quadrature rule with q nodes.
-integrateOverSimplex :: (Function f Vector, Values f Vector ~ Double)
+integrateOverSimplex :: (Function f Vector, Double ~ Values f Vector)
                      => Int     -- q
                      -> Simplex -- t
                      -> f
