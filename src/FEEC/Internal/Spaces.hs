@@ -20,7 +20,6 @@ class Ring v where  -- TODO: Actually Ring
   pow t 0 = mulId
   pow t n = mul t (pow t (n-1))
 
-  -- associative, distributive, ...
   -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate
 
 instance Ring Double where
@@ -60,6 +59,7 @@ instance (Ring a, Eq [a]) => VectorSpace [a] where
   sclV _ [] = []
   sclV a (v:vs) = mul a v : sclV a vs
 -}
+
 class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
   addA :: v -> v -> v
   (/\) :: v -> v -> v

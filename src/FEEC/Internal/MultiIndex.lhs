@@ -46,7 +46,7 @@ module FEEC.Internal.MultiIndex(
   extend,
 
   -- * Mathematical Operations
-  add, decrease, factorial, choose, degree
+  add, decrease, factorial, choose, degree, range
 
   ) where
 
