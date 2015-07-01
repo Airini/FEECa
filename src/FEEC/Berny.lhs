@@ -22,7 +22,7 @@ polynomials of degree $r$ over $\R{n}$.
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module FEEC.Bernstein where
+module FEEC.Berny where
 
 import qualified FEEC.Internal.MultiIndex as MI
 import FEEC.Internal.Simplex
