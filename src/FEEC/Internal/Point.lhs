@@ -14,7 +14,7 @@ module FEEC.Internal.Point(
              Point, point,
 
              -- * Convenience functions
-             zero, unit,
+             --unit,
 
              -- * Conversion to and from 'Vector' where
              fromPoint, toPoint
@@ -41,19 +41,19 @@ The \code{Point} data type is build on top of the \code{Vector} data type using
 \begin{code}
 -- | Points in n-dimensional Euclidean space. A point describes a fixed position
 -- | in space and can not be computed with.
-newtype Point = Point Vector deriving (Eq, Show)
+newtype Point a = Point (Vector a) deriving (Eq, Show)
 
-instance Dimensioned Point where
+instance Dimensioned (Point a) where
     dim (Point v) = dim v
 
-instance Pretty Point where
+instance Real a => Pretty (Point a) where
     pPrint (Point v) = text "Point in "
                        <> rn (dim v)
                        <> text ":\n"
-                       <> printVector 2 (components v)
+                       <> printVector 2 (map (fromRational . toRational) (components v))
 
 -- | Constructor for the Point data type.
-point :: [Double] -> Point
+point :: [a] -> Point a
 point = Point . vector
 \end{code}
 
@@ -71,12 +71,12 @@ in $\R{n}$ that lies at a distance of 1 from the origin on the given axis.
 \begin{code}
 
 -- | Return the origin in R^n.
-zero :: Int -> Point
-zero n = Point $ vector (replicate n 0)
+-- zero :: Num a => Int -> Point a
+-- zero n = Point $ vector (replicate n 0)
 
--- | Point with the ith component 1.0 and all other components 0.0.
-unit :: Int -> Int -> Point
-unit n i = Point (unitVector n i)
+-- -- | Point with the ith component 1.0 and all other components 0.0.
+-- unit :: EuclideanSpace v => Int -> Int -> Point (Scalar v)
+-- unit n i = Point (unitVector n i)
 
 \end{code}
 
@@ -95,11 +95,11 @@ The point data type doesn't provide any arithmetic functions. In order to
 \begin{code}
 
 -- | Point corresponding to given position vector.
-toPoint :: Vector -> Point
+toPoint :: Vector a -> Point a
 toPoint v = Point v
 
 -- | Position vector of given point.
-fromPoint :: Point -> Vector
+fromPoint :: Point a -> Vector a
 fromPoint (Point v) = v
 
 \end{code}

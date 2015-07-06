@@ -1,15 +1,16 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module FEEC.Internal.Spaces where
 
-class Ring v where  -- TODO: Actually Ring
+class Eq v => Ring v where  -- TODO: Actually Ring
   add     :: v -> v -> v
   addId   :: v
   addInv  :: v -> v
-  
+ 
   mul     :: v -> v -> v
   mulId   :: v
   
@@ -20,23 +21,28 @@ class Ring v where  -- TODO: Actually Ring
   pow t 0 = mulId
   pow t n = mul t (pow t (n-1))
 
+sub :: Ring r => r -> r -> r
+sub a b = add a (addInv b)
+
   -- associative, distributive, ...
   -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate
 
 class Ring f => Field f where
-    mulInv :: f -> f
+    mulInv     :: f        -> f
+    fromDouble :: Double    -> f
+    toDouble   :: f -> Double
 
 divide :: Field f => f -> f -> f
 divide a b = mul a (mulInv b)
 
-instance Ring Double where
-  add = (+)
-  addId = 0
-  addInv = (0-)
-  mul = (*)
-  mulId = 1
-  fromInt = fromIntegral
-  pow = (^^)
+-- instance Ring Double where
+--   add = (+)
+--   addId = 0
+--   addInv = (0-)
+--   mul = (*)
+--   mulId = 1
+--   fromInt = fromIntegral
+--   pow = (^^)
 
 class (Ring (Scalar v)) => VectorSpace v where -- Module over a Ring
   type Scalar v :: *      -- Coefficient field
@@ -79,11 +85,11 @@ class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of diff
 -- Maybe not necessary to have
 class (VectorSpace v, Ring (Values h v)) => Function h v where -- h ~= v -> Values h v
   type Values h v :: *
-  type GeomUnit h v :: *  -- not the best option: will lead to different class instantiations, per geometrical object => not possible here"
+
   -- Suggestion : new class? ADT to represent them?
 
   derive    :: v -> h -> h
-  integrate :: GeomUnit h v -> h -> Values h v
+--  integrate :: GeomUnit h v -> h -> Values h v
 
   evaluate  :: v -> h -> Values h v
 
@@ -93,3 +99,23 @@ class (VectorSpace v, Ring (Values h v)) => Function h v where -- h ~= v -> Valu
 class Dimensioned t where
   dim :: t -> Int
 
+class (Dimensioned v, VectorSpace v, Field r, Scalar v ~ r) => EuclideanSpace v r where
+    dot        :: v          -> v -> r
+    fromList   :: [r] -> v
+    toList     :: v          -> [r]
+
+zero :: EuclideanSpace v (Scalar v) => Int -> v
+zero n = fromList (replicate n addId)
+
+unitVector :: EuclideanSpace v (Scalar v) => Int -> Int -> v
+unitVector n i
+    | (n  > 0) && (i >= 0) && (i < n) = fromList $ concat l
+    | otherwise = error "unitVector: invalid dimensions!"
+    where l = [replicate i addId, [mulId], replicate (n-i-1) addId]
+
+
+fromDouble' :: EuclideanSpace v (Scalar v) => [Double] -> v
+fromDouble' = fromList . (map fromDouble)
+
+toDouble' :: EuclideanSpace v (Scalar v) => v -> [Double]
+toDouble'  = (map toDouble) . toList
