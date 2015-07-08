@@ -16,7 +16,7 @@ tasks that arise in FEEC. Those are
 
 module FEEC.Utility.Combinatorics(
   -- * Mathematical Functions
-  choose, factorial, factorial',
+  choose, factorial,
   -- * Increasing Lists
   -- ** Generation
   increasingLists,  increasingLists1,
@@ -26,9 +26,9 @@ module FEEC.Utility.Combinatorics(
   sublists,  sumRLists, sumRLists'
   ) where
 
-import Math.Combinatorics.Exact.Binomial
-import Math.Combinatorics.Exact.Factorial
 import Data.List (find)
+import qualified Math.Combinatorics.Exact.Binomial as B
+import qualified Math.Combinatorics.Exact.Factorial as F
 
 \end{code}
 }
@@ -46,8 +46,12 @@ computation of binomial coefficients and the function \code{factorial} for the
 
 \begin{code}
 -- | Simple wrapper for 'factorial' that returns Num types.
-factorial' :: (Num a) => Int -> a
-factorial' = fromInteger . factorial
+factorial :: (Num a) => Int -> a
+factorial = fromInteger . F.factorial
+
+-- | Simple wrapper for 'factorial' that returns Num types.
+choose :: (Integral a, Num b) => a -> a -> b
+choose i j = fromIntegral (B.choose i j)
 
 \end{code}
 

@@ -1,7 +1,10 @@
 module FEEC.Utility.Utility( Dimension(..),
                              takeIndices,
                              pairM,
-                             eqNum ) where
+                             eqNum,
+                             toDouble,
+                             fromDouble
+                           ) where
 
 import Test.QuickCheck
 
@@ -26,3 +29,9 @@ instance Arbitrary Dimension where
     arbitrary = do
       n <- choose(0, 10)
       return (Dimension n)
+
+toDouble :: RealFrac a => [a] -> [Double]
+toDouble = map realToFrac
+
+fromDouble :: RealFrac a => [Double] -> [a]
+fromDouble = map realToFrac

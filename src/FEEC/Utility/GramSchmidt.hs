@@ -1,15 +1,24 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module FEEC.Utility.GramSchmidt where
 
-import FEEC.Internal.Vector
 import FEEC.Internal.Spaces
+import FEEC.Internal.Vector
+
 
 -- | Gram-Schmidt orthogonalization
-gramSchmidt :: [Vector] -> [Vector]
+gramSchmidt :: EuclideanSpace v (Scalar v)
+            => [v]
+            -> [v]
 gramSchmidt = reverse . gramSchmidt' []
 
-gramSchmidt' :: [Vector] -> [Vector] -> [Vector]
+gramSchmidt' :: EuclideanSpace v (Scalar v)
+             => [v]
+             -> [v]
+             -> [v]
 gramSchmidt' l (v:vs)
-    | dot v' v' == 0 = gramSchmidt' l vs
+    | dot v' v' == addId = gramSchmidt' l vs
     | otherwise = gramSchmidt' (v':l) vs
-  where v' = foldl subV v [sclV (dot u v / dot u u) u | u <- l, dot u u /= 0]
+  where v' = foldl subV v [sclV (f u v) u | u <- l, dot u u /= addId]
+        f u v = divide (dot u v) (mulInv (dot u u))
 gramSchmidt' l _ = l

@@ -20,6 +20,7 @@ polynomials of degree $r$ over $\R{n}$.
 \begin{code}
 
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module FEEC.Bernstein where
@@ -30,9 +31,9 @@ import FEEC.Internal.Spaces hiding (pow)
 import FEEC.Internal.Vector
 
 import FEEC.Polynomial (Polynomial(..), Term, term, terms, expandTerm,
-                        evaluatePolynomial, derivePolynomial,
+                        evaluatePolynomial, derivePolynomial, multiplyPolynomial,
                         barycentricCoordinates, barycentricGradient,
-                        barycentricGradients)
+                        barycentricGradients, toPairs)
 import qualified FEEC.Polynomial as P (multiIndices, monomial, constant, polynomial)
 
 
@@ -61,17 +62,17 @@ for constant Bernstein polynomials.
 
 -- | Bernstein polynomial over a simplex. Represented by a normal polynomial
 -- | internally and uses the generalized functions for evaluation and derivation.
-data BernsteinPolynomial = Bernstein Simplex (Polynomial Double)
-                         | Constant Double
-                           deriving (Eq, Show)
+data BernsteinPolynomial v r = Bernstein v (Polynomial r)
+                           | Constant r
+                             deriving (Eq, Show)
 
 -- pretty printing for Bernstein polyonmials
--- instance Pretty BernsteinPolynomial where
---     pPrint (Bernstein t p) = printPolynomial0 lambda (map (expandTerm 0) (terms p))
---     pPrint (Constant p) = printPolynomial0 lambda (map (expandTerm 0) (terms (P.constant p)))
+instance Pretty (BernsteinPolynomial v r) where
+    pPrint (Bernstein t p) = printPolynomial0 lambda (map (expandTerm 0) (terms p))
+    pPrint (Constant p) = printPolynomial0 lambda (map (expandTerm 0) (terms (P.constant p)))
 
 -- | List multi-indices of the terms in the polynomial.
-multiIndices :: BernsteinPolynomial -> [MI.MultiIndex]
+multiIndices :: BernsteinPolynomial v r -> [MI.MultiIndex]
 multiIndices (Bernstein t p) = P.multiIndices n p
     where n = geometricalDimension t
 
@@ -95,31 +96,31 @@ class together with the \code{Vector} type.
 \begin{code}
 
 -- | Bernstein polynomials as a vector space.
-instance VectorSpace BernsteinPolynomial where
-    type Scalar BernsteinPolynomial = Double
+instance Ring r => VectorSpace (BernsteinPolynomial v r) where
+    type Scalar (BernsteinPolynomial v r) = r
     addV = addBernstein
     sclV = scaleBernstein
 
 -- | Bernstein polynomials as a ring.
-instance Ring BernsteinPolynomial where
+instance Ring r => Ring (BernsteinPolynomial v r) where
     add = addBernstein
-    addId = Constant 0.0
-    addInv = scaleBernstein (-1)
+    addId = Constant addId
+    addInv = scaleBernstein (sub addId mulId)
 
-    mul = undefined 
-    mulId = Constant 1.0
+    mul = multiplyBernstein
+    mulId = Constant addId
 
-    fromInt = Constant . fromIntegral
+    fromInt = Constant . fromInt
 
-instance Function BernsteinPolynomial Vector where
-  type Values   BernsteinPolynomial Vector = Double
-  type GeomUnit BernsteinPolynomial Vector = Simplex
-  evaluate v (Bernstein t p) = undefined
+instance EuclideanSpace v r => Function (BernsteinPolynomial v r) v  where
+  type Values (BernsteinPolynomial v r) v = r
+--  type GeomUnit BernsteinPolynomial Vector = Simplex
+  evaluate v (Bernstein t p) = evaluatePolynomial (evaluateMonomial lambda) p
       where lambda = vector (map (evaluate v) (barycentricCoordinates t))
   derive = deriveBernstein
-  integrate t b@(Bernstein _ p) = integrateOverSimplex q t b
-    where q = div (r + 2) 2
-          r = degree p
+  -- integrate t b@(Bernstein _ p) = integrateOverSimplex q t b
+  --   where q = div (r + 2) 2
+  --         r = degree p
 
 \end{code}
 
@@ -152,7 +153,10 @@ not require to be passed a simplex argument.
 -- | Create a Bernstein polynomial over the given simplex from a list of
 -- | coefficient-multi-index pairs. An error is thrown if the dimension of the
 -- | multi-indices and the simplex are inconsistent.
-polynomial :: Simplex -> [(Double, MI.MultiIndex)] -> BernsteinPolynomial
+polynomial :: EuclideanSpace v r
+           => Simplex v
+           -> [(r, MI.MultiIndex)]
+           -> BernsteinPolynomial v r
 polynomial t l
     | (n1 == n2 + 1) && sameLength = Bernstein t (P.polynomial l)
     | otherwise = error "polynomial: Dimensions of Simplex and Polynomials do not match."
@@ -165,7 +169,8 @@ polynomial t l
 
 -- | Create a Bernstein monomial over a given simplex from a given
 -- | multi-index.
-monomial :: Simplex -> MI.MultiIndex -> BernsteinPolynomial
+monomial :: EuclideanSpace v r
+         => Simplex v -> MI.MultiIndex -> BernsteinPolynomial v r
 monomial t mi
     | n1 == n2 + 1 = Bernstein t (P.monomial mi)
     | otherwise   = error "monomial: Dimension of Simplex and Polynomials do not match."
@@ -173,7 +178,7 @@ monomial t mi
           n2 = topologicalDimension t
 
 -- | Create a constant bernstein monomial.
-constant :: Double -> BernsteinPolynomial
+constant :: Field r => r -> BernsteinPolynomial r
 constant = Constant
 
 \end{code}
@@ -203,33 +208,45 @@ Here we can use the general implementation of multiplication of polynomials
 \begin{code}
 
 -- | Add Bernstein polynomials.
-addBernstein :: BernsteinPolynomial -> BernsteinPolynomial -> BernsteinPolynomial
+addBernstein :: Ring r
+             => BernsteinPolynomial r v
+             -> BernsteinPolynomial r v
+             -> BernsteinPolynomial r v
 addBernstein (Bernstein t1 p1) (Bernstein t2 p2)
      | t1 /= t2 = error "addBernstein: Inconsistent simplices."
      | otherwise = Bernstein t1 (add p1 p2)
 addBernstein (Constant c)    (Bernstein t p) = Bernstein t (add p (P.constant c))
 addBernstein (Bernstein t p) (Constant c)    = Bernstein t (add p (P.constant c))
-addBernstein (Constant c1)   (Constant c2)   = Constant (c1 + c2)
+addBernstein (Constant c1)   (Constant c2)   = Constant (add c1 c2)
 
 -- | Scale Bernstein polynomial.
-scaleBernstein :: Double -> BernsteinPolynomial -> BernsteinPolynomial
+scaleBernstein :: Ring r
+               => r
+               -> BernsteinPolynomial r v
+               -> BernsteinPolynomial r v
 scaleBernstein c  (Bernstein t p) = Bernstein t (sclV c p)
-scaleBernstein c1 (Constant c2)   = Constant (c1 * c2)
+scaleBernstein c1 (Constant c2)   = Constant (mul c1 c2)
 
--- multiplyMonomial :: (Ring a, Fractional a) => MI.MultiIndex -> MI.MultiIndex -> Term a
--- multiplyMonomial mi1 mi2 = term (c, (MI.add mi1 mi2))
---     where c = ((MI.add mi1 mi2) `MI.choose` mi1) / ((r1 + r2) `choose` r1)
---           r1 = (MI.degree mi1) :: Integer
---           r2 = (MI.degree mi2) :: Integer
+multiplyMonomial :: Field r
+                    => MI.MultiIndex
+                    -> MI.MultiIndex
+                    -> Term r
+multiplyMonomial mi1 mi2 = term (c, (MI.add mi1 mi2))
+    where c = divide ((MI.add mi1 mi2) `MI.choose` mi1) ((r1 + r2) `choose` r1)
+          r1 = (MI.degree mi1) :: Integer
+          r2 = (MI.degree mi2) :: Integer
 
 -- | Multiply two Bernstein polynomials.
--- Multiplybernstein :: BernsteinPolynomial -> BernsteinPolynomial -> BernsteinPolynomial
--- multiplyBernstein (Bernstein t1 p1) (Bernstein t2 p2)
---      | t1 /= t1 = error "multiplyBernstein: Inconsistent simplices."
---      | otherwise = Bernstein t1 (multiplyPolynomial multiplyMonomial p1 p2)
--- multiplyBernstein (Constant c)      (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
--- multiplyBernstein (Bernstein t1 p1) (Constant c)      = Bernstein t1 (sclV c p1)
--- multiplyBernstein (Constant c1)     (Constant c2)     = Constant (c1 * c2)
+multiplyBernstein :: Ring r
+                  => BernsteinPolynomial v r
+                  -> BernsteinPolynomial v r
+                  -> BernsteinPolynomial v r
+multiplyBernstein (Bernstein t1 p1) (Bernstein t2 p2)
+     | t1 /= t1 = error "multiplyBernstein: Inconsistent simplices."
+     | otherwise = Bernstein t1 (multiplyPolynomial multiplyMonomial p1 p2)
+multiplyBernstein (Constant c)      (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
+multiplyBernstein (Bernstein t1 p1) (Constant c)      = Bernstein t1 (sclV c p1)
+multiplyBernstein (Constant c1)     (Constant c2)     = Constant (c1 * c2)
 
 \end{code}
 
@@ -380,16 +397,12 @@ see \ref{sec:mi_extension}.
 
 \begin{code}
 
--- -- | Extend a Bernstein polynomial defined on a subsimplex f to the simplex t.
--- extend :: Simplex -> BernsteinPolynomial -> BernsteinPolynomial
--- extend t (Bernstein f p) = polynomial t (extend' (toPairs n' p))
---     where extend' = map (\(c, mi) -> (c, MI.extend n (sigma f) mi))
---           n = topologicalDimension t
---           n' = topologicalDimension f
--- extend _ c = c
-
-t = referenceSimplex 3
-f = constant 1
-i = integrate t f
+-- | Extend a Bernstein polynomial defined on a subsimplex f to the simplex t.
+extend :: Simplex -> BernsteinPolynomial -> BernsteinPolynomial
+extend t (Bernstein f p) = polynomial t (extend' (toPairs n' p))
+    where extend' = map (\(c, mi) -> (c, MI.extend n (sigma f) mi))
+          n = topologicalDimension t
+          n' = topologicalDimension f
+extend _ c = c
 
 \end{code}
