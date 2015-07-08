@@ -74,6 +74,7 @@ instance (Ring a, Eq [a]) => VectorSpace [a] where
   sclV _ [] = []
   sclV a (v:vs) = mul a v : sclV a vs
 -}
+
 class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
   addA :: v -> v -> v
   (/\) :: v -> v -> v

@@ -82,7 +82,7 @@ omega +++ eta
     | degNEq omega eta = errForm "(+++)" BiDegEq
     | spaNEq omega eta = errForm "(+++)" BiSpaEq
     | otherwise = Form (arity eta) (dimVec eta)
-                  (step (constituents omega) (constituents eta))
+                       (step (constituents omega) (constituents eta))
   where step [] ys = ys
         step xs [] = xs
         step (x:xs) (y:ys)

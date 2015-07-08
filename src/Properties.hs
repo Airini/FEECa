@@ -75,7 +75,6 @@ propF_mulId x = prop_opRightIdentity id mul mulId x && prop_opLeftIdentity id mu
 -- Addition commutativity
 propV_addComm :: (VectorSpace v, Eq v) => v -> v -> Bool
 propV_addComm = prop_commutativity id addV--(addV x y) == (addV x y)
-
 -- Addition associativity : to be instantiated with an appropriate type
 propV_addAssoc :: (Eq v, VectorSpace v) => v -> v -> v -> Bool
 propV_addAssoc = prop_associativity id addV
@@ -89,7 +88,7 @@ propV_scladdFDistr = prop_distributivityA id add addV sclV
 propV_scladdVDistr :: (VectorSpace v, Eq v) => Scalar v -> v -> v ->  Bool
 propV_scladdVDistr = prop_distributivityB id addV sclV
 
--- | Alternating forms (... graded algebra properties): other than the vector space properties
+-- | Alternating forms (graded algebra properties): other than the vector space properties
 
 -- No need for evaluation on vectors for associativity
 propA_wedgeAssoc :: (Algebra a, Eq a) => a -> a -> a -> Bool
