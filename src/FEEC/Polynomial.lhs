@@ -28,21 +28,22 @@ Apart from implementing polynomials over vectors in $\R{n}$, the
 
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module FEEC.Polynomial (
 
   -- * Polynomial types
-  Polynomial(..), Term(Term)
+  Polynomial(terms, degree), Term
 
   -- ** Constructors
-  , polynomial, constant, term, linearPolynomial
+  , polynomial, constant, linearPolynomial, term
 
   -- ** Manipulation operations
-  , expandTerm, monomial, multiIndices, degrees
+  , expandTerm, monomial, multiIndices, degrees, toPairs
 
   -- * Mathematical operations
-  , derivePolynomial, evaluatePolynomial
+  , evaluatePolynomial, derivePolynomial, multiplyPolynomial
 
   -- * Barycentric Coordinates
   , barycentricCoordinate, barycentricCoordinates
@@ -55,7 +56,13 @@ import Data.Maybe (fromJust)
 import Data.List
 import qualified FEEC.Internal.MultiIndex as MI (MultiIndex, zero, unit, decrease, toList, add, degree, valid)
 import FEEC.Internal.Simplex
-import FEEC.Internal.Spaces(VectorSpace(..), Ring(..), Dimensioned(..))
+import FEEC.Internal.Spaces(VectorSpace(..),
+                            Ring(..),
+                            Field(..),
+                            Dimensioned(..),
+                            EuclideanSpace(..),
+                            toDouble',
+                            fromDouble')
 import qualified FEEC.Internal.Spaces as S(Function(..))
 import FEEC.Internal.Point
 import FEEC.Internal.Vector(Vector, toList)
@@ -125,16 +132,16 @@ data Polynomial a =
 -- | Polynomials as vector spaces.
 instance Ring a => VectorSpace (Polynomial a) where
   type Scalar (Polynomial a) = a
-  addV = addP
-  sclV = sclP
+  addV = addPolynomial
+  sclV = scalePolynomial
 
 -- | Polynomials as a ring.
 instance Ring a => Ring (Polynomial a) where
-  add    = addP
+  add    = addPolynomial
   addId  = constant addId
-  addInv = sclP (addInv addId)
+  addInv = scalePolynomial (addInv addId)
 
-  mul       = mulP
+  mul       = multiplyPolynomial multiplyMonomial
   mulId     = constant mulId
 
   fromInt x = Polynomial 0 [Constant (fromInt x)]
@@ -155,12 +162,12 @@ the \code{Polynomial} type, the terms have to be expanded to pairs of
 
 -- | Pretty printing of polynomials.
 instance Pretty (Polynomial Double) where
-    pPrint p = printPolynomial "x" (map expandTerm (terms p))
+    pPrint p = printPolynomial "x" (map (expandTerm 0) (terms p))
 
 -- | Expand term to (Double, MI.MultiIndex)-form suitable for printing.
-expandTerm :: Term Double -> (Double, MI.MultiIndex)
-expandTerm (Constant c) = (c, MI.zero 0)
-expandTerm (Term c mi) = (c ,mi)
+expandTerm :: Int -> Term a -> (a, MI.MultiIndex)
+expandTerm n (Constant c) = (c, MI.zero n)
+expandTerm _ (Term c mi) = (c ,mi)
 
 \end{code}
 
@@ -179,12 +186,15 @@ Up until now, the definition of the polynomial type is independent of the
 \begin{code}
 
 -- | Polynomials as functions.
-instance S.Function (Polynomial Double) Vector where
-  type Values (Polynomial Double) Vector = Double
-  type GeomUnit (Polynomial Double) Vector = Simplex
-  integrate = integratePolynomial
-  derive    = derivePolynomial deriveMonomial
-  evaluate  = evaluatePolynomial evaluateMonomial
+
+instance EuclideanSpace v r => S.Function (Polynomial r) v where
+  type Values (Polynomial r) v = r
+--  type GeomUnit (Polynomial Double) Vector = Simplex
+  evaluate v = evaluatePolynomial (evaluateMonomial v)
+  derive = derivePolynomial deriveMonomial
+--  integrate t p = integrateOverSimplex q t p
+--    where q = div (r + 2) 2
+--          r = degree p
 
 \end{code}
 
@@ -235,9 +245,25 @@ degrees' [] = []
 
 %------------------------------------------------------------------------------%
 
+For some computations on Bernstein polynomials it is necessary to obtain the
+polynomial represented as a list of coefficient-multi-index pairs. To this end
+the \code{toPairs} function is provided, that extends all constant terms in the
+polynomial and returns a list of the coefficient-multi-index pairs.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+
+-- | Return polynomial represented as list of coefficient-multi-index pairs.
+toPairs :: Int -> Polynomial a -> [(a, MI.MultiIndex)]
+toPairs n p = map (expandTerm n) (terms p)
+
+\end{code}
+
+%------------------------------------------------------------------------------%
+
 
 \subsection{Constructors}
-
 The \module{Polynomial} provides constructors for the convenient construction of
  valid polynomials. The stress here lies on valid, because not every instance of
  \code{Polynomial} represents a valid polynomial. For a polynomials to be valid,
@@ -252,9 +278,8 @@ The functions \code{constant}, \code{monomial}, \code{term} and
 \begin{code}
 
 -- | Create a constant polynomial with the given value.
-constant :: a -> Polynomial a
+constant :: Ring a => a -> Polynomial a
 constant c = Polynomial 0 [Constant c]
-
 -- | Create a polynomial consisting of a single monomial from a give
 -- | multi-index.
 monomial :: Ring a => MI.MultiIndex -> Polynomial a
@@ -308,7 +333,7 @@ linearPolynomial l = Polynomial 1 $ zipWith Term l [MI.unit n i | i <- [0..n - 1
 
 %------------------------------------------------------------------------------%
 
-\subsection{Arithmetic Operations}
+\subsection{Arithmetic}
 
 As mentioned above, polynomials over $\R{n}$ form a ring and a vector space. The
  arithmetic operations we need to implement are thus addition, substraction,
@@ -323,8 +348,8 @@ Since polynomials are represented as a sum of terms addition of polynomials can
 \begin{code}
 
 -- | Add two polynomials.
-addP :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
-addP (Polynomial r1 ts1) (Polynomial r2 ts2) =
+addPolynomial :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
+addPolynomial (Polynomial r1 ts1) (Polynomial r2 ts2) =
     Polynomial (max r1 r2) (ts1 ++ ts2)
 
 \end{code}
@@ -341,25 +366,39 @@ The implementation of scaling and multiplication of polynomials is straight
 \begin{code}
 
 -- | Scale term by a scalar.
-sclTerm :: Ring a => a -> Term a -> Term a
-sclTerm c1 (Term c2 mi)  = Term (mul c1 c2) mi
-sclTerm c1 (Constant c2) = Constant (mul c1 c2)
+scaleTerm :: Ring a => a -> Term a -> Term a
+scaleTerm c1 (Term c2 mi)  = Term (mul c1 c2) mi
+scaleTerm c1 (Constant c2) = Constant (mul c1 c2)
 
 -- | Scaling of a polynomial.
-sclP :: (Ring a) => a -> Polynomial a -> Polynomial a
-sclP c (Polynomial r ts) = Polynomial r (map (sclTerm c) ts)
+scalePolynomial :: (Ring a) => a -> Polynomial a -> Polynomial a
+scalePolynomial c (Polynomial r ts) = Polynomial r (map (scaleTerm c) ts)
 
--- | Multiply two terms.
-mulTerm :: Ring a => Term a -> Term a -> Term a
-mulTerm (Term c1 mi1) (Term c2 mi2) = Term (mul c1 c2) (MI.add mi1 mi2)
-mulTerm (Term c1 mi) (Constant c2) = Term (mul c1 c2) mi
-mulTerm (Constant c2) (Term c1 mi) = Term (mul c1 c2) mi
-mulTerm (Constant c1) (Constant c2) = Constant (mul c1 c2)
+-- | Multiply two terms using the function f two multiply the monomials given by
+-- | multi-indices mi1, mi2.
+multiplyTerm :: Ring a
+             => (MI.MultiIndex -> MI.MultiIndex -> Term a) -- f
+             -> Term a -- mi1
+             -> Term a -- mi2
+             -> Term a
+multiplyTerm f (Term c1 mi1) (Term c2 mi2) = scaleTerm (mul c1 c2) (f mi1 mi2)
+multiplyTerm _ (Term c1 mi) (Constant c2) = Term (mul c1 c2) mi
+multiplyTerm _ (Constant c2) (Term c1 mi) = Term (mul c1 c2) mi
+multiplyTerm _ (Constant c1) (Constant c2) = Constant (mul c1 c2)
 
--- | Polynomial multiplication.
-mulP :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
-mulP (Polynomial r1 ts1) (Polynomial r2 ts2) =
-    Polynomial (r1 + r2) [mulTerm t1 t2 | t1 <- ts1, t2 <- ts2]
+-- | Multiplication of two monomials.
+multiplyMonomial :: (Ring a) => MI.MultiIndex -> MI.MultiIndex -> Term a
+multiplyMonomial mi1 mi2 = Term mulId (MI.add mi1 mi2)
+
+-- | General multiplication of polynomial using the function f for the multi-
+-- | plication of monomial.
+multiplyPolynomial :: Ring a
+                   => (MI.MultiIndex -> MI.MultiIndex -> Term a) -- f
+                   -> Polynomial a
+                   -> Polynomial a
+                   -> Polynomial a
+multiplyPolynomial f (Polynomial r1 ts1) (Polynomial r2 ts2) =
+    Polynomial (r1 + r2) [multiplyTerm f t1 t2 | t1 <- ts1, t2 <- ts2]
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -369,8 +408,7 @@ mulP (Polynomial r1 ts1) (Polynomial r2 ts2) =
 As mentioned above, the \code{Polynomial} type also provides abstract functions
  for the implementation of polynomials over different bases. To this end, the
 \code{evaluateTerm} function provides abstract evaluation of a term. It takes a
- function that evaluates a monomial represented by a multi-index at a given
- vector and evaluates the term at the vector.
+ function that evaluates a monomial represented by a given multi-index.
 
 The function \code{evaluateMonomial} implements the evaluation function for the
  standard monomial basis over $\R{n}$.
@@ -383,17 +421,18 @@ The function \code{evaluateMonomial} implements the evaluation function for the
 -- | monomial, the function returns the corresponding value of the polynomial
 -- | scaled by the terms coefficient or simply the value of the term if the term
 -- | is constant.
-evaluateTerm :: VectorSpace v
-         => (v -> MI.MultiIndex -> Scalar v) -- The evaluation function
-         -> v                                -- The evaluation vector
-         -> Term (Scalar v)                  -- The term to be evaluated
-         -> Scalar v
-evaluateTerm f v (Term c mi)  = mul c (f v mi)
-evaluateTerm _ _ (Constant c) = c
+evaluateTerm :: Ring r
+         => (MI.MultiIndex -> r) -- The evaluation function
+         -> Term r
+         -> r
+evaluateTerm f (Term c mi)  = mul c (f mi)
+evaluateTerm _ (Constant c) = c
 
 -- | Evaluate monomial over standard monomial basis.
-evaluateMonomial :: Vector -> MI.MultiIndex -> Double
-evaluateMonomial = V.pow
+evaluateMonomial :: EuclideanSpace v (Scalar v) => v -> MI.MultiIndex -> Scalar v
+evaluateMonomial v mi = sum' (zipWith pow (toList v) (MI.toList mi))
+    where sum' = foldl add addId
+
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -409,11 +448,14 @@ The evaluation of polynomials over the monomial basis can now be realized by
 
 \begin{code}
 
--- | General evaluation function of a polynomial using the given function for
--- | the evaluation of monomials.
-evaluatePolynomial :: (Vector -> MI.MultiIndex -> Double) -> Vector -> Polynomial Double -> Double
-evaluatePolynomial f v p = foldl add addId (map (evaluateTerm f v) ts)
-    where ts = terms p
+-- | General evaluation function of a polynomial p using the given function f
+-- | for the evaluation of monomials.
+evaluatePolynomial :: Ring r
+                   => (MI.MultiIndex -> r) -- f
+                   -> Polynomial r         -- p
+                   -> r
+evaluatePolynomial f p = foldl add addId (map (evaluateTerm f) (terms p))
+
 
 \end{code}
 
@@ -458,12 +500,13 @@ type Dx a = Int -> MI.MultiIndex -> [Term a]
 -- | General derivative of a term. Given a function for the derivative of a monomial
 -- | in a given space direction, the function computes the derivative of the given
 -- | term using the product rule.
-deriveTerm :: Dx Double
-           -> Vector
-           -> Term Double
-           -> [Term Double]
-deriveTerm dx v (Constant _) = [Constant 0]
-deriveTerm dx v (Term c mi)  = concat [map (sclTerm (v' !! i)) (dx i mi) |
+deriveTerm :: EuclideanSpace v (Scalar v)
+           => Dx (Scalar v)
+           -> v
+           -> Term (Scalar v)
+           -> [Term (Scalar v)]
+deriveTerm dx v (Constant _) = [Constant addId]
+deriveTerm dx v (Term c mi)  = concat [map (scaleTerm (v' !! i)) (dx i mi) |
                                        i <- [0..n-1],
                                        MI.degree mi > 0]
     where
@@ -472,7 +515,7 @@ deriveTerm dx v (Term c mi)  = concat [map (sclTerm (v' !! i)) (dx i mi) |
 
 -- | Derivative of a monomial over the standard monomial basis in given space
 -- | direction.
-deriveMonomial :: Dx Double
+deriveMonomial :: Ring r => Dx r
 deriveMonomial i mi
     | i < dim mi = [Term c (MI.decrease i mi)]
     | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
@@ -493,7 +536,11 @@ In the same way as for the evaluation of polynomials, we provide a
 \begin{code}
 
 -- | General derivative for a polynomial with arbitrary basis.
-derivePolynomial :: Dx Double -> Vector -> Polynomial Double -> Polynomial Double
+derivePolynomial :: EuclideanSpace v (Scalar v)
+                 => Dx (Scalar v)
+                 -> v
+                 -> Polynomial (Scalar v)
+                 -> Polynomial (Scalar v)
 derivePolynomial dx v p = Polynomial (r - 1) (concatMap (deriveTerm dx v) ts)
     where r = degree p
           ts = terms p
@@ -521,8 +568,9 @@ already provides general integration of any function over simplices.
 
 -- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
 -- | quadrature rule of degree k.
-integratePolynomial :: Simplex -> Polynomial Double -> Double
-integratePolynomial t p = integrateOverSimplex q t p
+integratePolynomial :: EuclideanSpace v (Scalar v)
+                    => Simplex v -> Polynomial (Scalar v) -> (Scalar v)
+integratePolynomial t p = integrateOverSimplex q t ((flip S.evaluate) p)
     where q = div (r + 2) 2
           r = degree p
 
@@ -614,7 +662,9 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 -- | as large as the geometrical dimension, i.e. the simplex must contain n+1
 -- | vertices if the underlying space has dimensionality n.
 -- TODO: check take
-barycentricCoordinates :: Simplex -> [Polynomial Double]
+barycentricCoordinates :: EuclideanSpace v (Scalar v)
+                       => Simplex v
+                       -> [Polynomial (Scalar v)]
 barycentricCoordinates s = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
     where mat = M.inv (simplexToMatrix (extendSimplex s))
           n   = geometricalDimension s
@@ -622,21 +672,27 @@ barycentricCoordinates s = map vectorToPolynomial (take (nt+1) (M.toColumns mat)
 
 -- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial
 -- | in the list
-barycentricCoordinate :: Simplex -> Int -> Polynomial Double
+barycentricCoordinate :: EuclideanSpace v (Scalar v)
+                      => Simplex v
+                      -> Int
+                      -> Polynomial (Scalar v)
 barycentricCoordinate s i = barycentricCoordinates s !! i
 
 -- Transforms a given simplex into the matrix representing the linear
 -- equation system for the barycentric coordinates.
-simplexToMatrix :: Simplex -> M.Matrix Double
+simplexToMatrix :: EuclideanSpace v (Scalar v)
+                => Simplex v
+                -> M.Matrix Double
 simplexToMatrix s@(Simplex _ l) = M.matrix (n+1) (concatMap append1 l)
     where n = geometricalDimension s
-          append1 p = 1 : toList (fromPoint p)
+          append1 v = 1 : (toDouble' v)
 
 -- Transforms a solution vector of the linear equation system for the
 -- barycentric coordinates into the corresponding polynomial.
-vectorToPolynomial :: M.Vector Double -> Polynomial Double
+vectorToPolynomial :: Field s
+                   => M.Vector Double -> Polynomial s
 vectorToPolynomial v = add (constant (head l)) (linearPolynomial (tail l))
-    where l = M.toList v
+    where l = map fromDouble (M.toList v)
 
 \end{code}
 
@@ -655,19 +711,26 @@ repsectively.
 
 -- Transforms a solution vector of the linear equation system into the
 -- gradients of the barycentric coordinates.
-vectorToGradient :: M.Vector Double -> [Double]
-vectorToGradient = tail . M.toList
+vectorToGradient :: EuclideanSpace v (Scalar v)
+                 => M.Vector Double
+                 -> v
+vectorToGradient v  = fromDouble' (tail (M.toList v))
 
 -- | Compute gradients of barycentric coordinates as a list of lists of Double
 -- | for the given simplex t
-barycentricGradients :: Simplex -> [[Double]]
+barycentricGradients :: EuclideanSpace v (Scalar v)
+                     => Simplex v
+                     -> [v]
 barycentricGradients t = map vectorToGradient (take (nt+1) (M.toColumns mat))
     where mat = M.inv (simplexToMatrix (extendSimplex t))
           n = geometricalDimension t
           nt = topologicalDimension t
 
 -- | Compute gradient of the barycentric coordinate corresponding to edge i
-barycentricGradient :: Simplex -> Int -> [Double]
+barycentricGradient :: EuclideanSpace v (Scalar v)
+                    => Simplex v
+                    -> Int
+                    -> v
 barycentricGradient t i = barycentricGradients t !! i
 
 \end{code}

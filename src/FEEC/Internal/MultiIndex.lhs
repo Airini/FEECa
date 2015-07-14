@@ -55,8 +55,7 @@ import Data.Traversable
 import Data.Bits
 import FEEC.Internal.Spaces(Dimensioned(..))
 import FEEC.Utility.Combinatorics(sumRLists)
-import qualified Math.Combinatorics.Exact.Binomial as CBin
-import qualified Math.Combinatorics.Exact.Factorial as CFac
+import qualified FEEC.Utility.Combinatorics as C(choose, factorial)
 import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)
 
 \end{code}
@@ -97,7 +96,7 @@ straight-forward manner.
 \begin{code}
 
 -- | Degree of a multi-index, i.e. the sum of all indices
-degree :: Integral a => MultiIndex -> a
+degree :: Real a => MultiIndex -> a
 degree = fromIntegral . sum . getZipList
 
 -- | List indices of the multi-index that are non-zero.
@@ -186,6 +185,7 @@ degreeR n r = map ZipList $ sumRLists (fromIntegral (n + 1)) (fromIntegral r)
 %------------------------------------------------------------------------------%
 
 \subsection{Extension of Multi-Indices}
+\label{sec:mi_extension}
 
 For the extension of polynomials from subsimplices to simplices it is necessary
 to also extend the multi-indices from a face to the full simplex. To this end we
@@ -222,6 +222,7 @@ extend' n i [] [] = replicate n 0
 %------------------------------------------------------------------------------%
 
 \subsection{Mathematical Operations}
+\label{sec:MI_mathops
 
 Addition on multi-indices is defined in a straight-foward manner as the addition
 of the each pair of elements separately.
@@ -259,12 +260,12 @@ decrease i alpha  = pure f <*> ZipList [0..] <*> alpha
 
 -- | Generalized binomial coefficients for multi-indices as defined in the paper
 -- | by Kirby.
-choose :: (Integral a) => ZipList a -> ZipList a -> a
-choose a b = product $ getZipList $ liftA2 CBin.choose a b
+choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
+choose a b = (product (getZipList (liftA2 C.choose a b)))
 
 -- | Generalized factorial for multi-indices
-factorial :: (Bits a, Integral a) => MultiIndex -> a
-factorial = product . map CFac.factorial . toList
+factorial :: (Num b) => MultiIndex -> b
+factorial = product . map C.factorial . toList
 
 \end{code}
 

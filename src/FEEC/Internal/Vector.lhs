@@ -10,6 +10,8 @@ Vectors are used for the evaluation of alternating forms.
 \begin{code}
 
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module FEEC.Internal.Vector(
 
@@ -20,16 +22,18 @@ module FEEC.Internal.Vector(
   apply, toList,
 
   -- * Convenience functions
-  unitVector,
 
   -- * Mathematical Functions
   dot, pow
 
   ) where
 
-import FEEC.Internal.Spaces hiding (toList, pow)
-import FEEC.Utility.Print
+import FEEC.Internal.Spaces
 import qualified FEEC.Internal.MultiIndex as MI
+import FEEC.Utility.Print
+import qualified FEEC.Utility.Utility as U
+
+
 \end{code}
 }
 
@@ -41,21 +45,38 @@ import qualified FEEC.Internal.MultiIndex as MI
  user not to mix vectors from different spaces, which will lead to runtime errors.
 
 \begin{code}
+-- instance (Eq a, Num a) => Ring a where
+--   add = (+)
+--   addId = 0
+--   addInv = (0-)
+--   mul = (*)
+--   mulId = 1
+--   fromInt = fromIntegral
+
+-- instance (Eq a, Fractional a) => Field a where
+--     mulInv a = 1/a
+
 -- | Vectors in n-dimensional euclidean space.
-data Vector = Vector { components :: [Double] } deriving (Eq, Show)
+data Vector a = Vector { components :: [a] } deriving (Eq, Show)
 
 -- | R^n as a vector space.
-instance VectorSpace Vector where
-  type Scalar Vector   = Double
-  addV (Vector l1) (Vector l2) = Vector $ zipWith (+) l1 l2
-  sclV c (Vector l) = Vector $ map (c*) l
+instance Ring a => VectorSpace (Vector a) where
+  type Scalar (Vector a) = a
+  addV (Vector l1) (Vector l2) = Vector $ zipWith add l1 l2
+  sclV c (Vector l) = Vector $ map (mul c) l
+
+-- | R^n as a vector space.
+instance (RealFrac a, Field a) => EuclideanSpace (Vector a) a where
+    dot (Vector l1) (Vector l2) = foldl (\s (x,y) -> s + x*y) 0  $ zip l1 l2
+    toList   = components
+    fromList = vector
 
 -- | The dimension of vectors.
-instance Dimensioned Vector where
+instance Dimensioned (Vector a) where
     dim (Vector l) = length l
 
 -- | Comparing vectors by length.
-instance Ord Vector where
+instance (Field a, RealFrac a) => Ord (Vector a) where
     v1 <= v2 = (dot v1 v1) <= (dot v2 v2)
 
 \end{code}
@@ -70,11 +91,11 @@ Vectors can be displayed on the command line in two ways. As an instance of
 %------------------------------------------------------------------------------%
 
 \begin{code}
-instance Pretty Vector where
+instance (Field a, RealFrac a) => Pretty (Vector a) where
     pPrint v = text "Vector in "
                <> rn (dim v)
                <> text ":\n"
-               <> printVector 2 (components v)
+               <> printVector 2 (toDouble' v)
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -89,7 +110,7 @@ The \module{Vector} module provides the \code{vector} functions for the smart
 \begin{code}
 
 -- | Create vector from list of components.
-vector :: [Double] -> Vector
+vector :: [a] -> Vector a
 vector = Vector
 
 \end{code}
@@ -103,12 +124,12 @@ vector = Vector
 \begin{code}
 
 -- | Apply the given functions to the elements of the vector.
-apply :: Vector -> (Double -> Double) -> Vector
+apply :: Vector a -> (a -> a) -> Vector a
 apply (Vector l) f = Vector (map f l)
 
--- | Return vector components as list.
-toList :: Vector -> [Double]
-toList (Vector l) = l
+-- -- | Return vector components as list.
+-- toList :: Vector a -> [Double]
+-- toList (Vector l) = l
 
 \end{code}
 
@@ -131,9 +152,9 @@ of two vectors
 
 \begin{code}
 
--- | The dot product of two vectors.
-dot :: Vector -> Vector -> Double
-dot (Vector l1) (Vector l2) = foldl (\s (x,y) -> s + x*y) 0  $ zip l1 l2
+-- -- | The dot product of two vectors.
+-- dot :: Vector -> Vector -> Double
+-- dot (Vector l1) (Vector l2) = foldl (\s (x,y) -> s + x*y) 0  $ zip l1 l2
 
 \end{code}
 
@@ -146,15 +167,16 @@ The function \code{unitVector} creates the unit vector along the $i$th dimension
 
 \begin{code}
 
--- | ith unit vector in R^n
-unitVector :: Int -- n
-           -> Int -- i
-           -> Vector
-unitVector n i
-    | (n > 0) && (i >= 0) && (i < n) = Vector $ concat [replicate i 0.0,
-                                                        [1.0],
-                                                        replicate (n-i-1) 0.0]
-    | otherwise = error "unitVector: invalid input!"
+-- -- | ith unit vector in R^n
+-- unitVector' :: Num a
+--            => Int -- n
+--            -> Int -- i
+--            -> Vector a
+-- unitVector' n i
+--     | (n > 0) && (i >= 0) && (i < n) = Vector $ concat [replicate i 0,
+--                                                         [1],
+--                                                         replicate (n-i-1) 0]
+--     | otherwise = error "unitVector: invalid input!"
 
 \end{code}
 
@@ -175,10 +197,10 @@ The function \code{powV} implements powers of $n$-dimensional vectors.
 -- | the same length as the dimension of the vector v and components cs, the
 -- | function computes the product of each component (cs!!i) raised to (l!!i)th
 -- | power.
-pow :: Vector -> MI.MultiIndex -> Double
-pow (Vector cs) = pow' cs . MI.toList
+-- pow :: Num a => Vector a -> MI.MultiIndex -> Double
+-- pow (Vector cs) = pow' cs . MI.toList
 
-pow' [] [] = mulId
-pow' (v:vs) (i:is) = v ** fromIntegral i * pow' vs is
-pow' _ _ = error "powV: Lists do not have equal length"
+-- pow' [] [] = mulId
+-- pow' (v:vs) (i:is) = v ** fromIntegral i * pow' vs is
+-- pow' _ _ = error "powV: Lists do not have equal length"
 \end{code}
