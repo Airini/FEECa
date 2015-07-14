@@ -238,9 +238,9 @@ errForm callee obligation = error $ "Forms." ++ callee ++
 data FormMust = BiDegEq | BiDegBd | BiSpaEq | MoProjBd | MoVecEq
 
 instance Show FormMust where
-  show BiDegEq = "be of the same degree"
-  show BiDegBd = "have joint degree bounded by the working vector space dimension"
-  show BiSpaEq = "act on the same vector space"
+  show BiDegEq  = "be of the same degree"
+  show BiDegBd  = "have joint degree bounded by the working vector space dimension"
+  show BiSpaEq  = "act on the same vector space"
   show MoProjBd = "project components of the underlying vector space"
   show MoVecEq  = "act on vectors of the working vectors space"
 
