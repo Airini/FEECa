@@ -7,12 +7,12 @@ import FEEC.Internal.Vector
 
 
 -- | Gram-Schmidt orthogonalization
-gramSchmidt :: EuclideanSpace v (Scalar v)
+gramSchmidt :: (EuclideanSpace v (Scalar v), Eq (Scalar v))
             => [v]
             -> [v]
 gramSchmidt = reverse . gramSchmidt' []
 
-gramSchmidt' :: EuclideanSpace v (Scalar v)
+gramSchmidt' :: (EuclideanSpace v (Scalar v), Eq (Scalar v))
              => [v]
              -> [v]
              -> [v]

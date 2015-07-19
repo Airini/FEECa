@@ -209,7 +209,9 @@ by the \code{extend} function.
 
 -- | Extend multi-index from from a face to a simplex.
 extend :: Int -> [Int] -> MultiIndex -> MultiIndex
-extend n sigma mi = multiIndex $ extend' n (-1) sigma mi'
+extend n sigma mi
+    | length sigma == (dim mi) + 1 = multiIndex $ extend' n (-1) sigma mi'
+    | otherwise = error "extend: Dimensions of sigma and multi-index don't agree"
     where mi'       = toList mi
 
 extend' :: Int -> Int -> [Int] -> [Int] -> [Int]

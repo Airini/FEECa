@@ -280,7 +280,7 @@ norm v1 v2
 -- | Uses the Gram-Schmidt method to add at most n orthogonal vectors to the
 -- | given set of vectors. Due to round off error the resulting list may contain
 -- | more than n vectors, which then have to be removed manually.
-extendVectors :: EuclideanSpace v (Scalar v)
+extendVectors :: (EuclideanSpace v (Scalar v), Eq (Scalar v))
               => Int
               -> [v]
               -> [v]
@@ -340,7 +340,7 @@ The function \code{integral} uses (\ref{eq:integral}) to approximate the
 
 -- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
 -- | quadrature rule with q nodes.
-integrateOverSimplex :: EuclideanSpace v (Scalar v)
+integrateOverSimplex :: (EuclideanSpace v (Scalar v), Eq (Scalar v))
                      => Int             -- q
                      -> Simplex v       -- t
                      -> (v -> Scalar v) -- f

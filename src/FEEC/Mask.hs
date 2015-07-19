@@ -55,7 +55,7 @@ dx = oneForm
 dxN :: Ring f => Dim -> Dim -> Form f
 dxN = flip dx
 
-(#) :: Form Double -> [Vector] -> Double
+(#) :: Form Double -> [Vector Double] -> Double
 (#) = refine dxV
 -- TODO: unify
 -- complete (##) :: (Ringh, VectorSpace v) => Form h -> [v] -> h
@@ -83,13 +83,13 @@ bssIx n = vector . flip canonCoord n
 (<>) omega eta = inner dxV (bssIx n) omega eta
   where n = dimVec omega
 
-(⌟) :: Form Double -> Vector -> Form Double
+(⌟) :: Form Double -> Vector Double -> Form Double
 (⌟) = contract dxV
 
 interior = (⌟)
 
 𝝹 :: Form (Polynomial Double) -> Form (Polynomial Double)
-𝝹 form = contract (const . flip coordinate n) form (undefined::Vector)
+𝝹 form = contract (const . flip coordinate n) form (undefined::Vector Double)
   where n = dimVec form
 -- TODO: extract degree from polynomial
 kappa = 𝝹
@@ -100,12 +100,12 @@ d form = df (vector . flip canonCoord n) form
   where n = dimVec form
 
 -- | Evaluation of differential forms at a given point to obtain an alternating form
-(§) :: Form (Polynomial Double) -> Point -> Form Double
+(§) :: Form (Polynomial Double) -> Point Double -> Form Double
 (§) = eval
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors
 --   (some kind of canonical projection)
-(&) :: DifferentialForm Double -> Vector -> DifferentialForm Double
+(&) :: DifferentialForm Double -> Vector Double -> DifferentialForm Double
 (&) = contract dxVP
 -- ALSO: generalise Vector? that way we can have parameterised vectors :)
 -- kappa, etc. => explicit symbols

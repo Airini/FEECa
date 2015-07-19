@@ -46,12 +46,12 @@ h = sclV (constant addId) (oneForm 3 3)
 t :: DifferentialForm Double
 t = sclV (add (constant 8.9) (linearPolynomial [0,2,3])) (oneForm 1 5)
 
-b :: Vector
+b :: Vector Double
 b = vector [1,2,0]
-y :: Vector
+y :: Vector Double
 y = vector [3,-2.3,1]
 
-dxV :: Int -> Vector -> Double
+dxV :: Int -> Vector Double -> Double
 dxV i x = (toList x) !! (i-1)
 
 dxVP = (fmap . fmap) constant dxV
@@ -82,7 +82,7 @@ df basisIx form =
 
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 
-eval :: DifferentialForm Double -> Point -> Form Double
+eval :: DifferentialForm Double -> Point Double -> Form Double
 eval u = ($u) . fmap . evaluate . fromPoint
 
 

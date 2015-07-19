@@ -429,8 +429,11 @@ evaluateTerm f (Term c mi)  = mul c (f mi)
 evaluateTerm _ (Constant c) = c
 
 -- | Evaluate monomial over standard monomial basis.
-evaluateMonomial :: EuclideanSpace v (Scalar v) => v -> MI.MultiIndex -> Scalar v
-evaluateMonomial v mi = sum' (zipWith pow (toList v) (MI.toList mi))
+evaluateMonomial :: EuclideanSpace v r
+                 => v
+                 -> MI.MultiIndex
+                 -> r
+evaluateMonomial v mi = sum' (zipWith pow (toList v) ((MI.toList mi)::[Int]))
     where sum' = foldl add addId
 
 \end{code}
@@ -442,7 +445,7 @@ General evaluation of a polynomial can then be implemented by using the general
  implemented in the \code{evaluate'} function.
 
 The evaluation of polynomials over the monomial basis can now be realized by
- partially evaluating \code{evaluate} with \code{evalMonomial}.
+ partially evaluating \code{evaluate} with \code{evaluateMonomial}.
 
 %------------------------------------------------------------------------------%
 
@@ -662,9 +665,9 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 -- | as large as the geometrical dimension, i.e. the simplex must contain n+1
 -- | vertices if the underlying space has dimensionality n.
 -- TODO: check take
-barycentricCoordinates :: EuclideanSpace v (Scalar v)
+barycentricCoordinates :: EuclideanSpace v r
                        => Simplex v
-                       -> [Polynomial (Scalar v)]
+                       -> [Polynomial r]
 barycentricCoordinates s = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
     where mat = M.inv (simplexToMatrix (extendSimplex s))
           n   = geometricalDimension s
@@ -672,15 +675,15 @@ barycentricCoordinates s = map vectorToPolynomial (take (nt+1) (M.toColumns mat)
 
 -- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial
 -- | in the list
-barycentricCoordinate :: EuclideanSpace v (Scalar v)
+barycentricCoordinate :: EuclideanSpace v r
                       => Simplex v
                       -> Int
-                      -> Polynomial (Scalar v)
+                      -> Polynomial r
 barycentricCoordinate s i = barycentricCoordinates s !! i
 
 -- Transforms a given simplex into the matrix representing the linear
 -- equation system for the barycentric coordinates.
-simplexToMatrix :: EuclideanSpace v (Scalar v)
+simplexToMatrix :: EuclideanSpace v r
                 => Simplex v
                 -> M.Matrix Double
 simplexToMatrix s@(Simplex _ l) = M.matrix (n+1) (concatMap append1 l)

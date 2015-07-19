@@ -98,12 +98,12 @@ propA_wedgeAssoc = prop_associativity id (/\)
 --   arbitrary = sized (TQ.vector >=> return . vector)
 
 -- TODO: Eq?? would have to implement simplification + "canonising"
-propA_wedgeAssocEvl :: [Vector] -> Form Double -> Form Double -> Form Double -> Bool
+propA_wedgeAssocEvl :: [Vector Double] -> Form Double -> Form Double -> Form Double -> Bool
 propA_wedgeAssocEvl vs = prop_associativity (#vs) (/\)
 
 -- Will turn into check without evaluation if simplification + grouping of
 -- terms with canonicalization is done
-propA_wedgeAntiComm :: Form Double -> Form Double -> [Vector] -> Bool
+propA_wedgeAntiComm :: Form Double -> Form Double -> [Vector Double] -> Bool
 propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) == ((-1)^jk * (y /\ x # vs))
   where j = arity x
         k = arity y
