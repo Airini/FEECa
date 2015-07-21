@@ -21,6 +21,16 @@ import Control.Monad ((>=>))
 prop_commutativity :: Eq t => (f -> t) -> (f -> f -> f) -> f -> f -> Bool
 prop_commutativity render f x y = render (f x y) == render (f y x)
 
+prop_operator_commutativity :: (Eq a, Eq b)
+                            => (a -> a -> a)
+                            -> (b -> b -> b)
+                            -> (a -> b)
+                            -> a
+                            -> a
+                            -> Bool
+prop_operator_commutativity f1 f2 map a1 a2 =
+    map (f1 a1 a2) == f2 (map a1) (map a2)
+
 prop_associativity :: Eq t => (f -> t) -> (f -> f -> f) -> f -> f -> f -> Bool
 prop_associativity render f x y z = render (f (f x y) z) == render (f x (f y z))
 

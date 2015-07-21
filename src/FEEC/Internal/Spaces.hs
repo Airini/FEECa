@@ -5,6 +5,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module FEEC.Internal.Spaces where
+import Numeric( fromRat )
 
 class Ring v where  -- TODO: Actually Ring
   add     :: v -> v -> v
@@ -48,6 +49,20 @@ instance Field Double where
     mulInv     = (1/)
     fromDouble = id
     toDouble   = id
+
+instance Ring Rational where
+  add = (+)
+  addId = 0
+  addInv = (0-)
+  mul = (*)
+  mulId = 1
+  fromInt = fromIntegral
+  pow = (^)
+
+instance Field Rational where
+    mulInv = (1/)
+    fromDouble = realToFrac
+    toDouble = fromRat
 
 class (Ring (Scalar v)) => VectorSpace v where -- Module over a Ring
   type Scalar v :: *      -- Coefficient field
