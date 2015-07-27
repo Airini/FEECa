@@ -11,38 +11,58 @@ import FEEC.Internal.Spaces
 import FEEC.Utility.Test
 import qualified Test.QuickCheck as Q
 import Properties
+import FEEC.Internal.Simplex
 
+-- Dimension of the space to be tested. Must be greater than zero.
 n :: Int
-n = 4
+n = 2
 
+-- Generate a random polynomial of dimension n as fixed by the above parameter.
+-- The Polynomial may be of type Constant or Polynomial. If it is of type
+-- Polynomial, degree the degree is chosen between 0 and 10 and the constants
+-- are chosen randomly.
 instance (Ring r, Q.Arbitrary r) => Q.Arbitrary (Polynomial r)
-    where arbitrary = do r <- Q.choose (0,10)
+    where arbitrary = Q.oneof [arbitraryPolynomial, arbitraryConstant]
+
+arbitraryPolynomial :: (Ring r, Q.Arbitrary r) => Q.Gen (Polynomial r)
+arbitraryPolynomial = do r <- Q.choose (0,10)
                          mis <- Q.listOf (arbitraryMI n r)
                          cs <- Q.listOf Q.arbitrary
                          return $ polynomial (zip cs mis)
 
+arbitraryConstant :: (Ring r, Q.Arbitrary r) => Q.Gen (Polynomial r)
+arbitraryConstant = do c <- Q.arbitrary
+                       return $ constant c
+
+-- Generate random vectors of dimension n, so that they can be used to evaluate
+-- the randomly generated polynomials.
 instance Field f => Q.Arbitrary (Vector f) where
     arbitrary = do l <- Q.vector n
                    return $ vector (map fromDouble l)
 
+
+-- Abstract propreties of arithmetic on polynomials. Addition, Subtraction and
+-- multiplication of polynomials must commute with the evaluate operator.
 prop_arithmetic :: (EuclideanSpace v r, Q.Arbitrary v, Q.Arbitrary r)
                 => Polynomial r
                 -> Polynomial r
                 -> v
+                -> r
                 -> Bool
-prop_arithmetic p1 p2 v = -- prop_operator_commutativity add add (evaluate v) p1 p1
-                    prop_operator_commutativity mul mul (evaluate v) p1 p1
+prop_arithmetic p1 p2 v c = prop_operator2_commutativity add add (evaluate v) p1 p2
+                            && prop_operator2_commutativity mul mul (evaluate v) p1 p2
+                            && prop_operator2_commutativity sub sub (evaluate v) p1 p2
+                            && prop_operator_commutativity (sclV c) (mul c) (evaluate v) p1
 
+-- Concrete arithmetic properties for polynomials defined over rationals. 
 prop_arithmetic_rf :: Polynomial Rational
                    -> Polynomial Rational
                    -> Vector Rational
+                   -> Rational
                    -> Bool
 prop_arithmetic_rf = prop_arithmetic
 
-
-p1 :: Polynomial Rational
-p1 = polynomial [(((-7763204307700) / 9103688388447),MI.multiIndex [0,0,1,1,1]),(((-5768714918348) / 1622622387537),MI.multiIndex [0,2,1,0,0])]
-p2 :: Polynomial Rational
-p2 = polynomial [(((-607364476886) / 44357178205), MI.multiIndex [1,0,0,0,0]), ((10368138976756 / 5789853960481) , MI.multiIndex [1,0,0,0,0])]
-v :: Vector Rational
-v = vector [(-1983254388243891) / 2251799813685248,(-3659286520981969) / 140737488355328,5360377639166411 / 70368744177664,1295570148677743 / 1125899906842624]
+p1 :: Polynomial Double
+p1 = polynomial [(1, MI.multiIndex [1,1])]
+t :: Simplex (Vector Double)
+t  = referenceSimplex 2

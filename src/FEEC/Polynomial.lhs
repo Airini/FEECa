@@ -139,7 +139,7 @@ instance Ring a => VectorSpace (Polynomial a) where
 instance Ring a => Ring (Polynomial a) where
   add    = addPolynomial
   addId  = constant addId
-  addInv = scalePolynomial (addInv addId)
+  addInv = scalePolynomial (addInv mulId)
 
   mul       = multiplyPolynomial multiplyMonomial
   mulId     = constant mulId
@@ -187,14 +187,9 @@ Up until now, the definition of the polynomial type is independent of the
 
 -- | Polynomials as functions.
 
-instance EuclideanSpace v r => S.Function (Polynomial r) v where
-  type Values (Polynomial r) v = r
---  type GeomUnit (Polynomial Double) Vector = Simplex
+instance (EuclideanSpace v r) => S.Function (Polynomial r) v where
   evaluate v = evaluatePolynomial (evaluateMonomial v)
   derive = derivePolynomial deriveMonomial
---  integrate t p = integrateOverSimplex q t p
---    where q = div (r + 2) 2
---          r = degree p
 
 \end{code}
 
@@ -294,7 +289,7 @@ polynomial :: Ring a => [(a, MI.MultiIndex)] -> Polynomial a
 polynomial l = if (checkPolynomial l)
                then Polynomial r (map term l)
                else error "Given coefficients and multi-indices do not define a valid polynomial."
-    where r = maximum (map (MI.degree . snd) l)
+    where r = if (not (null l)) then maximum (map (MI.degree . snd) l) else 0
 
 -- | Check whether a list of coefficient-multi-index pairs represents a
 -- | polynomial.
@@ -388,7 +383,9 @@ multiplyTerm _ (Constant c1) (Constant c2) = Constant (mul c1 c2)
 
 -- | Multiplication of two monomials.
 multiplyMonomial :: (Ring a) => MI.MultiIndex -> MI.MultiIndex -> Term a
-multiplyMonomial mi1 mi2 = Term mulId (MI.add mi1 mi2)
+multiplyMonomial mi1 mi2
+    | dim mi1 == dim mi2  = Term mulId (MI.add mi1 mi2)
+    | otherwise = error "multiplyMonomial: Polynomial dimensions don't agree."
 
 -- | General multiplication of polynomial using the function f for the multi-
 -- | plication of monomial.
@@ -433,8 +430,8 @@ evaluateMonomial :: EuclideanSpace v r
                  => v
                  -> MI.MultiIndex
                  -> r
-evaluateMonomial v mi = sum' (zipWith pow (toList v) ((MI.toList mi)::[Int]))
-    where sum' = foldl add addId
+evaluateMonomial v mi = prod' (zipWith pow (toList v) ((MI.toList mi)::[Int]))
+    where prod' = foldl mul mulId
 
 \end{code}
 
@@ -509,10 +506,11 @@ deriveTerm :: EuclideanSpace v (Scalar v)
            -> Term (Scalar v)
            -> [Term (Scalar v)]
 deriveTerm dx v (Constant _) = [Constant addId]
-deriveTerm dx v (Term c mi)  = concat [map (scaleTerm (v' !! i)) (dx i mi) |
+deriveTerm dx v (Term c mi)  = concat [ zipWith (scl c) v' (dx i mi) |
                                        i <- [0..n-1],
                                        MI.degree mi > 0]
     where
+      scl a b c = scaleTerm (mul a b) c
       v' = toList v
       n = dim v
 

@@ -14,7 +14,9 @@ The \module{Simplex} module implements simplices in n-dimensional Euclidean
 {-# LANGUAGE
    GADTs,
    MultiParamTypeClasses,
-   FlexibleContexts #-}
+   FlexibleContexts,
+   TypeFamilies,
+   FlexibleInstances #-}
 
 module FEEC.Internal.Simplex(
                              -- * The Simplex type
@@ -365,13 +367,15 @@ nestedSum k d ls t f
           | d == 0 = sum' [ mul w (f x ) | (w, x) <- zip weights' xs ]
           | otherwise = sum' [ mul w (nestedSum k (d-1) (x:ls) t f) | (w, x) <- zip weights' nodes' ]
     where xs = [ cubicToCartesian t (fromList (xi : ls)) | xi <- nodes' ]
-          (nodes, weights) = unzip $ gaussJacobiQuadrature d 0 k
+          (nodes, weights) = unzip $ gaussJacobiQuadrature' d 0 k
           nodes' = map fromDouble nodes
           weights' = map fromDouble weights
           sum' = foldl add addId
           v = referenceVertex t
 
-
+instance (EuclideanSpace v r) => FiniteElement (Simplex v) r where
+    type Primitive (Simplex v) = v
+    quadrature = integrateOverSimplex
 
 \end{code}
 

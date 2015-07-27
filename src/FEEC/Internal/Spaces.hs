@@ -103,20 +103,6 @@ class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of diff
   addA = addV
   sclA = sclV
 
--- Maybe not necessary to have
-class (VectorSpace v, Ring (Values h v)) => Function h v where -- h ~= v -> Values h v
-  type Values h v :: *
-
-  -- Suggestion : new class? ADT to represent them?
-
-  derive    :: v -> h -> h
---  integrate :: GeomUnit h v -> h -> Values h v
-
-  evaluate  :: v -> h -> Values h v
-
-  ($$)  :: h -> v -> Values h v
-  ($$) = flip evaluate
-
 class Dimensioned t where
   dim :: t -> Int
 
@@ -124,6 +110,26 @@ class (Eq v, Dimensioned v, VectorSpace v, Eq r, Field r, Scalar v ~ r) => Eucli
     dot        :: v          -> v -> r
     fromList   :: [r] -> v
     toList     :: v          -> [r]
+
+-- Maybe not necessary to have
+class (VectorSpace v) => Function f v where
+  derive    :: v -> f -> f
+  evaluate  :: v -> f -> (Scalar v)
+
+  ($$)  :: f -> v -> (Scalar v)
+  ($$) = flip evaluate
+
+class FiniteElement t r where
+    type Primitive t :: *
+    quadrature :: Int -> t -> ((Primitive t) -> r) -> r
+
+integrate :: (FiniteElement t r, Function f (Primitive t),
+              Scalar (Primitive t) ~ r)
+          => Int
+          -> t
+          -> f
+          -> r
+integrate i t f = quadrature i t (($$) f)
 
 zero :: EuclideanSpace v (Scalar v) => Int -> v
 zero n = fromList (replicate n addId)

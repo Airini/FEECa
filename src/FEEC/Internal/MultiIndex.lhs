@@ -79,7 +79,7 @@ the number of exponents in the multi-index.
 type MultiIndex = ZipList Int
 
 instance Dimensioned (ZipList a) where
-    dim mi = (length (getZipList mi)) - 1
+    dim mi = (length (getZipList mi)) 
 
 -- | Transform multi-index into list
 toList :: Integral a => MultiIndex -> [a]
@@ -178,7 +178,7 @@ dimension $n$ and degree $r$.
 
 -- | List of all dimension n (length n + 1) multi-indices of degree r
 degreeR :: Integral a => a -> a -> [MultiIndex]
-degreeR n r = map ZipList $ sumRLists (fromIntegral (n + 1)) (fromIntegral r)
+degreeR n r = map ZipList $ sumRLists (fromIntegral n) (fromIntegral r)
 
 \end{code}
 

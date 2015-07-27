@@ -23,8 +23,8 @@ gaussJacobiQuadrature alpha beta n = golubWelsch alpha beta n
 gaussJacobiQuadrature' :: Int -> Int -> Int -> Quadrature
 gaussJacobiQuadrature' alpha beta n = transform (gaussJacobiQuadrature alpha beta n)
     where transform = map (\(x,y) -> ( scale1 x, scale2 y))
-          scale1 x = x / 2 + 0.5
-          scale2 y = y / 2
+          scale1 x = 0.5 + x/2
+          scale2 y = y
 
 -- | Compute the Gauss-Legendre quadrature of degree n.
 gaussLegendreQuadrature :: Int -> Quadrature
