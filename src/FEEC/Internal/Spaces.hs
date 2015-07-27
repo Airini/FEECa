@@ -3,11 +3,12 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE OverlappingInstances #-}
 
 module FEEC.Internal.Spaces where
 import Numeric( fromRat )
 
-class Ring v where  -- TODO: Actually Ring
+class Eq v => Ring v where  -- XXX: only Eq v for now
   add     :: v -> v -> v
   addId   :: v
   addInv  :: v -> v
@@ -21,6 +22,15 @@ class Ring v where  -- TODO: Actually Ring
   -- no neg security!
   pow t 0 = mulId
   pow t n = mul t (pow t (n-1))
+
+
+instance Ring v => Num v where
+  (+) = add
+  (*) = mul
+  negate = addInv
+  fromInteger = fromInt
+  abs = undefined -- XXX: :S TODO: add Ord v to constraint? In any case, for polynomials...
+  signum = undefined -- XXX: :S
 
 sub :: Ring r => r -> r -> r
 sub a b = add a (addInv b)
@@ -65,9 +75,7 @@ instance Field Rational where
     toDouble = fromRat
 
 class (Ring (Scalar v)) => VectorSpace v where -- Module over a Ring
-  type Scalar v :: *      -- Coefficient field
--- TODO: perhaps remove in favour of just "dim"
---   vspaceDim :: v -> Int   -- Morally an associated constant, could be modelled with a type :: Nat
+  type Scalar v :: *      -- Coefficient ring
   addV  :: v -> v -> v
   sclV  :: Scalar v -> v -> v
 
@@ -83,7 +91,7 @@ zeroV :: VectorSpace v => v -> v
 zeroV = sclV addId
 
 {- removed for now: shall we only have _data_ types instantiated as VectorSpace?
-(cfr: tt) ==> likely to bring this instance back, just testing
+(cfr: tt) ==> likely to bring this instance back, just testing-}
 instance (Ring a, Eq [a]) => VectorSpace [a] where
   type Scalar [a] = a
 
@@ -93,7 +101,6 @@ instance (Ring a, Eq [a]) => VectorSpace [a] where
 
   sclV _ [] = []
   sclV a (v:vs) = mul a v : sclV a vs
--}
 
 class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
   addA :: v -> v -> v
