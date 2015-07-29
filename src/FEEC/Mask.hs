@@ -100,11 +100,7 @@ d form = df (vector . flip canonCoord n) form
   where n = dimVec form
 
 -- | Evaluation of differential forms at a given point to obtain an alternating form
-<<<<<<< HEAD
-(§) :: Form (Polynomial Double) -> Point Double -> Form Double
-=======
-(§) :: DifferentialForm Double -> Point -> Form Double
->>>>>>> origin/HEAD
+(§) :: DifferentialForm Double -> Point Double -> Form Double
 (§) = eval
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors

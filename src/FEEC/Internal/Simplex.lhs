@@ -188,7 +188,7 @@ project bs vs
 volume' :: EuclideanSpace v (Scalar v)
         => Simplex v
         -> Scalar v
-volume' t = fromDouble $ sqrt (abs (M.det w)) / fromInteger (factorial n)
+volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
     where n = geometricalDimension t
           w = M.matrix n comps
           v = referenceVertex t
@@ -349,7 +349,7 @@ integrateOverSimplex :: (EuclideanSpace v (Scalar v), Eq (Scalar v))
                      -> Scalar v
 integrateOverSimplex q t f = mul vol  (mul fac  (nestedSum q (n-1) [] t f))
     where n   = topologicalDimension t
-          fac = (fromDouble . fromInteger) (factorial n)
+          fac = fromDouble 1.0 -- (fromDouble . fromInteger) (factorial n)
           vol = volume t
 
 -- Recursion for the computation of the nested integral as given in formula (3.6)
@@ -366,12 +366,12 @@ nestedSum :: EuclideanSpace v (Scalar v)
 nestedSum k d ls t f
           | d == 0 = sum' [ mul w (f x ) | (w, x) <- zip weights' xs ]
           | otherwise = sum' [ mul w (nestedSum k (d-1) (x:ls) t f) | (w, x) <- zip weights' nodes' ]
-    where xs = [ cubicToCartesian t (fromList (xi : ls)) | xi <- nodes' ]
+    where xs = [ cubicToCartesian t (fromList' (xi : ls)) | xi <- nodes' ]
+          fromList' = fromList . reverse
           (nodes, weights) = unzip $ gaussJacobiQuadrature' d 0 k
           nodes' = map fromDouble nodes
           weights' = map fromDouble weights
           sum' = foldl add addId
-          v = referenceVertex t
 
 instance (EuclideanSpace v r) => FiniteElement (Simplex v) r where
     type Primitive (Simplex v) = v

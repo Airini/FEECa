@@ -62,7 +62,3 @@ prop_arithmetic_rf :: Polynomial Rational
                    -> Bool
 prop_arithmetic_rf = prop_arithmetic
 
-p1 :: Polynomial Double
-p1 = polynomial [(1, MI.multiIndex [1,1])]
-t :: Simplex (Vector Double)
-t  = referenceSimplex 2

@@ -73,7 +73,7 @@ prop_subsimplices (SubsimplexTest s@(Simplex _ l) k _) =
 
 -- | The volume of the reference simplices is 1/n!.
 prop_vol :: Int -> Property
-prop_vol i = (i > 0) ==> volume (referenceSimplex i) == 1.0 / (factorial' i)
+prop_vol i = (i > 0) ==> volume (referenceSimplex i) == 1.0 / (factorial i)
 
 
 --------------------------------------------------------------------------------
@@ -84,13 +84,12 @@ prop_vol i = (i > 0) ==> volume (referenceSimplex i) == 1.0 / (factorial' i)
 data Constant = Constant Double
 
 instance Function Constant Vector where
-    type Values Constant Vector = Double
-    deriv v h = (Constant 0)
-    eval v (Constant c) = c
+    derive v h = (Constant 0)
+    evaluate v (Constant c) = c
 
-prop_vol_integral :: Simplex -> Bool
-prop_vol_integral t = eqNum (volume t) (integral (div n 2) t (Constant 1))
-    where n = topologicalDimension t
+-- prop_vol_integral :: Simplex -> Bool
+-- prop_vol_integral t = eqNum (volume t) (integrate (div n 2) t (Constant 1))
+--     where n = topologicalDimension t
 
 --------------------------------------------------------------------------------
 -- Coordinates
@@ -132,4 +131,4 @@ prop_barycentricToCartesian t =
 
 main = do quickCheck (prop_subsimplex :: SubsimplexTest -> Bool)
           quickCheck (prop_subsimplices :: SubsimplexTest -> Bool)
-          quickCheck prop_vol_integral
+--          quickCheck prop_vol_integral

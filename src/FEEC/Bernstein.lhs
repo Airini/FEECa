@@ -122,14 +122,9 @@ instance EuclideanSpace v r => Ring (BernsteinPolynomial v r) where
     fromInt = Constant . fromInt
 
 instance EuclideanSpace v r => Function (BernsteinPolynomial v r) v  where
-  type Values (BernsteinPolynomial v r) v = r
---  type GeomUnit BernsteinPolynomial Vector = Simplex
   evaluate v (Bernstein t p) = evaluatePolynomial (evaluateMonomial lambda) p
       where lambda = map (evaluate v) (barycentricCoordinates t)
   derive = deriveBernstein
-  -- integrate t b@(Bernstein _ p) = integrateOverSimplex q t b
-  --   where q = div (r + 2) 2
-  --         r = degree p
 
 \end{code}
 
