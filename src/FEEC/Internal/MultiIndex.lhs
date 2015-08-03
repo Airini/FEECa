@@ -79,7 +79,7 @@ the number of exponents in the multi-index.
 type MultiIndex = ZipList Int
 
 instance Dimensioned (ZipList a) where
-    dim mi = (length (getZipList mi)) 
+    dim mi = length (getZipList mi)
 
 -- | Transform multi-index into list
 toList :: Integral a => MultiIndex -> [a]
@@ -105,7 +105,7 @@ range = range' 0
 
 range' :: Int -> MultiIndex -> [Int]
 range' i (ZipList (l:ls))
-      | l /= 0 = i:(range' (i+1) (ZipList ls))
+      | l /= 0 = i : range' (i+1) (ZipList ls)
       | otherwise = range' (i+1) (ZipList ls)
 range' _ (ZipList []) = []
 
@@ -215,7 +215,7 @@ extend n sigma mi
     where mi'       = toList mi
 
 extend' :: Int -> Int -> [Int] -> [Int] -> [Int]
-extend' n i (s:ss) (j:js) = (replicate di 0) ++ (j : (extend' (n - di - 1) s ss js))
+extend' n i (s:ss) (j:js) = replicate di 0 ++ (j : extend' (n - di - 1) s ss js)
     where di = s - i - 1  -- Number of zeros to pad.
 extend' n i [] [] = replicate n 0
 
@@ -263,7 +263,7 @@ decrease i alpha  = pure f <*> ZipList [0..] <*> alpha
 -- | Generalized binomial coefficients for multi-indices as defined in the paper
 -- | by Kirby.
 choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
-choose a b = (product (getZipList (liftA2 C.choose a b)))
+choose a b = product (getZipList (liftA2 C.choose a b))
 
 -- | Generalized factorial for multi-indices
 factorial :: (Num b) => MultiIndex -> b

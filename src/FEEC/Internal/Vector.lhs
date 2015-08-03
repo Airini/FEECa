@@ -77,7 +77,7 @@ instance Dimensioned (Vector a) where
 
 -- | Comparing vectors by length.
 instance (Field a, RealFrac a) => Ord (Vector a) where
-    v1 <= v2 = (dot v1 v1) <= (dot v2 v2)
+    v1 <= v2 = dot v1 v1 <= dot v2 v2
 
 \end{code}
 

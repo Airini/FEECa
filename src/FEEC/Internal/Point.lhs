@@ -96,7 +96,7 @@ The point data type doesn't provide any arithmetic functions. In order to
 
 -- | Point corresponding to given position vector.
 toPoint :: Vector a -> Point a
-toPoint v = Point v
+toPoint = Point
 
 -- | Position vector of given point.
 fromPoint :: Point a -> Vector a
