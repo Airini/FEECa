@@ -131,7 +131,7 @@ unrank :: Integral a
        -> a -- n
        -> a -- the index i
        -> [a]
-unrank k n i = (increasingLists k n) !! (fromIntegral i)
+unrank k n i = increasingLists k n !! fromIntegral i
 \end{code}
 
 %------------------------------------------------------------------------------%

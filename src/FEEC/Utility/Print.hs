@@ -27,7 +27,7 @@ class Pretty p where
 
 -- | Render the symbol for Euclidean space of dimension n.
 rn :: Int -> Doc
-rn n = text "\x211D" <> (printSuperscript n)
+rn n = text "\x211D" <> printSuperscript n
 
 -- | Print Double with precision p and padded to
 -- | width w and precision.

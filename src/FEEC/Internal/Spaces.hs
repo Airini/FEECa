@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE OverlappingInstances #-}
+-- {-# LANGUAGE OverlappingInstances #-}
 
 module FEEC.Internal.Spaces where
 import Numeric( fromRat )
@@ -24,7 +24,7 @@ class Eq v => Ring v where  -- XXX: only Eq v for now
   pow t n = mul t (pow t (n-1))
 
 
-instance Ring v => Num v where
+instance {-# OVERLAPPABLE #-} Ring v => Num v where
   (+) = add
   (*) = mul
   negate = addInv

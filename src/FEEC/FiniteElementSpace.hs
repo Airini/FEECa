@@ -54,22 +54,22 @@ finiteElementSpace Pm r t = PrmLk r 0 t
 finiteElementSpace DP r t = PrLk r (topologicalDimension t) t
 finiteElementSpace DPm r t = PrmLk r (topologicalDimension t) t
 finiteElementSpace RT r t
-    | (topologicalDimension t) == 2 = PrmLk r 1 t
+    | topologicalDimension t == 2 = PrmLk r 1 t
     | otherwise = error "RT elements are defined in two dimensions."
 finiteElementSpace N1e r t
-    | (topologicalDimension t) == 3 = PrmLk r 1 t
+    | topologicalDimension t == 3 = PrmLk r 1 t
     | otherwise = error "N1e1 elements are defined in three dimensions."
 finiteElementSpace N1f r t
-    | (topologicalDimension t) == 3 = PrmLk r 2 t
+    | topologicalDimension t == 3 = PrmLk r 2 t
     | otherwise = error "N1f1 elements are defined in three dimensions."
 finiteElementSpace BDM r t
-    | (topologicalDimension t) == 2 = PrLk r 1 t
+    | topologicalDimension t == 2 = PrLk r 1 t
     | otherwise = error "BDM elements are defined in two dimensions."
 finiteElementSpace N2e r t
-    | (topologicalDimension t) == 3 = PrLk r 1 t
+    | topologicalDimension t == 3 = PrLk r 1 t
     | otherwise = error "N2e1 elements are defined in three dimensions."
 finiteElementSpace N2f r t
-    | (topologicalDimension t) == 3 = PrLk r 2 t
+    | topologicalDimension t == 3 = PrLk r 2 t
     | otherwise = error "N2f1 elements are defined in three dimensions."
 
 -- | The degree of the finite element space.
@@ -112,7 +112,7 @@ extend t (Form k n' cs) = Form k n (extend' cs)
 -- | subsimplex, return the list of vertices of the simplex that corresponds to that
 -- | face.
 extendFace :: Int -> [Int] -> [Int]
-extendFace n f = [ [0..n] !! (i) | i <- f ]
+extendFace n f = [ [0..n] !! i | i <- f ]
 
 -- | The range operator for a multi-index and an increasing list.
 range :: MI.MultiIndex -> [Int] -> [Int]
@@ -134,7 +134,7 @@ prmLkFace r k t = [sclV (b alpha) (whitneyForm t sigma) | alpha <- alphas,
           sigmas alpha = [ sigma | sigma <- increasingLists n k,
                                    range alpha sigma == [0..n],
                                    zero alpha sigma ]
-          zero alpha sigma = all (0==) (take ((minimum sigma)) (MI.toList alpha))
+          zero alpha sigma = all (0==) (take (minimum sigma) (MI.toList alpha))
 
 -- | The Whitney forms as given by  equation (6.3).
 whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
@@ -155,13 +155,13 @@ prLkFace :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
 prLkFace r k t = [ sclV (B.extend t b) (psi' (alpha b) sigma) | (b, sigma) <- fs ]
     where fs = map (head . constituents) (prLkFace' r k t)
           psi' alpha sigma = extend t (psi alpha sigma)
-          alpha b = (multiIndices b) !! 0
+          alpha b = multiIndices b !! 0
           n = topologicalDimension t
 
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
 -- | a given face of a simplex.
 prLkFace' :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
-prLkFace' r k t = [Form k n [((b alpha), sigma)] | alpha <- alphas,
+prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas,
                                                    sigma <- sigmas alpha]
     where n = topologicalDimension t
           b = monomial t
@@ -169,7 +169,7 @@ prLkFace' r k t = [Form k n [((b alpha), sigma)] | alpha <- alphas,
           sigmas alpha = [ sigma | sigma <- increasingLists n (k-1),
                                    range alpha sigma == [0..n],
                                    zero alpha sigma ]
-          zero alpha sigma = all (0==) (take ((minimum' sigma)) (MI.toList alpha))
+          zero alpha sigma = all (0==) (take (minimum' sigma) (MI.toList alpha))
           minimum' sigma = minimum ([0..n] \\ sigma)
 
 -- | The psi forms that implement the extension operator for the $P_r\Lambda^k$
@@ -183,10 +183,10 @@ psi alpha sigma  = foldl (/\) unit [psi' alpha i | i <- sigma]
 psi' :: MI.MultiIndex -> Int -> Form BernsteinPolynomial
 psi' alpha i = subV (db i) (foldl addV zero [sclV (c j) (db j) | j <- [0..n]])
     where db j = oneForm (j+1) n -- Dimension should be n ?
-          c j = sclV ((fromIntegral (alpha' !! j)) / (fromIntegral r)) mulId
+          c j = sclV (fromIntegral (alpha' !! j) / fromIntegral r) mulId
           zero = zeroForm 1 n
-          r = (MI.degree alpha) :: Int
-          alpha' = (MI.toList alpha) :: [Int]
+          r = MI.degree alpha :: Int
+          alpha' = MI.toList alpha :: [Int]
           n = dim alpha
 
 t = referenceSimplex 3

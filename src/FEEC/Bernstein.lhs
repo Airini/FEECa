@@ -122,7 +122,7 @@ instance EuclideanSpace v r => Ring (BernsteinPolynomial v r) where
     fromInt = Constant . fromInt
 
 instance EuclideanSpace v r => Function (BernsteinPolynomial v r) v  where
-  type Values (BernsteinPolynomial v r) v = r
+--  type Values (BernsteinPolynomial v r) v = r
 --  type GeomUnit BernsteinPolynomial Vector = Simplex
   evaluate v (Bernstein t p) = evaluatePolynomial (evaluateMonomial lambda) p
       where lambda = map (evaluate v) (barycentricCoordinates t)
@@ -173,7 +173,7 @@ polynomial t l
       mis        = map (dim . snd) l
       n1         = maximum mis
       n2         = topologicalDimension t
-      sameLength = all ((head mis)==) (tail mis)
+      sameLength = all (head mis ==) (tail mis)
 
 
 -- | Create a Bernstein monomial over a given simplex from a given
@@ -240,12 +240,12 @@ multiplyMonomial :: Field r
                     => MI.MultiIndex
                     -> MI.MultiIndex
                     -> Term r
-multiplyMonomial mi1 mi2 = term (c, (MI.add mi1 mi2))
-    where c1 = fromInteger ((MI.add mi1 mi2) `MI.choose` mi1)
+multiplyMonomial mi1 mi2 = term (c, MI.add mi1 mi2)
+    where c1 = fromInteger (MI.add mi1 mi2 `MI.choose` mi1)
           c2= fromInteger ((r1 + r2) `choose` r1)
           c  = fromDouble (c1 / c2)
-          r1 = (MI.degree mi1) :: Integer
-          r2 = (MI.degree mi2) :: Integer
+          r1 = MI.degree mi1 :: Integer
+          r2 = MI.degree mi2 :: Integer
 
 -- | Multiply two Bernstein polynomials.
 multiplyBernstein :: EuclideanSpace v r
@@ -285,12 +285,12 @@ evaluateMonomial :: Field r
 evaluateMonomial lambda mi = mul (prefactor r mi) (pow' lambda mi)
     where r = MI.degree mi
           pow' lambda mi = foldl add addId (zipWith pow lambda mi')
-          mi' = (MI.toList mi) :: [Int]
+          mi' = MI.toList mi :: [Int]
 
 -- | Prefactor for Bernstein polynomials.
 prefactor :: Field r => Int -> MI.MultiIndex -> r
 prefactor r a = fromDouble f
-    where f = (fromInteger (factorial r)) / (fromInteger (MI.factorial a))
+    where f = fromInteger (factorial r) / fromInteger (MI.factorial a)
 
 
 \end{code}
@@ -326,7 +326,7 @@ deriveMonomial :: EuclideanSpace v r
                -> MI.MultiIndex
                -> [Term r]
 deriveMonomial t d mi
-    | d < dim mi = [term (c i, (MI.decrease d mi))  | i <- [0..n]]
+    | d < dim mi = [term (c i, MI.decrease d mi)  | i <- [0..n]]
     | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
   where dbs = map toList (barycentricGradients t)
         c i = mul r ((dbs !! i) !! d)
@@ -411,7 +411,7 @@ proj :: EuclideanSpace v r
      -> Int
      -> v
      -> r
-proj t i v = dot u v
+proj t i = dot u
     where u = barycentricGradient t i
 \end{code}
 
