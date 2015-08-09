@@ -11,6 +11,8 @@ Vectors are used for the evaluation of alternating forms.
 
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module FEEC.Internal.Vector(
@@ -57,7 +59,13 @@ import qualified FEEC.Utility.Utility as U
 --     mulInv a = 1/a
 
 -- | Vectors in n-dimensional euclidean space.
-data Vector a = Vector { components :: [a] } deriving (Eq, Show)
+data Vector a = Vector { components :: [a] } deriving (Show)
+
+instance Eq (Vector Double) where
+    v1 == v2 = and (zipWith U.eqNum (components v1) (components v2))
+
+instance Eq (Vector Rational) where
+    v1 == v2 = and (zipWith (==) (components v1) (components v2))
 
 -- | R^n as a vector space.
 instance Ring a => VectorSpace (Vector a) where
@@ -66,7 +74,7 @@ instance Ring a => VectorSpace (Vector a) where
   sclV c (Vector l) = Vector $ map (mul c) l
 
 -- | R^n as a vector space.
-instance (RealFrac a, Field a) => EuclideanSpace (Vector a) a where
+instance (Field a, Eq (Vector a)) => EuclideanSpace (Vector a) a where
     dot (Vector l1) (Vector l2) = foldl (\s (x,y) -> s + x*y) 0  $ zip l1 l2
     toList   = components
     fromList = vector
@@ -75,9 +83,9 @@ instance (RealFrac a, Field a) => EuclideanSpace (Vector a) a where
 instance Dimensioned (Vector a) where
     dim (Vector l) = length l
 
--- | Comparing vectors by length.
-instance (Field a, RealFrac a) => Ord (Vector a) where
-    v1 <= v2 = (dot v1 v1) <= (dot v2 v2)
+---- | Comparing vectors by length.
+--instance (Field a, Ord a) => Ord (Vector a) where
+    --v1 <= v2 = (dot v1 v1) <= (dot v2 v2)
 
 \end{code}
 
@@ -95,7 +103,7 @@ instance (Field a, RealFrac a) => Pretty (Vector a) where
     pPrint v = text "Vector in "
                <> rn (dim v)
                <> text ":\n"
-               <> printVector 2 (toDouble' v)
+               <> printVector 2 (map toDouble (components v))
 \end{code}
 
 %------------------------------------------------------------------------------%

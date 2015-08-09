@@ -46,7 +46,7 @@ module FEEC.Internal.MultiIndex(
   extend,
 
   -- * Mathematical Operations
-  add, decrease, factorial, choose, degree, range
+  add, decrease, factorial, choose, choose', degree, range
 
   ) where
 
@@ -158,12 +158,12 @@ zero except for $i$th.
 zero ::Int -> MultiIndex
 zero n = ZipList (replicate n 0)
 
--- | Degree one multi-index of diemension n with i-th element equal to one and
+-- | Degree one multi-index of dimension n with i-th element equal to one and
 -- | all others zero.
 unit :: Int -- n
      -> Int -- i
      -> MultiIndex
-unit n i = ZipList $ concat [replicate i 0,[1],replicate (n-i) 0]
+unit n i = ZipList $ concat [replicate i 0,[1],replicate (n-i-1) 0]
 
 \end{code}
 
@@ -264,6 +264,9 @@ decrease i alpha  = pure f <*> ZipList [0..] <*> alpha
 -- | by Kirby.
 choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
 choose a b = (product (getZipList (liftA2 C.choose a b)))
+
+choose' :: (Integral a, Fractional b) => Int -> ZipList Int -> b
+choose' a b = fromIntegral (C.factorial a) / fromIntegral (factorial b)
 
 -- | Generalized factorial for multi-indices
 factorial :: (Num b) => MultiIndex -> b

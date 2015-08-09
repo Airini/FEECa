@@ -124,6 +124,7 @@ instance EuclideanSpace v r => Ring (BernsteinPolynomial v r) where
 instance EuclideanSpace v r => Function (BernsteinPolynomial v r) v  where
   evaluate v (Bernstein t p) = evaluatePolynomial (evaluateMonomial lambda) p
       where lambda = map (evaluate v) (barycentricCoordinates t)
+  evaluate v (Constant c) = c
   derive = deriveBernstein
 
 \end{code}
@@ -279,7 +280,7 @@ evaluateMonomial :: Field r
                  -> r
 evaluateMonomial lambda mi = mul (prefactor r mi) (pow' lambda mi)
     where r = MI.degree mi
-          pow' lambda mi = foldl add addId (zipWith pow lambda mi')
+          pow' lambda mi = foldl mul mulId (zipWith pow lambda mi')
           mi' = (MI.toList mi) :: [Int]
 
 -- | Prefactor for Bernstein polynomials.
@@ -292,7 +293,7 @@ prefactor r a = fromDouble f
 
 %------------------------------------------------------------------------------%
 
-\subsection{Derivaiton}
+\subsection{Derivation}
 
 The derivative of a Bernstein monomial along a given space dimension is given by
 
@@ -321,11 +322,12 @@ deriveMonomial :: EuclideanSpace v r
                -> MI.MultiIndex
                -> [Term r]
 deriveMonomial t d mi
-    | d < dim mi = [term (c i, (MI.decrease d mi))  | i <- [0..n]]
+    | d < dim mi = [term (fac i, (MI.decrease d mi))  | i <- [0..n]]
     | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
   where dbs = map toList (barycentricGradients t)
-        c i = mul r ((dbs !! i) !! d)
-        r   = (fromDouble . fromIntegral) $ dim mi
+        fac i = mul c ((dbs !! i) !! d)
+        c =  fromInt (((MI.toList mi) !! d) :: Int)
+        --r   = (fromDouble . fromIntegral) $ dim mi
         n   = topologicalDimension t
 
 -- | Derive Bernstein polynomial.
@@ -361,14 +363,16 @@ where $k$ is the topological dimension of the simplex.
 -- | Closed-form integration of Bernstein polynomials over the simplex they are
 -- | defined over. Falls back to standard integration if the provided simplex
 -- | does not equal the simplex the bernstein polynomial is defined over. 
--- integrateBernstein :: Simplex -> BernsteinPolynomial -> Double
--- integrateBernstein t1 b@(Bernstein t2 p)
---     | t1 == t2  = sum (map f (toPairs k p))
---     | otherwise = integrate t1 b
---     where f (c, mi) = c * vol / ((k + MI.degree mi) `choose` k)
---           k = topologicalDimension t1
---           vol = volume t1
--- integrateBernstein t (Constant c) = c * (volume t)
+integrateBernstein :: EuclideanSpace v r
+                      => BernsteinPolynomial v r
+                      -> r
+integrateBernstein b@(Bernstein t1 p) = sum' (map f (toPairs k p))
+    where f (c, mi) = mul c (divide vol (fac mi))
+          fac mi = fromDouble (fromInteger ((k + MI.degree mi) `choose` k))
+          k = topologicalDimension t1
+          sum' = foldl add addId
+          vol = volume t1
+integrateBernstein (Constant c) = error "intergrateBernstein: No associated simplex for constant. Define over simplex first using redefine."
 
 -- | Redefined Bernstein polynomial over a different simplex or define simplex
 -- | for constant bernstein polynomial.

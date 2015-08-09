@@ -41,7 +41,7 @@ The \code{Point} data type is build on top of the \code{Vector} data type using
 \begin{code}
 -- | Points in n-dimensional Euclidean space. A point describes a fixed position
 -- | in space and can not be computed with.
-newtype Point a = Point (Vector a) deriving (Eq, Show)
+newtype Point a = Point (Vector a) deriving (Show)
 
 instance Dimensioned (Point a) where
     dim (Point v) = dim v

@@ -6,7 +6,8 @@ module FEEC.Utility.Utility( Dimension(..),
                              fromDouble
                            ) where
 
-import Test.QuickCheck
+--import Test.QuickCheck
+import FEEC.Internal.Spaces
 
 takeIndices :: [a] -> [Int] -> [a]
 takeIndices l = map (l !!)
@@ -16,22 +17,13 @@ pairM :: (a -> b) -> (c -> d) -> (a,c) -> (b,d)
 pairM f h (x,y) = (f x, h y)
 
 -- | Numerical equality accounting for round-off errors
-eqNum :: RealFloat a => a -> a -> Bool
+eqNum :: Field a => a -> a -> Bool
 eqNum a b
-    | (a /= 0) && (b /= 0) = (abs ((a - b) / (max a b))) < 2e-9
+    | (a' /= 0.0) && (b' /= 0.0) = toDouble (abs ((a' - b') / (max a' b'))) < 2e-10
     | otherwise = True
+    where a' = toDouble a
+          b' = toDouble b
 
 -- | Data type for dimension. Used to generate reasonably small dimensions to
 -- | use in testing.
 data Dimension = Dimension Int
-
-instance Arbitrary Dimension where
-    arbitrary = do
-      n <- choose(0, 10)
-      return (Dimension n)
-
-toDouble :: RealFrac a => [a] -> [Double]
-toDouble = map realToFrac
-
-fromDouble :: RealFrac a => [Double] -> [a]
-fromDouble = map realToFrac
