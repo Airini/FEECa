@@ -48,6 +48,7 @@ module FEEC.Polynomial (
   -- * Barycentric Coordinates
   , barycentricCoordinate, barycentricCoordinates
   , barycentricGradient, barycentricGradients
+  , barycentricGradients'
 
 
   ) where
@@ -101,6 +102,9 @@ data Term a = Constant a
             | Term a MI.MultiIndex
             deriving (Eq, Show)
 
+coefficient :: Term a -> a
+coefficient (Constant a) = a
+coefficient (Term a _)   = a
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -344,9 +348,13 @@ Since polynomials are represented as a sum of terms addition of polynomials can
 
 -- | Add two polynomials.
 addPolynomial :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
-addPolynomial (Polynomial r1 ts1) (Polynomial r2 ts2) =
-    Polynomial (max r1 r2) (ts1 ++ ts2)
+addPolynomial (Polynomial r1 ts1) (Polynomial r2 ts2)
+    | ts /= [] = Polynomial (max r1 r2) ts
+    | otherwise = Polynomial 0 [Constant addId]
+                  where ts = removeZeros (ts1 ++ ts2)
 
+removeZeros :: Ring a => [Term a] -> [Term a]
+removeZeros ts = [ t | t <- ts, coefficient t /= addId ]
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -495,7 +503,7 @@ The function \code{deriveMonomial} implements the derivative of a monomial for
 -- | Type synonym for a function to generalize the derivative of a monomial
 -- | in a given space direction. Required to generalize the polinomial code to
 -- | different bases.
-type Dx a = Int -> MI.MultiIndex -> [Term a]
+type Dx a = MI.MultiIndex -> [Polynomial a]
 
 -- | General derivative of a term. Given a function for the derivative of a monomial
 -- | in a given space direction, the function computes the derivative of the given
@@ -504,24 +512,18 @@ deriveTerm :: EuclideanSpace v (Scalar v)
            => Dx (Scalar v)
            -> v
            -> Term (Scalar v)
-           -> [Term (Scalar v)]
-deriveTerm dx v (Constant _) = [Constant addId]
-deriveTerm dx v (Term c mi)  = concat [ zipWith (scl c) v' (dx i mi) |
-                                       i <- [0..n-1],
-                                       MI.degree mi > 0]
-    where
-      scl a b c = scaleTerm (mul a b) c
-      v' = toList v
-      n = dim v
+           -> Polynomial (Scalar v)
+deriveTerm dx v (Constant _) = constant addId
+deriveTerm dx v (Term c mi)  = sclV c (foldl add addId (zipWith sclV v' (dx mi)))
+    where v' = toList v
 
 -- | Derivative of a monomial over the standard monomial basis in given space
 -- | direction.
 deriveMonomial :: Ring r => Dx r
-deriveMonomial i mi
-    | i < dim mi = [Term c (MI.decrease i mi)]
-    | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
-  where c  = fromInt (MI.toList mi !! i)
-
+deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
+  where c i = fromInt (MI.toList mi !! i)
+        mi' i = MI.decrease i mi
+        n  = dim mi
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -542,9 +544,8 @@ derivePolynomial :: EuclideanSpace v (Scalar v)
                  -> v
                  -> Polynomial (Scalar v)
                  -> Polynomial (Scalar v)
-derivePolynomial dx v p = Polynomial (r - 1) (concatMap (deriveTerm dx v) ts)
-    where r = degree p
-          ts = terms p
+derivePolynomial dx v p = foldl add addId [ deriveTerm dx v t | t <- ts ]
+    where ts = terms p
 
 \end{code}
 
@@ -717,12 +718,20 @@ vectorToGradient :: EuclideanSpace v (Scalar v)
                  -> v
 vectorToGradient v  = fromDouble' (tail (M.toList v))
 
--- | Compute gradients of barycentric coordinates as a list of lists of Double
--- | for the given simplex t
+-- | Compute gradients of the barycentric coordinates.
 barycentricGradients :: EuclideanSpace v (Scalar v)
                      => Simplex v
                      -> [v]
 barycentricGradients t = map vectorToGradient (take (nt+1) (M.toColumns mat))
+    where mat = M.inv (simplexToMatrix (extendSimplex t))
+          n = geometricalDimension t
+          nt = topologicalDimension t
+
+-- | Compute gradients of the barycentric coordinates.
+barycentricGradients' :: EuclideanSpace v (Scalar v)
+                      => Simplex v
+                      -> [v]
+barycentricGradients' t = map (fromDouble' . M.toList) (tail (M.toRows mat))
     where mat = M.inv (simplexToMatrix (extendSimplex t))
           n = geometricalDimension t
           nt = topologicalDimension t

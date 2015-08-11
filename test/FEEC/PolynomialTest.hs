@@ -32,9 +32,9 @@ instance (Ring r, Q.Arbitrary r) => Q.Arbitrary (Polynomial r)
 
 arbitraryPolynomial :: (Ring r, Q.Arbitrary r) => Int -> Q.Gen (Polynomial r)
 arbitraryPolynomial  n = do r <- Q.choose (0,10)
-                            mis <- Q.listOf (arbitraryMI n r)
-                            cs <- Q.listOf Q.arbitrary
-                            return $ polynomial (zip cs mis)
+                            mis <- Q.listOf1 (arbitraryMI n r)
+                            cs <- Q.listOf1 Q.arbitrary
+                            return $ polynomial (zip (take 10 cs) (take 10 mis))
 
 arbitraryConstant :: (Ring r, Q.Arbitrary r) => Q.Gen (Polynomial r)
 arbitraryConstant = do c <- Q.arbitrary
@@ -80,3 +80,47 @@ prop_arithmetic_rf :: Polynomial Rational
                    -> Bool
 prop_arithmetic_rf = prop_arithmetic (==)
 
+--------------------------------------------------------------------------------
+-- Derivation of Polynomials
+--------------------------------------------------------------------------------
+
+-- Linearity
+prop_derivation_linear :: (EuclideanSpace v r, Function f v, VectorSpace f, r ~ (Scalar f))
+                       => v
+                       -> v
+                       -> r
+                       -> f
+                       -> f
+                       -> Bool
+prop_derivation_linear v1 v2 c p1 p2 =
+    prop_linearity (==) ((evaluate v2) . (derive v2)) c p1 p2
+
+-- Product rule
+prop_derivation_product :: (EuclideanSpace v r, Function f v, Ring f)
+                        => v
+                        -> v
+                        -> f
+                        -> f
+                        -> Bool
+prop_derivation_product v1 v2 p1 p2 =
+    (evaluate v1 (add (mul dp1 p2) (mul dp2 p1)))
+    == (evaluate v1 (derive v2 (mul p1 p2)))
+        where dp1 = derive v2 p1
+              dp2 = derive v2 p2
+
+-- Test for polynomials using exact arithmetic.
+prop_derivation_linear_rational :: Vector Rational
+                                -> Vector Rational
+                                -> Rational
+                                -> Polynomial Rational
+                                -> Polynomial Rational
+                                -> Bool
+prop_derivation_linear_rational = prop_derivation_linear
+
+prop_derivation_product_rational :: Vector Rational
+                                 -> Vector Rational
+                                 -> Rational
+                                 -> Polynomial Rational
+                                 -> Polynomial Rational
+                                 -> Bool
+prop_derivation_product_rational = prop_derivation_linear

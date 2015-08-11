@@ -14,6 +14,7 @@ import qualified Test.QuickCheck as Q
 import qualified Test.QuickCheck.Property as Prop
 import qualified FEEC.Polynomial as P
 import qualified FEEC.PolynomialTest as PT
+
 --------------------------------------------------------------------------------
 -- Random Bernstein Polynomials
 --------------------------------------------------------------------------------
@@ -96,6 +97,12 @@ prop_derivation_product :: Vector Double
                         -> Bernstein
                         -> Bernstein
                         -> Bool
+prop_derivation_product v1 v2 b1@(Bernstein t _) b2 =
+    eqNum (evaluate v1 (add (mul db1 b2') (mul db2' b1)))
+          (evaluate v1 (derive v2 (mul b1 b2')))
+        where b2' = redefine t b2
+              db1 = derive v2 b1
+              db2' = derive v2 b2'
 prop_derivation_product v1 v2 b1 b2 =
     eqNum (evaluate v1 (add (mul db1 b2) (mul db2 b1)))
           (evaluate v1 (derive v2 (mul b1 b2)))
@@ -113,6 +120,9 @@ b2 :: Bernstein
 b2 = polynomial t1 [(3.668944588464215, MI.multiIndex [3,1,6])]
 v :: Vector Double
 v = vector [0,1]
-t = referenceSimplex 2
+t :: Simplex (Vector Double)
+t = simplex [vector [0,0], vector [0.5,0.5], vector [0.5,-0.5]] 
 b :: Bernstein
-b = polynomial t [(1.0,MI.multiIndex [0,2,0])]
+b = polynomial t [(1.0,MI.multiIndex [])]
+bb :: Bernstein
+bb = polynomial t [(1.0,MI.multiIndex [0,1,1])]

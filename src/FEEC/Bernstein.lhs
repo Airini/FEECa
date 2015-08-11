@@ -32,7 +32,7 @@ import FEEC.Internal.Spaces
 import FEEC.Polynomial (Polynomial(..), Term, term, terms, expandTerm,
                         evaluatePolynomial, derivePolynomial, multiplyPolynomial,
                         barycentricCoordinates, barycentricGradient,
-                        barycentricGradients, toPairs)
+                        barycentricGradients', toPairs)
 import qualified FEEC.Polynomial as P (multiIndices, monomial, constant, polynomial)
 
 
@@ -318,18 +318,17 @@ therefore to implement the derivation of Bernstein monomials.
 -- | Derivative of a Bernstein monomial
 deriveMonomial :: EuclideanSpace v r
                => Simplex v
-               -> Int
                -> MI.MultiIndex
-               -> [Term r]
-deriveMonomial t d mi
-    | d < dim mi = [term (fac i, (MI.decrease d mi))  | i <- [0..n]]
-    | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
-  where dbs = map toList (barycentricGradients t)
-        fac i = mul c ((dbs !! i) !! d)
-        c =  fromInt (((MI.toList mi) !! d) :: Int)
-        --r   = (fromDouble . fromIntegral) $ dim mi
-        n   = topologicalDimension t
-
+               -> [ Polynomial r ]
+deriveMonomial t mi = [ sum' [sclV (grads i j) (dp j) | j <- [0..n]] | i <- [0..n-1] ]
+    where grads i j = (toList ((barycentricGradients' t) !! i)) !! j
+          dp j = if ((mi' !! j) > 0)
+                 then P.polynomial [(r , MI.decrease j mi)]
+                 else P.constant addId
+          sum' = foldl add addId
+          mi'  = (MI.toList mi) :: [Int]
+          n    = (dim mi) - 1
+          r    = fromInt( (MI.degree mi) :: Int )
 -- | Derive Bernstein polynomial.
 deriveBernstein :: EuclideanSpace v r
                 => v

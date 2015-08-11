@@ -96,7 +96,7 @@ straight-forward manner.
 \begin{code}
 
 -- | Degree of a multi-index, i.e. the sum of all indices
-degree :: Real a => MultiIndex -> a
+degree :: Integral a => MultiIndex -> a
 degree = fromIntegral . sum . getZipList
 
 -- | List indices of the multi-index that are non-zero.

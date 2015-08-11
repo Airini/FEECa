@@ -23,6 +23,8 @@ class Eq v => Ring v where  -- XXX: only Eq v for now
   pow t 0 = mulId
   pow t n = mul t (pow t (n-1))
 
+fromInt' :: Ring a => Int -> a
+fromInt' = fromInt
 
 instance Ring v => Num v where
   (+) = add
