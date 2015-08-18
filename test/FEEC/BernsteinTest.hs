@@ -91,7 +91,9 @@ prop_derivation_linear v1 v2 c b1@(Bernstein t1 _) b2 =
 prop_derivation_linear v1 v2 c b1 b2 =
     prop_linearity eqNum ((evaluate v2) . (derive v2)) c b1 b2
 
+
 -- Product rule
+-- TODO: Catch singular simplices!
 prop_derivation_product :: Vector Double
                         -> Vector Double
                         -> Bernstein

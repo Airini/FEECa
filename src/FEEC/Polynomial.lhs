@@ -236,8 +236,8 @@ degrees :: Polynomial a -> [Int]
 degrees (Polynomial _ ts) = degrees' ts
 
 degrees' :: [Term a] -> [Int]
-degrees' ((Term _ mi):ls) = (MI.degree mi) : (degrees' ls)
-degrees' ((Constant c):ls) = 0 : (degrees' ls)
+degrees' (Term _ mi:ls)  = MI.degree mi : degrees' ls
+degrees' (Constant c:ls) = 0 : degrees' ls
 degrees' [] = []
 
 \end{code}
@@ -290,15 +290,15 @@ term (c, mi) = Term c mi
 
 -- | Create a polynomial from a list of coefficient-multi-index pairs.
 polynomial :: Ring a => [(a, MI.MultiIndex)] -> Polynomial a
-polynomial l = if (checkPolynomial l)
+polynomial l = if checkPolynomial l
                then Polynomial r (map term l)
                else error "Given coefficients and multi-indices do not define a valid polynomial."
-    where r = if (not (null l)) then maximum (map (MI.degree . snd) l) else 0
+    where r = if not (null l) then maximum (map (MI.degree . snd) l) else 0
 
 -- | Check whether a list of coefficient-multi-index pairs represents a
 -- | polynomial.
 checkPolynomial :: [(a, MI.MultiIndex)] -> Bool
-checkPolynomial ls = (all (MI.valid . snd) ls) && (sameLength (map snd ls))
+checkPolynomial ls = all (MI.valid . snd) ls&& sameLength (map snd ls)
 
 -- | Check if all multi-indices in the list have the same dimension.
 sameLength :: [MI.MultiIndex] -> Bool
@@ -306,7 +306,7 @@ sameLength (l:ls) = sameLength' (dim l) ls
 sameLength [] = True
 
 sameLength' :: Int -> [MI.MultiIndex] -> Bool
-sameLength' i (l:ls) = (i == (dim l)) && (sameLength' (dim l) ls)
+sameLength' i (l:ls) = (i == dim l) && sameLength' (dim l) ls
 sameLength' _ [] = True
 
 \end{code}
@@ -438,7 +438,7 @@ evaluateMonomial :: EuclideanSpace v r
                  => v
                  -> MI.MultiIndex
                  -> r
-evaluateMonomial v mi = prod' (zipWith pow (toList v) ((MI.toList mi)::[Int]))
+evaluateMonomial v mi = prod' (zipWith pow (toList v) (MI.toList mi::[Int]))
     where prod' = foldl mul mulId
 
 \end{code}
@@ -571,8 +571,8 @@ already provides general integration of any function over simplices.
 -- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
 -- | quadrature rule of degree k.
 integratePolynomial :: EuclideanSpace v (Scalar v)
-                    => Simplex v -> Polynomial (Scalar v) -> (Scalar v)
-integratePolynomial t p = integrateOverSimplex q t ((flip S.evaluate) p)
+                    => Simplex v -> Polynomial (Scalar v) -> Scalar v
+integratePolynomial t p = integrateOverSimplex q t (flip S.evaluate p)
     where q = div (r + 2) 2
           r = degree p
 
@@ -687,7 +687,7 @@ simplexToMatrix :: EuclideanSpace v r
                 -> M.Matrix Double
 simplexToMatrix s@(Simplex _ l) = M.matrix (n+1) (concatMap append1 l)
     where n = geometricalDimension s
-          append1 v = 1 : (toDouble' v)
+          append1 v = 1 : toDouble' v
 
 -- Transforms a solution vector of the linear equation system for the
 -- barycentric coordinates into the corresponding polynomial.

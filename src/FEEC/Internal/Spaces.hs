@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE OverlappingInstances #-}
+{x-# LANGUAGE OverlappingInstances #-}
 
 module FEEC.Internal.Spaces where
 import Numeric( fromRat )
@@ -26,7 +26,7 @@ class Eq v => Ring v where  -- XXX: only Eq v for now
 fromInt' :: Ring a => Int -> a
 fromInt' = fromInt
 
-instance Ring v => Num v where
+instance {-# OVERLAPPABLE #-} Ring v => Num v where
   (+) = add
   (*) = mul
   negate = addInv
@@ -41,8 +41,8 @@ sub a b = add a (addInv b)
   -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate
 
 class Ring f => Field f where
-    mulInv     :: f        -> f
-    fromDouble :: Double    -> f
+    mulInv     :: f -> f
+    fromDouble :: Double -> f
     toDouble   :: f -> Double
 
 divide :: Field f => f -> f -> f
@@ -123,14 +123,14 @@ class (Eq v, Dimensioned v, VectorSpace v, Eq r, Field r, Scalar v ~ r) => Eucli
 -- Maybe not necessary to have
 class (VectorSpace v) => Function f v where
   derive    :: v -> f -> f
-  evaluate  :: v -> f -> (Scalar v)
+  evaluate  :: v -> f -> Scalar v
 
-  ($$)  :: f -> v -> (Scalar v)
+  ($$)  :: f -> v -> Scalar v
   ($$) = flip evaluate
 
 class FiniteElement t r where
     type Primitive t :: *
-    quadrature :: Int -> t -> ((Primitive t) -> r) -> r
+    quadrature :: Int -> t -> (Primitive t -> r) -> r
 
 integrate :: (FiniteElement t r, Function f (Primitive t),
               Scalar (Primitive t) ~ r)
@@ -138,7 +138,7 @@ integrate :: (FiniteElement t r, Function f (Primitive t),
           -> t
           -> f
           -> r
-integrate i t f = quadrature i t (($$) f)
+integrate i t f = quadrature i t (f $$)
 
 zero :: EuclideanSpace v (Scalar v) => Int -> v
 zero n = fromList (replicate n addId)
@@ -151,7 +151,7 @@ unitVector n i
 
 
 fromDouble' :: EuclideanSpace v (Scalar v) => [Double] -> v
-fromDouble' = fromList . (map fromDouble)
+fromDouble' = fromList . map fromDouble
 
 toDouble' :: EuclideanSpace v (Scalar v) => v -> [Double]
-toDouble'  = (map toDouble) . toList
+toDouble'  = map toDouble . toList

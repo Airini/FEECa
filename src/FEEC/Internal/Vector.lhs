@@ -83,9 +83,9 @@ instance (Field a, Eq (Vector a)) => EuclideanSpace (Vector a) a where
 instance Dimensioned (Vector a) where
     dim (Vector l) = length l
 
----- | Comparing vectors by length.
---instance (Field a, Ord a) => Ord (Vector a) where
-    --v1 <= v2 = (dot v1 v1) <= (dot v2 v2)
+-- | Comparing vectors by length.
+-- instance (Field a, Ord a) => Ord (Vector a) where
+--     v1 <= v2 = (dot v1 v1) <= (dot v2 v2)
 
 \end{code}
 

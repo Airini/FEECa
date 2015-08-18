@@ -120,7 +120,7 @@ simplex [] = error "simplex: empty list."
 -- | Construct a full simplex from a reference vertex and n direction vectors.
 simplex' :: EuclideanSpace v r => v -> [v] -> Simplex v
 simplex' p0 l@(v:vs)
-    | all ((dim p0)==) l' && (dim p0 == n) = Simplex [0..n] (p0:l'')
+    | all (dim p0 ==) l' && (dim p0 == n) = Simplex [0..n] (p0:l'')
     | otherwise = error "simplex': Dimension don't agree."
     where l' = map dim l
           l'' = map (addV p0) l
@@ -298,7 +298,7 @@ referenceVertex (Simplex _ (p:ps)) = p
 -- | List of the n direction vector pointing from the first point of the
 -- | simplex to the others.
 directionVectors :: VectorSpace v => Simplex v -> [v]
-directionVectors (Simplex _ (v:vs)) = map ((flip subV) v) vs
+directionVectors (Simplex _ (v:vs)) = map (flip subV v) vs
 directionVectors (Simplex _ _) = []
 
 \end{code}
@@ -440,7 +440,7 @@ barycentricToCartesian t@(Simplex _ vs) v = foldl sclAdd zero (zip v' vs)
 -- | The inverse Duffy transform. Maps a point from the unit cube in R^{n+1}
 -- | to Euclidean space.
 cubicToCartesian :: EuclideanSpace v (Scalar v) => Simplex v -> v -> v
-cubicToCartesian t = (barycentricToCartesian t) . cubicToBarycentric
+cubicToCartesian t = barycentricToCartesian t . cubicToBarycentric
 
 -- | Convert vector given in cubic coordinates to barycentric coordinates.
 cubicToBarycentric :: EuclideanSpace v (Scalar v) => v -> v

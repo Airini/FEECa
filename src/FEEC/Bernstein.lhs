@@ -169,7 +169,7 @@ polynomial t l
       mis        = map (dim . snd) l
       n1         = maximum mis
       n2         = topologicalDimension t
-      sameLength = all ((head mis)==) (tail mis)
+      sameLength = all (head mis ==) (tail mis)
 
 
 -- | Create a Bernstein monomial over a given simplex from a given
@@ -236,12 +236,12 @@ multiplyMonomial :: Field r
                     => MI.MultiIndex
                     -> MI.MultiIndex
                     -> Term r
-multiplyMonomial mi1 mi2 = term (c, (MI.add mi1 mi2))
-    where c1 = fromInteger ((MI.add mi1 mi2) `MI.choose` mi1)
+multiplyMonomial mi1 mi2 = term (c, MI.add mi1 mi2)
+    where c1 = fromInteger (MI.add mi1 mi2 `MI.choose` mi1)
           c2= fromInteger ((r1 + r2) `choose` r1)
           c  = fromDouble (c1 / c2)
-          r1 = (MI.degree mi1) :: Integer
-          r2 = (MI.degree mi2) :: Integer
+          r1 = MI.degree mi1 :: Integer
+          r2 = MI.degree mi2 :: Integer
 
 -- | Multiply two Bernstein polynomials.
 multiplyBernstein :: EuclideanSpace v r
@@ -286,7 +286,7 @@ evaluateMonomial lambda mi = mul (prefactor r mi) (pow' lambda mi)
 -- | Prefactor for Bernstein polynomials.
 prefactor :: Field r => Int -> MI.MultiIndex -> r
 prefactor r a = fromDouble f
-    where f = (fromInteger (factorial r)) / (fromInteger (MI.factorial a))
+    where f = fromInteger (factorial r) / fromInteger (MI.factorial a)
 
 
 \end{code}
@@ -329,6 +329,7 @@ deriveMonomial t mi = [ sum' [sclV (grads i j) (dp j) | j <- [0..n]] | i <- [0..
           mi'  = (MI.toList mi) :: [Int]
           n    = (dim mi) - 1
           r    = fromInt( (MI.degree mi) :: Int )
+                 
 -- | Derive Bernstein polynomial.
 deriveBernstein :: EuclideanSpace v r
                 => v
@@ -409,7 +410,7 @@ proj :: EuclideanSpace v r
      -> Int
      -> v
      -> r
-proj t i v = dot u v
+proj t i = dot u
     where u = barycentricGradient t i
 \end{code}
 

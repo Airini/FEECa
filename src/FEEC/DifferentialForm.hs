@@ -52,7 +52,7 @@ y :: Vector Double
 y = vector [3,-2.3,1]
 
 dxV :: Int -> Vector Double -> Double
-dxV i x = (toList x) !! (i-1)
+dxV i x = toList x !! (i-1)
 
 dxVP = (fmap . fmap) constant dxV
 expression = refine dxVP (t /\ g) [b, y]

@@ -160,7 +160,7 @@ polynomial t l
       mis        = map (dim . snd) l
       n1         = maximum mis
       n2         = topologicalDimension t
-      sameLength = all ((head mis)==) (tail mis)
+      sameLength = all (head mis ==) (tail mis)
 
 
 -- | Create a Bernstein monomial over a given simplex from a given
@@ -217,16 +217,16 @@ scaleBernstein c  (Bernstein t p) = Bernstein t (sclV c p)
 scaleBernstein c1 (Constant c2)   = Constant (c1 * c2)
 
 multiplyMonomial :: (Ring a, Fractional a) => MI.MultiIndex -> MI.MultiIndex -> Term a
-multiplyMonomial mi1 mi2 = term (c, (MI.add mi1 mi2))
-    where c = ((MI.add mi1 mi2) `MI.choose` mi1) / ((r1 + r2) `choose` r1)
-          r1 = (MI.degree mi1) :: Integer
-          r2 = (MI.degree mi2) :: Integer
+multiplyMonomial mi1 mi2 = term (c, MI.add mi1 mi2)
+    where c = (MI.add mi1 mi2 `MI.choose` mi1) / ((r1 + r2) `choose` r1)
+          r1 = MI.degree mi1 :: Integer
+          r2 = MI.degree mi2 :: Integer
 
 -- | Multiply two Bernstein polynomials.
 multiplyBernstein :: BernsteinPolynomial -> BernsteinPolynomial -> BernsteinPolynomial
 multiplyBernstein (Bernstein t1 p1) (Bernstein t2 p2)
-     | t1 /= t1 = error "multiplyBernstein: Inconsistent simplices."
-     | otherwise = Bernstein t1 (multiplyPolynomial multiplyMonomial p1 p2)
+  | t1 /= t1 = error "multiplyBernstein: Inconsistent simplices."
+  | otherwise = Bernstein t1 (multiplyPolynomial multiplyMonomial p1 p2)
 multiplyBernstein (Constant c)      (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
 multiplyBernstein (Bernstein t1 p1) (Constant c)      = Bernstein t1 (sclV c p1)
 multiplyBernstein (Constant c1)     (Constant c2)     = Constant (c1 * c2)
@@ -287,7 +287,7 @@ therefore to implement the derivation of Bernstein monomials.
 -- | Derivative of a Bernstein monomial
 deriveMonomial :: Simplex -> Int -> MI.MultiIndex -> [Term Double]
 deriveMonomial t d mi
-    | d < dim mi = [term ((r * (dbs !! i) !! d), (MI.decrease d mi))  | i <- [0..n]]
+    | d < dim mi = [term (r * (dbs !! i) !! d, MI.decrease d mi)  | i <- [0..n]]
     | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
   where dbs = barycentricGradients t
         r   = fromIntegral (dim mi)
@@ -331,7 +331,7 @@ integrateBernstein t1 b@(Bernstein t2 p)
     where f (c, mi) = c * vol / ((k + MI.degree mi) `choose` k)
           k = topologicalDimension t1
           vol = volume t1
-integrateBernstein t (Constant c) = c * (volume t)
+integrateBernstein t (Constant c) = c * volume t
 
 -- | Redefined Bernstein polynomial over a different simplex or define simplex
 -- | for constant bernstein polynomial.
