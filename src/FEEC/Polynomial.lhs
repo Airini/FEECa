@@ -596,11 +596,11 @@ Since the method used  has precision $2q - 1$, the integration of a polynomial
 
 \begin{code}
 
--- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
+-- | Numerically integrate the polynomial p over the simplex t using a Gauss-Jacobi
 -- | quadrature rule.
 integratePolynomial :: EuclideanSpace v (Scalar v)
                     => Simplex v            -- t
-                    -> Polynomia (Scalar v) -- f
+                    -> Polynomial (Scalar v) -- p
                     -> Scalar v
 integratePolynomial t p = integrateOverSimplex q t (flip S.evaluate p)
     where q = div (r + 2) 2

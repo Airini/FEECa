@@ -121,7 +121,8 @@ range mi sigma = sort (union sigma (MI.range mi))
 -- | The basis of the $P_r^-\Lambda^k$ space over the given simplex constructed
 -- | using the geometric composition given by Anrold, Falk, Winther.
 prmLkBasis :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
-prmLkBasis r k t = concat [ map (extend t) (prmLkFace r k t') | t' <- subsimplices' t k ]
+prmLkBasis r k t = concat [ map (extend t) (prmLkFace r k t')
+                                | t' <- subsimplices' t k ]
 
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
 -- | a given face of a simplex.1

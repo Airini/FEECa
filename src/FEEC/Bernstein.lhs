@@ -32,11 +32,12 @@ import qualified FEEC.Internal.MultiIndex as MI
 import FEEC.Internal.Simplex
 import FEEC.Internal.Spaces
 
-import FEEC.Polynomial (Polynomial(..), Term, term, terms, expandTerm,
+import FEEC.Polynomial ( Polynomial, Term, term, terms, expandTerm,
                         evaluatePolynomial, derivePolynomial, multiplyPolynomial,
                         barycentricCoordinates, barycentricGradient,
                         barycentricGradients', toPairs)
-import qualified FEEC.Polynomial as P (multiIndices, monomial, constant, polynomial)
+import qualified FEEC.Polynomial as P (degree, multiIndices, monomial,
+                                       constant, polynomial)
 
 
 import FEEC.Utility.Combinatorics(choose, factorial)
@@ -77,6 +78,9 @@ multiIndices :: EuclideanSpace v r => BernsteinPolynomial v r -> [MI.MultiIndex]
 multiIndices (Bernstein t p) = P.multiIndices n p
     where n = geometricalDimension t
 
+degree :: BernsteinPolynomial v r -> Int
+degree (Bernstein t p) = P.degree p
+degree (Constant _) = 0
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -376,12 +380,12 @@ deriveBernstein v (Constant c)  = Constant addId
 -- | Numerically integrate the Bernstein polyonomial p over the simplex t using
 -- | a Gauss-Jacobi quadrature rule.
 integratePolynomial :: EuclideanSpace v (Scalar v)
-                    => Simplex v                                -- t
-                    -> BernsteinPolynomial (Simplex v) Scalar v -- b
+                    => Simplex v                        -- t
+                    -> BernsteinPolynomial v (Scalar v) -- b
                     -> Scalar v
-integratePolynomial t b = integrateOverSimplex q t (flip S.evaluate p)
+integratePolynomial t b = integrateOverSimplex q t (flip evaluate b)
     where q = div (r + 2) 2
-          r = degree p
+          r = degree b
 
 \end{code}
 
