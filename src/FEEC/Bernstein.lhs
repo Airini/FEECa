@@ -1,22 +1,25 @@
 \section{Bernstein Polynomials}
 
-A barycentric monomial of degree $r$ $B^r_{\vec{\alpha}}$ defined over a simplex
-$T$ is a product of the form
+A barycentric monomial of degree $r$ $\b^r_{\vec{\alpha}}$ defined over a simplex
+$\smp{T}=|\vec{v_o},\ldots,\vec{v_k}|$ is a product of the form
 
 \begin{align}
-  \B_{\vec{\alpha}}^r &=
-    \frac{r!}{\vec{\alpha}1}\prod_{i = 0}^n \lambda_i^{\alpha_i}(\vec{x})
+ \b _{\vec{\alpha}}^r(\vec{x}) &= \frac{r!}{\vec{\alpha}!}\prod_{i = 0}^k \lambda_i^{\alpha_i}(\vec{x})
+ \end{align}
+
+ where the $\lambda_i$ are the barycentric coordinates with respect to $\smp{T}$.
+ The factorial of a multi-index $\vec{\alpha} = (\alpha_0,\ldots,\alpha_k)$ is
+ defined as
+
+\begin{align}
+  \vec{\alpha} &= \prod_{i = 0}^{k} \alpha_i!
 \end{align}
 
-where the $\lambda_i$ are the barycentric coordinates on $T$. For the definition
-of factorials with multi-indices as arguments see section \ref{sec:MI_mathops}.
-
 The barycentric polynomials of degree $r$ over a given simplex form a basis of
-polynomials of degree $r$ over $\R{n}$.
+the polynomials of degree $r$ over $\R{n}$.
 
 %------------------------------------------------------------------------------%
 
-\ignore{
 \begin{code}
 
 {-# LANGUAGE TypeFamilies #-}
@@ -41,23 +44,21 @@ import FEEC.Utility.Print
 --import FEEC.Utility.Utility(factorial)
 
 \end{code}
-}
 
 %------------------------------------------------------------------------------%
 
 \subsection{The \code{BernsteinPolynomial} Type}
 
-Since Bernstein polynomials can be represented in the same way as common
-polynomials a general Bernstein polynomial is represented by a simplex and a
-polynomial. In order to be able to create constant polynomials independent of a
+The representation of Bernstein polynomials is generally similar to the one used
+for common polynomials. In addition to that the Bernstein polynomial type has
+a field \code{simplex} which holds the Simplex over which the polynomial is
+defined. In order to be able to create constant polynomials independent of a
 simplex, the \code{BernsteinPolynomial} type provides an additional constructor
 for constant Bernstein polynomials.
 
 %------------------------------------------------------------------------------%
 
 \begin{code}
-
--- TODO: Enforce consistency of polynomial and simplex.
 
 -- | Bernstein polynomial over a simplex. Represented by a normal polynomial
 -- | internally and uses the generalized functions for evaluation and derivation.
@@ -79,67 +80,16 @@ multiIndices (Bernstein t p) = P.multiIndices n p
 \end{code}
 
 %------------------------------------------------------------------------------%
-\subsubsection{Algebraic Structure}
-
-Since the Bernstein polynomials are just one special representation of the
-polynomials over $\R{n}$, they have the same algebraic structure. That is they
-form a ring with respect to addition and multiplication of polynomials and a
-vector space over $\mathrm R$. The algebraic structure is implemented by the
-\code{Ring} and \code{VectorSpace} class, respectively.
-
-Moreover, Bernstein polynomials are also functions that can be evaluated,
-derived and itegrated so they are declared an instance of the \code{Function}
-class together with the \code{Vector} type.
-
-%------------------------------------------------------------------------------%
-
-\begin{code}
-
-\end{code}
-
-%------------------------------------------------------------------------------%
-
-
-%------------------------------------------------------------------------------%
-
-\begin{code}
-
--- | Bernstein polynomials as a vector space.
-instance EuclideanSpace v r => VectorSpace (BernsteinPolynomial v r) where
-    type Scalar (BernsteinPolynomial v r) = r
-    addV = addBernstein
-    sclV = scaleBernstein
-
--- | Bernstein polynomials as a ring.
-instance EuclideanSpace v r => Ring (BernsteinPolynomial v r) where
-    add = addBernstein
-    addId = Constant addId
-    addInv = scaleBernstein (sub addId mulId)
-
-    mul = multiplyBernstein
-    mulId = Constant addId
-
-    fromInt = Constant . fromInt
-
-instance EuclideanSpace v r => Function (BernsteinPolynomial v r) v  where
-  evaluate v (Bernstein t p) = evaluatePolynomial (evaluateMonomial lambda) p
-      where lambda = map (evaluate v) (barycentricCoordinates t)
-  evaluate v (Constant c) = c
-  derive = deriveBernstein
-
-\end{code}
-
-%------------------------------------------------------------------------------%
 
 \subsubsection{Constructors}
 
 Since not all possible instances of the type \code{BernsteinPolynomial}
 represent valid Bernstein polynomials, the constructors have to make sure that
 the constructed polynomials are consistent. To be valid, all multi-indices must
-have the same dimension which is just the topological dimension of the simplex
-$T$ plus one. Note that in Bernstein representation the multi-indices
-representing the polynomial are of dimension $n+1$, while in the monomial
-representation they have length $n$.
+have the same dimension which is just the topological dimension $k$ of the
+simplex $T = |\vec{v_0},\ldots,\vec{v_k}|$ plus one. Note that in Bernstein
+ representation the multi-indices representing the polynomial are of dimension
+ $k+1$, while in the monomial representation they have length $k$.
 
 The function \code{polynomial} creates a Bernstein polynomial from a list of
 coefficient-multi-index pairs. The functions throws an error if the provided
@@ -190,23 +140,61 @@ constant = Constant
 
 %------------------------------------------------------------------------------%
 
+\subsubsection{Class Instantiation}
+
+
+Since the Bernstein polynomials are just one special representation of the
+polynomials over $\R{n}$, they have the same algebraic structure. That is they
+form a ring with respect to addition and multiplication of polynomials and a
+vector space over $\mathrm R$. The algebraic structure is implemented by the
+\code{Ring} and \code{VectorSpace} class, respectively.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+
+-- | Bernstein polynomials as a vector space.
+instance EuclideanSpace v r => VectorSpace (BernsteinPolynomial v r) where
+    type Scalar (BernsteinPolynomial v r) = r
+    addV = addBernstein
+    sclV = scaleBernstein
+
+-- | Bernstein polynomials as a ring.
+instance EuclideanSpace v r => Ring (BernsteinPolynomial v r) where
+    add = addBernstein
+    addId = Constant addId
+    addInv = scaleBernstein (sub addId mulId)
+
+    mul = multiplyBernstein
+    mulId = Constant addId
+
+    fromInt = Constant . fromInt
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+Moreover, Bernstein polynomials are also functions that can be evaluated and
+derived so they are declared an instance of the \code{Function}.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+
+instance EuclideanSpace v r => Function (BernsteinPolynomial v r) v  where
+  evaluate v (Bernstein t p) = evaluatePolynomial (evaluateMonomial lambda) p
+      where lambda = map (evaluate v) (barycentricCoordinates t)
+  evaluate v (Constant c) = c
+  derive = deriveBernstein
+
+\end{code}
+
+%------------------------------------------------------------------------------%
+
 \subsection{Arithmetic}
 
-Addition and scaling of Bernstein polynomial is straight-forward and can be
-implemented using the arithmetic on polynomials.
-
-For the multiplication of Bernstein polynomials one need to take into account
-the prefactors of the two polynomials:
-
-\begin{align}
-  \B{\vec{\alpha}_1}{r_1}\cdot\B{\vec{\alpha}_2}{r_2} &=
-    \frac{{\vec{\alpha}_1 + \vec{alpha}_2} \choose \vec{\alpha}_1}
-         {{r_1 + r_2} \choose r_1}
-    \B{\vec{\alpha_1}+\vec{\alpha}_2}{r_1+r_2}
-\end{align}
-
-Here we can use the general implementation of multiplication of polynomials
-\code{multiplyPolynomials} provided by the \code{Polynomial} module.
+Addition and scaling of Bernstein polynomials is straight-forward and can be
+implemented using the functions \code{addPolynomial} and \code{scalePolynomial}
+provided by the \code{Polynomial} module.
 
 %------------------------------------------------------------------------------%
 
@@ -224,6 +212,7 @@ addBernstein (Constant c)    (Bernstein t p) = Bernstein t (add p (P.constant c)
 addBernstein (Bernstein t p) (Constant c)    = Bernstein t (add p (P.constant c))
 addBernstein (Constant c1)   (Constant c2)   = Constant (add c1 c2)
 
+
 -- | Scale Bernstein polynomial.
 scaleBernstein :: Ring r
                => r
@@ -232,6 +221,35 @@ scaleBernstein :: Ring r
 scaleBernstein c  (Bernstein t p) = Bernstein t (sclV c p)
 scaleBernstein c1 (Constant c2)   = Constant (mul c1 c2)
 
+\end{code}
+%------------------------------------------------------------------------------%
+
+
+For the multiplication of Bernstein polynomials one need to take into account
+the prefactors of the two polynomials:
+
+% Apparently Mathjax doesn't like binomial coefficients in \frac environments.
+$$
+\begin{align}
+  \b_{\vec{\alpha}_1}^{r_1}\cdot\b_{\vec{\alpha}_2}^{r_2} &=
+ \frac%
+{\left ( \begin{array}{c} \vec{\alpha}_1 + \vec{\alpha}_2 \\
+                 \vec{\alpha}_1 \end{array} \right )}
+{\left (\begin{array}{c}r_1 + r_2 \\
+          r_1 \end{array} \right )}
+  \b_{\vec{\alpha_1}+\vec{\alpha}_2}^{r_1+r_2}
+\end{align}
+$$
+
+The above equation for the multiplication of two Bernstein monomials is
+implemented in \code{multiplyMonomial}. Multiplication of Bernstein polynomials
+can then be implemented by partially evaluating
+\code{multiplyPolynomials multiplyMonomial}, where \code{multiplyPolynomial} is
+the general multiplication function provided by \code{Polynomial} module.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
 multiplyMonomial :: Field r
                     => MI.MultiIndex
                     -> MI.MultiIndex
@@ -273,7 +291,6 @@ barycentric coordinates as additional argument.
 \begin{code}
 
 -- | Evaluate a Bernstein monomial over given
--- TODO: change vector to point
 evaluateMonomial :: Field r
                  => [r]
                  -> MI.MultiIndex
@@ -295,21 +312,25 @@ prefactor r a = fromDouble f
 
 \subsection{Derivation}
 
-The derivative of a Bernstein monomial along a given space dimension is given by
+The derivative of a Bernstein monomial along a given direction in space is given
+ by
 
+$$
 \begin{align}
-  \frac{d}{dx_i}\B{\vec{\alpha}}{r}
-    &= r\sum_{j=0}^n \frac{d\lambda_j}{dx_i}\R{\vec{\alpha^j}}{r-1}
+  \frac{d}{dx_i}\B_{\vec{\alpha}}^{r}
+    &= r\sum_{j=0}^n \frac{d\lambda_j}{dx_i}\B_{\vec{\alpha^j}}^{r-1}
 \end{align}
+$$
+
 where $\vec{\alpha^j}$ is the multi-index $\vec{\alpha}$ with the exponent at
 position $j$ decreased by one and $\frac{d\lambda_j}{dx_i}$ is the $i$th
 component of the gradient of the $j$th barycentric coordinate. Note that the
 factor $\alpha_i$ in the derivation is absorbed into the prefactor
-$\frac{r!}{\vec{\alpha}}$.
+$\frac{(r-1)!}{\vec{\alpha}}$ of $\B_{\vec{\alpha^j}}^{r-1}$.
 
-The derivation of Bernstein polynomials is again implemented using the general
-function provided by the \module{Polynomial} module. All that has to be done is
-therefore to implement the derivation of Bernstein monomials.
+The derivation of Bernstein monomials is implemented in \code{deriveMonomial}.
+The derivation of Bernstein polynomials is then implemented using the general
+function provided by the \module{Polynomial} module.
 
 %------------------------------------------------------------------------------%
 
@@ -343,26 +364,47 @@ deriveBernstein v (Constant c)  = Constant addId
 
 \subsection{Integration}
 
-For integration of Bernstein polynomials we provide two functions: The first one
-implements the \code{Function} interface for the integration over an arbitrary
-simplex using the general implementation provided by the
-\code{integratOverSimplex} function from the \module{Simplex} module. The second
-one implements integration over the simplex $T$ over which the Bernstein
-polynomial is defined.
+ For the integration of Bernstein polynomials two functions are provided.
 
+ The first one uses the quadrature rule over simplices to compute integrals over
+ arbitrary simplices. This is implemented by the \code{integrate} function.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+
+-- | Numerically integrate the Bernstein polyonomial p over the simplex t using
+-- | a Gauss-Jacobi quadrature rule.
+integratePolynomial :: EuclideanSpace v (Scalar v)
+                    => Simplex v                                -- t
+                    -> BernsteinPolynomial (Simplex v) Scalar v -- b
+                    -> Scalar v
+integratePolynomial t b = integrateOverSimplex q t (flip S.evaluate p)
+    where q = div (r + 2) 2
+          r = degree p
+
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+The second function computes the integral of a Bernstein polynomial over the
+simplex it is defined over, which is given by
 \begin{align}
-\int_T\B{\vec{\alpha}}{r} \: d\vec{x} &= \frac{|T|}{{k + d} \choose {k}}
+\int_{\smp{T}}\B_{\vec{\alpha}}^{r} \: d\vec{x} &= \frac{|\smp{T}|}%
+{\left ( \begin{array}{c} k + d \\ k \end{array} \right )}
 \end{align}
 
-where $k$ is the topological dimension of the simplex.
+where $k$ is the topological dimension of the simplex. Since this requires the
+simplex the polynomial is defined over to be known this function does not work
+for the \code{Constant} constructor. The \code{redefine} function can be used to
+add the information about the simplex to the Bernstein polynomial.
 
 %------------------------------------------------------------------------------%
 
 \begin{code}
 
 -- | Closed-form integration of Bernstein polynomials over the simplex they are
--- | defined over. Falls back to standard integration if the provided simplex
--- | does not equal the simplex the bernstein polynomial is defined over. 
+-- | defined over.
 integrateBernstein :: EuclideanSpace v r
                       => BernsteinPolynomial v r
                       -> r
@@ -392,10 +434,12 @@ redefine t (Constant c)      = Bernstein t (P.constant c)
 The gradients of the barycentric coordinates
 
 \begin{align}
-  d\lambda_0,\ldots,d\lambda_n
+  d\lambda_i = \left ( \begin{array}{c} \frac{d\lambda_i}{dx_0} \\
+                          \vdots \\
+                      \frac{d\lambda_i}{dx_{n-1}} \end{array} \right )
 \end{align}
 
-of a simplex $T$ span the space of alternating one-forms in $\R{n}$. The
+of a simplex $\smp{T}$ span the space of alternating one-forms in $\R{n}$. The
 projection along the gradient then amounts to simply forming the dot product
 with the gradient vector.
 

@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
-{x-# LANGUAGE OverlappingInstances #-}
+{-# LANGUAGE OverlappingInstances #-}
 
 module FEEC.Internal.Spaces where
 import Numeric( fromRat )
