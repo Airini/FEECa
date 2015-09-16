@@ -77,10 +77,10 @@ import qualified Numeric.LinearAlgebra.HMatrix as M
  in $\R{n}$. The type \code{Simplex a} contains two fields.
  \code{sigma :: [Int]} represents the mapping $\sigma$ and
  \code{vertices :: [a]} the vertices of the simplex. For full simplices,
- $\sigma$ is just $0,\ldots,n$. For sub-simplices of another simplex, $\sigma$
+ $\sigma$ is just $0,\ldots,n$. For subsimplices of another simplex, $\sigma$
  keeps track of which of the vertices of the supersimplex are included in the
- sub-simplex. This is needed for the extension of polynomials defined on a
- sub-simplex of another simplex to the simplex itself.
+ subsimplex. This is needed for the extension of polynomials defined on a
+ subsimplex of another simplex to the simplex itself.
 
 %------------------------------------------------------------------------------%
 
@@ -223,7 +223,7 @@ referenceSimplex n = Simplex [0..n] (zero n : [unitVector n i | i <- [0..n-1]])
  \end{align}
  If the topological dimension of the simplex is less than k, it is necessary to
  project the spanning vectors $v_n-v_0,\ldots,v_1-v_0$ onto the space spanned
- by the sub-simplex first. This is done by first constructing an orthonormal
+ by the subsimplex first. This is done by first constructing an orthonormal
  basis of the space using the Gram-Schmidt method and then projecting the
  spanning vectors onto that space.
 
@@ -268,7 +268,7 @@ volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
 
 %------------------------------------------------------------------------------%
 
-\subsection{Sub-simplices}
+\subsection{Subsimplices}
 
  A subsimplex, or face, $\smp{f}$ of dimension $k$ of a simplex
  $\smp{T} = |\vec{v_0},\ldots,\vec{v_n}|$ is any simplex consisting of a subset

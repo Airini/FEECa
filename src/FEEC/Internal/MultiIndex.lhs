@@ -215,8 +215,8 @@ degreeR n r = map ZipList $ sumRLists (fromIntegral n) (fromIntegral r)
 -- | Extend a multi-index from a face to a simplex.
 extend :: Int -> [Int] -> MultiIndex -> MultiIndex
 extend n sigma mi
-    | length sigma == (dim mi) + 1 = multiIndex $ extend' n (-1) sigma mi'
-    | otherwise = error "extend: Dimensions of sigma and multi-index don't agree"
+    | length sigma == dim mi = multiIndex $ extend' n (-1) sigma mi'
+    | otherwise = error $(show sigma) ++ " \n " ++ show mi ++ "extend: Dimensions of sigma and multi-index don't agree"
     where mi'       = toList mi
 
 extend' :: Int -> Int -> [Int] -> [Int] -> [Int]

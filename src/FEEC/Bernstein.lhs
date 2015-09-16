@@ -120,7 +120,7 @@ polynomial t l
     | (n1 == n2 + 1) && sameLength = Bernstein t (P.polynomial l)
     | otherwise = error "polynomial: Dimensions of Simplex and Polynomials do not match."
     where
-      mis        = map (dim . snd) l
+      mis        = map (((-1)+) . dim . snd) l
       n1         = maximum mis
       n2         = topologicalDimension t
       sameLength = all (head mis ==) (tail mis)
@@ -170,7 +170,7 @@ instance EuclideanSpace v r => Ring (BernsteinPolynomial v r) where
     addInv = scaleBernstein (sub addId mulId)
 
     mul = multiplyBernstein
-    mulId = Constant addId
+    mulId = Constant mulId
 
     fromInt = Constant . fromInt
 \end{code}
