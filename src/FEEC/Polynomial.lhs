@@ -614,7 +614,7 @@ integratePolynomial t p = integrateOverSimplex q t (flip S.evaluate p)
 
 An important building block for the construction of Bernstein polynomials are
 barycentric coordinates. Barycentric coordinates defined with respect to a
-simplex $\smp{T} = |\vec{v}_0,\ldots,\vec{v}_n|$, are a set of $n+1$ coordinates
+simplex $\smp{T} = [\vec{v}_0,\ldots,\vec{v}_n]$, are a set of $n+1$ coordinates
  $\lambda_0,\ldots,\lambda_n$ satisfying
 
 $$

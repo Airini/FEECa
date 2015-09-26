@@ -185,8 +185,8 @@ degreeR n r = map ZipList $ sumRLists (fromIntegral n) (fromIntegral r)
 \label{sec:mi_extension}
 
  For the extension of polynomials from a sub-simplex
- $\smp{f} = |\vec{v_{i_0}},\ldots,\vec{v_{i_k}}|$ to a super-simplex
- $\smp{T} = |\vec{v_{0}},\ldots,\vec{v_{m}}|$  it is necessary to also
+ $\smp{f} = [\vec{v_{i_0}},\ldots,\vec{v_{i_k}}]$ to a super-simplex
+ $\smp{T} = [\vec{v_{0}},\ldots,\vec{v_{m}}]$  it is necessary to also
  extend the multi-indices from $\smp{f}$ to $\smp{T}$. To this end we assume
  that the face of dimension $k$ is given by a mapping $\sigma(j) = i_j$ that
  encodes which vertices of the super-simplex $\smp{T}$ are included in $\smp{f}$.

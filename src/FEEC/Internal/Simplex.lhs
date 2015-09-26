@@ -1,19 +1,19 @@
 \section{Simplex}
 
  The \code{Simplex} module implements simplices in n-dimensional Euclidean
- space $\R{n}$. A $k$-simplex $\smp{T} = |\vec{v_0},\ldots,\vec{v_k}|$ in
+ space $\R{n}$. A $k$-simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ in
  $n$-dimensional Euclidean space $\R{n}$ is the convex hull of $k+1$ vertices
  $\vec{v_0},\ldots,\vec{v_k}$ such that the spanning vectors $\vec{v_1}-\vec{v_0}
  ,\ldots,\vec{v_k}-\vec{v_0}$ are linearly independent.
  The \textit{topological dimension} of a simplex is the number $k$ of vectors
  spanning the simplex. The \textit{geometrical dimension} of a simplex is the
  dimension $n$ of the underlying space $\R{n}$. If $k=n$, we speak of a full
- simplex. A subsimplex of a given simplex $\smp{T} = |\vec{v_0},\ldots,\vec{v_k}|$
- is a simplex $\smp{T'} = |\vec{v_{i_1}},\ldots,\vec{v_{i_{k'}}}|$ such that
- $\{i_1,\ldots,i_{k'}\} \subset \{1,\ldots,k\}$.  Such a subsimplex can be
- conveniently represented using a mapping $\sigma: \{i_1,\ldots,i_{k'}\} \to
- \{1,\ldots,k\}$ such that $\sigma(j) = i_j$ for all $j=1,\ldots,k'$. To obtain
- a unique representation of a subsimplex, we require $\sigma$ to be increasing,
+ simplex. A subsimplex of a given simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$
+ is a simplex $\smp{T'} = [\vec{v_{i_0}},\ldots,\vec{v_{i_{k'}}}]$ such that
+ $\{i_0,\ldots,i_{k'}\} \subset \{1,\ldots,k\}$.  Such a subsimplex can be
+ conveniently represented using a map $\sigma: \{0,\ldots,k'\} \to
+ \{0,\ldots,k\}$ such that $\sigma(j) = i_j$ for all $j=0,\ldots,k'$. For the
+ representation to be unique, we require $\sigma$ to be increasing,
  i.e. $\sigma(j+1) > \sigma(j)$ for all $j=1,\ldots,k'-1$.
 
 %------------------------------------------------------------------------------%
@@ -67,7 +67,7 @@ import qualified Numeric.LinearAlgebra.HMatrix as M
 
 \subsection{The \code{Simplex} type}
 
- We represent a simplex $\smp{T} = |\vec{v_0},\ldots,\vec{v_k}|$ by a list containing
+ We represent a simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ by a list containing
  the vertices $\vec{v_0},\ldots,\vec{v_k}$ and an increasing map $\sigma$
  keeping track of which vertices of a potential super-simplex the simplex
  contains. The mapping $\sigma$ is represented by an increasing list
@@ -106,7 +106,7 @@ topologicalDimension (Simplex _ l) = length l - 1
 %------------------------------------------------------------------------------%
 
  We call the first vertex $\vec{v_0}$ of a simplex
- $\smp{T} = |\vec{v_0},\ldots,\vec{v_k}|$ as its reference vertex. The vectors
+ $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ as its reference vertex. The vectors
  $\vec{v_1}-\vec{v_0},\ldots,\vec{v_n}-\vec{v_0}$. are referred to as the
  simplices spanning vectors.
 
@@ -187,7 +187,7 @@ simplex' _ _ = error "simplex': Topological dimension is zero."
 %------------------------------------------------------------------------------%
 
  The function \code{referenceSimplex} constructs the reference simplex in
- $\R{n}$, which is defined as the simplex $T=|\vec{v_0},\ldots,\vec{v_n}|$ with
+ $\R{n}$, which is defined as the simplex $T=[\vec{v_0},\ldots,\vec{v_n}]$ with
  vertices
 \begin{align}
   \vec{v_0} =
@@ -271,7 +271,7 @@ volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
 \subsection{Subsimplices}
 
  A subsimplex, or face, $\smp{f}$ of dimension $k$ of a simplex
- $\smp{T} = |\vec{v_0},\ldots,\vec{v_n}|$ is any simplex consisting of a subset
+ $\smp{T} = [\vec{v_0},\ldots,\vec{v_n}]$ is any simplex consisting of a subset
  $\vec{v_{i_0}},\ldots,\vec{v_{i_k}}$ of the vertices $v_0,\ldots,v_n$. Such a
  $k$-subsimplex of a given simplex \smp{T} may be identified by an increasing
  map $\sigma$. Using lexicographic ordering of the increasing maps of a given
@@ -378,7 +378,7 @@ extendVectors n vs = sortBy norm vs'
 \subsubsection{Barycentric Coordinates}
 
  In barycentric coordinates, a point inside a simplex
- $\smp{T} = |\vec{v_0},\ldots,\vec{v_n}|$ is given by a convex combination of its
+ $\smp{T} = [\vec{v_0},\ldots,\vec{v_n}]$ is given by a convex combination of its
  vertices. That is, a point $\vec{p}$ is given in barycentric coordinates by a
  tuple $(\lambda_0,\ldots,\lambda_n)$ if
 

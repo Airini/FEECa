@@ -1,7 +1,7 @@
 \section{Bernstein Polynomials}
 
 A barycentric monomial of degree $r$ $\b^r_{\vec{\alpha}}$ defined over a simplex
-$\smp{T}=|\vec{v_o},\ldots,\vec{v_k}|$ is a product of the form
+$\smp{T}=[\vec{v_o},\ldots,\vec{v_k}]$ is a product of the form
 
 \begin{align}
  \b _{\vec{\alpha}}^r(\vec{x}) &= \frac{r!}{\vec{\alpha}!}\prod_{i = 0}^k \lambda_i^{\alpha_i}(\vec{x})
@@ -91,7 +91,7 @@ Since not all possible instances of the type \code{BernsteinPolynomial}
 represent valid Bernstein polynomials, the constructors have to make sure that
 the constructed polynomials are consistent. To be valid, all multi-indices must
 have the same dimension which is just the topological dimension $k$ of the
-simplex $T = |\vec{v_0},\ldots,\vec{v_k}|$ plus one. Note that in Bernstein
+simplex $T = [\vec{v_0},\ldots,\vec{v_k}]$ plus one. Note that in Bernstein
  representation the multi-indices representing the polynomial are of dimension
  $k+1$, while in the monomial representation they have length $k$.
 
@@ -394,7 +394,7 @@ integratePolynomial t b = integrateOverSimplex q t (flip evaluate b)
 The second function computes the integral of a Bernstein polynomial over the
 simplex it is defined over, which is given by
 \begin{align}
-\int_{\smp{T}}\B_{\vec{\alpha}}^{r} \: d\vec{x} &= \frac{|\smp{T}|}%
+\int_{\smp{T}}\B_{\vec{\alpha}}^{r} \: d\vec{x} &= \frac{[\smp{T}]}%
 {\left ( \begin{array}{c} k + d \\ k \end{array} \right )}
 \end{align}
 

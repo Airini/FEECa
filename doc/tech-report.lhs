@@ -28,7 +28,7 @@
 % math environments and symbols
 \usepackage{amsmath, amsfonts}
 \usepackage[toc,page]{appendix}
-
+\usepackage{macros}
 %if techreport
 \usepackage{TRtitlepage}
 %endif
@@ -45,8 +45,6 @@
 \newcommand{\refSecI}[1]{Section \ref{#1}}
 \newcommand{\refSecsI}[1]{Sections \ref{#1}}
 \newcommand{\refTab}[1]{Tab. \ref{#1}}
-
-%include macros.tex
 
 \toappear{}
 \begin{document}
@@ -135,6 +133,7 @@ The aim towards the reader's understanding will be two-fold:
 \label{sec:polyns}
 
 %Simon
+%include Polynomials.lhs
 
 %%%include polyns.lhs
 

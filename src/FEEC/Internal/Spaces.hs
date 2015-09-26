@@ -151,7 +151,7 @@ unitVector n i
 
 
 fromDouble' :: EuclideanSpace v (Scalar v) => [Double] -> v
-fromDouble' = fromList . map fromDouble
+romDouble' = fromList . map fromDouble
 
 toDouble' :: EuclideanSpace v (Scalar v) => v -> [Double]
 toDouble'  = map toDouble . toList
