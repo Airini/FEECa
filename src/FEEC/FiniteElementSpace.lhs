@@ -30,8 +30,9 @@ import FEEC.Bernstein (monomial, multiIndices)
 import qualified FEEC.Bernstein as B (BernsteinPolynomial(..),extend)
 import FEEC.Utility.Combinatorics
 import FEEC.DifferentialForm
+import FEEC.Utility.Print( printBernstein, printForm, dlambda )
+import qualified FEEC.Utility.Print as P ( Pretty(..) )
 import FEEC.Internal.Form hiding (arity)
-import FEEC.Utility.Print
 import qualified FEEC.Internal.Simplex as S
 import FEEC.Internal.Spaces
 import qualified FEEC.Internal.Vector as V
@@ -144,9 +145,20 @@ basis :: FiniteElementSpace -> [BasisFunction]
 basis (PrmLk r k t) = prmLkBasis r k t
 basis (PrLk r k t) = prLkBasis r k t
 
+pPrintBasisFunction :: BasisFunction -> String
+pPrintBasisFunction = show . (printForm dlambda "0" (show . P.pPrint))
+                           . constituents
+
+pPrint :: [BasisFunction] -> IO ()
+pPrint [] = putStrLn "Empty List\n"
+pPrint l  = putStrLn $ "[ " ++ foldl render (pPrintBasisFunction (head l)) (tail l)
+                            ++ "]"
+    where render s bf = s ++ ",\n" ++ (pPrintBasisFunction bf)
+
 \end{code}
 
 %------------------------------------------------------------------------------%
+
 \subsection{Concrete Spaces}
 
 For the construction of finite element spaces over a given simplex the
@@ -339,7 +351,7 @@ Define $\psf{\alpha}{f}{g}{\sigma}$
 
 \begin{align}
       \psf{\alpha}{f}{g}{i} &= d\lambda_i^{\smp{g}} -
-          \frac{\alpha_i}{|\alpha|} \sum_{j \in \mathcal{I}(\smp{f})} d\lambda_j^\smp{g} \\ 
+          \frac{\alpha_i}{|\alpha|} \sum_{j \in \mathcal{I}(\smp{f})} d\lambda_j^\smp{g} \\
      \psf{\alpha}{f}{g}{\sigma} &= \psf{\alpha}{f}{g}{\sigma{(1)}} \wedge \ldots
                           \wedge \psf{\alpha}{f}{g}{\sigma{(k)}}
 \end{align}
@@ -358,7 +370,7 @@ psi alpha sigma  = foldl (/\) unit [ psi' alpha i | i <- sigma]
 psi' :: MI.MultiIndex -> Int -> Form BernsteinPolynomial
 psi' alpha i = foldl subV (db i) [ sclV (c j) (db j) | j <- [0..n]]
     where db j = oneForm (j+1) (n+1) -- Dimension should be n ?
-          c j = sclV ((fromIntegral (alpha' !! j)) / (fromIntegral r )) mulId
+          c j = sclV ((fromIntegral (alpha' !! i)) / (fromIntegral r )) mulId
           r = MI.degree alpha :: Int
           alpha' = MI.toList alpha :: [Int]
           n = (dim alpha) - 1
@@ -392,10 +404,10 @@ prLkBasis r k t = concat [ map (extend t) (prLkFace r k t') | t' <- S.subsimplic
 -- | Basis functions  for the space PrMinusLambdak associated to
 -- | a given face of a simplex.
 prLkFace :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
-prLkFace r k t = [ sclV (B.extend t b) (psi' (alpha b) sigma) | (b, sigma) <- fs ]
+prLkFace r k t = [ sclV b (psi' (alpha b) sigma) | (b, sigma) <- fs ]
     where fs = map (head . constituents) (prLkFace' r k t)
           psi' alpha sigma = extend t (psi alpha sigma)
-          alpha b = MI.unit (n+1) 1 --multiIndices b !! 0
+          alpha b = multiIndices b !! 0
           n = S.topologicalDimension t
 
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
@@ -413,8 +425,9 @@ prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas,
           minimum' sigma = minimum ([0..n] \\ sigma)
 
 t = S.referenceSimplex 3
-t2 = (S.referenceSimplex 2) :: Simplex
-t1 = S.subsimplex t2 1 1
+t2 = S.subsimplex t 2 0
+t1 = S.subsimplex t 1 0
+
 b = monomial t1 (MI.multiIndex [1,2])
 omega = Form 2 2 [(b, [0,1])]
 
@@ -423,10 +436,6 @@ sigma = [0]
 s1 = finiteElementSpace N2f 3 t
 
 
-sigmas alpha = [ sigma | sigma <- increasingLists 1 1,
-                 range alpha sigma == [0..1],
-                 all (0==) (take (minimum' sigma) (MI.toList alpha)) ]
-    where minimum' sigma = minimum ([0..1] \\ sigma)
 
 \end{code}
 

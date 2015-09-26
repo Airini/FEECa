@@ -199,7 +199,6 @@ inner proj basisIx omega eta
         apply = refine proj
         n = dim (basisIx 0)
 
-
 -- * Helper functions
 
 -- | Sign of a permutation defined by a pair of increasing permutations:

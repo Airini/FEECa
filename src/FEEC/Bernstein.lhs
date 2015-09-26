@@ -69,7 +69,7 @@ data BernsteinPolynomial v r = Bernstein (Simplex v) (Polynomial r)
 
 -- pretty printing for Bernstein polyonmials
 instance Pretty (BernsteinPolynomial v Double) where
-    pPrint (Bernstein t p) = printPolynomial0 lambda ts
+    pPrint (Bernstein t p) = printBernstein ts
         where ts = map (expandTerm 0) (terms p)
     pPrint (Constant p) = text (show p)
 
@@ -478,7 +478,7 @@ see \ref{sec:mi_extension}.
 -- | Extend a Bernstein polynomial defined on a subsimplex f to the simplex t.
 extend :: EuclideanSpace v r
        => Simplex v
-       -> BernsteinPolynomial v r 
+       -> BernsteinPolynomial v r
        -> BernsteinPolynomial v r
 extend t (Bernstein f p) = polynomial t (extend' (toPairs n' p))
     where extend' = map (\(c, mi) -> (c, MI.extend n (sigma f) mi))
