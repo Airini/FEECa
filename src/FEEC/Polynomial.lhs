@@ -159,7 +159,7 @@ multiIndices' _ [] = []
 
 %------------------------------------------------------------------------------%
 
-For the integrateion of Bernstein polynomials it is also necessary to access the
+For the integration of Bernstein polynomials it is also necessary to access the
 degrees of each term of the polynomial. To keep the internal structure of the
 polynomials encapsulated, the function \code{degrees} is provided, that returns
 a list containing the degrees of the terms in the polynomial.

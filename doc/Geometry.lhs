@@ -1,13 +1,17 @@
 %------------------------------------------------------------------------------%
+As described above, finite element exterior calculus is based on the
+ discretization of arbitrary domains in Euclidean space.
 %
-Consider a domain $\Omega$ in $n$-dimensional Euclidean space $\mathrm{R}^n$. In
-finite element exterior calculus, we are dealing with tesselations of such domain
-into finite elements.
+Let $\Omega \in \rr{n}$ be such a domain.
 %
-In particular, we consider a triangulation of the domain $\Omega$ into a finite
-number of $n$-dimensional simplices $\mathcal T = \{T_1,\ldots,T_n\}$.
+The discretization of $\Omega$ is achieved by tesselation using primitive
+geometrical shapes, the so-called finite elements.
 %
-This sections describes how those geometrical concepts are modeled in FEEC.
+The two types of finite elemets used in finite element exterior calculus
+are simplices and cubes, of which up to now only Simplices are supported in FEEC.
+%
+The representation of these geometrical structures is realized in FEEC using the
+|EuclideanSpace| type-class as well as the |Vector| and |Simplex| data types.
 
 \subsection{Vectors}
 
@@ -27,12 +31,12 @@ class (Eq v, Dimensioned v, VectorSpace v,
     toList     :: v   -> [r]
 \end{code}
 %
-A concrete vector type is implemented by the parametrized |Vector a| type which represents vectors as a list |[a]| of type |a|.
+A concrete vector type is implemented by the |Vector a| data-type, which represents a vector using a list |[a]| of type |a|.
 %
-The parameter type |a| allows to use different representation of the real numbers.
+The parameter type |a| represents the scalar type used for the vector and thus defines
+the underlying arithmetic.
 %
-This allows us to choose between exact and double arithmetic, which can be useful for
- example for testing.
+This enables us to choose between exact and standard floating point aritchmetic depending on the application.
 %
 \begin{code}
 data Vector a = Vector { components :: [a] }
@@ -41,15 +45,15 @@ data Vector a = Vector { components :: [a] }
 
 \subsection{Simplices}
 %
-A $k$-simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ in $n$-dimensional Euclidean space $\R{n}$ is the convex hull of $k+1$ vertices $\vec{v_0},\ldots,\vec{v_k}$ such that the spanning vectors $\vec{v_1}-\vec{v_0} ,\ldots,\vec{v_k}-\vec{v_0}$ are linearly independent.
+A $k$-simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ in $n$-dimensional Euclidean space $\rr{n}$ is the convex hull of $k+1$ vertices $\vec{v_0},\ldots,\vec{v_k}$ such that the spanning vectors $\vec{v_1}-\vec{v_0} ,\ldots,\vec{v_k}-\vec{v_0}$ are linearly independent.
 %
-A subsimplex or face $f$ of dimension $k'$ is a simplex consisting of the convex hull of a subset of $k' + 1$ vertices of its supersimplex.
+A subsimplex, or face $f$, of dimension $k'$ is a simplex consisting of the convex hull of a subset of $k' + 1$ vertices of its supersimplex.
 %
 An important concept in finite element exterior calculus is the representation of faces of simplices using an increasing map $\sigma: \{0,\ldots,k'\} \mapsto \{0,\ldots,k\}$.
 %
-In the code, we represent such a map as an increasing list of type |[Int]|.
+In the code, such a map is represented as an increasing list of type |[Int]|.
 %
-To represent general simplices, a list of vertices and such an increasing map is used
+A simplex is represented by list of vertices and such an increasing map.
 %
 Keeping track of $\sigma$ for subsimplices is important to later extend polynomials from the face of a simplex to the full simplex.
 
@@ -59,26 +63,31 @@ data Simplex a =  Simplex { sigma :: [Int],
                 deriving (Eq, Show)
 \end{code}
 
-The barycentric coordinates $\lambda_0,\ldots,\lambda_k$ defined over a simplex $\smp{T} = \{\vec{v}_1,ldots,\vec{v}_k$ describe a point $\vec{x}$ on a simplex as a convex combination of the $k+1$ simplices:
+\subsubsection{Barycentric Coordinates}
+
+The barycentric coordinates $\lambda_0,\ldots,\lambda_k$ defined over a simplex $\smp{T} = [\vec{v}_1,\ldots,\vec{v}_k]$ describe a point $\vec{x}$ on a simplex as a convex combination of the $k+1$ simplices:
 
 \begin{align}
   \vec{x} = \lambda_0 \vec{v_0} + \ldots + \lambda_k \vec{v_k}
 \end{align}
 
-Viewed as a function of $vec{x}$, the barycentric polynomials form a basis for the space of affine functions on $\smp{T}$.
+Viewed as a function of $\vec{x}$, the barycentric polynomials form a basis for the space of affine functions on the simplex.
 %
 The barycentric coordinates obviously satisfy
 \begin{align}
  \lambda_i(\vec{v}_j) = \delta_{ij}
 \end{align}
-where $\delta_{ij}$ is the Kronecker delta. This property results in a linear system of equations for the coefficients of the affine functions which can be solved to obtain the representation of the barycentric coordinates as an affine function in the components of $\vec{x}$.
+for $i=0,\ldots,k; j = 0,\ldots,k$, $\vec{v}_j$ the vertices of the simplex and $\delta_{ij}$ the Kronecker delta.
 %
+ This property results in a linear system of equations for the coefficients of the affine functions which can be solved to obtain the representation of the barycentric coordinates as an affine function in the components of $\vec{x}$.
+%
+\subsubsection{Integrals over Simplices}
 
 An important operation in finite elemet exterior calculus is the computation of integrals over a finite element.
 %
 To compute the integral of an arbitrary function over a given simplex $T$, we use the technique described in \cite{Ainsworth}.
 %
-By a suitable coordinate transform, the integral of a function $f(\vec{x})$ over the simplex $T$ is turned into an the form
+By a suitable coordinate transform, the integral of a function $f(\vec{x})$ over the simplex $T$ can be written as
 
 \begin{align}
   V(\smp{T}) \int_0^1 dt_1(1-t_1)^{n-1}\ldots\int_0^1 dt_nf(\vec{x}(t_0,\ldots,t_{n-1}))

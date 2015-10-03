@@ -177,7 +177,7 @@ The built-in Whitney form implementation is also given (towards building the neg
 
 % Simon
 
-%%%include FEspaces.lhs
+%include FEspaces.lhs
 
 Both $\mathcal{P}_r^-\Lambda^n$ and $\mathcal{P}_r\Lambda^n$ finite element spaces implementations
 are given.
