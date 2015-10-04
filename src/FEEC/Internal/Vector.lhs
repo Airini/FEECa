@@ -83,7 +83,7 @@ instance Ring a => VectorSpace (Vector a) where
 
 -- | R^n as a vector space.
 instance (Field a, Eq (Vector a)) => EuclideanSpace (Vector a) a where
-    dot (Vector l1) (Vector l2) = foldl (\s (x,y) -> s + x*y) 0  $ zip l1 l2
+    dot (Vector l1) (Vector l2) = foldl (\s (x,y) -> s `add` x`mul`y) addId $ zip l1 l2
     toList   = components
     fromList = vector
 

@@ -90,7 +90,7 @@ omega +++ eta
 omega //\\ eta
     | spaNEq omega eta = errForm "(//\\\\)" BiSpaEq
     | otherwise = Form (arity omega + arity eta) (dimVec eta)
-                        (concatMap (\d -> map (combine d) (dxs d)) (constituents eta))
+                       (concatMap (\d -> map (combine d) (dxs d)) (constituents eta))
   where dxs (_,ys) = filter (null . intersect ys . snd) (constituents omega)
         combine (b,ys) (a,xs)
           | null (xs `intersect` ys) = (mul a b, xs++ys)
@@ -157,7 +157,7 @@ refine :: (Ring f, VectorSpace v) =>
        -> Form f
        -> [v] -> f
 refine proj eta@(Form k n cs) vs = sumF (map (($ vs) . formify proj) cs)
--- TODO: capture inconsistency between k and lenght vs here??
+-- TODO: capture inconsistency between k and length vs here??
 -- ALSO: 0-forms... not evaluating correctly now! Cfr: formify does not accept
 --    empty cs
 -- XXX: for now proj should take care of the error... change later when settled

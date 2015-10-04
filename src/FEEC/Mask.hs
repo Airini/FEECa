@@ -1,4 +1,8 @@
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
 module FEEC.Mask where
 
 import Control.Applicative
@@ -9,6 +13,7 @@ import FEEC.Internal.Spaces
 import FEEC.Internal.Point
 import FEEC.Internal.Vector
 import FEEC.Polynomial
+import FEEC.Utility.Utility
 
 type Monop t = t -> t
 type Binop t = t -> t -> t
@@ -110,3 +115,17 @@ d form = df (vector . flip canonCoord n) form
 -- ALSO: generalise Vector? that way we can have parameterised vectors :)
 -- kappa, etc. => explicit symbols
 -- integration, inner product
+
+
+-- Instances
+instance VectorSpace (Point Double) where
+  type Scalar (Point Double) = Double
+  addV x = toPoint . uncurry addV . pairM fromPoint fromPoint . (x,)
+  sclV a = undefined
+
+instance EuclideanSpace (Point Double) Double where
+  dot x    = uncurry dot . pairM fromPoint fromPoint . (x,)
+  fromList = point
+  toList   = toList . fromPoint
+
+

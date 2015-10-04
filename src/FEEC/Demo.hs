@@ -29,9 +29,11 @@ x52 = point [0, 1, 0, 0, 0]
 x53 = point [0, 0, 1, 0, 0]
 x54 = point [0, 0, 0, 1, 0]
 x55 = point [0, 0, 0, 0, 1]
+t5 :: Simplex (Point Double)
 t5  = simplex [x50, x51, x52, x53, x54, x55]
 
 -- Reference simplices
+tr1, tr2, tr3, tr4, tr5 :: Simplex (Point Double)
 tr1 = referenceSimplex 1
 tr2 = referenceSimplex 2
 tr3 = referenceSimplex 3

@@ -8,6 +8,9 @@ positions in n-dimensional Euclidean space.
 \ignore{
 \begin{code}
 
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 module FEEC.Internal.Point(
 
              -- * The Point Type
@@ -42,6 +45,8 @@ The \code{Point} data type is build on top of the \code{Vector} data type using
 -- | Points in n-dimensional Euclidean space. A point describes a fixed position
 -- | in space and can not be computed with.
 newtype Point a = Point (Vector a) deriving (Show)
+
+deriving instance Eq (Point Double)
 
 instance Dimensioned (Point a) where
     dim (Point v) = dim v

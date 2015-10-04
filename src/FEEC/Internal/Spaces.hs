@@ -3,7 +3,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE OverlappingInstances #-}
+-- {-# LANGUAGE OverlappingInstances #-}
+-- {-# LANGUAGE IncoherentInstances #-}
 
 module FEEC.Internal.Spaces where
 
@@ -31,6 +32,7 @@ class Eq v => Ring v where  -- XXX: only Eq v for now
 fromInt' :: Ring a => Int -> a
 fromInt' = fromInt
 
+{-
 -- Class instantiation for notation ease.
 instance {-# OVERLAPPABLE #-} Ring v => Num v where
   (+) = add
@@ -39,6 +41,7 @@ instance {-# OVERLAPPABLE #-} Ring v => Num v where
   fromInteger = fromInt
   abs = undefined -- XXX: :S TODO: add Ord v to constraint? In any case, for polynomials...
   signum = undefined -- XXX: :S
+-}
 
 -- | Derived subtraction operation from 'Ring' class functions.
 sub :: Ring r => r -> r -> r
