@@ -2,8 +2,8 @@
 
 \section{Multi-Indices}
 
-The \module{MultiIndex} module provides a data type and functions for
-multi-indices. A multi-index $\vec{\alpha}$ is a tuple
+The \code{MultiIndex} module provides a data type and functions for handling
+of multi-indices. A multi-index $\vec{\alpha}$ is a tuple
 
 \begin{align}
   \vec{\alpha} &= (\alpha_0,\ldots,\alpha_{n-1}), \quad \alpha_i \in \mathrm{N}_0^+
@@ -15,23 +15,20 @@ that generalized the notion of an exponent for vectors in $\R{n}$. The power of
 \begin{align}
   \vec{x}^{\vec{\alpha}} &= \prod_{i = 0}^{n-1} x_i^{\alpha_i}
 \end{align}
-
 The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
 
 \begin{align}
   |\vec{\alpha}| &= \sum_{i=0}^{n-1} \alpha_i
 \end{align}
 
-The support $\llbracket \vec{\alpha} \rrbracket$ of a multi-index $\vec{\alpha}$
-is defined as
+ The support $\text{supp} \left \{ \vec{\alpha} \right \}$ of a multi-index
+ $\vec{\alpha}$ is defined as the set of indices $i$ for which the exponents
+ $\alpha_i$ are non-zero:
 
 \begin{align}
-  \llbracket \vec{\alpha} \rrbracket &= \{ i \in [0,n-1] | \alpha_i > 0 \}
+ \text{supp}\left \{ \vec{\alpha} \right \}  &= \{ i \in [0,n-1] | \alpha_i > 0 \}
 \end{align}
 
-, i.e. the set of indices $i$ for which the exponents $\alpha_i$ are non-zero.
-
-\ignore{
 \begin{code}
 
 module FEEC.Internal.MultiIndex(
@@ -46,34 +43,30 @@ module FEEC.Internal.MultiIndex(
   extend,
 
   -- * Mathematical Operations
-  add, decrease, factorial, choose, degree, range
+  add, decrease, factorial, choose, choose', degree, range
 
   ) where
 
 
-import Data.Traversable
-import Data.Bits
+import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)
 import FEEC.Internal.Spaces(Dimensioned(..))
 import FEEC.Utility.Combinatorics(sumRLists)
 import qualified FEEC.Utility.Combinatorics as C(choose, factorial)
-import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)
 
 \end{code}
-}
+
 
 %------------------------------------------------------------------------------%
 
 \subsection{The \code{MultiIndex} type}
 
-Multi-indices are implemented using the \code{ZipList} type because
-the use of \code{Applicative} class methods simplifies the implementation of
-many operations on multi-indices.
+The \code{MultiIndex} type is implemented as a type synomnym for
+\code{ZipList Int} type because this allows the use of the \code{Applicative}
+class for the implementation of methods on multi-indices.
 
 The dimension of a multi-index is the dimension of the underlying space, i.e.
 the number of exponents in the multi-index.
-
 %------------------------------------------------------------------------------%
-
 \begin{code}
 
 type MultiIndex = ZipList Int
@@ -81,22 +74,19 @@ type MultiIndex = ZipList Int
 instance Dimensioned (ZipList a) where
     dim mi = length (getZipList mi)
 
--- | Transform multi-index into list
-toList :: Integral a => MultiIndex -> [a]
-toList = map fromIntegral . getZipList
 \end{code}
 
 %------------------------------------------------------------------------------%
 
-The properties degree and range of mult-indices above, are implemented in a
-straight-forward manner.
+The functions \code{degree} and \code{range} compute the degree and range of a
+given multi-index, as defined above.
 
 %------------------------------------------------------------------------------%
 
 \begin{code}
 
 -- | Degree of a multi-index, i.e. the sum of all indices
-degree :: Real a => MultiIndex -> a
+degree :: Integral a => MultiIndex -> a
 degree = fromIntegral . sum . getZipList
 
 -- | List indices of the multi-index that are non-zero.
@@ -112,24 +102,19 @@ range' _ (ZipList []) = []
 \end{code}
 
 %------------------------------------------------------------------------------%
-
-\begin{code}
-
-
-\end{code}
-
-%------------------------------------------------------------------------------%
-
 \subsubsection{Constructors}
 
-The most straight forward way of constructing a multi-index is from a list of
-integers representing the exponents. This is done using the \code{multiIndex}
-function.
 
+ The \code{MultiIndex} type provides the \code{multiIndex} constructor which
+ constructs a multi-index from a list of integers \code{[Int]}. The constructor
+ makes sure that all entries of the multi-index are positive and throws a
+ run-time error otherwise.
+
+ The \code{toList} function transforms a given multi-index back to a list
+ \code{[a]} of \code{Integer} class type.
 %------------------------------------------------------------------------------%
 
 \begin{code}
-
 -- | Create a multi-index from a given list of integers.
 multiIndex :: [Int] -> MultiIndex
 multiIndex l
@@ -140,15 +125,26 @@ multiIndex l
 -- | Check whether a given multi-index is valid.
 valid :: MultiIndex -> Bool
 valid mi = all (0 <=) (toList mi)
+
+-- | Transform multi-index into list
+toList :: Integral a => MultiIndex -> [a]
+toList = map fromIntegral . getZipList
+
 \end{code}
 
 %------------------------------------------------------------------------------%
 
 A common use case is the creation of multi-indices of degree 0 or 1. This is
-done using the functions \code{zero} and \code{one}. The function \code{zero}
-creates a multi-index containing only zeros of given dimension. The function
+done using the functions \code{zero} and \code{one}, respectively. The function
+ \code{zero} creates a multi-index of given dimension containing only zeros.
 \code{one} creates a multi-index of given dimension with all elements equal to
-zero except for $i$th.
+zero except for the element with index $i$:
+
+\begin{align}
+  (a_0,\ldots,a_{n-1}) \text{ with }
+  \alpha_0,\ldots,\alpha_{i-1},\alpha_{i+1},\ldots,\alpha_{n-1} = 0
+  \text{ and } \alpha_i = 1
+\end{align}
 
 %------------------------------------------------------------------------------%
 
@@ -158,21 +154,23 @@ zero except for $i$th.
 zero ::Int -> MultiIndex
 zero n = ZipList (replicate n 0)
 
--- | Degree one multi-index of diemension n with i-th element equal to one and
+-- | Degree one multi-index of dimension n with i-th element equal to one and
 -- | all others zero.
 unit :: Int -- n
      -> Int -- i
      -> MultiIndex
-unit n i = ZipList $ concat [replicate i 0,[1],replicate (n-i) 0]
+unit n i = ZipList $ concat [replicate i 0,[1],replicate (n-i-1) 0]
 
 \end{code}
+%------------------------------------------------------------------------------%
+
+ The function \code{degreeR} returns a list of all multi-indices of given
+ dimension $n$ and degree $r$. It is basically a wrapper for the
+ \code{sumRLists} function provided by the \code{FEEC.Utility.Combinatorics}
+ module.
 
 %------------------------------------------------------------------------------%
 
-The function \code{degreeR} returns a list of all multi-indices of given
-dimension $n$ and degree $r$.
-
-%------------------------------------------------------------------------------%
 
 \begin{code}
 
@@ -183,35 +181,42 @@ degreeR n r = map ZipList $ sumRLists (fromIntegral n) (fromIntegral r)
 \end{code}
 
 %------------------------------------------------------------------------------%
-
 \subsection{Extension of Multi-Indices}
 \label{sec:mi_extension}
 
-For the extension of polynomials from subsimplices to simplices it is necessary
-to also extend the multi-indices from a face to the full simplex. To this end we
-assume that the face of dimension $k$ is represented by an increasing list
-$\sigma=(\sigma_0,\ldots,\sigma_k)$ with elements in $[0,n]$. The $i$th element
-in $\sigma$ associates the $i$th element in the multi-index $\vec{\alpha}_0$
-with the $\sigma_i$th element in the extended multi-index $\vec{\alpha}$ on the
-$n$-simplex:
+ For the extension of polynomials from a sub-simplex
+ $\smp{f} = [\vec{v_{i_0}},\ldots,\vec{v_{i_k}}]$ to a super-simplex
+ $\smp{T} = [\vec{v_{0}},\ldots,\vec{v_{m}}]$  it is necessary to also
+ extend the multi-indices from $\smp{f}$ to $\smp{T}$. To this end we assume
+ that the face of dimension $k$ is given by a mapping $\sigma(j) = i_j$ that
+ encodes which vertices of the super-simplex $\smp{T}$ are included in $\smp{f}$.
+ Note that $m$ is not necessarily the dimension of the underlying Euclidean
+ space $\R{n}$. Each element $\alpha_i$ in a multi-index
+ $\vec{\alpha} = (\alpha_0,\ldots,\alpha_k)$ defined over the face $\smp{f}$
+ represents a power of the barycentric coordinate corresponding to the vertex
+ $\vec{v_i}$. The extended multi-index $\vec{\alpha'}$ is then zero in all
+ positions corresponding to vertices of $\smp{T}$ that are not included
+ in $\smp{f}$ and coincides with $\vec{\alpha}$ on positions corresponding
+ to the same vertices. The extended multi-index $\vec{\alpha'} =
+ ({\alpha'_0,\ldots,\alpha'_m})$ is thus given by
 
 \begin{align}
-  (\vec{\alpha}_0)_i \rightarrow (\vec{\alpha}_0)_{\sigma_i}
+  \alpha'_j &= \begin{cases}
+    \alpha_i & \text{, if } \sigma(i) = j \\
+    0 & \text{otherwise}
+    \end{cases}
 \end{align}
 
-All other elements $\alpha_i$ in $\vec{\alpha} that are not in \sigma are zero.
-The extension of multi-indices to n-dimensional super-simplices is implemented
-by the \code{extend} function.
 
 %------------------------------------------------------------------------------%
 
 \begin{code}
 
--- | Extend multi-index from from a face to a simplex.
+-- | Extend a multi-index from a face to a simplex.
 extend :: Int -> [Int] -> MultiIndex -> MultiIndex
 extend n sigma mi
-    | length sigma == (dim mi) + 1 = multiIndex $ extend' n (-1) sigma mi'
-    | otherwise = error "extend: Dimensions of sigma and multi-index don't agree"
+    | length sigma == dim mi = multiIndex $ extend' n (-1) sigma mi'
+    | otherwise = error $(show sigma) ++ " \n " ++ show mi ++ "extend: Dimensions of sigma and multi-index don't agree"
     where mi'       = toList mi
 
 extend' :: Int -> Int -> [Int] -> [Int] -> [Int]
@@ -224,28 +229,11 @@ extend' n i [] [] = replicate n 0
 %------------------------------------------------------------------------------%
 
 \subsection{Mathematical Operations}
-\label{sec:MI_mathops
 
+
+\subsubsection{Addition}
 Addition on multi-indices is defined in a straight-foward manner as the addition
 of the each pair of elements separately.
-
-For the derivation of polynomials, it is required to decrease the element at a
-given index of a multi-index, this is implemented by the \code{decrease}
-function.
-
-The factorial of a multi-index is defined as the product of the factorial of all
-its elements:
-
-\begin{align}
-  \vec{\alpha}! &= \prod_{i=0}^{n-1} \alpha_i!
-\end{align}
-
-The binomial coefficient of two multi-index is defined as the product of the
-element-wise binomial coefficients.
-
-\begin{align}
-  \vec{\alpha} \choose \vec{\beta} &= \prod_{i=0}^{n-1} \alpha_i \chose \beta_i
-\end{align}
 
 %------------------------------------------------------------------------------%
 
@@ -255,15 +243,22 @@ element-wise binomial coefficients.
 add :: (Integral a) => ZipList a -> ZipList a -> ZipList a
 add = liftA2 (+)
 
--- | Decrease element in multi-index
-decrease :: Integral a =>  Int -> ZipList a -> ZipList a
-decrease i alpha  = pure f <*> ZipList [0..] <*> alpha
-    where f j a = if j == i then max 0 (a-1) else a
+\end{code}
 
--- | Generalized binomial coefficients for multi-indices as defined in the paper
--- | by Kirby.
-choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
-choose a b = product (getZipList (liftA2 C.choose a b))
+%------------------------------------------------------------------------------%
+
+\subsubsection{Factorial}
+
+The factorial of a multi-index is defined as the product of the factorial of all
+its elements:
+
+\begin{align}
+  \vec{\alpha}! &= \prod_{i=0}^{n-1} \alpha_i!
+\end{align}
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
 
 -- | Generalized factorial for multi-indices
 factorial :: (Num b) => MultiIndex -> b
@@ -271,3 +266,41 @@ factorial = product . map C.factorial . toList
 
 \end{code}
 
+%------------------------------------------------------------------------------%
+
+\subsubsection{Binomial Coefficient}
+
+The binomial coefficient of two multi-index is defined as the product of the
+element-wise binomial coefficients.
+
+\begin{align}
+  \vec{\alpha} \choose \vec{\beta} &= \prod_{i=0}^{n-1} {\alpha_i \choose \beta_i}
+\end{align}
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+-- | Generalized binomial coefficients for multi-indices as defined in the paper
+-- | by Kirby.
+choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
+choose a b = product (getZipList (liftA2 C.choose a b))
+
+choose' :: (Integral a, Fractional b) => Int -> ZipList Int -> b
+choose' a b = fromIntegral (C.factorial a) / fromIntegral (factorial b)
+
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+\subsubsection{Derivation}
+
+For the derivation of polynomials, it is required to decrease the element at a
+given index of a multi-index, this is implemented by the \code{decrease}
+function.
+
+\begin{code}
+-- | Decrease element in multi-index
+decrease :: Integral a =>  Int -> ZipList a -> ZipList a
+decrease i alpha  = pure f <*> ZipList [0..] <*> alpha
+    where f j a = if j == i then max 0 (a-1) else a
+\end{code}

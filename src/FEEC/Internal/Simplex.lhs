@@ -1,21 +1,30 @@
 \section{Simplex}
 
-The \module{Simplex} module implements simplices in n-dimensional Euclidean
- space. A $k$-simplex in $n$-dimensional Euclidean space is the convex hull of
- $k+1$ simplices $v_0,\ldots,v_k$ such that $v_1-v_0,\ldots,v_k-v_0$ are
- linearly independent. $k$ is called the topological dimension of the simplex
- and $n$ its geometrical dimension. If $k=n$, we speak of a full simplex.
+ The \code{Simplex} module implements simplices in n-dimensional Euclidean
+ space $\R{n}$. A $k$-simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ in
+ $n$-dimensional Euclidean space $\R{n}$ is the convex hull of $k+1$ vertices
+ $\vec{v_0},\ldots,\vec{v_k}$ such that the spanning vectors $\vec{v_1}-\vec{v_0}
+ ,\ldots,\vec{v_k}-\vec{v_0}$ are linearly independent.
+ The \textit{topological dimension} of a simplex is the number $k$ of vectors
+ spanning the simplex. The \textit{geometrical dimension} of a simplex is the
+ dimension $n$ of the underlying space $\R{n}$. If $k=n$, we speak of a full
+ simplex. A subsimplex of a given simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$
+ is a simplex $\smp{T'} = [\vec{v_{i_0}},\ldots,\vec{v_{i_{k'}}}]$ such that
+ $\{i_0,\ldots,i_{k'}\} \subset \{1,\ldots,k\}$.  Such a subsimplex can be
+ conveniently represented using a map $\sigma: \{0,\ldots,k'\} \to
+ \{0,\ldots,k\}$ such that $\sigma(j) = i_j$ for all $j=0,\ldots,k'$. For the
+ representation to be unique, we require $\sigma$ to be increasing,
+ i.e. $\sigma(j+1) > \sigma(j)$ for all $j=1,\ldots,k'-1$.
 
 %------------------------------------------------------------------------------%
 
-\ignore{
 \begin{code}
-
 {-# LANGUAGE
    GADTs,
    MultiParamTypeClasses,
    FlexibleContexts,
    TypeFamilies,
+   UndecidableInstances,
    FlexibleInstances #-}
 
 module FEEC.Internal.Simplex(
@@ -36,33 +45,38 @@ module FEEC.Internal.Simplex(
   ) where
 
 import Data.List
+
 import FEEC.Internal.Spaces
-
-import FEEC.Internal.Point(Point, point, fromPoint, toPoint)
-import qualified FEEC.Internal.Point as Point
-
 import FEEC.Internal.Vector
+import FEEC.Utility.Combinatorics
 import FEEC.Utility.GramSchmidt
 import FEEC.Utility.Print
 import FEEC.Utility.Quadrature
-import FEEC.Utility.Combinatorics
 import qualified FEEC.Utility.Utility as U
+
 import qualified Numeric.LinearAlgebra.HMatrix as M
 
 \end{code}
+
 
 %------------------------------------------------------------------------------%
 
 \subsection{The \code{Simplex} type}
 
-In finite element exterior calculus we only consider full simplices and
- subsimplices of such. Therefore simplices are represented by an increasing
- list $\sigma$ and a list of vertices $v_0,\ldots,v_k$, with $k$ being the
- topological dimension of the simplex. For full simplices, $\sigma$ is just
- $0,\ldots,n$. For subsimplices of another simplex, $\sigma$ keeps track of
- which of the edges of the supersimplex is included in the subsimplex. This is
- needed for the extension of polynomials defined on a subsimplex of another
- simplex to the simplex itself.
+ We represent a simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ by a list containing
+ the vertices $\vec{v_0},\ldots,\vec{v_k}$ and an increasing map $\sigma$
+ keeping track of which vertices of a potential super-simplex the simplex
+ contains. The mapping $\sigma$ is represented by an increasing list
+ $\sigma(1),\ldots, \sigma(k)$.
+
+ The \code{Simplex} type is parametrized by the type used to represent vectors
+ in $\R{n}$. The type \code{Simplex a} contains two fields.
+ \code{sigma :: [Int]} represents the mapping $\sigma$ and
+ \code{vertices :: [a]} the vertices of the simplex. For full simplices,
+ $\sigma$ is just $0,\ldots,n$. For subsimplices of another simplex, $\sigma$
+ keeps track of which of the vertices of the supersimplex are included in the
+ subsimplex. This is needed for the extension of polynomials defined on a
+ subsimplex of another simplex to the simplex itself.
 
 %------------------------------------------------------------------------------%
 
@@ -83,23 +97,64 @@ geometricalDimension (Simplex _ (p:ps)) = dim p
 topologicalDimension :: Simplex a -> Int
 topologicalDimension (Simplex _ l) = length l - 1
 
--- instance Pretty Simplex where
---     pPrint t@(Simplex _ l) = int m <> text "-Simplex in "
---                            <> rn n <> text ": \n"
---                            <> printVectorRow 2 cs
---         where cs = map (components . fromPoint) l
---               n = geometricalDimension t
---               m = topologicalDimension t
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+ We call the first vertex $\vec{v_0}$ of a simplex
+ $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ as its reference vertex. The vectors
+ $\vec{v_1}-\vec{v_0},\ldots,\vec{v_n}-\vec{v_0}$. are referred to as the
+ simplices spanning vectors.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+-- | Reference vertex of the simplex, i.e. the first point in the list
+-- | of vectors
+referenceVertex :: Simplex v -> v
+referenceVertex (Simplex _ (p:ps)) = p
+
+-- | List of the n direction vector pointing from the first point of the
+-- | simplex to the others.
+spanningVectors :: VectorSpace v => Simplex v -> [v]
+spanningVectors (Simplex _ (v:vs)) = map (flip subV v) vs
+spanningVectors (Simplex _ _) = []
 
 \end{code}
 
 %------------------------------------------------------------------------------%
 
-Two smart constructors are provided for the \code{Simplex} type. The
- \code{simplex} constructor creates a simplex from a given list of vertices and
- checks if geometrical and topological dimension of the simplex agree. The
- \code{simplex'} constructor creates a simplex from a given reference vertex
-  $v_0$ and $n$ direction vectors $v_1-v_0,\ldots,v_n-v_0$.
+\subsubsection{Printing Simplices}
+
+For printing of simplices two methods are provided. As an instance of the
+\code{Show} class¸ \code{show} displays the internal structure of the
+\code{Simplex} type. \code{pPrint} renders the simplex as a list of vectors
+using unicode.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+instance (EuclideanSpace v (Scalar v)) => Pretty (Simplex v) where
+    pPrint t@(Simplex _ l) = int m <> text "-Simplex in "
+                             <> rn n <> text ": \n"
+                             <> printVectorRow 2 cs
+        where cs = map toDouble' l
+              n  = geometricalDimension t
+              m  = topologicalDimension t
+
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+\subsubsection{Constructors}
+
+ The \code{Simplex} type provides two different constructors for the
+ construction of full simplices. The \code{simplex} constructor creates a
+ simplex from a given list of vertices. The \code{simplex'} constructor creates
+ a simplex from a given reference vertex $\vec{v_0}$ and $n$ direction vectors
+ $\vec{v_1}-\vec{v_0},\ldots,\vec{v_n}-\vec{v_0}$. In both cases the topological
+ dimension of the simplex must agree with the geometrical one, otherwise an
+ error is thrown.
 
 %------------------------------------------------------------------------------%
 
@@ -121,19 +176,25 @@ simplex' p0 l@(v:vs)
     where l' = map dim l
           l'' = map (addV p0) l
           n = length l
-simplex' _ _ = error "simplex': Space dimension is zero."
+simplex' _ _ = error "simplex': Topological dimension is zero."
 
 \end{code}
 
 %------------------------------------------------------------------------------%
 
-The reference simplex in $\R{n}$ is the simplex with vertices
+ The function \code{referenceSimplex} constructs the reference simplex in
+ $\R{n}$, which is defined as the simplex $T=[\vec{v_0},\ldots,\vec{v_n}]$ with
+ vertices
 \begin{align}
-\left [ \begin{array} 0 \\ 0 \\ \cdots \\ 0 \end{array} \right ],
-\left [ \begin{array} 1 \\ 0 \\ \cdots \\ 0 \end{array} \right ],
-\left [ \begin{array} 0 \\ 1 \\ \cdots \\ 0 \end{array} \right ],
-\ldots
-\left [ \begin{array} 0 \\ 0 \\ \cdots \\ 1 \end{array} \right ]
+  \vec{v_0} =
+\left [ \begin{array}{c} 0 \\ 0 \\ \vdots \\ 0 \end{array} \right ],
+  \vec{v_1} =
+\left [ \begin{array}{c} 1 \\ 0 \\ \vdots \\ 0 \end{array} \right ],
+  \vec{v_2} =
+\left [ \begin{array}{c} 0 \\ 1 \\ \vdots \\ 0 \end{array} \right ],
+\ldots,
+  \vec{v_n} =
+\left [ \begin{array}{c} 0 \\ 0 \\ \vdots \\ 1 \end{array} \right ]
 \end{align}
 
 %------------------------------------------------------------------------------%
@@ -147,16 +208,25 @@ referenceSimplex n = Simplex [0..n] (zero n : [unitVector n i | i <- [0..n-1]])
 
 %------------------------------------------------------------------------------%
 
-The volume of a full simplex $T$ in n dimensions is given by
-\begin{align}\label{eq:simplex_vol}
- V(T) &= \left | \frac{1}{n!}\text{det}\{v_1-v_0,\ldots,v_n-v_0\} \right |
-\end{align}
-If the topological dimension of the simplex is less than k, it is necessary to
- project the direction vectors $v_n-v_0,\ldots,v_1-v_0$ onto the space spanned
- by the subsimplex first.
-The function \code{volume} checks whether the given simplex has full space
+  \subsection{Volume of a Simplex}
+
+ The volume of a full simplex $\smp{T}$ in n dimensions is given by
+ \begin{align}\label{eq:simplex_vol}
+  V(\smp{T}) &=
+  \left | \frac{1}{n!}\text{det}\{\vec{v_1}-\vec{v_0},
+                                  \ldots,
+                                  \vec{v_n}-\vec{v_0}\} \right |
+ \end{align}
+ If the topological dimension of the simplex is less than k, it is necessary to
+ project the spanning vectors $v_n-v_0,\ldots,v_1-v_0$ onto the space spanned
+ by the subsimplex first. This is done by first constructing an orthonormal
+ basis of the space using the Gram-Schmidt method and then projecting the
+ spanning vectors onto that space.
+
+ The function \code{volume} checks whether the given simplex has full space
  dimension and if not performs the projection using \code{project} and
- \code{gramSchmidt}. \code{volume'} implements equation (\ref{eq:simplex_vol}).
+ \code{gramSchmidt}. \code{volume'} simply uses the above formula to compute the
+ volume of a full simplex $\smp{T}$.
 
 %------------------------------------------------------------------------------%
 
@@ -170,7 +240,7 @@ volume t
     | otherwise = volume (simplex' (zero k) (project bs vs))
     where k = topologicalDimension t
           n = geometricalDimension t
-          vs = directionVectors t
+          vs = spanningVectors t
           bs = gramSchmidt vs
 
 project :: EuclideanSpace v (Scalar v) => [v] -> [v] -> [v]
@@ -184,12 +254,11 @@ project bs vs
 volume' :: EuclideanSpace v (Scalar v)
         => Simplex v
         -> Scalar v
-volume' t = fromDouble $ sqrt (abs (M.det w)) / fromInteger (factorial n)
+volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
     where n = geometricalDimension t
           w = M.matrix n comps
           v = referenceVertex t
-          comps = concatMap toDouble' (directionVectors t)
-
+          comps = concatMap toDouble' (spanningVectors t)
 
 \end{code}
 
@@ -197,14 +266,16 @@ volume' t = fromDouble $ sqrt (abs (M.det w)) / fromInteger (factorial n)
 
 \subsection{Subsimplices}
 
-A subsimplex, or face, $f$ of dimension $k$ of a simplex $v_0,\ldots,v_n$ is any
- simplex consisting of a subset $v_{i_0},\ldots,v_{i_k}$ of the vertices
- $v_0,\ldots,v_n$. A $k$-subsimplex of a given simplex may be identified by an
- increasing map $\sigma$. Using lexicographic ordering of the increasing maps of
- a given length it is possible to define an ordering over the simplices. This
- allows us to index each subsimplex of a given dimension $k$ of a simplex. Three
- functions are provided to obtain subsimplices from a given simplex.
- \code{subsimplex} returns the $i$th $k$-subsimplex of a given simplex.
+ A subsimplex, or face, $\smp{f}$ of dimension $k$ of a simplex
+ $\smp{T} = [\vec{v_0},\ldots,\vec{v_n}]$ is any simplex consisting of a subset
+ $\vec{v_{i_0}},\ldots,\vec{v_{i_k}}$ of the vertices $v_0,\ldots,v_n$. Such a
+ $k$-subsimplex of a given simplex \smp{T} may be identified by an increasing
+ map $\sigma$. Using lexicographic ordering of the increasing maps of a given
+ length it is possible to define an ordering over the simplices. This allows us
+ to index each subsimplex of a given dimension $k$ of a simplex.
+
+ Three functions are provided to obtain subsimplices from a given simplex.
+\code{subsimplex} returns the $i$th $k$-subsimplex of a given simplex.
  \code{subsimplices} returns a list of all the subsimplices of dimension $k$ and
  \code{subsimplices'} returns a list of all the subsimplices of dimension $k$ or
  higher.
@@ -223,7 +294,8 @@ subsimplex s@(Simplex _ l) k i
     where n = topologicalDimension s
           indices = unrank (k+1) n i
           err_ind = "subsimplex: Index of subsimplex exceeds (n+1) choose (k+1)."
-          err_dim = "subsimplex: Dimensionality of subsimplex is higher than that of the simplex."
+          err_dim = "subsimplex: Dimensionality of subsimplex is higher than"
+                    ++ " that of the simplex."
 
 -- | List subsimplices of given simplex with dimension k.
 subsimplices :: Simplex v -> Int -> [Simplex v]
@@ -233,7 +305,8 @@ subsimplices t@(Simplex _ l) k
     where n = topologicalDimension t
           indices = map (unrank (k+1) n) [0..(n+1) `choose` (k+1) - 1]
           subvertices = map (U.takeIndices l) indices
-          err_dim = "subsimplices: Dimensionality of subsimplices is higher than that of the simplex."
+          err_dim = "subsimplices: Dimensionality of subsimplices is"
+                    ++ "higher than that of the simplex."
 
 -- | List subsimplices of given simplex with dimension larger or equal to k.
 subsimplices' :: Simplex v -> Int -> [Simplex v]
@@ -264,7 +337,7 @@ extendSimplex t@(Simplex _ ps)
               | otherwise = simplex' p0 (take n (extendVectors n dirs))
     where n = geometricalDimension t
           nt = topologicalDimension t
-          dirs = directionVectors t
+          dirs = spanningVectors t
           p0 = referenceVertex t
 
 norm :: EuclideanSpace v (Scalar v) => v -> v -> Ordering
@@ -286,93 +359,6 @@ extendVectors n vs = sortBy norm vs'
     where vs' = gramSchmidt' vs [unitVector n i | i <- [0..n-1]]
 
 
--- | Reference vertex of the simplex, i.e. the first point in the list
--- | of vectors
-referenceVertex :: Simplex v -> v
-referenceVertex (Simplex _ (p:ps)) = p
-
--- | List of the n direction vector pointing from the first point of the
--- | simplex to the others.
-directionVectors :: VectorSpace v => Simplex v -> [v]
-directionVectors (Simplex _ (v:vs)) = map (flip subV v) vs
-directionVectors (Simplex _ _) = []
-
-\end{code}
-
-%------------------------------------------------------------------------------%
-
-\subsection{Integration}
-
-For integration of arbitrary functions over a simplex $T$ we use the method
- proposed in \cite{integrals}. Using the Duffy transform \cite{duffy}, the
- integral over the simplex is transformed into an integral over the
- $n$-dimensional unit cube.
-
-\begin{align}
-  \int_T f(\vec{x}) \: dx &= n!|T| \int_0^1 dt_1(1-t_1)^{n-1}\ldots\int_0^1 dt_nf(\vec{t})
-\end{align}
-
-The additional factors $(1-t_i)^{n-i}$ can be absorbed into the quadrature rule
- by using a Gauss-Jacobi quadrature
-
-\begin{align}
-  \int_0^1 dt_i(1-t_i)^\alpha = \sum_{j=0}^q w^\alpha_j f(\xi^\alpha_j)
-\end{align}
-
-where $alpha=n-i$. The \xi^\alpha_j are the roots of the Jacobi polynomial
- $P_q^{\alpha,0}$ and the w^\alpha_j the corresponding weights, that can be
- computed using the Golub-Welsch algorithm\cite{GolubWelsch}. The integral of
- $f$ over $T$ can then be approximated using
-
-\begin{align}\label{eq:integral}
-  \int_T f(\vec{x}) \: dx &= n!|T| \\sum_{j_1=0}^q w^{n-1}_{j_1}\ldots\sum_j{j_n=0}^qw_{j_n}f(\xi^0_{j_n})
-\end{align}
-
-The function \code{integral} uses (\ref{eq:integral}) to approximate the
- integral of an arbitrary function over a simplex. The computation of the
-  weights is performed by the \module{quadrature} module.
-
-%------------------------------------------------------------------------------%
-
-\begin{code}
-
--- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
--- | quadrature rule with q nodes.
-integrateOverSimplex :: (EuclideanSpace v (Scalar v), Eq (Scalar v))
-                     => Int             -- q
-                     -> Simplex v       -- t
-                     -> (v -> Scalar v) -- f
-                     -> Scalar v
-integrateOverSimplex q t f = mul vol  (mul fac  (nestedSum q (n-1) [] t f))
-    where n   = topologicalDimension t
-          fac = (fromDouble . fromInteger) (factorial n)
-          vol = volume t
-
--- Recursion for the computation of the nested integral as given in formula (3.6)
--- in "Bernstein-Bezier Finite Elements of Arbitrary Order and Optimal Assembly
--- Procedues" by Ainsworth et al.
--- TODO: Use points for evaluation, return suitable values from quadrature.
-nestedSum :: EuclideanSpace v (Scalar v)
-             => Int
-             -> Int
-             -> [Scalar v]
-             -> Simplex v
-             -> (v -> Scalar v)
-             -> Scalar v
-nestedSum k d ls t f
-          | d == 0 = sum' [ mul w (f x ) | (w, x) <- zip weights' xs ]
-          | otherwise = sum' [ mul w (nestedSum k (d-1) (x:ls) t f) | (w, x) <- zip weights' nodes' ]
-    where xs = [ cubicToCartesian t (fromList (xi : ls)) | xi <- nodes' ]
-          (nodes, weights) = unzip $ gaussJacobiQuadrature' d 0 k
-          nodes' = map fromDouble nodes
-          weights' = map fromDouble weights
-          sum' = foldl add addId
-          v = referenceVertex t
-
-instance (EuclideanSpace v r) => FiniteElement (Simplex v) r where
-    type Primitive (Simplex v) = v
-    quadrature = integrateOverSimplex
-
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -380,43 +366,33 @@ instance (EuclideanSpace v r) => FiniteElement (Simplex v) r where
 \subsection{Coordinates}
 \label{sec:Coordinates}
 
-In \FEEC, we work with three kinds of coordinates: Cartesian
- coordinates, barycentric coordinates and cubic coordinates. In barycentric
- coordinates, a point inside a simplex $v_0,ldots,v_n$ is given by a convex
- combination of its vertices. That is, a point $p$ is given in
- barycentric coordinates by a tuple (\lambda_0,\ldots,\lambda_n) if
+ In exterior calculus we will be working with two different coordinates systems:
+ Standard cartesian coordinates and barycentric coordinates of a given simplex.
+ Moreover, for the computation of integrals over a simplex we will use an
+ additional set of coordinates to which we will refer to as cubic coordinates.
 
-\begin{align}
-  \mathbf p &= \lambda_0v_0 + \ldots + \lambda_nv_n
-\end{align}
+\subsubsection{Barycentric Coordinates}
 
-The barycentric coordinates of a point inside a simplex are either positive or
+ In barycentric coordinates, a point inside a simplex
+ $\smp{T} = [\vec{v_0},\ldots,\vec{v_n}]$ is given by a convex combination of its
+ vertices. That is, a point $\vec{p}$ is given in barycentric coordinates by a
+ tuple $(\lambda_0,\ldots,\lambda_n)$ if
+
+ \begin{align}
+   \vec{p} &= \lambda_0\vec{v_0} + \ldots + \lambda_n\vec{v_n}
+ \end{align}
+
+ The barycentric coordinates of a point inside a simplex are either positive or
  zero and sum to one. Moreover, the barycentric coordinates of the vertices of
  the simplex are given by
 
-\begin{align}
-  v_0 = (1,0,\ldots,0), v_1 = (0,1,\ldots,0),\ldots,v_n=(0,0,\ldots,1)
-\end{align}
+ \begin{align}
+   \vec{v_0} = (1,0,\ldots,0), \vec{v_1} = (0,1,\ldots,0),\ldots,
+   \vec{v_n}=(0,0,\ldots,1)
+ \end{align}
 
-A mapping between points in the n-dimensional unit cube
- $t = (t_0,\ldots,t_{n-1})$ and the barycentric coordinates of a simplex
- is defined by
-
-\begin{subequations}
-  \begin{align}
-    \lambda_0 &= t_0 \\
-    \lambda_1 &= t_1(1 - \lambda_0) \\
-    \lambda_2 &= t_2(1 - \lambda_1 - \lambda_0) \\
-    & \vdots \\
-    \lambda_{n-1} &= t_{n-1}(1 - \lambda_{n-1} - \cdots - \lambda_0) \\
-    \lambda_{n} &= 1 - \lambda_{n-1} - \cdots - \lambda_0
-  \end{align}
-\end{subequations}
-
-The functions \code{barycentricToCartesian}, \code{cubicToCartesian} and
- \code{cubicToBarycentric} convert between the different coordinates systems.
- Note that barycentric and cubic coordinates define a point in space only with
- respect to a given simplex.
+ The function \code{barycentricToCartesian} converts a vector given in
+ barycentric coordinates to cartesian coordinates:
 
 %------------------------------------------------------------------------------%
 
@@ -433,6 +409,38 @@ barycentricToCartesian t@(Simplex _ vs) v = foldl sclAdd zero (zip v' vs)
           v'               = toList v
           n                = geometricalDimension t
 
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+\subsubsection{Cubic Coordinates}
+
+ A mapping between points in the n-dimensional unit cube
+ $t = (t_0,\ldots,t_{n-1}) \in [0,1]^{n}$ and the barycentric coordinates of a
+ simplex $\smp{T}$ can be defined using
+
+\begin{subequations}
+  \begin{align}
+    \lambda_0 &= t_0 \\
+    \lambda_1 &= t_1(1 - \lambda_0) \\
+    \lambda_2 &= t_2(1 - \lambda_1 - \lambda_0) \\
+    & \vdots \\
+    \lambda_{n-1} &= t_{n-1}(1 - \lambda_{n-1} - \cdots - \lambda_0) \\
+    \lambda_{n} &= 1 - \lambda_{n-1} - \cdots - \lambda_0
+  \end{align}
+\end{subequations}
+
+ We refer to the tuple $(t_0,\ldots,t_{n-1})$ as the cubic coordinates of the
+ corresponding point $(\lambda_0,\ldots,\lambda_n)$ in barycentric coordinates.
+
+ The functions \code{cubicToCartesian} and \code{cubicToBarycentric} convert
+ from the cubic coordinate system to Cartesian and barycentric coordinates,
+ respectively. Note that cubic coordinates define a point in space only with
+ respect to a given simplex.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
 -- | The inverse Duffy transform. Maps a point from the unit cube in R^{n+1}
 -- | to Euclidean space.
 cubicToCartesian :: EuclideanSpace v (Scalar v) => Simplex v -> v -> v
@@ -449,3 +457,84 @@ cubicToBarycentric v = fromList (ls ++ [l])
 
 %------------------------------------------------------------------------------%
 
+
+%------------------------------------------------------------------------------%
+
+\subsection{Integrals over Simplices}
+
+ For the integration of a function $f$  over a simplex $\smp{T}$ we use the
+ method proposed in \cite{Ainsworth}. Performing a change of coordinates from
+ Cartesian to cubic coordinates, the integral over the simplex takes the form
+
+ \begin{align}
+   \int_\smp{T} d\vec{x} \: f(\vec{x}) \:  &=
+   V(\smp{T}) \int_0^1 dt_1(1-t_1)^{n-1}\ldots\int_0^1 dt_nf(\vec{x}(t_0,\ldots,t_{n-1}))
+ \end{align}
+
+ where $V(\smp{T})$ is the volume of the simplex. For a numerical approximation
+ of the integral, the factors $(1-t_i)^{n-i}$ can be absorbed into the
+ quadrature rule by using a Gauss-Jacobi quadrature
+
+\begin{align}
+  \int_0^1 dt_i(1-t_i)^\alpha = \sum_{j=0}^q w^\alpha_j f(\xi^\alpha_j)
+\end{align}
+
+where $\alpha=n-i$. The points $\xi^\alpha_j$ are the roots of the Jacobi 
+polynomial $P_q^{\alpha,0}$ and the w^\alpha_j the corresponding weights, that
+ can be computed using the Golub-Welsch algorithm \cite{GolubWelsch}. The 
+integral of $f$ over $\smp{T}$ can then be approximated using
+
+\begin{align}\label{eq:integral}
+  \int_\smp{T} d\vec{x} \: f(\vec{x}) \:&=
+  V(\smp{T}) \sum_{j_1=0}^q w^{n-1}_{j_1}\ldots \sum_{j_n=0}^qw_{j_n}f(\xi^0_{j_n}) \end{align}
+
+ The above formula is implemented by the function \code{integral}. The
+ computation of the quadrature weights and nodes is implemented in
+ \code{FEEC.Utility.Quadrature}.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+
+-- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
+-- | quadrature rule with q nodes.
+integrateOverSimplex :: (EuclideanSpace v (Scalar v), Eq (Scalar v))
+                     => Int             -- q
+                     -> Simplex v       -- t
+                     -> (v -> Scalar v) -- f
+                     -> Scalar v
+integrateOverSimplex q t f = mul vol  (mul fac  (nestedSum q (n-1) [] t f))
+    where n   = topologicalDimension t
+          fac = fromDouble 1.0 -- (fromDouble . fromInteger) (factorial n)
+          vol = volume t
+
+-- Recursion for the computation of the nested sum in the numerical approximation
+-- of the integral of a function over a simplex.
+nestedSum :: EuclideanSpace v (Scalar v)
+             => Int
+             -> Int
+             -> [Scalar v]
+             -> Simplex v
+             -> (v -> Scalar v)
+             -> Scalar v
+nestedSum k d ls t f
+          | d == 0 = sum' [ mul w (f x ) | (w, x) <- zip weights' xs ]
+          | otherwise = sum' [ mul w (nestedSum k (d-1) (x:ls) t f)
+                                   | (w, x) <- zip weights' nodes' ]
+    where xs = [ cubicToCartesian t (fromList' (xi : ls)) | xi <- nodes' ]
+          fromList' = fromList . reverse
+          (nodes, weights) = unzip $ gaussJacobiQuadrature' d 0 k
+          nodes' = map fromDouble nodes
+          weights' = map fromDouble weights
+          sum' = foldl add addId
+
+instance (EuclideanSpace v r) => FiniteElement (Simplex v) r where
+    type Primitive (Simplex v) = v
+    quadrature = integrateOverSimplex
+
+\end{code}
+
+\section{Bibliography}
+
+\bibliographystyle{plain}
+\bibliography{doc/Bibliography}

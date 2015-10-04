@@ -1,29 +1,33 @@
 \section{Polynomials}
 
-The \module{Polynomial} module provides data types and functions for polynomials
- in $\R{n}$. Given a vector $\vec{x} \in \R{n}$, the power $\vec{x}$ with
+The \code{Polynomial} module provides data types and functions for polynomials
+over $\R{n}$. Given a vector $\vec{x} \in \R{n}$, the power of $\vec{x}$ with
  respect to a multi-index $\vec{\alpha} = (\alpha_0,\ldots,\alpha_{n-1})$
  is given by
 
+$$
 \begin{align}
   \vec{x}^{\vec{\alpha}} &= \prod_{i=0}^{n-1} x_i^{\alpha_i}
+ \label{eq:pow}
 \end{align}
+$$
 
 A polynomial in $\R{n}$ is a function that maps a vector $\vec{x}$ to a
  linear combination of powers of $\vec{x}$:
 
+$$
 \begin{align}
   p(\vec{x}) &= \sum_i c_i \vec{x}^{\vec{\alpha}}
 \end{align}
+$$
 
 Apart from implementing polynomials over vectors in $\R{n}$, the
  \module{Polynomial} module also provides abstract functions for polynomials
  that use different bases, such as the Bernstein polynomials implemented in the
- \module{Bernstein} module.
+ \code{Bernstein} module.
 
 %------------------------------------------------------------------------------%
 
-\ignore{
 \begin{code}
 
 {-# LANGUAGE TypeFamilies #-}
@@ -48,6 +52,7 @@ module FEEC.Polynomial (
   -- * Barycentric Coordinates
   , barycentricCoordinate, barycentricCoordinates
   , barycentricGradient, barycentricGradients
+  , barycentricGradients'
 
 
   ) where
@@ -74,7 +79,6 @@ import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 
 \end{code}
-}
 
 %------------------------------------------------------------------------------%
 
@@ -101,18 +105,16 @@ data Term a = Constant a
             | Term a MI.MultiIndex
             deriving (Eq, Show)
 
+coefficient :: Term a -> a
+coefficient (Constant a) = a
+coefficient (Term a _)   = a
 \end{code}
 
 %------------------------------------------------------------------------------%
 
-Based on the \code{Term} type, a polynomial can now be represented as a list of
- terms, keeping the sum implicit. An additional field \code{degree} that holds
- the degree of polynomial is added for convenience.
-
-Polynomials over $\R{n}$ form a vector space over $\mathrm R$ and a ring. To
- make their algebraic structure available, we make them an instance of
- the \code{Vectorspace} and \code{Ring} classes. The arithmetic functions on
- polynomials are defined below.
+Based on the \code{Term} type, a polynomial is now be represented as a list of
+ terms, keeping the sum implicit. In addition to that, the \code{Polynomial}
+type provides the \code{degree} field that holds the degree of the polynomial.
 
 %------------------------------------------------------------------------------%
 
@@ -128,6 +130,84 @@ data Polynomial a =
     Polynomial { degree :: Int,
                  terms  :: [Term a] }
     deriving (Eq, Show)
+
+\end{code}
+
+
+%------------------------------------------------------------------------------%
+
+For the extension of polynomials defined on simplices it is necessary to extract
+ the multi-indices defining the polynomial. To this end the \module{Polynomial}
+ module provides the function \code{multiIndices} which converts all of the
+ constants in the polynomials to multi-index representation, i.e. with
+ multi-index conatining only zeros, and returns a list of them.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+
+-- | Returns a list of the multi-indices in the polynomial.
+multiIndices :: Int -> Polynomial a -> [MI.MultiIndex]
+multiIndices n (Polynomial _ ls) = multiIndices' n ls
+
+multiIndices' :: Int -> [Term a] -> [MI.MultiIndex]
+multiIndices' n (Term _ mi  : ls) = mi : multiIndices' n ls
+multiIndices' n (Constant _ : ls) = MI.zero n : multiIndices' n ls
+multiIndices' _ [] = []
+
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+For the integration of Bernstein polynomials it is also necessary to access the
+degrees of each term of the polynomial. To keep the internal structure of the
+polynomials encapsulated, the function \code{degrees} is provided, that returns
+a list containing the degrees of the terms in the polynomial.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+
+-- | Return a list of the degrees of each term in the polynomial.
+degrees :: Polynomial a -> [Int]
+degrees (Polynomial _ ts) = degrees' ts
+
+degrees' :: [Term a] -> [Int]
+degrees' (Term _ mi:ls)  = MI.degree mi : degrees' ls
+degrees' (Constant c:ls) = 0 : degrees' ls
+degrees' [] = []
+
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+For some computations on Bernstein polynomials it is necessary to obtain the
+polynomial represented as a list of coefficient-multi-index pairs. To this end
+the \code{toPairs} function is provided, that extends all constant terms in the
+polynomial and returns a list of the coefficient-multi-index pairs.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+
+-- | Return polynomial represented as list of coefficient-multi-index pairs.
+toPairs :: Int -> Polynomial a -> [(a, MI.MultiIndex)]
+toPairs n p = map (expandTerm n) (terms p)
+
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+\subsubsection{Class Instantiations}
+
+Polynomials over $\R{n}$ form a vector space over $\mathrm R$ and a ring. To
+ make their algebraic structure available in \code{FEEC}, we make them instances
+ of the \code{Vectorspace} and \code{Ring} classes. The implementation of the
+ arithmetic functions on polynomials is given below.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
 
 -- | Polynomials as vector spaces.
 instance Ring a => VectorSpace (Polynomial a) where
@@ -173,14 +253,10 @@ expandTerm _ (Term c mi) = (c ,mi)
 
 %------------------------------------------------------------------------------%
 
-Up until now, the definition of the polynomial type is independent of the
- underlying scalar type. However, computing the directional derivative of a
- polynomial requires extracting the components of a vector which is not provided
- by the \code{Vectorspace} class yet. To make \code{Polynomial} an instance
- of the \code{Function} class it is thus necessary to refrain to a concrete
- type. The implementation of derviation, evaluation and integration is described
- below.
-
+ The main purpose of the polynomial type is of course its use as a function over
+ $\R{n}$. We therefore declare the type an instance of the abstract
+ \code{Function} class. The implementation of evaluation and derivation of
+ polynomials is given below.
 %------------------------------------------------------------------------------%
 
 \begin{code}
@@ -193,73 +269,9 @@ instance (EuclideanSpace v r) => S.Function (Polynomial r) v where
 
 \end{code}
 
-%------------------------------------------------------------------------------%
+\subsubsection{Constructors}
 
-For the extension of polynomials defined on simplices it is necessary to extract
- the multi-indices defining the polynomial. To this end the \module{Polynomial}
- module provides the function \code{multiIndices} which converts all of the
- constants in the polynomials to multi-index representation, i.e. with
- multi-index conatining only zeros, and returns a list of them.
-
-%------------------------------------------------------------------------------%
-
-\begin{code}
-
--- | Returns a list of the multi-indices in the polynomial.
-multiIndices :: Int -> Polynomial a -> [MI.MultiIndex]
-multiIndices n (Polynomial _ ls) = multiIndices' n ls
-
-multiIndices' :: Int -> [Term a] -> [MI.MultiIndex]
-multiIndices' n (Term _ mi  : ls) = mi : multiIndices' n ls
-multiIndices' n (Constant _ : ls) = MI.zero n : multiIndices' n ls
-multiIndices' _ [] = []
-
-\end{code}
-
-%------------------------------------------------------------------------------%
-
-For the integrateion of Bernstein polynomials it is also necessary to access the
-degrees of each term of the polynomial. To keep the internal structure of the
-polynomials encapsulated, the function \code{degrees} is provided, that returns
-a list containing the degrees of the terms in the polynomial.
-
-%------------------------------------------------------------------------------%
-
-\begin{code}
-
--- | Return a list of the degrees of each term in the polynomial.
-degrees :: Polynomial a -> [Int]
-degrees (Polynomial _ ts) = degrees' ts
-
-degrees' :: [Term a] -> [Int]
-degrees' (Term _ mi:ls)  = MI.degree mi : degrees' ls
-degrees' (Constant c:ls) = 0 : degrees' ls
-degrees' [] = []
-
-\end{code}
-
-%------------------------------------------------------------------------------%
-
-For some computations on Bernstein polynomials it is necessary to obtain the
-polynomial represented as a list of coefficient-multi-index pairs. To this end
-the \code{toPairs} function is provided, that extends all constant terms in the
-polynomial and returns a list of the coefficient-multi-index pairs.
-
-%------------------------------------------------------------------------------%
-
-\begin{code}
-
--- | Return polynomial represented as list of coefficient-multi-index pairs.
-toPairs :: Int -> Polynomial a -> [(a, MI.MultiIndex)]
-toPairs n p = map (expandTerm n) (terms p)
-
-\end{code}
-
-%------------------------------------------------------------------------------%
-
-
-\subsection{Constructors}
-The \module{Polynomial} provides constructors for the convenient construction of
+The \module{Polynomial} provides smart constructors to simplify the creation of
  valid polynomials. The stress here lies on valid, because not every instance of
  \code{Polynomial} represents a valid polynomial. For a polynomials to be valid,
  all multi-indices representing the monomials must be of the same langth.
@@ -309,9 +321,9 @@ sameLength' _ [] = True
 
 %------------------------------------------------------------------------------%
 
-We also provide a constructor for homogeneous, linear polynomials
-\code{linearPolynomial} in $\R{n}$, which takes a list of $n$ coefficients that
-contains the slope of the $n$ variables of the polynomials.
+In addition to that a constructor for homogeneous, linear polynomials
+\code{linearPolynomial} in $\R{n}$ is provided, which takes a list of $n$
+ coefficients that contains the slope of the $n$ variables of the polynomials.
 
 %------------------------------------------------------------------------------%
 
@@ -334,6 +346,7 @@ As mentioned above, polynomials over $\R{n}$ form a ring and a vector space. The
  arithmetic operations we need to implement are thus addition, substraction,
  multiplication and multiplication by a scalar.
 
+\subsubsection{Addition}
 Since polynomials are represented as a sum of terms addition of polynomials can
  be implemented by simply concatenating the two lists representing the two
  polynomials.
@@ -344,12 +357,18 @@ Since polynomials are represented as a sum of terms addition of polynomials can
 
 -- | Add two polynomials.
 addPolynomial :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
-addPolynomial (Polynomial r1 ts1) (Polynomial r2 ts2) =
-    Polynomial (max r1 r2) (ts1 ++ ts2)
+addPolynomial (Polynomial r1 ts1) (Polynomial r2 ts2)
+    | ts /= [] = Polynomial (max r1 r2) ts
+    | otherwise = Polynomial 0 [Constant addId]
+                  where ts = removeZeros (ts1 ++ ts2)
 
+removeZeros :: Ring a => [Term a] -> [Term a]
+removeZeros ts = [ t | t <- ts, coefficient t /= addId ]
 \end{code}
 
 %------------------------------------------------------------------------------%
+
+\subsubsection{Scaling and Multiplication}
 
 The implementation of scaling and multiplication of polynomials is straight
  forward. Scaling of a polynomials amounts to simply scaling each of the terms
@@ -402,18 +421,19 @@ multiplyPolynomial f (Polynomial r1 ts1) (Polynomial r2 ts2) =
 
 \subsection{Evaluation}
 
-As mentioned above, the \code{Polynomial} type also provides abstract functions
- for the implementation of polynomials over different bases. To this end, the
-\code{evaluateTerm} function provides abstract evaluation of a term. It takes a
- function that evaluates a monomial represented by a given multi-index.
+ The \code{Polynomial} type also provides abstract functions for the
+ implementation of polynomials over different bases. To this end, the
+\code{evaluateTerm} function provides an abstract function for the evaluation of
+ a term of a polynomial, which takes a function that evaluates a monomial given
+ by a given multi-index and scales the result be the terms coefficient.
 
 The function \code{evaluateMonomial} implements the evaluation function for the
- standard monomial basis over $\R{n}$.
+ standard monomial basis over $\R{n}$. In this case the evaluation function for
+ the monomial just implements eq. $\eqref{eq:pow}$.
 
 %------------------------------------------------------------------------------%
 
 \begin{code}
-
 -- | General evaluation of a term. Given a function for the evaluation a
 -- | monomial, the function returns the corresponding value of the polynomial
 -- | scaled by the terms coefficient or simply the value of the term if the term
@@ -463,21 +483,47 @@ evaluatePolynomial f p = foldl add addId (map (evaluateTerm f) (terms p))
 
 \subsection{Derivation}
 
-To provide generalized functions for the derivation of polynomials, we introduce
- the \code{Dx} type as a synomym for functions implementing derivation of
- monomials $\vec{y}^{\vec{alpha}}$. The directional derivative along the $i$th
- dimension of such a monomial is given by
+The derivative of a polynomial is just the sum of the scaled derivatives of the
+monomials in each term. A general monomial may be written as a vector valued
+function $\vec{y(\vec{x})}$ taken to the power $\vec{\alpha}$ for a given
+multi-index $\vec{\alpha}$. The directional derivative along the $i$th dimension of
+ such a monomial is given by
 
 \begin{align}
-  \frac{d}{dx_i}\vec{y}^{\vec{alpha}} &= \sum_j \alpha_j \frac{dy_j}{dx_i}\vec{y}^{\vec{\alpha}^j}
+  \frac{d}{dx_i}\vec{y}^{\vec{\alpha}} &= \sum_j \alpha_j \frac{dy_j}{dx_i}\vec{y}^{\vec{\alpha}^j}
 \end{align}
-where $\vec{\alpha}^j$ is the multi-index $\vec{\alpha}$ with the $j$th index
- decreased by one. The directional derivative of a monomial thus is a polynomial
- consisting of a sum of multiple terms. Here we use a list of \code{Term Double}
- to represent the sum.
 
-The function \code{deriveTerm} then computes the directional derivative of
- a given term along a direction given by a vector, by computing the directional
+where $\vec{\alpha}^j$ is the multi-index $\vec{\alpha}$ with the $j$th index
+ decreased by one. The directional derivative of a monomial is thus a polynomial
+ consisting of multiple terms.
+
+To provide generalized functions for the derivation of polynomials, we introduce
+ the \code{Dx} type as a synomym for functions implementing derivation of
+ monomials $\vec{y}^{\vec{\alpha}}$. The returned list is supposed to hold the
+ directional derivatives of the given monomial in each space direction.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+-- | Type synonym for a function to generalize the derivative of a monomial
+-- | in a given space direction. Required to generalize the polinomial code to
+-- | different bases.
+type Dx a = MI.MultiIndex -> [Polynomial a]
+
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+ The function \code{deriveTerm} then computes the directional derivative of
+ a given term along a direction given by an arbitrary vector $\vec{v}$, which
+ is given by
+
+\begin{align}
+  \frac{d\: cvec{y}^{\vec{\alpha}}}{d\vec{v}} &= c\sum_{i = 0}^{n-1} v_{i}
+                                              \frac{d\vec{y}}{dx_i}
+\end{align}
+
+, by computing the directional
  derivative of the term and scaling it by the corresponding component of the
  vector. The result is a list of Terms representing a polynomial.
 
@@ -492,10 +538,6 @@ The function \code{deriveMonomial} implements the derivative of a monomial for
 %------------------------------------------------------------------------------%
 
 \begin{code}
--- | Type synonym for a function to generalize the derivative of a monomial
--- | in a given space direction. Required to generalize the polinomial code to
--- | different bases.
-type Dx a = Int -> MI.MultiIndex -> [Term a]
 
 -- | General derivative of a term. Given a function for the derivative of a monomial
 -- | in a given space direction, the function computes the derivative of the given
@@ -504,33 +546,26 @@ deriveTerm :: EuclideanSpace v (Scalar v)
            => Dx (Scalar v)
            -> v
            -> Term (Scalar v)
-           -> [Term (Scalar v)]
-deriveTerm dx v (Constant _) = [Constant addId]
-deriveTerm dx v (Term c mi)  = concat [ zipWith (scl c) v' (dx i mi) |
-                                       i <- [0..n-1],
-                                       MI.degree mi > 0]
-    where
-      scl a b = scaleTerm (mul a b)
-      v' = toList v
-      n = dim v
+           -> Polynomial (Scalar v)
+deriveTerm dx v (Constant _) = constant addId
+deriveTerm dx v (Term c mi)  = sclV c (foldl add addId (zipWith sclV v' (dx mi)))
+    where v' = toList v
 
 -- | Derivative of a monomial over the standard monomial basis in given space
 -- | direction.
 deriveMonomial :: Ring r => Dx r
-deriveMonomial i mi
-    | i < dim mi = [Term c (MI.decrease i mi)]
-    | otherwise = error "deriveMonomial: Direction and multi-index have unequal lengths"
-  where c  = fromInt (MI.toList mi !! i)
-
+deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
+  where c i = fromInt (MI.toList mi !! i)
+        mi' i = MI.decrease i mi
+        n  = dim mi
 \end{code}
 
 %------------------------------------------------------------------------------%
 
-In the same way as for the evaluation of polynomials, we provide a
- basis-independent implementation of the deriviation and a concrete one for the
- derivation of polynomials over a monomial basis. The derivative of a polynomial
- is obtained by simply concatenating the derivatives of the terms of the
- polynomial.
+ In the same way as for the evaluation of polynomials, we provide a
+ basis-independent implementation of the deriviation for the derivation of
+ polynomials. The function for deriving a polynomial over the monomial basis
+ can be obtained by partially evaluating \code{derivePolynomial deriveMonomial}.
 
 %------------------------------------------------------------------------------%
 
@@ -542,9 +577,8 @@ derivePolynomial :: EuclideanSpace v (Scalar v)
                  -> v
                  -> Polynomial (Scalar v)
                  -> Polynomial (Scalar v)
-derivePolynomial dx v p = Polynomial (r - 1) (concatMap (deriveTerm dx v) ts)
-    where r = degree p
-          ts = terms p
+derivePolynomial dx v p = foldl add addId [ deriveTerm dx v t | t <- ts ]
+    where ts = terms p
 
 \end{code}
 
@@ -555,22 +589,19 @@ derivePolynomial dx v p = Polynomial (r - 1) (concatMap (deriveTerm dx v) ts)
 
 For integration of polynomials over simplices, we use the
 \code{integrateOverSimplex} function provided by the \module{Simplex} module.
-Since the method presented in \cite{Ainsworth} has precision $2q - 1$, the
-integration of a polynomial of degree $r$ is exact if
-$q \geq \frac{(r + 1)}{2}$.
-
-The \module{Polynomial} module does not provide a general function for
-integration of polynomials because the \code{integrateOverSimplex} functions
-already provides general integration of any function over simplices.
+Since the method used  has precision $2q - 1$, the integration of a polynomial
+ of degree $r$ is exact if $q \geq \frac{(r + 1)}{2}$.
 
 %------------------------------------------------------------------------------%
 
 \begin{code}
 
--- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
--- | quadrature rule of degree k.
+-- | Numerically integrate the polynomial p over the simplex t using a Gauss-Jacobi
+-- | quadrature rule.
 integratePolynomial :: EuclideanSpace v (Scalar v)
-                    => Simplex v -> Polynomial (Scalar v) -> Scalar v
+                    => Simplex v            -- t
+                    -> Polynomial (Scalar v) -- p
+                    -> Scalar v
 integratePolynomial t p = integrateOverSimplex q t (flip S.evaluate p)
     where q = div (r + 2) 2
           r = degree p
@@ -581,43 +612,37 @@ integratePolynomial t p = integrateOverSimplex q t (flip S.evaluate p)
 
 \subsection{Barycentric Coordinates}
 
-One may view barycentric coordinates as a representation of points in $\R{n}$
-the simplex as described in section \ref{sec:Coordinates}. Here, however, we
-will adopt a different view. Instead of considering the barycentric coordinates
-\lambda_0,\ldots,\lambda_n as coordinates of a point $\vec{x} \in \R{n}$, we
-consider them as linear functions of $\vec{x}$:
+An important building block for the construction of Bernstein polynomials are
+barycentric coordinates. Barycentric coordinates defined with respect to a
+simplex $\smp{T} = [\vec{v}_0,\ldots,\vec{v}_n]$, are a set of $n+1$ coordinates
+ $\lambda_0,\ldots,\lambda_n$ satisfying
 
+$$
 \begin{align}
-  \lambda_0(\vec{x}),\ldots,\lambda_n(\vec{x})
+  (\lambda_0,\ldots,\lambda_n) = v_i \text{ if }
+\lambda_0=\ldots=\lambda_{i-1}=\lambda_{i+1}=\ldots=
+\lambda_n = 0 \text{ and } \lambda_i= 1
 \end{align}
+$$
 
-For points $\vec{x}$ inside the simplex $T$, the same properties hold as
-mentioned in \ref{sec:Coordinates}, namely that
+Viewed as a linear functions over $\R{n}$ the above requriement for the barycentric
+coodinates may also be written as
 
-\begin{itemize}
-  \item the barycentric coordinates sum to one: $\sum_i \lambda_i(\vec{x}) = 1$
-  \item all barycentric coordinates are positive: $\lambda_i(\vec{x}) \geq 0,
-    i = 0,\ldots,n$
-\end{itemize}
-
-The property defining the barycentric coordinates is that, the barycentric
-coordinate $\lambda_i$ is the linear function $\lambda_i(\vec{x})$ that
-satisfies
-
+$$
 \begin{align}\label{eq:barycentric_prop}
   \lambda_i(\vec{v}_j) = \delta_{ij}
 \end{align}
+$$
 
-,where $\vec{v}_j$ are the vertices of the simplex $T$ and $\delta_{ij}$ is the
-Kronecker delta. Equation (\ref{eq:barycentric_prop}) can be used to determine
-the barycentric coordinates of a given full simplex $T$ with vertices
-$\vec{v}_0,\ldots,\vec{v}_n$ by solving the resulting linear system of
-equations. The linear system of equation results in a $n+1 \times n+1$ matrix
- $\vec{A}$ of the form
+ $\delta_{ij}$ is the Kronecker delta. Equation $\eqref{eq:barycentric_prop}$ can
+ be used to determine the barycentric coordinates of a given full simplex
+ $\smp{T}$ with vertices $\vec{v}_0,\ldots,\vec{v}_n$ by solving the resulting
+ linear system of equations. The linear system can be written as a matrix 
+equation with a $n+1 \times n+1$ matrix $\vec{A}$ of the form
 
 \begin{align}
   \vec{A} &= \left [ \begin{array}{cccc}
-      1      & \textrm{---} & \vec{v}_0 & \textrm{---} \\ % not beautiful,
+      1      & \mbox{---} & \vec{v}_0 & \textrm{---} \\ % not beautiful,
       \vdots & \vdots       & \vdots    & \vdots    \\
       1      & \textrm{---} & \vec{v}_n & \textrm{---}    % ... but works
       \end{array} \right ]
@@ -645,8 +670,8 @@ Note that the above method assumes that the simplex $T$ has $n+1$ vertices, for
 simplices with less vertices it is necessary to extend the simplex first. This
 is done using the \code{extendSimplex} function.
 
-The inversion of the matrix is performed using the \code{hlinear} package
-\cite{Ruiz}. The \code{SimplexToMatrix} and \code{vectorToPolynomial} functions
+The inversion of the matrix is performed using the \code{hmatrix} package
+\cite{Ruiz}. The \code{simplexToMatrix} and \code{vectorToPolynomial} functions
 handle the conversion between the simplex, the linear system and the polynomials
 representing the barycentric coordinates.
 
@@ -717,12 +742,20 @@ vectorToGradient :: EuclideanSpace v (Scalar v)
                  -> v
 vectorToGradient v  = fromDouble' (tail (M.toList v))
 
--- | Compute gradients of barycentric coordinates as a list of lists of Double
--- | for the given simplex t
+-- | Compute gradients of the barycentric coordinates.
 barycentricGradients :: EuclideanSpace v (Scalar v)
                      => Simplex v
                      -> [v]
 barycentricGradients t = map vectorToGradient (take (nt+1) (M.toColumns mat))
+    where mat = M.inv (simplexToMatrix (extendSimplex t))
+          n = geometricalDimension t
+          nt = topologicalDimension t
+
+-- | Compute gradients of the barycentric coordinates.
+barycentricGradients' :: EuclideanSpace v (Scalar v)
+                      => Simplex v
+                      -> [v]
+barycentricGradients' t = map (fromDouble' . M.toList) (tail (M.toRows mat))
     where mat = M.inv (simplexToMatrix (extendSimplex t))
           n = geometricalDimension t
           nt = topologicalDimension t

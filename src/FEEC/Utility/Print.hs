@@ -1,12 +1,12 @@
 module FEEC.Utility.Print (
    Pretty(..)
   , printDouble, printComponent, printVector, printVectorRow
-  , printPolynomial, printPolynomial0, printForm
+  , printBernstein, printPolynomial, printPolynomial0, printForm
   , lambda, dlambda, (<>), text, rn, int
   ) where
 
 import Text.PrettyPrint
-import Text.PrettyPrint.HughesPJ
+import qualified Text.PrettyPrint.HughesPJ as P
 import Text.Printf
 import FEEC.Internal.Spaces
 import qualified FEEC.Internal.MultiIndex as MI
@@ -24,6 +24,12 @@ class RenderVector v where
 -- | Pretty class prtotype.
 class Pretty p where
     pPrint :: p -> Doc
+
+-- | Pretty printing for lists of Pretty instances.
+instance (Pretty a) => Pretty [a] where
+    pPrint [] = text "Empty List"
+    pPrint l = (text "[ ") P.$$ (foldl addline empty l) P.<+> (text "]")
+        where addline x y = (x <> comma) P.$+$ (pPrint y)
 
 -- | Render the symbol for Euclidean space of dimension n.
 rn :: Int -> Doc
@@ -66,19 +72,37 @@ maxWidth p l = maximum (map numLen l) + p + 1
 
 
 -- | Pretty print polynomial
-printPolynomial :: Integral a => [Char] -> [(Double,MI.MultiIndex)] -> Doc
+printPolynomial :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
 printPolynomial sym []           = double 0.0
 printPolynomial sym [ (c,mon) ]  = double c <+> printMonomial sym (MI.toList mon)
 printPolynomial sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
     where s = double c <+> printMonomial sym (MI.toList mon)
 
 -- | Pretty print polynomial
-printPolynomial0 :: Integral a => [Char] -> [(Double,MI.MultiIndex)] -> Doc
+printPolynomial0 :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
 printPolynomial0 sym []           = double 0.0
 printPolynomial0 sym [ (c,mon) ]  = double c <+> printMonomial0 sym (MI.toList mon)
 printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
     where s = double c <+> printMonomial0 sym (MI.toList mon)
 
+-- | Pretty print polynomial
+printBernstein :: [(Double,MI.MultiIndex)] -> Doc
+printBernstein []           = double 0.0
+printBernstein [(c,mon)]  = double c <+> (printPrefactor mon)
+                            <+> printMonomial0 lambda (MI.toList mon)
+printBernstein ((c,mon):ls) = if (c == 0)
+                              then printPolynomial lambda ls
+                              else s <+> text "+" <+> printPolynomial lambda ls
+    where s = double c <+> (printPrefactor mon)
+              <+> printMonomial0 lambda (MI.toList mon)
+
+printPrefactor :: MI.MultiIndex -> Doc
+printPrefactor mi = lparen <> (int r) <> fac <> div <> lparen <> (print mi)
+                      <> rparen <> rparen
+    where r = MI.degree mi
+          fac = text "!"
+          div = text "/"
+          print mi = foldl (\x y -> x <> (integer y) <> fac) empty (MI.toList mi)
 
 -- | Pretty print constant
 printConstant :: Double -> Doc

@@ -1,17 +1,16 @@
 
 \section{Combinatorics}
 
-The \module{Combinatorics} module contains functions for  common combinatorial
-tasks that arise in FEEC. Those are
+The \code{Combinatorics} module contains functions for  common combinatorial
+tasks that arise in \code{FEEC}. Those are
 \begin{itemize}
-  \item computeation of binomial coefficients and factorials,
+  \item computation of binomial coefficients and factorials,
   \item generation and indexing of increasing lists,
   \item generation of multi-indices of a given degree.
 \end{itemize}
 
 %------------------------------------------------------------------------------%
 
-\ignore{
 \begin{code}
 
 module FEEC.Utility.Combinatorics(
@@ -31,16 +30,15 @@ import qualified Math.Combinatorics.Exact.Binomial as B
 import qualified Math.Combinatorics.Exact.Factorial as F
 
 \end{code}
-}
 
 %------------------------------------------------------------------------------%
 
 \subsection{Mathematical Functions}
 
-The \module{Combinatorics} module re-exports the function \code{choose} for the
+The \code{Combinatorics} module re-exports the function \code{choose} for the
 computation of binomial coefficients and the function \code{factorial} for the
- computation of factorials from the \code{exact-combinatorics}
- \cite{WrenGauleRomano} package.
+ computation of factorials from the \textbf{exact-combinatorics}
+ \cite{WrenGayleRomano} package.
 
 %------------------------------------------------------------------------------%
 
@@ -77,10 +75,11 @@ lists. Take as an example $k=3, n=3$:
 \subsubsection{Generation}
 
 The main task of generating increasing lists is performed by
-\code{increasingLists'}, which generates increasing lists starting with a given
-value. \code{increasingLists} and \code{increasingLists1} provide wrappers for
-\code{increasingLists'} to generate length-$k$ lists with elements in
-$\{0,\ldots,n\}$ and $\{1,\ldots,n\}$, respectively.
+\code{increasingLists'}, which generates a list of all increasing lists beginning
+ with a given integer number. value. \code{increasingLists} and
+ \code{increasingLists1} provide wrappers for \code{increasingLists'} to
+ generate the length-$k$ lists with elements in $\{0,\ldots,n\}$ and
+ $\{1,\ldots,n\}$, respectively.
 
 %------------------------------------------------------------------------------%
 
@@ -167,17 +166,17 @@ sublists ls = [ take i ls ++ drop (i+1) ls | i <- [0 .. length ls - 1]]
 
 \subsection{Lists of Degree $r$}
 
-For generating \keyword{multi-indices} of degree $r$, it is necessary to
+For generating multi-indices of degree $r$, it is necessary to
 generate lists of positive integers that sum to a given value. Note that here we
-will use the parameter $n$ to denote of the length of the list. This is because
-those functions are used for the generation of \keyword{multi-indices} and
+will use the parameter $n$ to denote the length of the list. This is because
+those functions are used for the generation of multi-indices and
 therefore in most cases have length equal to the dimension $n$ of the underlying
 vector space.
 
 Two variants of functions generating such lists are provided. The function
 \code{sumRLists} returns a list of all length $n$ lists that sum to $r$. The
 function \code{sumRLists'} lists all length $n$ lists that sum to $r$
-\emph{or less}.
+\textbf{or less}.
 
 %------------------------------------------------------------------------------%
 
@@ -202,3 +201,5 @@ sumRLists' :: Integral a
 sumRLists' n r = concat [ sumRLists n r' | r' <- [0..r]]
 
 \end{code}
+
+\section{Bibliography}

@@ -1,7 +1,12 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
 
-module SimplexTest where
+module FEEC.Internal.SimplexTest(
+                                 arbitrarySimplex
+                                ) where
 
 
 import Data.Maybe
@@ -19,22 +24,22 @@ import qualified Test.QuickCheck as Q
 import qualified Test.QuickCheck.Gen as Q
 
 
-data SubsimplexTest = SubsimplexTest Simplex Int Int deriving (Show)
+data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int deriving (Show)
 
 --------------------------------------------------------------------------------
 -- Random Simplices
 --------------------------------------------------------------------------------
 
--- | Generate a random simplex.
-instance Arbitrary Simplex where
-    arbitrary = do Dimension n <- arbitrary
-                   t <- vectorOf (n+1) $ nPoint n
-                   return (Simplex [0..n] t)
+-- | Generate a random simplex of given dimension.
+arbitrarySimplex :: Arbitrary v => Int -> Gen (Simplex v)
+arbitrarySimplex n = do l <- vectorOf (n+1) arbitrary
+                        return (Simplex [0..n] l)
 
--- | Return generator for a point of a given dimension.
-nPoint :: Int -> Gen Point
-nPoint n =  do l <- Q.vector n
-               return (point l)
+-- | Generate random simplex of dimesion 1 <= n <= 10.
+instance Arbitrary v => Arbitrary (Simplex v) where
+    arbitrary = do n <- Q.choose (1, 10)
+                   arbitrarySimplex n
+
 --------------------------------------------------------------------------------
 -- Subsimplices
 --------------------------------------------------------------------------------
@@ -42,8 +47,8 @@ nPoint n =  do l <- Q.vector n
 -- | Arbitrary instance to test generation of subsimplices. Generates a full
 -- | simplex of arbitrary dimension and integers k and i such that i is a valid
 -- | index of a subsimplex of dimension k.
-instance Arbitrary SubsimplexTest where
-    arbitrary = do t <- arbitrary :: Gen Simplex
+instance Arbitrary v => Arbitrary (SubsimplexTest v) where
+    arbitrary = do t <- arbitrary
                    let n = topologicalDimension t
                    k <- Q.choose (0,n)
                    i <- Q.choose (0,max ((n+1) `choose` (k+1)-1) 0)
@@ -52,17 +57,16 @@ instance Arbitrary SubsimplexTest where
 
 -- | A subsimplex should contain only vertices contained in the supersimplex,
 -- | and the length should be its topological dimension + 1.
-prop_subsimplex :: SubsimplexTest -> Bool
+prop_subsimplex :: Eq v => SubsimplexTest v -> Bool
 prop_subsimplex (SubsimplexTest s@(Simplex _ l) k i) =
     (length subl == k+1) && all (`elem` l) subl
     where n         = topologicalDimension s
           subs      = subsimplex s k i
           subl      = vertices subs
-          indexList = map (\x -> fromJust (elemIndex x l)) subl
 
 -- | subsimplices should return (n+1) choose (k+1) subsimplices and the i:th
 -- | subsimplex should be the same as subsimplex k i
-prop_subsimplices :: SubsimplexTest -> Bool
+prop_subsimplices :: Eq v => SubsimplexTest v -> Bool
 prop_subsimplices (SubsimplexTest s@(Simplex _ l) k _) =
     (length subs == m) && all ithSubsimplexVertices [0..m-1]
     where n    = topologicalDimension s
@@ -71,11 +75,6 @@ prop_subsimplices (SubsimplexTest s@(Simplex _ l) k _) =
           ithSubsimplexVertices i =
               vertices (subs!!i) ==  vertices (subsimplex s k i)
 
--- | The volume of the reference simplices is 1/n!.
-prop_vol :: Int -> Property
-prop_vol i = (i > 0) ==> volume (referenceSimplex i) == 1.0 / (factorial' i)
-
-
 --------------------------------------------------------------------------------
 -- Integration
 --------------------------------------------------------------------------------
@@ -83,53 +82,57 @@ prop_vol i = (i > 0) ==> volume (referenceSimplex i) == 1.0 / (factorial' i)
 -- Data type for constant functions.
 data Constant = Constant Double
 
-instance Function Constant Vector where
-    type Values Constant Vector = Double
-    deriv v h = (Constant 0)
-    eval v (Constant c) = c
+instance EuclideanSpace v Double => Function Constant v where
+    derive v h = (Constant 0.0)
+    evaluate v (Constant c) = c
 
-prop_vol_integral :: Simplex -> Bool
-prop_vol_integral t = eqNum (volume t) (integral (div n 2) t (Constant 1))
-    where n = topologicalDimension t
+prop_vol_integral :: EuclideanSpace v Double => Simplex v -> Bool
+prop_vol_integral t = eqNum (volume t) (integrate 2 t (Constant 1.0))
+     where n = topologicalDimension t
 
 --------------------------------------------------------------------------------
 -- Coordinates
 --------------------------------------------------------------------------------
 
 -- | Type to represent a point in the n-dimensional unit cube.
-newtype Cubic = Cubic Point deriving (Show, Eq)
+newtype Cubic v r = Cubic v deriving (Show, Eq)
 
 -- | Randomly pick a dimension n and a point from the n-dimensional unit
 -- | cube.
-instance Arbitrary Cubic where
+instance EuclideanSpace v r => Arbitrary (Cubic v r) where
     arbitrary = do n <- Q.choose (1,10)
                    cs <- Q.vector n
-                   let transf l = zipWith (-) l (map (fromInt . truncate) l)
-                   return (Cubic (point (map abs (transf cs))))
+                   let transf l = zipWith (sub) l (map (fromInt . truncate') l)
+                   return (Cubic (fromDouble' (transf cs)))
+        where truncate' :: Double -> Integer
+              truncate' = truncate
 
 -- | Check that the transformation of a point in the n-dimensional unit cube is
 -- | a valid point in barycentric coordinates, i.e. that all components are
 -- |  positive and sum to one and that there are n + 1 components.
-prop_cubicToBarycentric :: Cubic -> Bool
-prop_cubicToBarycentric (Cubic p) =
-    (prop_barycentric_range p') && (prop_barycentric_sum p') && (dim p' == dim p + 1)
-        where p' = cubicToBarycentric p
+prop_cubicToBarycentric :: EuclideanSpace v r
+                           => Cubic v r -> Bool
+prop_cubicToBarycentric (Cubic v) =
+    (prop_barycentric_range v') && (prop_barycentric_sum v') && (dim v' == dim v + 1)
+        where v' = cubicToBarycentric v
 
-prop_barycentric_range :: Point -> Bool
-prop_barycentric_range p = (all (0 <=) cs) && (all (1 >=) cs)
-    where cs = components (fromPoint p)
+prop_barycentric_range :: EuclideanSpace v r => v -> Bool
+prop_barycentric_range v = (all (0 <=) cs) && (all (1 >=) cs)
+    where cs = toDouble' v
 
-prop_barycentric_sum :: Point -> Bool
-prop_barycentric_sum p = eqNum (sum cs) 1
-    where cs = components (fromPoint p)
+prop_barycentric_sum :: EuclideanSpace v r => v -> Bool
+prop_barycentric_sum v = eqNum (sum ( toDouble' v )) 1.0
+
 -- | Check that the unit vectors in barycentric coordinates reproduce the vertices
 -- | of the simplex when transformed to cartesian coordinates.
-prop_barycentricToCartesian :: Simplex -> Bool
+prop_barycentricToCartesian :: EuclideanSpace v (Scalar v)
+                            => Simplex v
+                            -> Bool
 prop_barycentricToCartesian t =
-    map (barycentricToCartesian t) ps == vertices t
+    map (barycentricToCartesian t) vs == vertices t
         where n = geometricalDimension t
-              ps = [toPoint $ unitVector (n+1) i | i <- [0..n]]
+              vs = [unitVector (n+1) i | i <- [0..n]]
 
-main = do quickCheck (prop_subsimplex :: SubsimplexTest -> Bool)
-          quickCheck (prop_subsimplices :: SubsimplexTest -> Bool)
-          quickCheck prop_vol_integral
+--main = do quickCheck (prop_subsimplex :: SubsimplexTest v -> Bool)
+--          quickCheck (prop_subsimplices :: SubsimplexTest v -> Bool)
+--          quickCheck prop_vol_integral
