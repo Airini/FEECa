@@ -9,7 +9,10 @@ positions in n-dimensional Euclidean space.
 \begin{code}
 
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module FEEC.Internal.Point(
 
@@ -28,6 +31,7 @@ import Data.List
 import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
 import FEEC.Utility.Print
+import FEEC.Utility.Utility (pairM)
 
 \end{code}
 }
@@ -106,5 +110,17 @@ toPoint = Point
 -- | Position vector of given point.
 fromPoint :: Point a -> Vector a
 fromPoint (Point v) = v
+
+-- Instances
+instance VectorSpace (Point Double) where
+  type Scalar (Point Double) = Double
+  addV x = toPoint . uncurry addV . pairM fromPoint fromPoint . (x,)
+  sclV a = undefined
+
+instance EuclideanSpace (Point Double) Double where
+  dot x    = uncurry dot . pairM fromPoint fromPoint . (x,)
+  fromList = point
+  toList   = toList . fromPoint
+
 
 \end{code}
