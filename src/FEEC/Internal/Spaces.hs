@@ -156,15 +156,17 @@ class (VectorSpace v) => Function f v where
 
 -- | 'FiniteElement' class defined over a geometrical type with an associated
 -- 'Primitive' type over which functions to be approximated can be evaluated to
--- values of the second parameter type of the class.
+-- values of the second parameter type of the class. Types of the class shall
+-- provide an evaluation, quadrature-based method.
 class FiniteElement t r where
   type Primitive t :: *
   quadrature :: Int -> t -> (Primitive t -> r) -> r
 
--- | Generalised integration expressed in terms of the quadrature method
--- associated with the 'FiniteElement' type pair.
-integrate :: (FiniteElement t r, Function f (Primitive t), Scalar (Primitive t) ~ r)
-  => Int -> t -> f -> r
+-- | Generalised integration expressed in terms of a quadrature method (with
+-- given number of nodes) associated with the 'FiniteElement' type pair.
+integrate :: (FiniteElement t r,
+              Function f (Primitive t), Scalar (Primitive t) ~ r)
+    => Int -> t -> f -> r
 integrate i t f = quadrature i t (f $$)
 
 -- | A convenient synomym for the neutral vector with respect to addition in an

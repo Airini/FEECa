@@ -36,7 +36,7 @@ A concrete vector type is implemented by the |Vector a| data-type, which represe
 The parameter type |a| represents the scalar type used for the vector and thus defines
 the underlying arithmetic.
 %
-This enables us to choose between exact and standard floating point aritchmetic depending on the application.
+This enables us to choose between exact and standard floating point arithmetic depending on the application.
 %
 \begin{code}
 data Vector a = Vector { components :: [a] }

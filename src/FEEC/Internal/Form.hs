@@ -14,8 +14,6 @@ module FEEC.Internal.Form (
   ) where
 
 
-
--- import Data.Type.Natural
 import Control.Applicative
 import Data.List (intersect)
 import FEEC.Internal.Spaces
@@ -30,8 +28,6 @@ import FEEC.Utility.Print (Pretty(..), printForm)
 type Dim = Int
 
 
--- XXX: dimVec or dimSpa?
-
 -- | Bilinear, alternating forms over vectorspaces
 data Form f =  -- we lose dependency on the type of vector!
     Form  { arity :: Dim                    -- ^ For complete evaluation
@@ -39,8 +35,6 @@ data Form f =  -- we lose dependency on the type of vector!
           , constituents :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
   deriving (Eq, Show)
 
-{- where the f in constituents might very well be changed to (v -> f) so as to
-   englobe differential forms -}
 
 -- constituents [(17, [1,2]), (38, [1,3])] = 17*dx1/\dx2 + 38*dx1/\dx3
 
@@ -54,9 +48,6 @@ constituentsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
 --   rearrange our terms so as to have them be (inds,coeff) like they used to be?
 instance Functor Form where
   fmap f (Form k n cs) = Form k n (map (pairM f id) cs)
-
--- TODO: Applicative to simplify the following operations!!!
--- XXX: also to be able to lift polynomials easily into it
 
 
 -- XXX: change to Pretty f once all other modules are up to date
@@ -94,7 +85,7 @@ omega +++ eta
 (***) :: Ring f => f -> Form f -> Form f
 (***) a = fmap (mul a)
 
--- | Product of forms
+-- | (Exterior) Product of forms
 (//\\) :: Ring f => Form f -> Form f -> Form f
 omega //\\ eta
     | spaNEq omega eta = errForm "(//\\\\)" BiSpaEq
@@ -105,14 +96,17 @@ omega //\\ eta
           | null (xs `intersect` ys) = (mul a b, xs++ys)
           | otherwise                = (addId, [])
 
+-- | Forms over a 'Ring' form a 'VectorSpace'.
 instance (Ring f) => VectorSpace (Form f) where
   type Scalar (Form f) = f
   addV = (+++)
   sclV = (***)
 
--- This is instance is valid this way since we do not have a restrictive typing
+-- | For 'Form's defined over a 'Ring' we associate an 'Algebra': the exterior
+-- algebra.
+-- This instance is valid this way since we do not have a restrictive typing
 -- for forms and hence addition is blind to arity *type-wise* - however,
--- runtime errors will take place if invalid addition is attempted
+-- runtime errors will take place if invalid addition is attempted.
 instance (Ring f) => Algebra (Form f) where
   addA = addV
   (/\) = (//\\)
@@ -209,7 +203,7 @@ sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
                   else addInv mulId
 
 -- | Equivalent to 'sum' for 'Ring' types
--- To be moved
+-- XXX: To be moved
 sumF :: Ring a => [a] -> a
 sumF = foldl add addId
 
@@ -221,19 +215,22 @@ degNEq omega eta = arity omega /= arity eta
 degNBd :: Form f -> Form f -> Bool
 degNBd  omega eta = (arity omega + arity eta) <= dimVec omega
 
--- | Checks compatible underlying vector space dimensions
+-- | Checks compatible underlying vector space dimensions between forms
 spaNEq :: Form f -> Form f -> Bool
 spaNEq omega eta = dimVec omega /= dimVec eta
 
+-- | Checks compatible underlying vector space dimensions between a form and a
+-- 'Dimensioned' type value
 vecNEq :: Dimensioned v => Form f -> v -> Bool
 vecNEq omega v = dimVec omega /= dim v
 
---errForm :: [Char] -> FormMust -> ()
+errForm :: String -> FormMust -> t
 errForm callee obligation = error $ "Forms." ++ callee ++
                                     ": forms must " ++ show obligation
 
 
--- | Kinds of enforcements to the definitions and opertions between/for 'Form'
+
+-- | Kinds of enforcements to the definitions and operations between/for 'Form'
 data FormMust = BiDegEq | BiDegBd | BiSpaEq | MoProjBd | MoVecEq
 
 instance Show FormMust where
@@ -242,21 +239,4 @@ instance Show FormMust where
   show BiSpaEq  = "act on the same vector space"
   show MoProjBd = "project components of the underlying vector space"
   show MoVecEq  = "act on vectors of the working vectors space"
-
-
-{-
---- ONLY PLACEHOLDERS!!
-data Poly v f = Pp (v -> f)
-
-instance (VectorSpace v, f ~ (Scalar v)) => Function (Poly v f) v where
-  type Values (Poly v f) v = f
-  deriv = undefined
-  eval x (Pp g) = g x
-
-instance Ring f => VectorSpace (Poly v f) where
-  type Scalar (Poly v f) = f
-  addV (Pp g) (Pp h) = Pp $ \vs -> add (g vs) (h vs)
-  sclV a (Pp g) = Pp $ \vs -> mul a (g vs)
---
--}
 
