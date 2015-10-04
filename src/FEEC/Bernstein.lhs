@@ -62,14 +62,14 @@ for constant Bernstein polynomials.
 -- | Bernstein polynomial over a simplex. Represented by a normal polynomial
 -- | internally and uses the generalized functions for evaluation and derivation.
 data BernsteinPolynomial v r = Bernstein (Simplex v) (Polynomial r)
-                           | Constant r
-                             deriving (Eq, Show)
+                             | Constant r
+  deriving (Eq, Show)
 
 -- pretty printing for Bernstein polyonmials
 instance Pretty (BernsteinPolynomial v Double) where
-    pPrint (Bernstein t p) = printPolynomial0 lambda ts
-        where ts = map (expandTerm 0) (terms p)
-    pPrint (Constant p) = text (show p)
+  pPrint (Bernstein t p) = printPolynomial0 lambda ts
+    where ts = map (expandTerm 0) (terms p)
+  pPrint (Constant p) = text (show p)
 
 -- | List multi-indices of the terms in the polynomial.
 multiIndices :: EuclideanSpace v r => BernsteinPolynomial v r -> [MI.MultiIndex]
@@ -169,11 +169,11 @@ polynomial :: EuclideanSpace v r
 polynomial t l
     | (n1 == n2 + 1) && sameLength = Bernstein t (P.polynomial l)
     | otherwise = error "polynomial: Dimensions of Simplex and Polynomials do not match."
-    where
-      mis        = map (dim . snd) l
-      n1         = maximum mis
-      n2         = topologicalDimension t
-      sameLength = all (head mis ==) (tail mis)
+  where
+    mis        = map (dim . snd) l
+    n1         = maximum mis
+    n2         = topologicalDimension t
+    sameLength = all (head mis ==) (tail mis)
 
 
 -- | Create a Bernstein monomial over a given simplex from a given
@@ -183,8 +183,8 @@ monomial :: EuclideanSpace v r
 monomial t mi
     | n1 == n2 + 1 = Bernstein t (P.monomial mi)
     | otherwise   = error "monomial: Dimension of Simplex and Polynomials do not match."
-    where n1 = dim mi
-          n2 = topologicalDimension t
+  where n1 = dim mi
+        n2 = topologicalDimension t
 
 -- | Create a constant bernstein monomial.
 constant :: EuclideanSpace v r => r -> BernsteinPolynomial v r
@@ -370,17 +370,17 @@ where $k$ is the topological dimension of the simplex.
 -- integrateBernstein t1 b@(Bernstein t2 p)
 --     | t1 == t2  = sum (map f (toPairs k p))
 --     | otherwise = integrate t1 b
---     where f (c, mi) = c * vol / ((k + MI.degree mi) `choose` k)
---           k = topologicalDimension t1
---           vol = volume t1
+--   where f (c, mi) = c * vol / ((k + MI.degree mi) `choose` k)
+--         k = topologicalDimension t1
+--         vol = volume t1
 -- integrateBernstein t (Constant c) = c * (volume t)
 
 -- | Redefined Bernstein polynomial over a different simplex or define simplex
 -- | for constant bernstein polynomial.
 redefine :: Ring r
-            => Simplex v
-            -> BernsteinPolynomial v r
-            -> BernsteinPolynomial v r
+         => Simplex v
+         -> BernsteinPolynomial v r
+         -> BernsteinPolynomial v r
 redefine t1 (Bernstein t2 p) = Bernstein t1 p
 redefine t (Constant c)      = Bernstein t (P.constant c)
 

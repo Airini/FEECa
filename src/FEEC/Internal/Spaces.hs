@@ -113,10 +113,11 @@ class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of diff
 class Dimensioned t where
   dim :: t -> Int
 
-class (Eq v, Dimensioned v, VectorSpace v, Eq r, Field r, Scalar v ~ r) => EuclideanSpace v r where
-    dot        :: v          -> v -> r
-    fromList   :: [r] -> v
-    toList     :: v          -> [r]
+class (Eq v, Dimensioned v, VectorSpace v, Eq r, Field r, Scalar v ~ r)
+    => EuclideanSpace v r where
+  dot      :: v   -> v -> r
+  fromList :: [r] -> v
+  toList   :: v   -> [r]
 
 -- Maybe not necessary to have
 class (VectorSpace v) => Function f v where
@@ -130,8 +131,7 @@ class FiniteElement t r where
     type Primitive t :: *
     quadrature :: Int -> t -> (Primitive t -> r) -> r
 
-integrate :: (FiniteElement t r, Function f (Primitive t),
-              Scalar (Primitive t) ~ r)
+integrate :: (FiniteElement t r, Function f (Primitive t), Scalar (Primitive t) ~ r)
           => Int
           -> t
           -> f
@@ -145,11 +145,11 @@ unitVector :: EuclideanSpace v (Scalar v) => Int -> Int -> v
 unitVector n i
     | (n  > 0) && (i >= 0) && (i < n) = fromList $ concat l
     | otherwise = error "unitVector: invalid dimensions!"
-    where l = [replicate i addId, [mulId], replicate (n-i-1) addId]
+  where l = [replicate i addId, [mulId], replicate (n-i-1) addId]
 
 
 fromDouble' :: EuclideanSpace v (Scalar v) => [Double] -> v
 fromDouble' = fromList . map fromDouble
 
 toDouble' :: EuclideanSpace v (Scalar v) => v -> [Double]
-toDouble'  = map toDouble . toList
+toDouble' = map toDouble . toList

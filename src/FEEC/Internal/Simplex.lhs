@@ -19,25 +19,21 @@ The \module{Simplex} module implements simplices in n-dimensional Euclidean
    FlexibleInstances #-}
 
 module FEEC.Internal.Simplex(
-                             -- * The Simplex type
-                             Simplex(..), simplex, simplex', referenceSimplex,
+  -- * The Simplex type
+  Simplex(..), simplex, simplex', referenceSimplex,
 
-                             -- ** Properties
-                             geometricalDimension, topologicalDimension,
-                             volume,
+  -- ** Properties
+  geometricalDimension, topologicalDimension, volume,
 
-                              -- * Subsimplices
-                              subsimplex, subsimplices, subsimplices',
-                              extendSimplex,
+  -- * Subsimplices
+  subsimplex, subsimplices, subsimplices', extendSimplex,
 
-                             -- * Integration
-                             integrateOverSimplex,
+  -- * Integration
+  integrateOverSimplex,
 
-                             -- * Coordinates
-                             cubicToBarycentric, barycentricToCartesian,
-                             cubicToCartesian
-
-                               ) where
+  -- * Coordinates
+  cubicToBarycentric, barycentricToCartesian, cubicToCartesian
+  ) where
 
 import Data.List
 import FEEC.Internal.Spaces
@@ -75,7 +71,7 @@ In finite element exterior calculus we only consider full simplices and
 -- | Invariant: geometrical dimension = length of the vector - 1
 data Simplex a =  Simplex { sigma :: [Int],
                             vertices :: [a] }
-                deriving (Eq, Show)
+  deriving (Eq, Show)
 
 -- | The geometrical dimension of a simplex is the dimensionality of the
 -- | underlying vector space.

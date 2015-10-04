@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module FEEC.FiniteElementSpace (
  -- * Introduction
@@ -25,13 +26,14 @@ import qualified Math.Combinatorics.Exact.Binomial as CBin
 
 -- | Type synomym for basis function of finite element spaces that are of type
 -- | Form BernsteinPolynomial.
-type BasisFunction = Form BernsteinPolynomial
+type BasisFunction v f = Form (BernsteinPolynomial v f)
 
 -- | Data type for the two families of finite element spaces $P_r\Lambda^k$ and
 -- | $P_r^-\Lambda^k$ defined over a simplex.
-data FiniteElementSpace = PrLk Int Int Simplex
-                        | PrmLk Int Int Simplex
-                        | GenSpace [BasisFunction]
+data FiniteElementSpace v f =
+    PrLk Int Int (Simplex v)
+  | PrmLk Int Int (Simplex v)
+  | GenSpace [BasisFunction v f]
 
 -- | Name data type to represent the named finite elements. See
 -- | <http://www.femtable.org Periodic Table of the Finite Elements>.
@@ -48,7 +50,7 @@ data Name = P
 
 -- | Create named finite element space of given polynomial degree over the
 -- | given simplex.
-finiteElementSpace :: Name -> Int -> Simplex -> FiniteElementSpace
+finiteElementSpace :: Dimensioned v => Name -> Int -> Simplex v -> FiniteElementSpace v f
 finiteElementSpace P r t = PrLk r 0 t
 finiteElementSpace Pm r t = PrmLk r 0 t
 finiteElementSpace DP r t = PrLk r (topologicalDimension t) t
@@ -73,36 +75,36 @@ finiteElementSpace N2f r t
     | otherwise = error "N2f1 elements are defined in three dimensions."
 
 -- | The degree of the finite element space.
-degree :: FiniteElementSpace -> Int
+degree :: FiniteElementSpace v f -> Int
 degree (PrLk r _ _) = r
 degree (PrmLk r _ _) = r
 
 -- | The arity of the finite element space
-arity :: FiniteElementSpace -> Int
+arity :: FiniteElementSpace v f -> Int
 arity (PrLk _ k _) = k
 arity (PrmLk _ k _) = k
 
 -- | The dimension of the underlying vector space.
-vspaceDim :: FiniteElementSpace -> Int
+vspaceDim :: Dimensioned v => FiniteElementSpace v f -> Int
 vspaceDim (PrLk _ _ t) = geometricalDimension t
 vspaceDim (PrmLk _ _ t) = geometricalDimension t
 
 -- | The dimension of the finite element space.
-instance Dimensioned FiniteElementSpace where
+instance Dimensioned v => Dimensioned (FiniteElementSpace v f) where
     dim (PrmLk r k t) = ((r + k - 1) `CBin.choose` k) * ((n + k) `CBin.choose` (n - k))
         where n = geometricalDimension t
     dim (PrLk r k t) = ((r + k) `CBin.choose` r ) * ((n + r) `CBin.choose` (n - k))
         where n = geometricalDimension t
 
 -- | List the basis functions of the given finite element space.
-basis :: FiniteElementSpace -> [Form BernsteinPolynomial]
+basis :: EuclideanSpace v f => FiniteElementSpace v f -> [BasisFunction v f]
 basis (PrmLk r k t) = prmLkBasis r k t
 basis (PrLk r k t) = prLkBasis r k t
 
 -- | Extend a differential Form defined on a face of a simplex to the full simplex.
 -- | Implements the barycentric extension operator defined in eq. (7.1) in
 -- | Arnold, Falk, Winther.
-extend :: Simplex -> Form BernsteinPolynomial -> Form BernsteinPolynomial
+extend :: EuclideanSpace v f => Simplex v -> BasisFunction v f -> BasisFunction v f
 extend t (Form k n' cs) = Form k n (extend' cs)
     where extend' = map (\ (x,y) -> (B.extend t x, extendFace n y))
           n = topologicalDimension t
@@ -120,12 +122,12 @@ range mi sigma = sort (union sigma (MI.range mi))
 
 -- | The basis of the $P_r^-\Lambda^k$ space over the given simplex constructed
 -- | using the geometric composition given by Anrold, Falk, Winther.
-prmLkBasis :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
+prmLkBasis :: EuclideanSpace v f => Int -> Int -> Simplex v -> [BasisFunction v f]
 prmLkBasis r k t = concat [ map (extend t) (prmLkFace r k t') | t' <- subsimplices' t k ]
 
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
 -- | a given face of a simplex.1
-prmLkFace :: Int -> Int ->Simplex -> [Form BernsteinPolynomial]
+prmLkFace :: EuclideanSpace v f => Int -> Int -> Simplex v -> [BasisFunction v f]
 prmLkFace r k t = [sclV (b alpha) (whitneyForm t sigma) | alpha <- alphas,
                                                           sigma <- sigmas alpha]
     where n = topologicalDimension t
@@ -137,7 +139,7 @@ prmLkFace r k t = [sclV (b alpha) (whitneyForm t sigma) | alpha <- alphas,
           zero alpha sigma = all (0==) (take (minimum sigma) (MI.toList alpha))
 
 -- | The Whitney forms as given by  equation (6.3).
-whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
+whitneyForm :: Simplex v -> [Int] -> BasisFunction v f
 whitneyForm t ls = Form k n [( lambda' (ls !! i), subsets !! i) | i <- [0..k]]
     where k = length ls - 1
           n = geometricalDimension t
@@ -146,12 +148,12 @@ whitneyForm t ls = Form k n [( lambda' (ls !! i), subsets !! i) | i <- [0..k]]
 
 -- | Basis of the $P_r\Lambda^k$ space over the given simplex constructed using
 -- | the geometric decomposition given by Arnold, Falk, Winther.
-prLkBasis :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
+prLkBasis :: Int -> Int -> Simplex v -> [BasisFunction v f]
 prLkBasis r k t = concat [ map (extend t) (prLkFace r k t') | t' <- subsimplices' t k ]
 
 -- | Basis functions  for the space PrMinusLambdak associated to
 -- | a given face of a simplex.
-prLkFace :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
+prLkFace :: Int -> Int -> Simplex v -> [BasisFunction v f]
 prLkFace r k t = [ sclV (B.extend t b) (psi' (alpha b) sigma) | (b, sigma) <- fs ]
     where fs = map (head . constituents) (prLkFace' r k t)
           psi' alpha sigma = extend t (psi alpha sigma)
@@ -160,9 +162,9 @@ prLkFace r k t = [ sclV (B.extend t b) (psi' (alpha b) sigma) | (b, sigma) <- fs
 
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
 -- | a given face of a simplex.
-prLkFace' :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
+prLkFace' :: Int -> Int -> Simplex v -> [BasisFunction v f]
 prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas,
-                                                   sigma <- sigmas alpha]
+                                                 sigma <- sigmas alpha]
     where n = topologicalDimension t
           b = monomial t
           alphas = MI.degreeR n r
@@ -174,13 +176,13 @@ prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas,
 
 -- | The psi forms that implement the extension operator for the $P_r\Lambda^k$
 -- | spaces as given in equations (8.1) and (8.2) in Arnold, Falk, Winther.
-psi :: MI.MultiIndex -> [Int] -> Form BernsteinPolynomial
+psi :: MI.MultiIndex -> [Int] -> BasisFunction v f
 psi alpha sigma  = foldl (/\) unit [psi' alpha i | i <- sigma]
     where unit = nullForm n mulId
           n = dim alpha
 
 -- TODO: Check form indices.
-psi' :: MI.MultiIndex -> Int -> Form BernsteinPolynomial
+psi' :: MI.MultiIndex -> Int -> BasisFunction v f
 psi' alpha i = subV (db i) (foldl addV zero [sclV (c j) (db j) | j <- [0..n]])
     where db j = oneForm (j+1) n -- Dimension should be n ?
           c j = sclV (fromIntegral (alpha' !! j) / fromIntegral r) mulId
