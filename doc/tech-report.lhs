@@ -28,7 +28,7 @@
 % math environments and symbols
 \usepackage{amsmath, amsfonts}
 \usepackage[toc,page]{appendix}
-\usepackage{macros}
+% TODO: cannot use\usepackage{macros}
 %if techreport
 \usepackage{TRtitlepage}
 %endif
@@ -46,6 +46,19 @@
 \newcommand{\refSecsI}[1]{Sections \ref{#1}}
 \newcommand{\refTab}[1]{Tab. \ref{#1}}
 
+\newcommand{\code}[1]{{\textbf{#1}}}
+\newcommand{\module}[1]{{\textbf{#1}}}
+
+% Symbol for euclidean space of dimension n.
+\newcommand{\R}[1]{$\mathbb{R}^{#1}$}
+% Command for package name
+\newcommand{\FEEC}{\textbf{FEEC}}
+% Command to typeset vectors
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+% Bernstein polynomial.
+\newcommand{\B}[2]{\boldsymbol{B}_{#1}^{#2}}
+
+
 \toappear{}
 \begin{document}
 
@@ -62,17 +75,17 @@
 %if techreport
 \TRtitlepage
   {F.FEEC: Functional Finite Element Exterior Calculus}             % argument 1 <= the title
-  {Tess Ting \\[1em] Test Ing} % argument 2 <= authors
+  {Simon Pfreundschuh \\[1em] Irene Lobo Valbuena} % argument 2 <= authors
   {}                                     % argument 3 <= report number
 %else
 \title{F.FEEC: Functional Finite Element Exterior Calculus}
 
-\authorinfo{Tess Ting}
+\authorinfo{Simon Pfreundschuh}
            {Chalmers Univeristy of Technology, Sweden}
-           {\texttt{tess.ting@@chalmers.se}}
-\authorinfo{Test Ing}
+           {\texttt{simonpf@@student.chalmers.se}}
+\authorinfo{Irene Lobo Valbuena}
            {Chalmers University of Technology, Sweden}
-           {\texttt{test.ing@@chalmers.se}}
+           {\texttt{lobo@@chalmers.se}}
 
 \maketitle
 %endif
@@ -101,23 +114,8 @@ and the suitability of functional languages for mathematical representation.
 
 % Irene
 
-%%%include internal.lhs
+%include Internal.lhs
 
-Introduction of the basic constructs and structures relevant to the implementation, both from the
-mathematics and programming points of view.
-%
-These correspond to (most of the) internal components of the package, covering
-\begin{itemize}
-\item type classes structuring the package (in \module{Spaces})
-\end{itemize}
-
-We further justify the choice of the latter, referring to the following components to be specified.
-
-The aim towards the reader's understanding will be two-fold:
-\begin{itemize}
-\item explain general aspects of the implementation that tie in with simpler mathematical concepts
-      (e.g.: vector spaces and our type class representation of them)
-\end{itemize}
 
 
 %------------------------------------------------------------------------------
@@ -135,7 +133,6 @@ The aim towards the reader's understanding will be two-fold:
 %Simon
 %include Polynomials.lhs
 
-%%%include polyns.lhs
 
 NB: start with: |MultiIndex| operations
 
@@ -156,7 +153,7 @@ This section should also introduce coordinate functions.
 
 % Irene
 
-%%%include forms.lhs
+%include forms.lhs
 
 The generic underlying type |Form a| is introduced, along with its |Algebra| (a class introduced in
 \refSec{sec:internal}) operations.

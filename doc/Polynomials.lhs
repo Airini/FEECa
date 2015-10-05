@@ -3,7 +3,7 @@ At the heart of all finite element techniques is finitie dimensional functions s
 The spaces used in FEEC are the polynomial spaces of given degree $r$ or less over a simplex $T = [\vec{v}_0,\ldots,\vec{v}_k]$.
 %
 
-A general polynomial $f(\vec{x})$ over $\rr{n}$ can be written as a linear combination of monomials of the form
+A general polynomial $f(\vec{x})$ over $\R{n}$ can be written as a linear combination of monomials of the form
 
 \begin{align}\label{eq:mon}
   f(\vec{x}) = \sum_i c_{\vec{\alpha}} \vec{x}^{\vec{\alpha}}
@@ -17,7 +17,7 @@ Here, $\vec{\alpha} = (\alpha_0,\ldots,\alpha_{n-1}) \in \mathrm{N}_0^{n}$ is a 
 
 The degree $||\vec{\alpha}||$ of a multi-index is just the sum of its components.
 
-In FEEC, two representations of polynomials in $\rr{n}$ are used. The first one, as given by \eqref{eq:mon}, will be referred to as the (standard) monomial basis.
+In FEEC, two representations of polynomials in $\R{n}$ are used. The first one, as given by \eqref{eq:mon}, will be referred to as the (standard) monomial basis.
 %
 The second one uses the barycentric coordaintes over a given simplex as basis.
 %

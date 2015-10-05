@@ -2,7 +2,7 @@
 As described above, finite element exterior calculus is based on the
  discretization of arbitrary domains in Euclidean space.
 %
-Let $\Omega \in \rr{n}$ be such a domain.
+Let $\Omega \in \R{n}$ be such a domain.
 %
 The discretization of $\Omega$ is achieved by tesselation using primitive
 geometrical shapes, the so-called finite elements.
@@ -45,7 +45,7 @@ data Vector a = Vector { components :: [a] }
 
 \subsection{Simplices}
 %
-A $k$-simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ in $n$-dimensional Euclidean space $\rr{n}$ is the convex hull of $k+1$ vertices $\vec{v_0},\ldots,\vec{v_k}$ such that the spanning vectors $\vec{v_1}-\vec{v_0} ,\ldots,\vec{v_k}-\vec{v_0}$ are linearly independent.
+A $k$-simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ in $n$-dimensional Euclidean space $\R{n}$ is the convex hull of $k+1$ vertices $\vec{v_0},\ldots,\vec{v_k}$ such that the spanning vectors $\vec{v_1}-\vec{v_0} ,\ldots,\vec{v_k}-\vec{v_0}$ are linearly independent.
 %
 A subsimplex, or face $f$, of dimension $k'$ is a simplex consisting of the convex hull of a subset of $k' + 1$ vertices of its supersimplex.
 %
