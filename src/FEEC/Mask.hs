@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module FEEC.Mask where
 
 import Control.Applicative
@@ -7,11 +8,13 @@ import FEEC.Internal.Form
 import FEEC.Internal.Spaces
 import FEEC.Internal.Point
 import FEEC.Internal.Vector
+import FEEC.Internal.Simplex
 import FEEC.Polynomial
 import FEEC.Utility.Utility
 
 type Monop t = t -> t
 type Binop t = t -> t -> t
+type PolyRepresentation = Polynomial 
 
 (.*) :: VectorSpace v => Scalar v -> v -> v
 (.*) = sclV
@@ -55,6 +58,9 @@ dx = oneForm
 dxN :: Ring f => Dim -> Dim -> Form f
 dxN = flip dx
 
+dxVP :: (Eq (Vector f), Field f) => Int -> Vector f -> PolyRepresentation f
+dxVP = (fmap . fmap) constant dxV
+
 (#) :: Form Double -> [Vector Double] -> Double
 (#) = refine dxV
 -- TODO: unify
@@ -69,46 +75,51 @@ canonCoord i n = take n $
 canonCoords :: Ring a => Int -> [[a]]
 canonCoords n = map (`canonCoord` n) [1..n]
 
-coordinate :: Ring f => Int -> Int -> Polynomial f
+coordinate :: Ring f => Int -> Int -> PolyRepresentation f
 coordinate i n = linearPolynomial (canonCoord i n)
 
-coordinates :: Ring f => Int -> [Polynomial f]
+coordinates :: Ring f => Int -> [PolyRepresentation f]
 coordinates = fmap linearPolynomial . canonCoords
 
 
 bssIx n = vector . flip canonCoord n
 
 -- or <|> ?
-(<>) :: Form Double -> Form Double -> Double
+(<>) :: (Eq (Vector f), Field f) => Form f -> Form f -> f
 (<>) omega eta = inner dxV (bssIx n) omega eta
   where n = dimVec omega
 
-(⌟) :: Form Double -> Vector Double -> Form Double
+(⌟) :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f 
 (⌟) = contract dxV
 
+interior :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f 
 interior = (⌟)
 
-𝝹 :: Form (Polynomial Double) -> Form (Polynomial Double)
+𝝹 :: Form (PolyRepresentation Double) -> Form (PolyRepresentation Double)
 𝝹 form = contract (const . flip coordinate n) form (undefined::Vector Double)
   where n = dimVec form
 -- TODO: extract degree from polynomial
 kappa = 𝝹
 
 -- | Exterior derivative
-d :: Monop (Form (Polynomial Double))
+d :: Monop (Form (PolyRepresentation Double))
 d form = df (vector . flip canonCoord n) form
   where n = dimVec form
 
 -- | Evaluation of differential forms at a given point to obtain an alternating form
-(§) :: DifferentialForm Double -> Point Double -> Form Double
+(§) :: DifferentialForm (PolyRepresentation Double) -> Point Double -> Form Double
 (§) = eval
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors
 --   (some kind of canonical projection)
-(&) :: DifferentialForm Double -> Vector Double -> DifferentialForm Double
+(&) :: (Field f, Eq (Vector f)) => DifferentialForm (PolyRepresentation f) -> Vector f -> DifferentialForm (PolyRepresentation f)
 (&) = contract dxVP
 -- ALSO: generalise Vector? that way we can have parameterised vectors :)
 -- kappa, etc. => explicit symbols
 -- integration, inner product
 
+
+--integral :: (FiniteElement t r, Function f (Primitive) =>
+integral :: (EuclideanSpace v r) => Simplex v -> DifferentialForm (PolyRepresentation f) -> Scalar v
+integral t f = undefined
 

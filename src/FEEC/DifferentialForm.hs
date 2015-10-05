@@ -1,4 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeSynonymInstances #-}
@@ -12,7 +14,7 @@ module FEEC.DifferentialForm (
   , df, eval
   
   -- * Projection operations: into scalara and polynomial values respectively
-  , dxV, dxVP
+  , dxV
   ) where
 
 import Control.Applicative (pure)
@@ -20,12 +22,14 @@ import FEEC.Internal.Form
 import FEEC.Internal.Point
 import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
+import FEEC.Internal.Simplex
 import FEEC.Polynomial
 import FEEC.Utility.Utility (pairM)
 
 
 -- | Differential forms
-type DifferentialForm f = Form (Polynomial f)
+type DifferentialForm f = Form f
+  -- DForm :: (Function h v) => Form h -> DifferentialForm h
 -- Immediately "inherits" all class instantiations for 'Form' when an
 -- appropriate 'f' is used for Polynomial coefficients (?)
 
@@ -34,7 +38,7 @@ type DifferentialForm f = Form (Polynomial f)
 
 
 -- Few examples to test how to write
-f :: Ring f => DifferentialForm f
+{-f :: Ring f => DifferentialForm f
 f = oneForm 1 4
 
 g :: Ring f => DifferentialForm f
@@ -50,26 +54,20 @@ b :: Vector Double
 b = vector [1,2,0]
 y :: Vector Double
 y = vector [3,-2.3,1]
+-}
 
-dxV :: Int -> Vector Double -> Double
+dxV :: (Eq (Vector f), Field f) => Int -> Vector f -> f
 dxV i x = toList x !! (i-1)
 
-dxVP = (fmap . fmap) constant dxV
-expression = refine dxVP (t /\ g) [b, y]
+{-expression = refine dxVP (t /\ g) [b, y]
 
 eg1 = evaluate (vector [-0.1,10,0]) expression
 -- -479.74
-
+-}
 
 -- basisIx must be in agreement with the proj paramenter used in evaluation!
 --      OR: add zero-th vector to 'VectorSpace' class?
 -- Remark: reduced generality for our R^n types
-diff :: (Function (Polynomial Double) v) => (Int -> v) -> DifferentialForm Double -> DifferentialForm Double
-diff basisIx form =
-    foldr (addA . (\ i -> fmap (derive (basisIx i)) (oneForm i n /\ form)))
-          (zeroForm (1 + arity form) n)
-          [1 .. n]
-  where n = dimVec form
 
 -- Generalised to any appropriate form (polynomial differential forms being but
 -- a case)
@@ -82,8 +80,6 @@ df basisIx form =
 
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 
-eval :: DifferentialForm Double -> Point Double -> Form Double
+eval :: (Function h (Vector f)) => DifferentialForm h -> Point f -> Form f
 eval u = ($u) . fmap . evaluate . fromPoint
-
-
 
