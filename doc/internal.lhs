@@ -78,7 +78,7 @@ instance of a type as a |VectorSpace|.
 Other than the typical \R{n} space, many of the central structures provided by
 the package to implement finite element exterior caculus give rise to a
 |VectorSpace| type, such as forms themselves (in \refSec{sec:forms}) and the
-different polynomial implementations (in \refSEc{sec:polyns}).
+different polynomial implementations (in \refSec{sec:polyns}).
 %
 |VectorSpace| is hence a backbone class to much of the implemented functionality
 and allows for it to be expressed in a general way, leading to flexibility in
@@ -110,7 +110,7 @@ laws that rule over them, a property that cannot be demonstrated in a foolproof
 way but at least can be reliably checked with automated random testing.
 
 Concretely, the algebras we will represent (those of alternating and
-differential forms) are anti-commutative graded algebras [cite A].
+differential forms) are anti-commutative graded algebras \[cite A\].
 %
 In our frame, these algebras are composed by the direct sum of vector spaces of
 different dimensions (the spaces of forms of varying arities, see
@@ -142,6 +142,7 @@ generic operations that rely on a canonical basis of a fixed space.
 
 \subsection{Getting closer to the domain of application}
 
+U
 
 
 

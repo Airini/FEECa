@@ -28,7 +28,7 @@
 % math environments and symbols
 \usepackage{amsmath, amsfonts}
 \usepackage[toc,page]{appendix}
-% TODO: cannot use\usepackage{macros}
+\usepackage{macros}
 %if techreport
 \usepackage{TRtitlepage}
 %endif
@@ -50,7 +50,7 @@
 \newcommand{\module}[1]{{\textbf{#1}}}
 
 % Symbol for euclidean space of dimension n.
-\newcommand{\R}[1]{$\mathbb{R}^{#1}$}
+\newcommand{\R}[1]{$\mathbb{R}^{#1}$}  % ensuremath
 % Command for package name
 \newcommand{\FEEC}{\textbf{FEEC}}
 % Command to typeset vectors
