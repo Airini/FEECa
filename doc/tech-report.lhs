@@ -24,7 +24,7 @@
 %include tech-report.format
 
 \usepackage{url}
-\usepackage[utf8]{inputenc}
+\usepackage[utf8x]{inputenc}
 % math environments and symbols
 \usepackage{amsmath, amsfonts}
 \usepackage[toc,page]{appendix}

@@ -78,7 +78,7 @@ instance of a type as a |VectorSpace|.
 Other than the typical \R{n} space, many of the central structures provided by
 the package to implement finite element exterior caculus give rise to a
 |VectorSpace| type, such as forms themselves (in \refSec{sec:forms}) and the
-different polynomial implementations (in \refSEc{sec:polyns}).
+different polynomial implementations (in \refSec{sec:polyns}).
 %
 |VectorSpace| is hence a backbone class to much of the implemented functionality
 and allows for it to be expressed in a general way, leading to flexibility in
