@@ -63,9 +63,13 @@ library
                        FEEC.Utility.Quadrature
 
   -- LANGUAGE extensions used by modules in this package.
-  other-extensions:    GADTs, FlexibleInstances, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, FlexibleContexts, UndecidableInstances, OverlappingInstances
+  other-extensions:    GADTs, FlexibleInstances, TypeFamilies,
+                       MultiParamTypeClasses, ExistentialQuantification,
+                       FlexibleContexts, UndecidableInstances, OverlappingInstances
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.7 && <4.9, exact-combinatorics >=0.2 && <0.3, QuickCheck >=2.7, random >=1.0, hmatrix >=0.16 && <0.17, pretty >= 1.1.1
+  build-depends:       base >=4.7 && <4.9, exact-combinatorics >=0.2 && <0.3,
+                       QuickCheck >=2.7, random >=1.0, hmatrix >=0.16 && <0.17.1,
+                       pretty >= 1.1.1
 
   -- Directories containing source files.
   -- hs-source-dirs:
