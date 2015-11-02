@@ -32,7 +32,7 @@ module FEEC.Internal.Simplex(
   Simplex(..), simplex, simplex', referenceSimplex,
 
   -- ** Properties
-  geometricalDimension, topologicalDimension, volume,
+  geometricalDimension, topologicalDimension, volume, spanningVectors,
 
   -- * Subsimplices
   subsimplex, subsimplices, subsimplices', extendSimplex,
@@ -481,7 +481,7 @@ cubicToBarycentric v = fromList (ls ++ [l])
 
 where $\alpha=n-i$. The points $\xi^\alpha_j$ are the roots of the Jacobi 
 polynomial $P_q^{\alpha,0}$ and the w^\alpha_j the corresponding weights, that
- can be computed using the Golub-Welsch algorithm \cite{GolubWelsch}. The 
+can be computed using the Golub-Welsch algorithm \cite{GolubWelsch}. The 
 integral of $f$ over $\smp{T}$ can then be approximated using
 
 \begin{align}\label{eq:integral}
@@ -518,16 +518,15 @@ nestedSum :: EuclideanSpace v (Scalar v)
              -> (v -> Scalar v)
              -> Scalar v
 nestedSum k d ls t f
-    | d == 0    = sum' [ mul w (f x)
-                          | (w, x) <- zip weights' xs ]
-    | otherwise = sum' [ mul w (nestedSum k (d-1) (x:ls) t f)
-                          | (w, x) <- zip weights' nodes' ]
+    | d == 0    = U.sumR [ mul w (f x)
+                           | (w, x) <- zip weights' xs ]
+    | otherwise = U.sumR [ mul w (nestedSum k (d-1) (x:ls) t f)
+                           | (w, x) <- zip weights' nodes' ]
   where xs = [ cubicToCartesian t (fromList' (xi : ls)) | xi <- nodes' ]
         fromList' = fromList . reverse
         (nodes, weights) = unzip $ gaussJacobiQuadrature' d 0 k
         nodes'   = map fromDouble nodes
         weights' = map fromDouble weights
-        sum'     = foldl add addId
 
 instance (EuclideanSpace v r) => FiniteElement (Simplex v) r where
   type Primitive (Simplex v) = v

@@ -33,7 +33,8 @@ import FEEC.Internal.Simplex
 import FEEC.Internal.Spaces
 
 import FEEC.Polynomial ( Polynomial, Term, term, terms, expandTerm,
-                        evaluatePolynomial, derivePolynomial, multiplyPolynomial,
+                        evaluatePolynomial, derivePolynomial, integratePolynomial,
+                        multiplyPolynomial,
                         barycentricCoordinates, barycentricGradient,
                         barycentricGradients', toPairs)
 import qualified FEEC.Polynomial as P (degree, multiIndices, monomial,

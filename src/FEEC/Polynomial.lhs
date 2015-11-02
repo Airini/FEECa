@@ -47,7 +47,7 @@ module FEEC.Polynomial (
   , expandTerm, monomial, multiIndices, degrees, toPairs
 
   -- * Mathematical operations
-  , evaluatePolynomial, derivePolynomial, multiplyPolynomial
+  , evaluatePolynomial, derivePolynomial, integratePolynomial, multiplyPolynomial
 
   -- * Barycentric Coordinates
   , barycentricCoordinate, barycentricCoordinates

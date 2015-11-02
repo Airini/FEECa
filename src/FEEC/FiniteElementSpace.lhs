@@ -74,7 +74,7 @@ data FiniteElementSpace = PrLk Int Int Simplex
 
 -- | Type synomym for basis function of finite element spaces that are of type
 -- | Form BernsteinPolynomial.
-type BasisFunction = Form BernsteinPolynomial
+type BasisFunction = DifferentialForm BernsteinPolynomial
 
 \end{code}
 

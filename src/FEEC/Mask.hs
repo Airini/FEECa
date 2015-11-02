@@ -1,4 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeFamilies #-}
 module FEEC.Mask where
 
 import Control.Applicative
@@ -61,7 +63,7 @@ dxN = flip dx
 dxVP :: (Eq (Vector f), Field f) => Int -> Vector f -> PolyRepresentation f
 dxVP = (fmap . fmap) constant dxV
 
-(#) :: Form Double -> [Vector Double] -> Double
+(#) :: {-Field f => -} Form Double -> [Vector Double] -> Double
 (#) = refine dxV
 -- TODO: unify
 -- complete (##) :: (Ringh, VectorSpace v) => Form h -> [v] -> h
@@ -120,6 +122,15 @@ d form = df (vector . flip canonCoord n) form
 
 
 --integral :: (FiniteElement t r, Function f (Primitive) =>
-integral :: (EuclideanSpace v r) => Simplex v -> DifferentialForm (PolyRepresentation f) -> Scalar v
-integral t f = undefined
+integral :: (EuclideanSpace v f, f ~ Scalar v) => Simplex v -> DifferentialForm (PolyRepresentation f) -> Scalar v
+integral t f = integratePolynomial t undefined {- (f#vs)
+  where vs = fmap (lii ) $ spanningVectors t
+        lii v = vector (fmap constant (toList v))-}
+
+{-
+instance Field f => Field (PolyRepresentation f) where
+  mulInv = undefined
+  fromDouble = constant . fromDouble
+  toDouble = undefined
+-}
 

@@ -1,6 +1,7 @@
 module FEEC.Utility.Utility( Dimension(..),
                              takeIndices,
                              pairM, pairUp,
+                             sumR,
                              eqNum,
                              toDouble,
                              fromDouble
@@ -19,6 +20,10 @@ pairM f h (x,y) = (f x, h y)
 -- | Create a pair from two arguments
 pairUp :: a -> b -> (a,b)
 pairUp x y = (x,y)
+
+-- | Equivalent to 'sum' for 'Ring' types
+sumR :: Ring a => [a] -> a
+sumR = foldl add addId
 
 -- | Numerical equality accounting for round-off errors
 eqNum :: Field a => a -> a -> Bool

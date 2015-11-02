@@ -90,7 +90,7 @@ a_jac :: Int -> Int -> Coeff Double
 a_jac alpha beta i
     | (2*i + alpha + beta) <= 2 = 1
     | otherwise = i2ab * (i2ab - 1) * (i2ab -2) / den_jac alpha beta i
-    where i2ab = fromIntegral (2 * i + alpha + beta)
+  where i2ab = fromIntegral (2 * i + alpha + beta)
 
 -- b_i coefficient for Jacobi polynomials as defined in the paper by
 -- Golub and Welsch.
@@ -98,9 +98,9 @@ b_jac :: Int -> Int -> Coeff Double
 b_jac alpha beta i
     | (2*i + alpha + beta) <= 2 = 0
     | otherwise = (2*i' + a' + b' - 1) * (a'*a' - b'*b') / den_jac alpha beta i
-    where a' = fromIntegral alpha
-          b' = fromIntegral beta
-          i' = fromIntegral i
+  where a' = fromIntegral alpha
+        b' = fromIntegral beta
+        i' = fromIntegral i
 
 -- c_i coefficient for Jacobi polynomials as defined in the paper by
 -- Golub and Welsch.
@@ -109,9 +109,9 @@ c_jac alpha beta i
     | (2*i + alpha + beta) <= 2 = 0
     | otherwise = 2 * (i' + a' - 1) * (i' + b' - 1) * (2 * i' + a' + b') /
                   den_jac alpha beta i
-    where a' = fromIntegral alpha
-          b' = fromIntegral beta
-          i' = fromIntegral i
+  where a' = fromIntegral alpha
+        b' = fromIntegral beta
+        i' = fromIntegral i
 
 -- Common denominator for the coefficient functions of the recurrence relation
 -- for the Jacobi integrals.

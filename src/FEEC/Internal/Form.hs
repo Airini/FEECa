@@ -18,7 +18,7 @@ import Control.Applicative
 import Data.List (intersect)
 import FEEC.Internal.Spaces
 import FEEC.Utility.Discrete
-import FEEC.Utility.Utility (pairM)
+import FEEC.Utility.Utility (pairM, sumR)
 import FEEC.Utility.Print (Pretty(..), printForm)
 
 
@@ -156,7 +156,7 @@ refine :: (Ring f, VectorSpace v) =>
                                --   for the specific vector space
        -> Form f
        -> [v] -> f
-refine proj eta@(Form k n cs) vs = sumF (map (($ vs) . formify proj) cs)
+refine proj eta@(Form k n cs) vs = sumR (map (($ vs) . formify proj) cs)
 -- TODO: capture inconsistency between k and length vs here??
 -- ALSO: 0-forms... not evaluating correctly now! Cfr: formify does not accept
 --    empty cs
@@ -201,11 +201,6 @@ sign :: Ring f => ([Int], [Int]) -> f
 sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
                   then mulId
                   else addInv mulId
-
--- | Equivalent to 'sum' for 'Ring' types
--- XXX: To be moved
-sumF :: Ring a => [a] -> a
-sumF = foldl add addId
 
 -- | Checks arity equality
 degNEq :: Form f -> Form f -> Bool
