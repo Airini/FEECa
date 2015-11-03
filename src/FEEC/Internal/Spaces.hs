@@ -143,11 +143,13 @@ class (Eq v, Dimensioned v, VectorSpace v, Eq r, Field r, Scalar v ~ r)
   dot      :: v   -> v -> r
   fromList :: [r] -> v
   toList   :: v   -> [r]
+-- XXX: add basis??
 
 -- Maybe not necessary to have; a bit ad-hoc
 -- | Class of simple functions over a 'VectorSpace' and which may be
 -- differentiated in any arbitrary direction in it (that is, wrt to an arbitrary
 -- vector) and evaluated to 'Scalar' values the 'VectorSpace' is defined over
+-- TODO: update so that it requires more? ==> Euclidean Space
 class (VectorSpace v) => Function f v where
   derive    :: v -> f -> f
   evaluate  :: v -> f -> Scalar v

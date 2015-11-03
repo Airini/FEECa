@@ -14,13 +14,14 @@ The representation of these geometrical structures is realized in FEEC using the
 |EuclideanSpace| type-class as well as the |Vector| and |Simplex| data types.
 
 \subsection{Vectors}
+\label{subsec:vectors}
 
 %
 Vectors in $\mathrm{R}^n$ are represented by the multi-parameter typeclass |EuclideanSpace v r|, where |v| represents the vector type and |r| the scalar type.
 %
 The superclass |VectorSpace| represents the arithmetic structure of a general vector space over a ring of scalars.
 %
-The |EuclideanSpace| class is basically an extension of the |VectorSpace| class that adds the inner product in $\mathrm{R}^n$ and the representation as finite lists of vector components to the funcitonality provided by the |VectorSpace| class.
+The |EuclideanSpace| class is basically an extension of the |VectorSpace| class that adds the inner product in $\mathrm{R}^n$ and the representation as finite lists of vector components to the functionality provided by the |VectorSpace| class.
 %
 \begin{code}
 class (Eq v, Dimensioned v, VectorSpace v,

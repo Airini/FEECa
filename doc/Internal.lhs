@@ -3,7 +3,7 @@
 %------------------------------------------------------------------------------%
 With the purpose of setting a standard collection of abstract constructs and
 structures to shape the package, a series of backbone classes are defined in the
-internal module \module{Spaces}.
+internal module \module{Internal.Spaces}.
 %
 
 \subsection{Structured sets of elements at the base}
@@ -34,7 +34,7 @@ $0$ and |mulId| = $1$ respectively, as well as an additive inverse operation
 \paragraph{}
 
 This permits generalising the represented concepts to other structures such as
-Kähler differentials [cite].
+Kähler differentials [TODO: cite].
 %
 It also opens the possibility to experiment with different precision floating
 point number representations or even support with some small additional work
@@ -77,8 +77,8 @@ instance of a type as a |VectorSpace|.
 
 Other than the typical $\R{n}$ space, many of the central structures provided by
 the package to implement finite element exterior caculus give rise to a
-|VectorSpace| type, such as forms themselves (in \refSec{sec:forms}) and the
-different polynomial implementations (in \refSec{sec:polyns}).
+|VectorSpace| type, such as forms themselves (in \refSecI{sec:forms}) and the
+different polynomial implementations (in \refSecI{sec:polyns}).
 %
 |VectorSpace| is hence a backbone class to much of the implemented functionality
 and allows for it to be expressed in a general way, leading to flexibility in
@@ -110,11 +110,11 @@ laws that rule over them, a property that cannot be demonstrated in a foolproof
 way but at least can be reliably checked with automated random testing.
 
 Concretely, the algebras we will represent (those of alternating and
-differential forms) are anti-commutative graded algebras \[cite A\].
+differential forms) are anti-commutative graded algebras \cite{acta}.
 %
 In our frame, these algebras are composed by the direct sum of vector spaces of
 different dimensions (the spaces of forms of varying arities, see
-\refSec{sec:forms} for more).
+\refSecI{sec:forms} for more).
 
 \paragraph{}
 
@@ -142,8 +142,64 @@ generic operations that rely on a canonical basis of a fixed space.
 
 \subsection{Getting closer to the domain of application}
 
-U
+Our interest is to provide functionality characteristic of differential
+structures.
+%
+Such are derivation and integration.
+%
+In particular, most current computational applications of differential forms
+veer towards the archetypical $\R{3}$ in which we describe many physical
+elements.
+
+Keeping the objects still fairly general, the operations this view gives rise to
+start assuming more details about the spaces one works on.
+%
+For instance the knowledge of a basis and hence the ability to interpret
+elements in structures and operate on them in terms of such a basis.
+% TODO: notion of or "notion and"
+This serves as motivation for the introduction of the |EuclideanSpace| class,
+further described in \refSecI{subsec:vectors}, supporting the notion of ability
+to transform from an abstract representation to a more concrete one although
+still implicit.
+% TODO: change and add basis and hence avoid this implicitness?
+The implicit nature comes from the absence of an explicit basis for Euclidean
+spaces and yet represent interesting operations for our domain (like inner
+products) along with the translation to and from lists of coefficient vectors.
+
+
+\subsubsection{Differential calculus operations}
+
+% finite...
+The calculus we are implementing works on finite, smooth manifolds $\Omega$.
+%
+A manifold" is a topological concept but what it entails is the existence of
+a homeomorphic transformation from the manifold to an Euclidean space (of equal
+dimension) for a neighbourhood of each point of the manifold.
+%
+This further motivates the introduction of |EuclideanSpace| as a class, since it
+will be the way of representing manifolds.
+
+Given that the meaning of what a function in a language such as Haskell is
+specific (and pure), a new class is introduced for functions on these manifolds,
+which we wish to study.
+%
+The |Function| class is arguably ad-hoc, since it specialises for the use cases
+we so far have an interested in having:
+
+> class (VectorSpace v) => Function f v where
+>   derive    :: v -> f -> f
+>   evaluate  :: v -> f -> Scalar v
+>
+>   ($$)  :: f -> v -> Scalar v
+>   ($$) = flip evaluate
 
 
 
+
+As we will see in \refSecI{sec:forms}, differential forms depend on both the
+notion of alternating forms (introduced then) 
+
+To support the implemenation of functions 
+
+\subsubsection{Geometrical concerns}
 

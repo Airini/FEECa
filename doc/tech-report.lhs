@@ -105,6 +105,8 @@
 
 %%%include intro.lhs
 
+TODO
+
 Explanation of the purpose, referring to the supporting literature the implementation is based on
 and the suitability of functional languages for mathematical representation.
 %
