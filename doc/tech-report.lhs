@@ -54,11 +54,14 @@
 % Command for package name
 \newcommand{\FEEC}{\textbf{FEEC}}
 % Command to typeset vectors
-\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\renewcommand{\vec}[1]{\boldsymbol{{#1}}}
 % Bernstein polynomial.
 \newcommand{\B}[2]{\boldsymbol{B}_{#1}^{#2}}
 
-
+% Missing: where to find them?? TODO: Simon
+\newcommand{\smp}[1]{\mathit{#1}}
+\newcommand{\pl}[2]{\mathcal{P}_r\Lambda^k}
+\newcommand{\pml}[2]{\mathcal{P}_r^-\Lambda^k}
 \toappear{}
 \begin{document}
 
