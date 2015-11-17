@@ -27,7 +27,7 @@ and $1$~=~|mulId| respectively, as well as an additive inverse operation
 >   add     :: v -> v -> v
 >   addId   :: v
 >   addInv  :: v -> v
->  
+>
 >   mul     :: v -> v -> v
 >   mulId   :: v
 
@@ -104,8 +104,9 @@ already, via which it provides a built-in implementation of addition and scaling
 of its elements (that which it inherits from the vector space characterisation).
 
 > class VectorSpace v => Algebra v where
->   addA :: v -> v -> v
 >   (/\) :: v -> v -> v
+>
+>   addA :: v -> v -> v
 >   sclA :: Scalar v -> v -> v
 >   addA = addV
 >   sclA = sclV
@@ -211,11 +212,8 @@ we so far require:
 
 
 %As we will see in \refSecI{sec:forms}, differential forms depend on both the
-%notion of alternating forms (introduced then) 
+%notion of alternating forms (introduced then)
 
-%To support the implemenation of functions 
+%To support the implementation of functions
 
 \subsubsection{Geometrical concerns}
-
-
-

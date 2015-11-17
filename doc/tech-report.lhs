@@ -2,11 +2,11 @@
 %----------------------------------------------------------------------------
 % TODO:
 %  Title       :  F.FEEC: Functional Finite Element Exterior Calculus
-%  Author(s)   :  
-%  Copyright   :  
+%  Author(s)   :
+%  Copyright   :
 %  Created     :  2015-06-15
 %
-%  Purpose     :  
+%  Purpose     :
 %
 %----------------------------------------------------------------------------
 
@@ -86,7 +86,7 @@
 \title{F.FEEC: Functional Finite Element Exterior Calculus}
 
 \authorinfo{Simon Pfreundschuh}
-           {Chalmers Univeristy of Technology, Sweden}
+           {Chalmers University of Technology, Sweden}
            {\texttt{simonpf@@student.chalmers.se}}
 \authorinfo{Irene Lobo Valbuena}
            {Chalmers University of Technology, Sweden}

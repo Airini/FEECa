@@ -1,4 +1,4 @@
-At the heart of all finite element techniques is finitie dimensional functions space, that makes the finding of solutions for differential equations tractable.
+At the heart of all finite element techniques is finite dimensional functions space, that makes the finding of solutions for differential equations tractable.
 %
 The spaces used in FEEC are the polynomial spaces of given degree $r$ or less over a simplex $T = [\vec{v}_0,\ldots,\vec{v}_k]$.
 %
@@ -19,7 +19,7 @@ The degree $||\vec{\alpha}||$ of a multi-index is just the sum of its components
 
 In FEEC, two representations of polynomials in $\R{n}$ are used. The first one, as given by \eqref{eq:mon}, will be referred to as the (standard) monomial basis.
 %
-The second one uses the barycentric coordaintes over a given simplex as basis.
+The second one uses the barycentric coordinates over a given simplex as basis.
 %
 Polynomials of this type are referred to as Bernstein polynomials.
 %
@@ -31,8 +31,8 @@ of general polynomials over an arbitrary monomial basis.
 
 \begin{code}
 data Polynomial a =
-    Polynomial { degree :: Int,
-                 terms  :: [Term a] }
+    Polynomial {  degree  :: Int,
+                  terms   :: [Term a] }
     deriving (Eq, Show)
 \end{code}
 
@@ -68,9 +68,9 @@ The |BernsteinPolynomial| type is parametrized by two types, that specify the sc
 
 \begin{code}
 data BernsteinPolynomial v r =
-     Bernstein (Simplex v) (Polynomial r)
-        | Constant r
-        deriving (Eq, Show)
+        Bernstein (Simplex v) (Polynomial r)
+     |  Constant r
+    deriving (Eq, Show)
 \end{code}
 
 A common Bernstein polynomial is represented by the simplex it is defined over and a general polynomial.
