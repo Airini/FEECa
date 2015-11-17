@@ -4,7 +4,7 @@ NAME    := tech-report
 LHS2TEX := lhs2TeX
 LATEXMK := latexmk
 
-DEPS := Geometry.lhs Polynomials.lhs FEspaces.lhs
+DEPS := internal.lhs geometry.lhs polynomials.lhs forms.lhs fespaces.lhs
 
 BASE_DIR := ../src/FEEC
 

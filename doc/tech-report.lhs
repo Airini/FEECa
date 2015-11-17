@@ -28,7 +28,7 @@
 % math environments and symbols
 \usepackage{amsmath, amsfonts}
 \usepackage[toc,page]{appendix}
-\usepackage{macros}
+%%% ignore \usepackage{macros}   TODO: cannot find
 %if techreport
 \usepackage{TRtitlepage}
 %endif
@@ -119,7 +119,7 @@ and the suitability of functional languages for mathematical representation.
 
 % Irene
 
-%include Internal.lhs
+%include internal.lhs
 
 
 
@@ -129,14 +129,14 @@ and the suitability of functional languages for mathematical representation.
 
 % Simon
 
-%include Geometry.lhs
+%include geometry.lhs
 
 %------------------------------------------------------------------------------
 \section{Polynomials}
 \label{sec:polyns}
 
 %Simon
-%include Polynomials.lhs
+%include polynomials.lhs
 
 
 NB: start with: |MultiIndex| operations
@@ -179,7 +179,7 @@ The built-in Whitney form implementation is also given (towards building the neg
 
 % Simon
 
-%include FEspaces.lhs
+%include fespaces.lhs
 
 Both $\mathcal{P}_r^-\Lambda^n$ and $\mathcal{P}_r\Lambda^n$ finite element spaces implementations
 are given.
