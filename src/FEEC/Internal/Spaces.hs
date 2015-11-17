@@ -96,11 +96,10 @@ class (Ring (Scalar v)) => VectorSpace v where -- Module over a Ring
   type Scalar v :: *      -- Coefficient ring
   addV  :: v -> v -> v
   sclV  :: Scalar v -> v -> v
-
-
--- | Derived vector subtraction from 'VectorSpace' class functions.
-subV :: VectorSpace v => v -> v -> v
-subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
+  
+  -- | Derived vector subtraction from 'VectorSpace' class functions.
+  subV :: v -> v -> v
+  subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
 
 -- | Zero vector
 -- XXX: NB: we could add it as a member of the class?? for more "peculiar" types
@@ -167,12 +166,12 @@ class FiniteElement t r where
   type Primitive t :: *
   quadrature :: Int -> t -> (Primitive t -> r) -> r
 
--- | Generalised integration expressed in terms of a quadrature method (with
--- given number of nodes) associated with the 'FiniteElement' type pair.
-integrate :: (FiniteElement t r,
-              Function f (Primitive t), Scalar (Primitive t) ~ r)
+  -- | Generalised integration expressed in terms of a quadrature method (with
+  -- given number of nodes) associated with the 'FiniteElement' type pair.
+  integrate :: (FiniteElement t r,
+                Function f (Primitive t), Scalar (Primitive t) ~ r)
     => Int -> t -> f -> r
-integrate i t f = quadrature i t (f $$)
+  integrate i t f = quadrature i t (f $$)
 
 -- | A convenient synomym for the neutral vector with respect to addition in an
 -- 'EuclideanSpace' of some given dimension.

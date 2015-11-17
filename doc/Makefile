@@ -13,8 +13,7 @@ UTILITY_DIR  := $(join $(BASE_DIR), /Utility)
 
 INTERNALS := /Vector.lhs
 UTILITIES := /Combinatorics.lhs
-TOP_LEVEL :=
-# /Mask.lhs
+TOP_LEVEL := /Mask.lhs
 
 PREP := $(join $($(1)), $($(2)))
 
@@ -27,6 +26,9 @@ default : $(NAME).pdf
 
 %.pdf : %.tex %.bib
 	$(LATEXMK) -pdf $<
+
+#rm $@
+#$(LATEXMK) -pdf $<
 
 tech-report.tex :: $(call PREP,INTERNAL_DIR,INTERNALS) $(call PREP,UTILITY_DIR,UTILITIES) $(call PREP,BASE_DIR,TOP_LEVEL)
 
