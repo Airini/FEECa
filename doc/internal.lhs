@@ -210,10 +210,10 @@ we so far require:
 
 
 
-As we will see in \refSecI{sec:forms}, differential forms depend on both the
-notion of alternating forms (introduced then) 
+%As we will see in \refSecI{sec:forms}, differential forms depend on both the
+%notion of alternating forms (introduced then) 
 
-To support the implemenation of functions 
+%To support the implemenation of functions 
 
 \subsubsection{Geometrical concerns}
 
