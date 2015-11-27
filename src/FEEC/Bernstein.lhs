@@ -80,7 +80,8 @@ instance Pretty (BernsteinPolynomial v Double) where
     pPrint (Constant p) = text (show p)
 
 -- | List multi-indices of the terms in the polynomial.
-multiIndices :: EuclideanSpace v => BernsteinPolynomial v (Scalar v) -> [MI.MultiIndex]
+multiIndices :: (EuclideanSpace v, r ~ Scalar v)
+             => BernsteinPolynomial v r -> [MI.MultiIndex]
 multiIndices (Bernstein t p) = P.multiIndices n p
     where n = geometricalDimension t
 
@@ -118,10 +119,10 @@ not require to be passed a simplex argument.
 -- | Create a Bernstein polynomial over the given simplex from a list of
 -- | coefficient-multi-index pairs. An error is thrown if the dimension of the
 -- | multi-indices and the simplex are inconsistent.
-polynomial :: EuclideanSpace v 
+polynomial :: (EuclideanSpace v, r ~ Scalar v)
            => Simplex v
-           -> [(Scalar v, MI.MultiIndex)]
-           -> BernsteinPolynomial v (Scalar v)
+           -> [(r, MI.MultiIndex)]
+           -> BernsteinPolynomial v r
 polynomial t l
     | (n1 == n2 + 1) && sameLength = Bernstein t (P.polynomial l)
     | otherwise = error "polynomial: Dimensions of Simplex and Polynomials do not match."
@@ -141,8 +142,8 @@ polynomial t l
 
 -- | Create a Bernstein monomial over a given simplex from a given
 -- | multi-index.
-monomial :: EuclideanSpace v 
-         => Simplex v -> MI.MultiIndex -> BernsteinPolynomial v (Scalar v)
+monomial :: (EuclideanSpace v, r ~ Scalar v)
+         => Simplex v -> MI.MultiIndex -> BernsteinPolynomial v r
 monomial t mi
     | n1 == n2 + 1 = Bernstein t (P.monomial mi)
     | otherwise   = error "monomial: Dimension of Simplex and Polynomials do not match."
@@ -150,7 +151,7 @@ monomial t mi
         n2 = topologicalDimension t
 
 -- | Create a constant bernstein monomial.
-constant :: EuclideanSpace v => (Scalar v) -> BernsteinPolynomial v (Scalar v)
+constant :: (EuclideanSpace v, r ~ Scalar v) => r -> BernsteinPolynomial v r
 constant = Constant
 
 \end{code}
@@ -171,13 +172,13 @@ vector space over $\mathrm R$. The algebraic structure is implemented by the
 \begin{code}
 
 -- | Bernstein polynomials as a vector space.
-instance (EuclideanSpace v , r ~Scalar v) => VectorSpace (BernsteinPolynomial v r) where
+instance (EuclideanSpace v, r ~ Scalar v) => VectorSpace (BernsteinPolynomial v r) where
     type Scalar (BernsteinPolynomial v r) = r
     addV = addBernstein
     sclV = scaleBernstein
 
 -- | Bernstein polynomials as a ring.
-instance (EuclideanSpace v , r ~Scalar v) => Ring (BernsteinPolynomial v r) where
+instance (EuclideanSpace v, r ~ Scalar v) => Ring (BernsteinPolynomial v r) where
     add = addBernstein
     addId = Constant addId
     addInv = scaleBernstein (sub addId mulId)
@@ -197,7 +198,7 @@ derived so they are declared an instance of the \code{Function}.
 
 \begin{code}
 
-instance (EuclideanSpace v , r~Scalar v) => Function (BernsteinPolynomial v r) v  where
+instance (EuclideanSpace v, r ~ Scalar v) => Function (BernsteinPolynomial v r) v  where
   evaluate v (Bernstein t p) = evaluatePolynomial (evaluateMonomial lambda) p
       where lambda = map (evaluate v) (barycentricCoordinates t)
   evaluate v (Constant c) = c
@@ -268,9 +269,9 @@ the general multiplication function provided by \code{Polynomial} module.
 
 \begin{code}
 multiplyMonomial :: Field r
-                    => MI.MultiIndex
-                    -> MI.MultiIndex
-                    -> Term r
+                 => MI.MultiIndex
+                 -> MI.MultiIndex
+                 -> Term r
 multiplyMonomial mi1 mi2 = term (c, MI.add mi1 mi2)
     where c1 = fromInteger (MI.add mi1 mi2 `MI.choose` mi1)
           c2= fromInteger ((r1 + r2) `choose` r1)
@@ -279,7 +280,7 @@ multiplyMonomial mi1 mi2 = term (c, MI.add mi1 mi2)
           r2 = MI.degree mi2 :: Integer
 
 -- | Multiply two Bernstein polynomials.
-multiplyBernstein :: (EuclideanSpace v , r ~ Scalar v)
+multiplyBernstein :: (EuclideanSpace v, r ~ Scalar v)
                   => BernsteinPolynomial v r
                   -> BernsteinPolynomial v r
                   -> BernsteinPolynomial v r
@@ -354,10 +355,10 @@ function provided by the \module{Polynomial} module.
 \begin{code}
 
 -- | Derivative of a Bernstein monomial
-deriveMonomial :: EuclideanSpace v 
+deriveMonomial :: (EuclideanSpace v, r ~ Scalar v)
                => Simplex v
                -> MI.MultiIndex
-               -> [ Polynomial (Scalar v)]
+               -> [ Polynomial r ]
 deriveMonomial t mi = [ sum' [sclV (grads i j) (dp j) | j <- [0..n]] | i <- [0..n-1] ]
     where grads i j = (toList ((barycentricGradients' t) !! i)) !! j
           dp j = if ((mi' !! j) > 0)
@@ -369,7 +370,7 @@ deriveMonomial t mi = [ sum' [sclV (grads i j) (dp j) | j <- [0..n]] | i <- [0..
           r    = fromInt( (MI.degree mi) :: Int )
                  
 -- | Derive Bernstein polynomial.
-deriveBernstein :: (EuclideanSpace v, r~Scalar v)
+deriveBernstein :: (EuclideanSpace v, r ~ Scalar v)
                 => v
                 -> BernsteinPolynomial v r
                 -> BernsteinPolynomial v r
@@ -392,10 +393,10 @@ deriveBernstein v (Constant c)  = Constant addId
 
 -- | Numerically integrate the Bernstein polyonomial p over the simplex t using
 -- | a Gauss-Jacobi quadrature rule.
-integratePolynomial :: EuclideanSpace v 
-                    => Simplex v                        -- t
-                    -> BernsteinPolynomial v (Scalar v) -- b
-                    -> Scalar v
+integratePolynomial :: (EuclideanSpace v, r ~ Scalar v)
+                    => Simplex v                  -- t
+                    -> BernsteinPolynomial v r    -- b
+                    -> r
 integratePolynomial t b = integrateOverSimplex q t (flip evaluate b)
     where q = div (r + 2) 2
           r = degree b
@@ -434,7 +435,7 @@ add the information about the simplex to the Bernstein polynomial.
 -- integrateBernstein t (Constant c) = c * (volume t)
 =======-}
 -- | defined over.
-integrateBernstein :: (EuclideanSpace v , r ~Scalar v)
+integrateBernstein :: (EuclideanSpace v, r ~ Scalar v)
                       => BernsteinPolynomial v r
                       -> r
 integrateBernstein b@(Bernstein t1 p) = sum' (map f (toPairs k p))
@@ -478,11 +479,11 @@ with the gradient vector.
 
 -- | Projection fuction for gradients of barycentric coordinates as basis for
 -- | the space of alternating forms.
-proj :: EuclideanSpace v
+proj :: (EuclideanSpace v, r ~ Scalar v)
      => Simplex v
      -> Int
      -> v
-     -> Scalar v
+     -> r
 proj t i = dot u
     where u = barycentricGradient t i
 \end{code}
@@ -501,7 +502,7 @@ see \ref{sec:mi_extension}.
 \begin{code}
 
 -- | Extend a Bernstein polynomial defined on a subsimplex f to the simplex t.
-extend :: (EuclideanSpace v , r~Scalar v)
+extend :: (EuclideanSpace v, r ~ Scalar v)
        => Simplex v
        -> BernsteinPolynomial v r
        -> BernsteinPolynomial v r

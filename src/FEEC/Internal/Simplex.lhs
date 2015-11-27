@@ -134,7 +134,7 @@ using unicode.
 %------------------------------------------------------------------------------%
 
 \begin{code}
-instance (EuclideanSpace v )=> Pretty (Simplex v) where
+instance EuclideanSpace v => Pretty (Simplex v) where
   pPrint t@(Simplex _ l) = int m <> text "-Simplex in "
                             <> rn n <> text ": \n"
                             <> printVectorRow 2 cs
@@ -399,10 +399,10 @@ extendVectors n vs = sortBy norm vs'
 \begin{code}
 
 -- | Convert a vector given in barycentric coordinates to euclidean coordinates.
-barycentricToCartesian :: EuclideanSpace v =>
-                        Simplex v
-                        -> v
-                        -> v
+barycentricToCartesian :: EuclideanSpace v
+                       => Simplex v
+                       -> v
+                       -> v
 barycentricToCartesian t@(Simplex _ vs) v = foldl sclAdd zero (zip v' vs)
   where sclAdd p (c, p0) = addV p (sclV c p0)
         zero             = zeroV v
@@ -498,11 +498,11 @@ integral of $f$ over $\smp{T}$ can then be approximated using
 
 -- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
 -- | quadrature rule with q nodes.
-integrateOverSimplex :: (EuclideanSpace v , Eq (Scalar v))
+integrateOverSimplex :: (EuclideanSpace v, r ~ Scalar v, Eq r)
                      => Int             -- q
                      -> Simplex v       -- t
-                     -> (v -> Scalar v) -- f
-                     -> Scalar v
+                     -> (v -> r)        -- f
+                     -> r
 integrateOverSimplex q t f = mul vol (mul fac (nestedSum q (n-1) [] t f))
   where n   = topologicalDimension t
         fac = fromDouble 1.0 -- (fromDouble . fromInteger) (factorial n)
@@ -510,13 +510,13 @@ integrateOverSimplex q t f = mul vol (mul fac (nestedSum q (n-1) [] t f))
 
 -- Recursion for the computation of the nested sum in the numerical approximation
 -- of the integral of a function over a simplex.
-nestedSum :: EuclideanSpace v 
+nestedSum :: (EuclideanSpace v, r ~ Scalar v)
              => Int
              -> Int
-             -> [Scalar v]
+             -> [r]
              -> Simplex v
-             -> (v -> Scalar v)
-             -> Scalar v
+             -> (v -> r)
+             -> r
 nestedSum k d ls t f
     | d == 0    = U.sumR [ mul w (f x)
                            | (w, x) <- zip weights' xs ]
@@ -528,7 +528,7 @@ nestedSum k d ls t f
         nodes'   = map fromDouble nodes
         weights' = map fromDouble weights
 
-instance (r ~ Scalar v, EuclideanSpace v ) => FiniteElement (Simplex v) r where
+instance (EuclideanSpace v, r ~ Scalar v) => FiniteElement (Simplex v) r where
   type Primitive (Simplex v) = v
   quadrature = integrateOverSimplex
 

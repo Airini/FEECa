@@ -137,12 +137,11 @@ class Dimensioned t where
 -- types which may be interpreted as lists of values (that is, they have an
 -- immeidate definition as coordinates wrt to a basis) and for appropriate inner
 -- products giving rise to metrics.
-class (Eq v, Dimensioned v, VectorSpace v, Eq (Scalar v), Field (Scalar v))--, Scalar v ~ r)
+class (Eq v, Dimensioned v, VectorSpace v, Eq (Scalar v), Field (Scalar v))
     => EuclideanSpace v where
-  --type ScE v :: *
-  dot      :: v   -> v -> Scalar v --r
-  fromList :: [Scalar v ] -> v
-  toList   :: v   -> [Scalar v ]
+  dot      :: v   -> v -> Scalar v
+  fromList :: [Scalar v] -> v
+  toList   :: v   -> [Scalar v]
 -- XXX: add basis??
 
 -- Maybe not necessary to have; a bit ad-hoc
@@ -169,14 +168,13 @@ class FiniteElement t r where
 
   -- | Generalised integration expressed in terms of a quadrature method (with
   -- given number of nodes) associated with the 'FiniteElement' type pair.
-  integrate :: (FiniteElement t r,
-                Function f (Primitive t), Scalar (Primitive t) ~ r)
+  integrate :: (r ~ Scalar (Primitive t), Function f (Primitive t))
     => Int -> t -> f -> r
   integrate i t f = quadrature i t (f $$)
 
 -- | A convenient synomym for the neutral vector with respect to addition in an
 -- 'EuclideanSpace' of some given dimension.
-zero :: (EuclideanSpace v) => Int -> v -- XXX: shall we use Dimensioned here?
+zero :: EuclideanSpace v => Int -> v -- XXX: shall we use Dimensioned here?
 zero n = fromList (replicate n addId)
 
 -- | A convenient synomym for unit vectors with respect to an implicit basis
