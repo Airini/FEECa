@@ -117,7 +117,7 @@ referenceVertex (Simplex _ (p:ps)) = p
 -- | List of the n direction vector pointing from the first point of the
 -- | simplex to the others.
 spanningVectors :: VectorSpace v => Simplex v -> [v]
-spanningVectors (Simplex _ (v:vs)) = map (flip subV v) vs
+spanningVectors (Simplex _ (v:vs)) = map (`subV` v) vs
 spanningVectors (Simplex _ _) = []
 
 \end{code}

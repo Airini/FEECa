@@ -602,7 +602,7 @@ integratePolynomial :: (EuclideanSpace v, r ~ Scalar v)
                     => Simplex v      -- t
                     -> Polynomial r   -- p
                     -> r
-integratePolynomial t p = integrateOverSimplex q t (flip S.evaluate p)
+integratePolynomial t p = integrateOverSimplex q t (`S.evaluate` p)
     where q = div (r + 2) 2
           r = degree p
 

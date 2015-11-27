@@ -28,8 +28,8 @@ class Pretty p where
 -- | Pretty printing for lists of Pretty instances.
 instance (Pretty a) => Pretty [a] where
     pPrint [] = text "Empty List"
-    pPrint l = (text "[ ") P.$$ (foldl addline empty l) P.<+> (text "]")
-        where addline x y = (x <> comma) P.$+$ (pPrint y)
+    pPrint l = text "[ " P.$$ foldl addline empty l P.<+> text "]"
+        where addline x y = (x <> comma) P.$+$ pPrint y
 
 -- | Render the symbol for Euclidean space of dimension n.
 rn :: Int -> Doc
@@ -88,21 +88,21 @@ printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
 -- | Pretty print polynomial
 printBernstein :: [(Double,MI.MultiIndex)] -> Doc
 printBernstein []           = double 0.0
-printBernstein [(c,mon)]  = double c <+> (printPrefactor mon)
+printBernstein [(c,mon)]  = double c <+> printPrefactor mon
                             <+> printMonomial0 lambda (MI.toList mon)
-printBernstein ((c,mon):ls) = if (c == 0)
+printBernstein ((c,mon):ls) = if c == 0
                               then printPolynomial lambda ls
                               else s <+> text "+" <+> printPolynomial lambda ls
-    where s = double c <+> (printPrefactor mon)
+    where s = double c <+> printPrefactor mon
               <+> printMonomial0 lambda (MI.toList mon)
 
 printPrefactor :: MI.MultiIndex -> Doc
-printPrefactor mi = lparen <> (int r) <> fac <> div <> lparen <> (print mi)
+printPrefactor mi = lparen <> int r <> fac <> div <> lparen <> print mi
                       <> rparen <> rparen
     where r = MI.degree mi
           fac = text "!"
           div = text "/"
-          print mi = foldl (\x y -> x <> (integer y) <> fac) empty (MI.toList mi)
+          print mi = foldl (\x y -> x <> integer y <> fac) empty (MI.toList mi)
 
 -- | Pretty print constant
 printConstant :: Double -> Doc

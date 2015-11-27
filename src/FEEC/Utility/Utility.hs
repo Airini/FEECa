@@ -28,7 +28,7 @@ sumR = foldl add addId
 -- | Numerical equality accounting for round-off errors
 eqNum :: Field a => a -> a -> Bool
 eqNum a b
-    | (a' /= 0.0) && (b' /= 0.0) = toDouble (abs ((a' - b') / (max a' b'))) < 2e-10
+    | (a' /= 0.0) && (b' /= 0.0) = toDouble (abs ((a' - b') / max a' b')) < 2e-10
     | otherwise = True
     where a' = toDouble a
           b' = toDouble b

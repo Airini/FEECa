@@ -316,7 +316,7 @@ evaluateMonomial :: Field r
 evaluateMonomial lambda mi = mul (prefactor r mi) (pow' lambda mi)
     where r = MI.degree mi
           pow' lambda mi = foldl mul mulId (zipWith pow lambda mi')
-          mi' = (MI.toList mi) :: [Int]
+          mi' = MI.toList mi :: [Int]
 
 -- | Prefactor for Bernstein polynomials.
 prefactor :: Field r => Int -> MI.MultiIndex -> r
@@ -360,14 +360,14 @@ deriveMonomial :: (EuclideanSpace v, r ~ Scalar v)
                -> MI.MultiIndex
                -> [ Polynomial r ]
 deriveMonomial t mi = [ sum' [sclV (grads i j) (dp j) | j <- [0..n]] | i <- [0..n-1] ]
-    where grads i j = (toList ((barycentricGradients' t) !! i)) !! j
-          dp j = if ((mi' !! j) > 0)
+    where grads i j = toList (barycentricGradients' t !! i) !! j
+          dp j = if (mi' !! j) > 0
                  then P.polynomial [(r , MI.decrease j mi)]
                  else P.constant addId
           sum' = foldl add addId
-          mi'  = (MI.toList mi) :: [Int]
-          n    = (dim mi) - 1
-          r    = fromInt( (MI.degree mi) :: Int )
+          mi'  = MI.toList mi :: [Int]
+          n    = dim mi - 1
+          r    = fromInt( MI.degree mi :: Int )
                  
 -- | Derive Bernstein polynomial.
 deriveBernstein :: (EuclideanSpace v, r ~ Scalar v)
@@ -397,7 +397,7 @@ integratePolynomial :: (EuclideanSpace v, r ~ Scalar v)
                     => Simplex v                  -- t
                     -> BernsteinPolynomial v r    -- b
                     -> r
-integratePolynomial t b = integrateOverSimplex q t (flip evaluate b)
+integratePolynomial t b = integrateOverSimplex q t (`evaluate` b)
     where q = div (r + 2) 2
           r = degree b
 
