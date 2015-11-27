@@ -134,7 +134,7 @@ using unicode.
 %------------------------------------------------------------------------------%
 
 \begin{code}
-instance (EuclideanSpace v (Scalar v)) => Pretty (Simplex v) where
+instance (EuclideanSpace v )=> Pretty (Simplex v) where
   pPrint t@(Simplex _ l) = int m <> text "-Simplex in "
                             <> rn n <> text ": \n"
                             <> printVectorRow 2 cs
@@ -161,7 +161,7 @@ instance (EuclideanSpace v (Scalar v)) => Pretty (Simplex v) where
 \begin{code}
 
 -- | Construct a full simplex from a given list of points in R^n
-simplex :: EuclideanSpace v r => [v] -> Simplex v
+simplex :: EuclideanSpace v => [v] -> Simplex v
 simplex l@(p:ps)
     | dim p == n - 1 = Simplex [0..n] l
     | otherwise = error "simplex: Dimensions don't agree."
@@ -169,7 +169,7 @@ simplex l@(p:ps)
 simplex [] = error "simplex: empty list."
 
 -- | Construct a full simplex from a reference vertex and n direction vectors.
-simplex' :: EuclideanSpace v r => v -> [v] -> Simplex v
+simplex' :: EuclideanSpace v => v -> [v] -> Simplex v
 simplex' p0 l@(v:vs)
     | all (dim p0 ==) l' && (dim p0 == n) = Simplex [0..n] (p0:l'')
     | otherwise = error "simplex': Dimension don't agree."
@@ -201,7 +201,7 @@ simplex' _ _ = error "simplex': Topological dimension is zero."
 
 \begin{code}
 -- | Reference simplex in R^n
-referenceSimplex :: EuclideanSpace v (Scalar v) => Int -> Simplex v
+referenceSimplex :: EuclideanSpace v => Int -> Simplex v
 referenceSimplex n = Simplex [0..n] (zero n : [unitVector n i | i <- [0..n-1]])
 
 \end{code}
@@ -232,7 +232,7 @@ referenceSimplex n = Simplex [0..n] (zero n : [unitVector n i | i <- [0..n-1]])
 
 \begin{code}
 
-volume :: EuclideanSpace v (Scalar v)
+volume :: EuclideanSpace v 
        => Simplex v
        -> Scalar v
 volume t
@@ -243,7 +243,7 @@ volume t
         vs = spanningVectors t
         bs = gramSchmidt vs
 
-project :: EuclideanSpace v (Scalar v) => [v] -> [v] -> [v]
+project :: EuclideanSpace v => [v] -> [v] -> [v]
 project bs vs
     | null vs   =  map fromList [[ dot b v | b <- bs] | v <- vs]
     | otherwise = []
@@ -251,7 +251,7 @@ project bs vs
 
 -- | Computes the k-dimensional volume (Lebesgue measure) of a simplex
 -- | in n dimensions using the Gram Determinant rule.
-volume' :: EuclideanSpace v (Scalar v)
+volume' :: EuclideanSpace v 
         => Simplex v
         -> Scalar v
 volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
@@ -329,7 +329,7 @@ For the computation of the barycentric coordinates of a simplex whose
 \begin{code}
 -- | Extend the given simplex to a full simplex so that its geometrical
 -- | dimension is the same as its topological dimension.
-extendSimplex :: EuclideanSpace v (Scalar v)
+extendSimplex :: EuclideanSpace v 
               => Simplex v
               -> Simplex v
 extendSimplex t@(Simplex _ ps)
@@ -340,7 +340,7 @@ extendSimplex t@(Simplex _ ps)
         dirs = spanningVectors t
         p0 = referenceVertex t
 
-norm :: EuclideanSpace v (Scalar v) => v -> v -> Ordering
+norm :: EuclideanSpace v => v -> v -> Ordering
 norm v1 v2
     | v12 < v22  = LT
     | v12 == v22 = EQ
@@ -351,7 +351,7 @@ norm v1 v2
 -- | Uses the Gram-Schmidt method to add at most n orthogonal vectors to the
 -- | given set of vectors. Due to round off error the resulting list may contain
 -- | more than n vectors, which then have to be removed manually.
-extendVectors :: (EuclideanSpace v (Scalar v), Eq (Scalar v))
+extendVectors :: (EuclideanSpace v , Eq (Scalar v))
               => Int
               -> [v]
               -> [v]
@@ -399,7 +399,7 @@ extendVectors n vs = sortBy norm vs'
 \begin{code}
 
 -- | Convert a vector given in barycentric coordinates to euclidean coordinates.
-barycentricToCartesian :: EuclideanSpace v (Scalar v) =>
+barycentricToCartesian :: EuclideanSpace v =>
                         Simplex v
                         -> v
                         -> v
@@ -443,11 +443,11 @@ barycentricToCartesian t@(Simplex _ vs) v = foldl sclAdd zero (zip v' vs)
 \begin{code}
 -- | The inverse Duffy transform. Maps a point from the unit cube in R^{n+1}
 -- | to Euclidean space.
-cubicToCartesian :: EuclideanSpace v (Scalar v) => Simplex v -> v -> v
+cubicToCartesian :: EuclideanSpace v => Simplex v -> v -> v
 cubicToCartesian t = barycentricToCartesian t . cubicToBarycentric
 
 -- | Convert vector given in cubic coordinates to barycentric coordinates.
-cubicToBarycentric :: EuclideanSpace v (Scalar v) => v -> v
+cubicToBarycentric :: EuclideanSpace v => v -> v
 cubicToBarycentric v = fromList (ls ++ [l])
   where ts = toList v
         (l,ls) = mapAccumL f mulId ts
@@ -498,7 +498,7 @@ integral of $f$ over $\smp{T}$ can then be approximated using
 
 -- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
 -- | quadrature rule with q nodes.
-integrateOverSimplex :: (EuclideanSpace v (Scalar v), Eq (Scalar v))
+integrateOverSimplex :: (EuclideanSpace v , Eq (Scalar v))
                      => Int             -- q
                      -> Simplex v       -- t
                      -> (v -> Scalar v) -- f
@@ -510,7 +510,7 @@ integrateOverSimplex q t f = mul vol (mul fac (nestedSum q (n-1) [] t f))
 
 -- Recursion for the computation of the nested sum in the numerical approximation
 -- of the integral of a function over a simplex.
-nestedSum :: EuclideanSpace v (Scalar v)
+nestedSum :: EuclideanSpace v 
              => Int
              -> Int
              -> [Scalar v]
@@ -528,7 +528,7 @@ nestedSum k d ls t f
         nodes'   = map fromDouble nodes
         weights' = map fromDouble weights
 
-instance (EuclideanSpace v r) => FiniteElement (Simplex v) r where
+instance (r ~ Scalar v, EuclideanSpace v ) => FiniteElement (Simplex v) r where
   type Primitive (Simplex v) = v
   quadrature = integrateOverSimplex
 

@@ -19,7 +19,6 @@ module FEEC.DifferentialForm (
 
 import Control.Applicative (pure)
 import FEEC.Internal.Form
-import FEEC.Internal.Point
 import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
 import FEEC.Internal.Simplex
@@ -80,6 +79,6 @@ df basisIx form =
 
 b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 
-eval :: (Function h (Vector f)) => DifferentialForm h -> Point f -> Form f
-eval u = ($u) . fmap . evaluate . fromPoint
+eval :: (Function h (Vector f)) => DifferentialForm h -> Vector f -> Form f
+eval u = ($u) . fmap . evaluate
 
