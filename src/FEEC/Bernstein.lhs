@@ -70,11 +70,6 @@ data BernsteinPolynomial v r = Bernstein (Simplex v) (Polynomial r)
 
 -- pretty printing for Bernstein polyonmials
 instance Pretty (BernsteinPolynomial v Double) where
-{-<<<<<<< HEAD
-  pPrint (Bernstein t p) = printPolynomial0 lambda ts
-    where ts = map (expandTerm 0) (terms p)
-  pPrint (Constant p) = text (show p)
-=======-}
     pPrint (Bernstein t p) = printBernstein ts
         where ts = map (expandTerm 0) (terms p)
     pPrint (Constant p) = text (show p)
@@ -125,13 +120,6 @@ polynomial :: EuclideanSpace v r
 polynomial t l
     | (n1 == n2 + 1) && sameLength = Bernstein t (P.polynomial l)
     | otherwise = error "polynomial: Dimensions of Simplex and Polynomials do not match."
-{-<<<<<<< HEAD
-  where
-    mis        = map (dim . snd) l
-    n1         = maximum mis
-    n2         = topologicalDimension t
-    sameLength = all (head mis ==) (tail mis)
-=======-}
     where
       mis        = map (((-1)+) . dim . snd) l
       n1         = maximum mis
@@ -186,6 +174,9 @@ instance EuclideanSpace v r => Ring (BernsteinPolynomial v r) where
     mulId = Constant mulId
 
     fromInt = Constant . fromInt
+
+instance EuclideanSpace v r => InnerProductSpace (BernsteinPolynomial v r) where
+    inner  = innerBernstein
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -421,18 +412,6 @@ add the information about the simplex to the Bernstein polynomial.
 \begin{code}
 
 -- | Closed-form integration of Bernstein polynomials over the simplex they are
-{-<<<<<<< HEAD
--- | defined over. Falls back to standard integration if the provided simplex
--- | does not equal the simplex the bernstein polynomial is defined over. 
--- integrateBernstein :: Simplex -> BernsteinPolynomial -> Double
--- integrateBernstein t1 b@(Bernstein t2 p)
---     | t1 == t2  = sum (map f (toPairs k p))
---     | otherwise = integrate t1 b
---   where f (c, mi) = c * vol / ((k + MI.degree mi) `choose` k)
---         k = topologicalDimension t1
---         vol = volume t1
--- integrateBernstein t (Constant c) = c * (volume t)
-=======-}
 -- | defined over.
 integrateBernstein :: EuclideanSpace v r
                       => BernsteinPolynomial v r
@@ -453,6 +432,16 @@ redefine :: Ring r
          -> BernsteinPolynomial v r
 redefine t1 (Bernstein t2 p) = Bernstein t1 p
 redefine t (Constant c)      = Bernstein t (P.constant c)
+
+-- | Inner product of Bernstein polynomials defined over a simplex T. If both
+-- | polynomials are constant and have no associated simplex, a simplex of
+-- | with volume 1 is assumed.
+innerBernstein :: EuclideanSpace v r
+                  => BernsteinPolynomial v r
+                  -> BernsteinPolynomial v r
+                  -> r
+innerBernstein (Constant c1) (Constant c2) = mul c1 c2
+innerBernstein b1 b2 = integrateBernstein (multiplyBernstein b1 b2)
 
 \end{code}
 

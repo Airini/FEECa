@@ -17,7 +17,7 @@ functions for the handling of vectors in $n$-dimensional Euclidean space
 module FEEC.Internal.Vector(
 
   -- * The Vector Type
-  Vector(components), Dimensioned(..), vector,
+  Vector(..), Dimensioned(..), vector,
 
   -- * Manipulating Vectors
   toList,
@@ -68,11 +68,15 @@ data Vector a = Vector { components :: [a] } deriving (Show)
 \begin{code}
 
 -- | Use numerical equality for floating point arithmetic.
-instance Eq (Vector Double) where
-    v1 == v2 = and (zipWith U.eqNum (components v1) (components v2))
+-- instance Eq (Vector Double) where
+--    v1 == v2 = and (zipWith U.eqNum (components v1) (components v2))
 
 -- | Use exact equality for exact arithmetic.
-instance Eq (Vector Rational) where
+--instance Eq (Vector Rational) where
+--    v1 == v2 = and (zipWith (==) (components v1) (components v2))
+
+
+instance Eq a => Eq (Vector a) where
     v1 == v2 = and (zipWith (==) (components v1) (components v2))
 
 -- | R^n as a vector space.
@@ -81,9 +85,9 @@ instance Ring a => VectorSpace (Vector a) where
   addV (Vector l1) (Vector l2) = Vector $ zipWith add l1 l2
   sclV c (Vector l) = Vector $ map (mul c) l
 
--- | R^n as a vector space.
-instance (Field a, Eq (Vector a)) => EuclideanSpace (Vector a) a where
-    dot (Vector l1) (Vector l2) = foldl (\s (x,y) -> s `add` x`mul`y) addId $ zip l1 l2
+-- | R^n as a Euclidean space.
+instance (Field a, Eq a) => EuclideanSpace (Vector a) a where
+    dot (Vector l1) (Vector l2) = foldl add addId (zipWith mul l1 l2)
     toList   = components
     fromList = vector
 

@@ -16,9 +16,10 @@ module FEEC.Internal.Form (
 
 import Control.Applicative
 import Data.List (intersect)
-import FEEC.Internal.Spaces
+import FEEC.Internal.Spaces hiding( inner )
+import qualified FEEC.Internal.Spaces as S( inner )
 import FEEC.Utility.Discrete
-import FEEC.Utility.Utility (pairM, sumR)
+import FEEC.Utility.Utility (pairM, sumR, sumV)
 import FEEC.Utility.Print (Pretty(..), printForm)
 
 
@@ -151,12 +152,12 @@ contract proj omega v
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
-refine :: (Ring f, VectorSpace v) =>
-          (Int -> v -> f)      -- ^ The definition for the projection function
+refine :: (InnerProductSpace w , VectorSpace v, (Scalar v) ~ (Scalar w)) =>
+          (Int -> v -> (Scalar w))      -- ^ The definition for the projection function
                                --   for the specific vector space
-       -> Form f
-       -> [v] -> f
-refine proj eta@(Form k n cs) vs = sumR (map (($ vs) . formify proj) cs)
+       -> Form w
+       -> [v] -> w
+refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs)
 -- TODO: capture inconsistency between k and length vs here??
 -- ALSO: 0-forms... not evaluating correctly now! Cfr: formify does not accept
 --    empty cs
@@ -165,33 +166,35 @@ refine proj eta@(Form k n cs) vs = sumR (map (($ vs) . formify proj) cs)
 
 -- | Helper function in evaluation: given a 1-form basis, converts a single
 --   'Form' constituent term into an actual function on vectors
-formify :: (Ring f, VectorSpace v) =>
-              (i -> v -> f) -> (f,[i]) -> [v] -> f
-formify proj (s, i:is)
-    | null is   = mul s . proj i . head
-    | otherwise = \vs ->
-        foldl add addId (map (\(w,e) -> mul (mul
-                                  (sign (w,e))
-                                  ((proj i . head) (choose w vs)))
+formify :: (InnerProductSpace w, VectorSpace v, (Scalar w) ~ (Scalar v)) =>
+              (i -> v -> (Scalar v)) -> (w,[i]) -> [v] -> w
+formify proj (s, i:is) vs
+    | null is  = sclV (proj i (head vs)) s
+    | otherwise =
+        foldl addV addId
+                  (map (\(w,e) -> sclV
+                                  (mul (sign (w,e)) ((proj i . head) (choose w vs)))
                                   (formify proj (s,is) (choose e vs)))
-                             (permutationPairs (length is + 1) 1 (length is)))
-  where choose ns = pick (differences ns)
+                  (permutationPairs (length is + 1) 1 (length is)))
+                      where choose ns = pick (differences ns)
 
 
 -- We need a basis here
-inner :: (Ring f, VectorSpace v, Dimensioned v) =>
-         (Int -> v -> f)  -- ^ Projection function in the specific vector space
-      -> (Int -> v)       -- ^ Basis of the specific vector space
-      -> Form f -> Form f -> f
-inner proj basisIx omega eta
+inner :: (InnerProductSpace w,
+          EuclideanSpace v r,
+          Dimensioned v,
+          (Scalar w) ~ r) =>
+         (Int -> v -> (Scalar w))  -- ^ Projection function in the specific vector space
+      -> Form w -> Form w -> Scalar w
+inner proj omega eta
     | degNEq omega eta = errForm "inner" BiDegEq -- TODO (??)
     | otherwise = foldl
-            (flip $ \vs -> add (mul (apply omega vs) (apply eta vs)))
+            (flip $ \vs -> add (S.inner (apply omega vs) (apply eta vs)))
             addId
             (map choose (permutations n (arity omega)))
-  where choose is = pick (differences is) (map basisIx [1..n])
+  where choose is = pick (differences is) (map (unitVector n) [0..n-1])
         apply = refine proj
-        n = dim (basisIx 0)
+        n = dimVec omega
 
 -- * Helper functions
 

@@ -18,12 +18,12 @@ class Eq v => Ring v where  -- XXX: only Eq v for now
   add     :: v -> v -> v
   addId   :: v
   addInv  :: v -> v
- 
+
   mul     :: v -> v -> v
   mulId   :: v
-  
+
   fromInt :: Integral a => a -> v  -- XXX: or fromRational?
-  
+
   pow     :: Integral a => v -> a -> v
   -- no neg security!
   pow t 0 = mulId
@@ -145,6 +145,13 @@ class (Eq v, Dimensioned v, VectorSpace v, Eq r, Field r, Scalar v ~ r)
   toList   :: v   -> [r]
 -- XXX: add basis??
 
+-- | Inner product space to define the generalised inner product on differential
+-- | forms.
+class (Ring v, VectorSpace v) => InnerProductSpace v
+    where
+      inner :: v -> v -> (Scalar v)
+
+
 -- Maybe not necessary to have; a bit ad-hoc
 -- | Class of simple functions over a 'VectorSpace' and which may be
 -- differentiated in any arbitrary direction in it (that is, wrt to an arbitrary
@@ -186,7 +193,6 @@ unitVector n i
     | (n  > 0) && (i >= 0) && (i < n) = fromList $ concat l
     | otherwise = error "unitVector: invalid dimensions!"
   where l = [replicate i addId, [mulId], replicate (n-i-1) addId]
-
 
 -- | General translation to 'EuclideanSpace' vectors from a common
 -- representation: lists of 'Double'.

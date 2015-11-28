@@ -17,12 +17,13 @@ import qualified Test.QuickCheck as Q(vector)
 --------------------------------------------------------------------------------
 n = 4
 
+arbitraryVector :: EuclideanSpace v r => Int -> Gen v
+arbitraryVector n = do cs <- Q.vector n
+                       return (fromDouble' cs)
+
 instance EuclideanSpace (Vector r) r => Arbitrary (Vector r) where
     arbitrary = arbitraryVector n
 
-arbitraryVector :: EuclideanSpace (Vector r) r => Int -> Gen (Vector r)
-arbitraryVector n = do cs <- Q.vector n
-                       return (fromDouble' cs)
 --------------------------------------------------------------------------------
 -- The dimension of the vector should be the length of the list passed to the
 -- constructor.
@@ -39,12 +40,6 @@ prop_toList :: [Double] -> Bool
 prop_toList l = toList v == l
     where v = vector l
 
---------------------------------------------------------------------------------
--- Using 'apply' with the identity functions should leave the vector unchanged.
---------------------------------------------------------------------------------
-
-prop_apply :: Eq (Vector f) => Vector f -> Bool
-prop_apply v = (apply v id) == v
 
 --------------------------------------------------------------------------------
 -- The dot product must satisfy the properties of an inner product defined

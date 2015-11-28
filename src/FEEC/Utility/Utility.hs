@@ -2,6 +2,7 @@ module FEEC.Utility.Utility( Dimension(..),
                              takeIndices,
                              pairM, pairUp,
                              sumR,
+                             sumV,
                              eqNum,
                              toDouble,
                              fromDouble
@@ -24,6 +25,11 @@ pairUp x y = (x,y)
 -- | Equivalent to 'sum' for 'Ring' types
 sumR :: Ring a => [a] -> a
 sumR = foldl add addId
+
+-- | Summation over vector spaces
+sumV :: VectorSpace v => [v] -> v
+sumV (v:vs) = foldl addV v vs
+sumV _ = error "sumV: Need at least one vector to sum! \n"
 
 -- | Numerical equality accounting for round-off errors
 eqNum :: Field a => a -> a -> Bool

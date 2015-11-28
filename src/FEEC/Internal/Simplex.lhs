@@ -33,6 +33,7 @@ module FEEC.Internal.Simplex(
 
   -- ** Properties
   geometricalDimension, topologicalDimension, volume, spanningVectors,
+  referenceVertex, extendVectors,
 
   -- * Subsimplices
   subsimplex, subsimplices, subsimplices', extendSimplex,
@@ -171,12 +172,11 @@ simplex [] = error "simplex: empty list."
 -- | Construct a full simplex from a reference vertex and n direction vectors.
 simplex' :: EuclideanSpace v r => v -> [v] -> Simplex v
 simplex' p0 l@(v:vs)
-    | all (dim p0 ==) l' && (dim p0 == n) = Simplex [0..n] (p0:l'')
-    | otherwise = error "simplex': Dimension don't agree."
-  where l' = map dim l
-        l'' = map (addV p0) l
-        n = length l
-simplex' _ _ = error "simplex': Topological dimension is zero."
+    | all ((n ==) . dim ) l = Simplex [0..n] (p0:l')
+    | otherwise = error "simplex': Dimensions don't agree."
+    where l' = map (addV p0) l
+          n = length l
+simplex' p l = error "simplex': Topological dimension is zero."
 
 \end{code}
 
@@ -245,9 +245,11 @@ volume t
 
 project :: EuclideanSpace v (Scalar v) => [v] -> [v] -> [v]
 project bs vs
-    | null vs   =  map fromList [[ dot b v | b <- bs] | v <- vs]
+    | not (null vs) =  map fromList [[ proj b v | b <- bs] | v <- vs]
     | otherwise = []
   where v = head vs
+        proj b v = divide (dot b v) (sqrt' (dot b b))
+        sqrt' = fromDouble . sqrt . toDouble
 
 -- | Computes the k-dimensional volume (Lebesgue measure) of a simplex
 -- | in n dimensions using the Gram Determinant rule.
@@ -355,7 +357,7 @@ extendVectors :: (EuclideanSpace v (Scalar v), Eq (Scalar v))
               => Int
               -> [v]
               -> [v]
-extendVectors n vs = sortBy norm vs'
+extendVectors n vs = take n $ sortBy norm vs'
   where vs' = gramSchmidt' vs [unitVector n i | i <- [0..n-1]]
 
 

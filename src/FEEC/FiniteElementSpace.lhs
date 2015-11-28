@@ -22,6 +22,10 @@ where $\kappa$ is the Koszul operator.
 {-# LANGUAGE FlexibleContexts #-}
 
 module FEEC.FiniteElementSpace (
+                                FiniteElementSpace(..),
+                                BasisFunction,
+                                basis,
+                                vspaceDim
  -- * Introduction
  -- $intro
 )where
@@ -30,12 +34,14 @@ import Data.List
 import FEEC.Bernstein (monomial, multiIndices)
 import qualified FEEC.Bernstein as B (BernsteinPolynomial(..),extend)
 import FEEC.Utility.Combinatorics
-import FEEC.DifferentialForm
+import qualified FEEC.PolynomialDifferentialForms as D
 import FEEC.Utility.Print( printBernstein, printForm, dlambda )
 import qualified FEEC.Utility.Print as P ( Pretty(..) )
-import FEEC.Internal.Form hiding (arity)
+import FEEC.Internal.Form hiding (arity, inner)
+import qualified FEEC.Internal.Form as F(inner)
 import qualified FEEC.Internal.Simplex as S
-import FEEC.Internal.Spaces
+import FEEC.Internal.Spaces hiding (inner)
+import qualified FEEC.Internal.Spaces as S(inner)
 import qualified FEEC.Internal.Vector as V
 import qualified FEEC.Internal.MultiIndex as MI
 import qualified Math.Combinatorics.Exact.Binomial as CBin
@@ -64,7 +70,8 @@ general space by a set of basis functions.
 \begin{code}
 type Vector = V.Vector Double
 type Simplex = S.Simplex Vector
-type BernsteinPolynomial = B.BernsteinPolynomial Vector Double
+type BernsteinPolynomial = D.BernsteinPolynomial Double
+type DifferentialForm = D.DifferentialForm Double
 
 -- | Data type for the two families of finite element spaces $P_r\Lambda^k$ and
 -- | $P_r^-\Lambda^k$ defined over a simplex.
@@ -74,7 +81,7 @@ data FiniteElementSpace = PrLk Int Int Simplex
 
 -- | Type synomym for basis function of finite element spaces that are of type
 -- | Form BernsteinPolynomial.
-type BasisFunction = DifferentialForm BernsteinPolynomial
+type BasisFunction = DifferentialForm
 
 \end{code}
 
@@ -267,9 +274,9 @@ of the face $\smp{f}$.
 whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
 whitneyForm t ls = Form k n [( lambda' (ls !! i), subsets !! i) | i <- [0..k]]
     where k = length ls - 1
-          n = S.geometricalDimension t
+          n = S.topologicalDimension t
           subsets = sublists ls
-          lambda' i = sclV ((-1)^i) (monomial t (MI.unit n i))
+          lambda' i = sclV ((-1)^i) (monomial t (MI.unit (n + 1) i))
 
 \end{code}
 
@@ -431,6 +438,7 @@ t1 = S.subsimplex t 1 0
 
 b = monomial t1 (MI.multiIndex [1,2])
 omega = Form 2 2 [(b, [0,1])]
+eta = Form 0 2 [(b,[0])]
 
 alpha = MI.multiIndex [2,1]
 sigma = [0]

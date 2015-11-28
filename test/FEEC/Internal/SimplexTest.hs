@@ -15,6 +15,7 @@ import FEEC.Internal.Point
 import FEEC.Internal.Simplex
 import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
+import FEEC.Internal.VectorTest
 import FEEC.Utility.Combinatorics
 import FEEC.Utility.Utility
 import System.Random
@@ -23,7 +24,6 @@ import Test.QuickCheck.Gen(Gen, vectorOf)
 import qualified Test.QuickCheck as Q
 import qualified Test.QuickCheck.Gen as Q
 
-
 data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int deriving (Show)
 
 --------------------------------------------------------------------------------
@@ -31,12 +31,13 @@ data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int deriving (Show)
 --------------------------------------------------------------------------------
 
 -- | Generate a random simplex of given dimension.
-arbitrarySimplex :: Arbitrary v => Int -> Gen (Simplex v)
-arbitrarySimplex n = do l <- vectorOf (n+1) arbitrary
-                        return (Simplex [0..n] l)
+arbitrarySimplex :: (EuclideanSpace v r, Arbitrary v) => Int -> Gen (Simplex v)
+arbitrarySimplex n = do l <- Q.infiniteListOf (vectorOf (n+1) (arbitraryVector n))
+                        let simplices = map (Simplex [0..n]) l
+                        return (head (dropWhile ((addId ==) . volume) simplices))
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
-instance Arbitrary v => Arbitrary (Simplex v) where
+instance (EuclideanSpace v r, Arbitrary v) => Arbitrary (Simplex v) where
     arbitrary = do n <- Q.choose (1, 10)
                    arbitrarySimplex n
 
@@ -47,7 +48,7 @@ instance Arbitrary v => Arbitrary (Simplex v) where
 -- | Arbitrary instance to test generation of subsimplices. Generates a full
 -- | simplex of arbitrary dimension and integers k and i such that i is a valid
 -- | index of a subsimplex of dimension k.
-instance Arbitrary v => Arbitrary (SubsimplexTest v) where
+instance (EuclideanSpace v r, Arbitrary v) => Arbitrary (SubsimplexTest v) where
     arbitrary = do t <- arbitrary
                    let n = topologicalDimension t
                    k <- Q.choose (0,n)
@@ -74,6 +75,13 @@ prop_subsimplices (SubsimplexTest s@(Simplex _ l) k _) =
           subs = subsimplices s k
           ithSubsimplexVertices i =
               vertices (subs!!i) ==  vertices (subsimplex s k i)
+
+-- | The extension of a subsimplex should have full dimensionality and non-zero
+-- | volume.
+prop_extend_subsimplex :: EuclideanSpace v (Scalar v) => SubsimplexTest v -> Bool
+prop_extend_subsimplex (SubsimplexTest s@(Simplex _ l) k i) =
+    (volume t' /= addId) && ((topologicalDimension t') == (geometricalDimension t'))
+        where t' = extendSimplex (subsimplex s k i)
 
 --------------------------------------------------------------------------------
 -- Integration
@@ -112,8 +120,7 @@ instance EuclideanSpace v r => Arbitrary (Cubic v r) where
 -- |  positive and sum to one and that there are n + 1 components.
 prop_cubicToBarycentric :: EuclideanSpace v r
                            => Cubic v r -> Bool
-prop_cubicToBarycentric (Cubic v) =
-    (prop_barycentric_range v') && (prop_barycentric_sum v') && (dim v' == dim v + 1)
+prop_cubicToBarycentric (Cubic v) = (prop_barycentric_range v') && (prop_barycentric_sum v') && (dim v' == dim v + 1)
         where v' = cubicToBarycentric v
 
 prop_barycentric_range :: EuclideanSpace v r => v -> Bool
@@ -133,6 +140,22 @@ prop_barycentricToCartesian t =
         where n = geometricalDimension t
               vs = [unitVector (n+1) i | i <- [0..n]]
 
+
+-- TODO: Add testing for barycentric coordinates of subsimplices.
+
 --main = do quickCheck (prop_subsimplex :: SubsimplexTest v -> Bool)
 --          quickCheck (prop_subsimplices :: SubsimplexTest v -> Bool)
 --          quickCheck prop_vol_integral
+
+type VectorD = Vector Double
+type SimplexD = Simplex (Vector Double)
+
+t :: SimplexD
+t = referenceSimplex 3
+
+t1 = subsimplex t 2 1
+vs = spanningVectors t1
+
+main = do quickCheck (prop_extend_subsimplex :: SubsimplexTest VectorD -> Bool)
+
+t3 = Simplex {sigma = [0,1,2,3,4], vertices = [Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]}]}
