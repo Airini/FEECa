@@ -16,36 +16,38 @@ However, it is possible to be more general and give the same constructions
 over a (commutative) ring since the implementation of the algebraic operators
 we will need do not require the notion of division.
 
-The operations forming the |Ring| class definition are those expected from a
-ring: addition |add| and multiplication |mul|.
+The operations forming the |Ring| class definition are those defining a ring:
+addition $+$ (|add|) and multiplication $\cdot$ (|mul|).
 %
-A canonical representation of the identities to both operations, |addId| =
-$0$ and |mulId| = $1$ respectively, as well as an additive inverse operation
+A canonical representation of the identities to both operations, $0$~=~|addId|
+and $1$~=~|mulId| respectively, as well as an additive inverse operation
 |addInv| complete the definition of a |Ring|.
 
 > class Eq v => Ring v where
 >   add     :: v -> v -> v
 >   addId   :: v
 >   addInv  :: v -> v
->  
+>
 >   mul     :: v -> v -> v
 >   mulId   :: v
 
 \paragraph{}
 
-This permits generalising the represented concepts to other structures such as
+This allows generalising the represented concepts to other structures such as
 Kähler differentials [TODO: cite].
 %
 It also opens the possibility to experiment with different precision floating
-point number representations or even support with some small additional work
+point number representations or even support, with some additional work,
 symbolic representations which can later be compiled down to more efficient code
-in another paradigm.
+in another paradigm or to target specific numerical packages.
 
 \paragraph{}
 
 Nonetheless, a completion from the |Ring| class to a class for fields |Field| is
 reflected via another class which, remaining conceptually correct in the
-mathematical sense, require the type to be a |Ring| type already.
+mathematical sense, requires the type to be a |Ring| type already/
+%
+That is, |Field| is defined as a subclass of |Ring|.
 
 > class Ring f => Field f where
 >   mulInv     :: f -> f
@@ -61,11 +63,12 @@ since the coefficients scaling its vector elements are in fact a |Ring| type.
 A dependency between the vector space type (that is, the type of its vectors)
 and the coefficients is created via a type association |Scalar|.
 %
-This entails a functional dependency by which the coefficient type is determined
-uniquely by the vector type in any one instance of the package.
+This entails a functional dependency: the vector type uniquely determines the
+coefficient type in any one instance of the package.
 %
-A generalisation from here might be possible, although maybe not necessary for
-practical use of the package.
+Further generalising these vector-coefficient associations to avoid the strict
+functional dependency is possible, although maybe not necessary for practical
+use of the package.
 
 > class (Ring (Scalar v)) => VectorSpace v where
 >   type Scalar v :: *
@@ -74,11 +77,16 @@ practical use of the package.
 
 The typical vector addition and scaling operations must be provided by the
 instance of a type as a |VectorSpace|.
+%
+So a vector space over a field $K$ given by $(V, +, \cdot)$ is represented in
+the implementation by the associated type |Scalar v| to a class instance |(v,
+addV, sclV)|.
 
 Other than the typical $\R{n}$ space, many of the central structures provided by
 the package to implement finite element exterior caculus give rise to a
-|VectorSpace| type, such as forms themselves (in \refSecI{sec:forms}) and the
-different polynomial implementations (in \refSecI{sec:polyns}).
+|VectorSpace| type, such as alternating and differential forms themselves (in
+\refSecI{sec:forms}) and the different polynomial implementations (in
+\refSecI{sec:polyns}).
 %
 |VectorSpace| is hence a backbone class to much of the implemented functionality
 and allows for it to be expressed in a general way, leading to flexibility in
@@ -96,8 +104,9 @@ already, via which it provides a built-in implementation of addition and scaling
 of its elements (that which it inherits from the vector space characterisation).
 
 > class VectorSpace v => Algebra v where
->   addA :: v -> v -> v
 >   (/\) :: v -> v -> v
+>
+>   addA :: v -> v -> v
 >   sclA :: Scalar v -> v -> v
 >   addA = addV
 >   sclA = sclV
@@ -107,7 +116,9 @@ necessarily have an associated product, in our case the exterior product.
 %
 All instances of operations over these algebraic structures should respect the
 laws that rule over them, a property that cannot be demonstrated in a foolproof
-way but at least can be reliably checked with automated random testing.
+way but at least can be reliably checked with automated random testing [TODO:
+add section on tests and refer, + add mathematical notions section to define
+these properties].
 
 Concretely, the algebras we will represent (those of alternating and
 differential forms) are anti-commutative graded algebras \cite{acta}.
@@ -120,12 +131,16 @@ different dimensions (the spaces of forms of varying arities, see
 
 Due to the difficulty in working with promoted types in practical applications
 (particularly when support for random generation of test cases is sought, as is
-our case, for implementation verification), an aspect of these spaces was not
-implemented in the most secure way: dimensionality.
+our case, for validation of the implementation), an aspect of these spaces was
+not implemented in the most secure way: dimensionality.
 
 Frequently, a general datatype may serve as representation to several algebraic
 structures sharing the central feature in their construction that gives them
-such a structure.
+such a structure. % TODO: rephrase
+%
+% Frequently, a general datatype may serve as means to represent several algebraic
+% structures, sharing the central feature in their construction that gives them
+% such a structure.
 %
 The datatype may be indexed by kinded naturals according to dimension so as to
 guarantee invariants in the implementation.
@@ -163,8 +178,8 @@ to transform from an abstract representation to a more concrete one although
 still implicit.
 % TODO: change and add basis and hence avoid this implicitness?
 The implicit nature comes from the absence of an explicit basis for Euclidean
-spaces and yet represent interesting operations for our domain (like inner
-products) along with the translation to and from lists of coefficient vectors.
+spaces whilst interesting operations for our domain (like inner products) are
+represented along with the translation to and from lists of coefficient vectors.
 
 
 \subsubsection{Differential calculus operations}
@@ -184,7 +199,7 @@ specific (and pure), a new class is introduced for functions on these manifolds,
 which we wish to study.
 %
 The |Function| class is arguably ad-hoc, since it specialises for the use cases
-we so far have an interested in having:
+we so far require:
 
 > class (VectorSpace v) => Function f v where
 >   derive    :: v -> f -> f
@@ -196,10 +211,9 @@ we so far have an interested in having:
 
 
 
-As we will see in \refSecI{sec:forms}, differential forms depend on both the
-notion of alternating forms (introduced then) 
+%As we will see in \refSecI{sec:forms}, differential forms depend on both the
+%notion of alternating forms (introduced then)
 
-To support the implemenation of functions 
+%To support the implementation of functions
 
 \subsubsection{Geometrical concerns}
-

@@ -154,14 +154,14 @@ basis (PrmLk r k t) = prmLkBasis r k t
 basis (PrLk r k t) = prLkBasis r k t
 
 pPrintBasisFunction :: BasisFunction -> String
-pPrintBasisFunction = show . (printForm dlambda "0" (show . P.pPrint))
+pPrintBasisFunction = show . printForm dlambda "0" (show . P.pPrint)
                            . constituents
 
 pPrint :: [BasisFunction] -> IO ()
 pPrint [] = putStrLn "Empty List\n"
 pPrint l  = putStrLn $ "[ " ++ foldl render (pPrintBasisFunction (head l)) (tail l)
                             ++ "]"
-    where render s bf = s ++ ",\n" ++ (pPrintBasisFunction bf)
+    where render s bf = s ++ ",\n" ++ pPrintBasisFunction bf
 
 \end{code}
 
@@ -372,16 +372,16 @@ Define $\psf{\alpha}{f}{g}{\sigma}$
 psi :: MI.MultiIndex -> [Int] -> Form BernsteinPolynomial
 psi alpha sigma  = foldl (/\) unit [ psi' alpha i | i <- sigma]
     where unit = nullForm (n+1) mulId
-          n = (dim alpha) - 1
+          n = dim alpha - 1
 
 -- TODO: Check form indices.
 psi' :: MI.MultiIndex -> Int -> Form BernsteinPolynomial
 psi' alpha i = foldl subV (db i) [ sclV (c j) (db j) | j <- [0..n]]
     where db j = oneForm (j+1) (n+1) -- Dimension should be n ?
-          c j = sclV ((fromIntegral (alpha' !! i)) / (fromIntegral r )) mulId
+          c j = sclV (fromIntegral (alpha' !! i) / fromIntegral r) mulId
           r = MI.degree alpha :: Int
           alpha' = MI.toList alpha :: [Int]
-          n = (dim alpha) - 1
+          n = dim alpha - 1
 \end{code}
 
 %------------------------------------------------------------------------------%

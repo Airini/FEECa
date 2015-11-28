@@ -181,9 +181,9 @@ formify proj (s, i:is) vs
 
 -- We need a basis here
 inner :: (InnerProductSpace w,
-          EuclideanSpace v r,
+          EuclideanSpace v,
           Dimensioned v,
-          (Scalar w) ~ r) =>
+          (Scalar w) ~ (Scalar v)) =>
          (Int -> v -> (Scalar w))  -- ^ Projection function in the specific vector space
       -> Form w -> Form w -> Scalar w
 inner proj omega eta

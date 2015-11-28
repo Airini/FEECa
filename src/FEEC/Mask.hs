@@ -8,7 +8,6 @@ import Control.Applicative
 import FEEC.DifferentialForm
 import FEEC.Internal.Form
 import FEEC.Internal.Spaces
-import FEEC.Internal.Point
 import FEEC.Internal.Vector
 import FEEC.Internal.Simplex
 import FEEC.Polynomial
@@ -109,7 +108,7 @@ d form = df (vector . flip canonCoord n) form
   where n = dimVec form
 
 -- | Evaluation of differential forms at a given point to obtain an alternating form
-(§) :: DifferentialForm (PolyRepresentation Double) -> Point Double -> Form Double
+(§) :: DifferentialForm (PolyRepresentation Double) -> Vector Double -> Form Double
 (§) = eval
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors
@@ -122,7 +121,7 @@ d form = df (vector . flip canonCoord n) form
 
 
 --integral :: (FiniteElement t r, Function f (Primitive) =>
-integral :: (EuclideanSpace v f, f ~ Scalar v) => Simplex v -> DifferentialForm (PolyRepresentation f) -> Scalar v
+integral :: (EuclideanSpace v, f ~ Scalar v) => Simplex v -> DifferentialForm (PolyRepresentation f) -> f
 integral t f = integratePolynomial t undefined {- (f#vs)
   where vs = fmap (lii ) $ spanningVectors t
         lii v = vector (fmap constant (toList v))-}

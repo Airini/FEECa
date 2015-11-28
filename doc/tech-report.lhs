@@ -2,11 +2,11 @@
 %----------------------------------------------------------------------------
 % TODO:
 %  Title       :  F.FEEC: Functional Finite Element Exterior Calculus
-%  Author(s)   :  
-%  Copyright   :  
+%  Author(s)   :
+%  Copyright   :
 %  Created     :  2015-06-15
 %
-%  Purpose     :  
+%  Purpose     :
 %
 %----------------------------------------------------------------------------
 
@@ -29,6 +29,8 @@
 \usepackage{amsmath, amsfonts}
 \usepackage[toc,page]{appendix}
 %%% ignore \usepackage{macros}   TODO: cannot find
+\usepackage{hyperref}
+
 %if techreport
 \usepackage{TRtitlepage}
 %endif
@@ -42,7 +44,7 @@
 \newcommand{\TODO}[1]{\todo{#1}}
 \newcommand{\refSec}[1]{Sec. \ref{#1}}
 \newcommand{\refSecs}[1]{Secs. \ref{#1}}
-\newcommand{\refSecI}[1]{Section \ref{#1}}
+\newcommand{\refSecI}[1]{Section \ref{#1}}  % \S
 \newcommand{\refSecsI}[1]{Sections \ref{#1}}
 \newcommand{\refTab}[1]{Tab. \ref{#1}}
 
@@ -77,14 +79,14 @@
 %%%TODO: TRtitlepage to be defined
 %if techreport
 \TRtitlepage
-  {F.FEEC: Functional Finite Element Exterior Calculus}             % argument 1 <= the title
-  {Simon Pfreundschuh \\[1em] Irene Lobo Valbuena} % argument 2 <= authors
-  {}                                     % argument 3 <= report number
+  {F.FEEC: Functional Finite Element Exterior Calculus} % argument 1 <= the title
+  {Simon Pfreundschuh \\[1em] Irene Lobo Valbuena}      % argument 2 <= authors
+  {}                                                    % argument 3 <= report number
 %else
 \title{F.FEEC: Functional Finite Element Exterior Calculus}
 
 \authorinfo{Simon Pfreundschuh}
-           {Chalmers Univeristy of Technology, Sweden}
+           {Chalmers University of Technology, Sweden}
            {\texttt{simonpf@@student.chalmers.se}}
 \authorinfo{Irene Lobo Valbuena}
            {Chalmers University of Technology, Sweden}
@@ -107,8 +109,9 @@
 
 TODO
 
-Explanation of the purpose, referring to the supporting literature the implementation is based on
-and the suitability of functional languages for mathematical representation.
+Explanation of the purpose, referring to the supporting literature the
+implementation is based on and the suitability of functional languages for
+mathematical representation.
 %
 %% plus: target audience
 
@@ -141,11 +144,12 @@ and the suitability of functional languages for mathematical representation.
 
 NB: start with: |MultiIndex| operations
 
-The generic implementation for polynomials |Polynomial a| is introduced first, giving those defined
-over the canonical (monomial) basis as the first basic option.
+The generic implementation for polynomials |Polynomial a| is introduced first,
+giving those defined over the canonical (monomial) basis as the first basic
+option.
 %
-Bernstein polynomials are then built on those and the numerical significance of their use is briefly
-explained.
+Bernstein polynomials are then built on those and the numerical significance of
+their use is briefly explained.
 
 Supported operations on polynomials and their type class instances are specified.
 
@@ -160,17 +164,17 @@ This section should also introduce coordinate functions.
 
 %include forms.lhs
 
-The generic underlying type |Form a| is introduced, along with its |Algebra| (a class introduced in
-\refSec{sec:internal}) operations.
+The generic underlying type |Form a| is introduced, along with its |Algebra| (a
+class introduced in \refSec{sec:internal}) operations.
 
-The simpler alternating forms are specified first as a |Form a| datatype followed by differential
-forms' definition.
+The simpler alternating forms are specified first as a |Form a| datatype
+followed by differential forms' definition.
 %
-We show how the operations on alternating and differential forms are expressible in terms of the
-generalised |Form a| operations.
+We show how the operations on alternating and differential forms are expressible
+in terms of the generalised |Form a| operations.
 
-The built-in Whitney form implementation is also given (towards building the negative spaces in
-\refSec{sec:FEspaces}.
+The built-in Whitney form implementation is also given (towards building the
+negative spaces in \refSec{sec:FEspaces}.
 
 
 %------------------------------------------------------------------------------
@@ -181,11 +185,11 @@ The built-in Whitney form implementation is also given (towards building the neg
 
 %include fespaces.lhs
 
-Both $\mathcal{P}_r^-\Lambda^n$ and $\mathcal{P}_r\Lambda^n$ finite element spaces implementations
-are given.
+Both $\mathcal{P}_r^-\Lambda^n$ and $\mathcal{P}_r\Lambda^n$ finite element
+spaces implementations are given.
 %
-Specific, built-in "names" for spaces over concrete kinds of elements (for ease of use) are
-documented too.
+Specific, built-in "names" for spaces over concrete kinds of elements (for ease
+of use) are documented too.
 
 
 %------------------------------------------------------------------------------
@@ -196,8 +200,8 @@ documented too.
 
 %%%include lang-mask.lhs
 
-We complete the implementation's overview by (re-)stating the top-level language constructs
-available to the user (to define objects of the types explained).
+We complete the implementation's overview by (re-)stating the top-level language
+constructs available to the user (to define objects of the types explained).
 %
 Some examples of possible use-cases are provided.
 
@@ -220,6 +224,10 @@ Some examples of possible use-cases are provided.
 
 \section{Mathematics Concepts}
 %% Any basic mathematical concepts
+
+TODO: probably more specific documentation on the relevance/use of finite
+elements (+ ext. calculus)
+
 
 \section{Notation}
 %% Maybe have it be the first appendix?

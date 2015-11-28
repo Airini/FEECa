@@ -263,7 +263,7 @@ expandTerm _ (Term c mi) = (c ,mi)
 
 -- | Polynomials as functions.
 
-instance (EuclideanSpace v r) => S.Function (Polynomial r) v where
+instance (EuclideanSpace v, r ~ Scalar v) => S.Function (Polynomial r) v where
   evaluate v = evaluatePolynomial (evaluateMonomial v)
   derive = derivePolynomial deriveMonomial
 
@@ -446,7 +446,7 @@ evaluateTerm f (Term c mi)  = mul c (f mi)
 evaluateTerm _ (Constant c) = c
 
 -- | Evaluate monomial over standard monomial basis.
-evaluateMonomial :: EuclideanSpace v r
+evaluateMonomial :: (EuclideanSpace v, r ~ Scalar v)
                  => v
                  -> MI.MultiIndex
                  -> r
@@ -542,11 +542,11 @@ The function \code{deriveMonomial} implements the derivative of a monomial for
 -- | General derivative of a term. Given a function for the derivative of a monomial
 -- | in a given space direction, the function computes the derivative of the given
 -- | term using the product rule.
-deriveTerm :: EuclideanSpace v (Scalar v)
-           => Dx (Scalar v)
+deriveTerm :: (EuclideanSpace v, r ~ Scalar v)
+           => Dx r
            -> v
-           -> Term (Scalar v)
-           -> Polynomial (Scalar v)
+           -> Term r
+           -> Polynomial r
 deriveTerm dx v (Constant _) = constant addId
 deriveTerm dx v (Term c mi)  = sclV c (foldl add addId (zipWith sclV v' (dx mi)))
     where v' = toList v
@@ -572,11 +572,11 @@ deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
 \begin{code}
 
 -- | General derivative for a polynomial with arbitrary basis.
-derivePolynomial :: EuclideanSpace v (Scalar v)
-                 => Dx (Scalar v)
+derivePolynomial :: (EuclideanSpace v, r ~ Scalar v)
+                 => Dx r
                  -> v
-                 -> Polynomial (Scalar v)
-                 -> Polynomial (Scalar v)
+                 -> Polynomial r
+                 -> Polynomial r
 derivePolynomial dx v p = foldl add addId [ deriveTerm dx v t | t <- ts ]
     where ts = terms p
 
@@ -598,11 +598,11 @@ Since the method used  has precision $2q - 1$, the integration of a polynomial
 
 -- | Numerically integrate the polynomial p over the simplex t using a Gauss-Jacobi
 -- | quadrature rule.
-integratePolynomial :: EuclideanSpace v (Scalar v)
-                    => Simplex v            -- t
-                    -> Polynomial (Scalar v) -- p
-                    -> Scalar v
-integratePolynomial t p = integrateOverSimplex q t (flip S.evaluate p)
+integratePolynomial :: (EuclideanSpace v, r ~ Scalar v)
+                    => Simplex v      -- t
+                    -> Polynomial r   -- p
+                    -> r
+integratePolynomial t p = integrateOverSimplex q t (`S.evaluate` p)
     where q = div (r + 2) 2
           r = degree p
 
@@ -688,9 +688,9 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 -- | as large as the geometrical dimension, i.e. the simplex must contain n+1
 -- | vertices if the underlying space has dimensionality n.
 -- TODO: check take
-barycentricCoordinates :: EuclideanSpace v r
+barycentricCoordinates :: (EuclideanSpace v, r ~ Scalar v)
                        => Simplex v
-                       -> [Polynomial r]
+                       -> [ Polynomial r ]
 barycentricCoordinates s = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
     where mat = M.inv (simplexToMatrix (extendSimplex s))
           n   = geometricalDimension s
@@ -698,7 +698,7 @@ barycentricCoordinates s = map vectorToPolynomial (take (nt+1) (M.toColumns mat)
 
 -- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial
 -- | in the list
-barycentricCoordinate :: EuclideanSpace v r
+barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v)
                       => Simplex v
                       -> Int
                       -> Polynomial r
@@ -706,7 +706,7 @@ barycentricCoordinate s i = barycentricCoordinates s !! i
 
 -- Transforms a given simplex into the matrix representing the linear
 -- equation system for the barycentric coordinates.
-simplexToMatrix :: EuclideanSpace v r
+simplexToMatrix :: EuclideanSpace v 
                 => Simplex v
                 -> M.Matrix Double
 simplexToMatrix s@(Simplex _ l) = M.matrix (n+1) (concatMap append1 l)
@@ -737,13 +737,13 @@ repsectively.
 
 -- Transforms a solution vector of the linear equation system into the
 -- gradients of the barycentric coordinates.
-vectorToGradient :: EuclideanSpace v (Scalar v)
+vectorToGradient :: EuclideanSpace v 
                  => M.Vector Double
                  -> v
 vectorToGradient v  = fromDouble' (tail (M.toList v))
 
 -- | Compute gradients of the barycentric coordinates.
-barycentricGradients :: EuclideanSpace v (Scalar v)
+barycentricGradients :: EuclideanSpace v 
                      => Simplex v
                      -> [v]
 barycentricGradients t = map vectorToGradient (take (nt+1) (M.toColumns mat))
@@ -752,7 +752,7 @@ barycentricGradients t = map vectorToGradient (take (nt+1) (M.toColumns mat))
           nt = topologicalDimension t
 
 -- | Compute gradients of the barycentric coordinates.
-barycentricGradients' :: EuclideanSpace v (Scalar v)
+barycentricGradients' :: EuclideanSpace v 
                       => Simplex v
                       -> [v]
 barycentricGradients' t = map (fromDouble' . M.toList) (tail (M.toRows mat))
@@ -761,7 +761,7 @@ barycentricGradients' t = map (fromDouble' . M.toList) (tail (M.toRows mat))
           nt = topologicalDimension t
 
 -- | Compute gradient of the barycentric coordinate corresponding to edge i
-barycentricGradient :: EuclideanSpace v (Scalar v)
+barycentricGradient :: EuclideanSpace v 
                     => Simplex v
                     -> Int
                     -> v

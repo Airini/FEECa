@@ -7,8 +7,8 @@ Let $\Omega \in \R{n}$ be such a domain.
 The discretization of $\Omega$ is achieved by tesselation using primitive
 geometrical shapes, the so-called finite elements.
 %
-The two types of finite elemets used in finite element exterior calculus
-are simplices and cubes, of which up to now only Simplices are supported in FEEC.
+The two types of finite elements used in finite element exterior calculus
+are simplices and cubes, of which up to now only simplices are supported in FEEC.
 %
 The representation of these geometrical structures is realized in FEEC using the
 |EuclideanSpace| type-class as well as the |Vector| and |Simplex| data types.
@@ -22,7 +22,7 @@ Vectors in $\mathrm{R}^n$ are represented by the multi-parameter typeclass |Eucl
 The superclass |VectorSpace| represents the arithmetic structure of a general vector space over a ring of scalars.
 %
 The |EuclideanSpace| class is basically an extension of the |VectorSpace| class that adds the inner product in $\mathrm{R}^n$ and the representation as finite lists of vector components to the functionality provided by the |VectorSpace| class.
-%
+%**TODO: Why is there an asymmetry between VectorSpace which uses an associated type and EuclideanSpace which uses two type parameters. They are tied together using Scalar v ~ r anyway.
 \begin{code}
 class (Eq v, Dimensioned v, VectorSpace v,
        Eq r, Field r, Scalar v ~ r)
@@ -38,7 +38,7 @@ The parameter type |a| represents the scalar type used for the vector and thus d
 the underlying arithmetic.
 %
 This enables us to choose between exact and standard floating point arithmetic depending on the application.
-%
+%**TODO: I would use newtype here - but perhaps you don't want to spare the readers from too many syntactic concepts?
 \begin{code}
 data Vector a = Vector { components :: [a] }
                deriving (Show)
@@ -54,19 +54,19 @@ An important concept in finite element exterior calculus is the representation o
 %
 In the code, such a map is represented as an increasing list of type |[Int]|.
 %
-A simplex is represented by list of vertices and such an increasing map.
+A simplex is represented by a list of vertices and such an increasing map.
 %
 Keeping track of $\sigma$ for subsimplices is important to later extend polynomials from the face of a simplex to the full simplex.
 
 \begin{code}
-data Simplex a =  Simplex { sigma :: [Int],
-                            vertices :: [a] }
+data Simplex a =  Simplex {  sigma :: [Int],
+                             vertices :: [a] }
                 deriving (Eq, Show)
 \end{code}
 
 \subsubsection{Barycentric Coordinates}
 
-The barycentric coordinates $\lambda_0,\ldots,\lambda_k$ defined over a simplex $\smp{T} = [\vec{v}_1,\ldots,\vec{v}_k]$ describe a point $\vec{x}$ on a simplex as a convex combination of the $k+1$ simplices:
+The barycentric coordinates $\lambda_0,\ldots,\lambda_k$ defined over a simplex $\smp{T} = [\vec{v}_1,\ldots,\vec{v}_k]$ describe a point $\vec{x}$ on a simplex as a convex combination of the $k+1$ vertices:
 
 \begin{align}
   \vec{x} = \lambda_0 \vec{v_0} + \ldots + \lambda_k \vec{v_k}
@@ -84,11 +84,12 @@ for $i=0,\ldots,k; j = 0,\ldots,k$, $\vec{v}_j$ the vertices of the simplex and 
 %
 \subsubsection{Integrals over Simplices}
 
-An important operation in finite elemet exterior calculus is the computation of integrals over a finite element.
+An important operation in finite element exterior calculus is the computation of integrals over a finite element.
 %
 To compute the integral of an arbitrary function over a given simplex $T$, we use the technique described in \cite{Ainsworth}.
 %
 By a suitable coordinate transform, the integral of a function $f(\vec{x})$ over the simplex $T$ can be written as
+%**TODO: I don't see the pattern hidden in the \ldots
 
 \begin{align}
   V(\smp{T}) \int_0^1 dt_1(1-t_1)^{n-1}\ldots\int_0^1 dt_nf(\vec{x}(t_0,\ldots,t_{n-1}))

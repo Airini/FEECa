@@ -117,7 +117,7 @@ instance VectorSpace (Point Double) where
   addV x = toPoint . uncurry addV . pairM fromPoint fromPoint . (x,)
   sclV a = undefined
 
-instance EuclideanSpace (Point Double) Double where
+instance EuclideanSpace (Point Double) where
   dot x    = uncurry dot . pairM fromPoint fromPoint . (x,)
   fromList = point
   toList   = toList . fromPoint

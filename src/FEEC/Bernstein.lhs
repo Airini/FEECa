@@ -75,7 +75,8 @@ instance Pretty (BernsteinPolynomial v Double) where
     pPrint (Constant p) = text (show p)
 
 -- | List multi-indices of the terms in the polynomial.
-multiIndices :: EuclideanSpace v r => BernsteinPolynomial v r -> [MI.MultiIndex]
+multiIndices :: (EuclideanSpace v, r ~ Scalar v)
+             => BernsteinPolynomial v r -> [MI.MultiIndex]
 multiIndices (Bernstein t p) = P.multiIndices n p
     where n = geometricalDimension t
 
@@ -113,7 +114,7 @@ not require to be passed a simplex argument.
 -- | Create a Bernstein polynomial over the given simplex from a list of
 -- | coefficient-multi-index pairs. An error is thrown if the dimension of the
 -- | multi-indices and the simplex are inconsistent.
-polynomial :: EuclideanSpace v r
+polynomial :: (EuclideanSpace v, r ~ Scalar v)
            => Simplex v
            -> [(r, MI.MultiIndex)]
            -> BernsteinPolynomial v r
@@ -129,7 +130,7 @@ polynomial t l
 
 -- | Create a Bernstein monomial over a given simplex from a given
 -- | multi-index.
-monomial :: EuclideanSpace v r
+monomial :: (EuclideanSpace v, r ~ Scalar v)
          => Simplex v -> MI.MultiIndex -> BernsteinPolynomial v r
 monomial t mi
     | n1 == n2 + 1 = Bernstein t (P.monomial mi)
@@ -138,7 +139,7 @@ monomial t mi
         n2 = topologicalDimension t
 
 -- | Create a constant bernstein monomial.
-constant :: EuclideanSpace v r => r -> BernsteinPolynomial v r
+constant :: (EuclideanSpace v, r ~ Scalar v) => r -> BernsteinPolynomial v r
 constant = Constant
 
 \end{code}
@@ -159,13 +160,13 @@ vector space over $\mathrm R$. The algebraic structure is implemented by the
 \begin{code}
 
 -- | Bernstein polynomials as a vector space.
-instance EuclideanSpace v r => VectorSpace (BernsteinPolynomial v r) where
+instance (EuclideanSpace v, r ~ Scalar v) => VectorSpace (BernsteinPolynomial v r) where
     type Scalar (BernsteinPolynomial v r) = r
     addV = addBernstein
     sclV = scaleBernstein
 
 -- | Bernstein polynomials as a ring.
-instance EuclideanSpace v r => Ring (BernsteinPolynomial v r) where
+instance (EuclideanSpace v, r ~ Scalar v) => Ring (BernsteinPolynomial v r) where
     add = addBernstein
     addId = Constant addId
     addInv = scaleBernstein (sub addId mulId)
@@ -175,7 +176,8 @@ instance EuclideanSpace v r => Ring (BernsteinPolynomial v r) where
 
     fromInt = Constant . fromInt
 
-instance EuclideanSpace v r => InnerProductSpace (BernsteinPolynomial v r) where
+instance (EuclideanSpace v, r ~ Scalar v) =>
+    InnerProductSpace (BernsteinPolynomial v r) where
     inner  = innerBernstein
 \end{code}
 
@@ -188,7 +190,7 @@ derived so they are declared an instance of the \code{Function}.
 
 \begin{code}
 
-instance EuclideanSpace v r => Function (BernsteinPolynomial v r) v  where
+instance (EuclideanSpace v, r ~ Scalar v) => Function (BernsteinPolynomial v r) v  where
   evaluate v (Bernstein t p) = evaluatePolynomial (evaluateMonomial lambda) p
       where lambda = map (evaluate v) (barycentricCoordinates t)
   evaluate v (Constant c) = c
@@ -209,7 +211,7 @@ provided by the \code{Polynomial} module.
 \begin{code}
 
 -- | Add Bernstein polynomials.
-addBernstein :: EuclideanSpace v r
+addBernstein :: (EuclideanSpace v, r ~ Scalar v)
              => BernsteinPolynomial v r
              -> BernsteinPolynomial v r
              -> BernsteinPolynomial v r
@@ -259,9 +261,9 @@ the general multiplication function provided by \code{Polynomial} module.
 
 \begin{code}
 multiplyMonomial :: Field r
-                    => MI.MultiIndex
-                    -> MI.MultiIndex
-                    -> Term r
+                 => MI.MultiIndex
+                 -> MI.MultiIndex
+                 -> Term r
 multiplyMonomial mi1 mi2 = term (c, MI.add mi1 mi2)
     where c1 = fromInteger (MI.add mi1 mi2 `MI.choose` mi1)
           c2= fromInteger ((r1 + r2) `choose` r1)
@@ -270,7 +272,7 @@ multiplyMonomial mi1 mi2 = term (c, MI.add mi1 mi2)
           r2 = MI.degree mi2 :: Integer
 
 -- | Multiply two Bernstein polynomials.
-multiplyBernstein :: EuclideanSpace v r
+multiplyBernstein :: (EuclideanSpace v, r ~ Scalar v)
                   => BernsteinPolynomial v r
                   -> BernsteinPolynomial v r
                   -> BernsteinPolynomial v r
@@ -306,7 +308,7 @@ evaluateMonomial :: Field r
 evaluateMonomial lambda mi = mul (prefactor r mi) (pow' lambda mi)
     where r = MI.degree mi
           pow' lambda mi = foldl mul mulId (zipWith pow lambda mi')
-          mi' = (MI.toList mi) :: [Int]
+          mi' = MI.toList mi :: [Int]
 
 -- | Prefactor for Bernstein polynomials.
 prefactor :: Field r => Int -> MI.MultiIndex -> r
@@ -345,22 +347,22 @@ function provided by the \module{Polynomial} module.
 \begin{code}
 
 -- | Derivative of a Bernstein monomial
-deriveMonomial :: EuclideanSpace v r
+deriveMonomial :: (EuclideanSpace v, r ~ Scalar v)
                => Simplex v
                -> MI.MultiIndex
                -> [ Polynomial r ]
 deriveMonomial t mi = [ sum' [sclV (grads i j) (dp j) | j <- [0..n]] | i <- [0..n-1] ]
-    where grads i j = (toList ((barycentricGradients' t) !! i)) !! j
-          dp j = if ((mi' !! j) > 0)
+    where grads i j = toList (barycentricGradients' t !! i) !! j
+          dp j = if (mi' !! j) > 0
                  then P.polynomial [(r , MI.decrease j mi)]
                  else P.constant addId
           sum' = foldl add addId
-          mi'  = (MI.toList mi) :: [Int]
-          n    = (dim mi) - 1
-          r    = fromInt( (MI.degree mi) :: Int )
+          mi'  = MI.toList mi :: [Int]
+          n    = dim mi - 1
+          r    = fromInt( MI.degree mi :: Int )
                  
 -- | Derive Bernstein polynomial.
-deriveBernstein :: EuclideanSpace v r
+deriveBernstein :: (EuclideanSpace v, r ~ Scalar v)
                 => v
                 -> BernsteinPolynomial v r
                 -> BernsteinPolynomial v r
@@ -383,11 +385,11 @@ deriveBernstein v (Constant c)  = Constant addId
 
 -- | Numerically integrate the Bernstein polyonomial p over the simplex t using
 -- | a Gauss-Jacobi quadrature rule.
-integratePolynomial :: EuclideanSpace v (Scalar v)
-                    => Simplex v                        -- t
-                    -> BernsteinPolynomial v (Scalar v) -- b
-                    -> Scalar v
-integratePolynomial t b = integrateOverSimplex q t (flip evaluate b)
+integratePolynomial :: (EuclideanSpace v, r ~ Scalar v)
+                    => Simplex v                  -- t
+                    -> BernsteinPolynomial v r    -- b
+                    -> r
+integratePolynomial t b = integrateOverSimplex q t (`evaluate` b)
     where q = div (r + 2) 2
           r = degree b
 
@@ -413,7 +415,7 @@ add the information about the simplex to the Bernstein polynomial.
 
 -- | Closed-form integration of Bernstein polynomials over the simplex they are
 -- | defined over.
-integrateBernstein :: EuclideanSpace v r
+integrateBernstein :: (EuclideanSpace v, r ~ Scalar v)
                       => BernsteinPolynomial v r
                       -> r
 integrateBernstein b@(Bernstein t1 p) = sum' (map f (toPairs k p))
@@ -436,7 +438,7 @@ redefine t (Constant c)      = Bernstein t (P.constant c)
 -- | Inner product of Bernstein polynomials defined over a simplex T. If both
 -- | polynomials are constant and have no associated simplex, a simplex of
 -- | with volume 1 is assumed.
-innerBernstein :: EuclideanSpace v r
+innerBernstein :: (EuclideanSpace v, r ~ Scalar v)
                   => BernsteinPolynomial v r
                   -> BernsteinPolynomial v r
                   -> r
@@ -467,7 +469,7 @@ with the gradient vector.
 
 -- | Projection fuction for gradients of barycentric coordinates as basis for
 -- | the space of alternating forms.
-proj :: EuclideanSpace v r
+proj :: (EuclideanSpace v, r ~ Scalar v)
      => Simplex v
      -> Int
      -> v
@@ -490,7 +492,7 @@ see \ref{sec:mi_extension}.
 \begin{code}
 
 -- | Extend a Bernstein polynomial defined on a subsimplex f to the simplex t.
-extend :: EuclideanSpace v r
+extend :: (EuclideanSpace v, r ~ Scalar v)
        => Simplex v
        -> BernsteinPolynomial v r
        -> BernsteinPolynomial v r

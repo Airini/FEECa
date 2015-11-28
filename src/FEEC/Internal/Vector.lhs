@@ -86,7 +86,7 @@ instance Ring a => VectorSpace (Vector a) where
   sclV c (Vector l) = Vector $ map (mul c) l
 
 -- | R^n as a Euclidean space.
-instance (Field a, Eq a) => EuclideanSpace (Vector a) a where
+instance (Field a, Eq a) => EuclideanSpace (Vector a) where
     dot (Vector l1) (Vector l2) = foldl add addId (zipWith mul l1 l2)
     toList   = components
     fromList = vector

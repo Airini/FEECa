@@ -10,26 +10,27 @@ import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
 import FEEC.Mask
 import FEEC.Polynomial
-
+import qualified FEEC.Utility.Print as PP
 
 
 -------
 
 -- A 2D simplex
-x20 = point [0, 0]
-x21 = point [1, 0]
-x22 = point [0, 1]
+x20 = vector [0, 0]
+x21 = vector [1, 0]
+x22 = vector [0, 1]
+t2 :: Simplex (Vector Double)
 t2  = simplex [x20, x21, x22]
 
 
 -- A 5D simplex
-x50 = point [0, 0, 0, 0, 0]
-x51 = point [1, 0, 0, 0, 0]
-x52 = point [0, 1, 0, 0, 0]
-x53 = point [0, 0, 1, 0, 0]
-x54 = point [0, 0, 0, 1, 0]
-x55 = point [0, 0, 0, 0, 1]
-t5 :: Simplex (Point Double)
+x50 = vector [0, 0, 0, 0, 0]
+x51 = vector [1, 0, 0, 0, 0]
+x52 = vector [0, 1, 0, 0, 0]
+x53 = vector [0, 0, 1, 0, 0]
+x54 = vector [0, 0, 0, 1, 0]
+x55 = vector [0, 0, 0, 0, 1]
+t5 :: Simplex (Vector Double)
 t5  = simplex [x50, x51, x52, x53, x54, x55]
 
 -- Reference simplices

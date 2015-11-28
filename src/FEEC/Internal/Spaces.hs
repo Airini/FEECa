@@ -38,7 +38,7 @@ instance {-# OVERLAPPABLE #-} Ring v => Num v where
   (+) = add
   (*) = mul
   negate = addInv
-  fromInteger = fromInt
+dd  fromInteger = fromInt
   abs = undefined -- XXX: :S TODO: add Ord v to constraint? In any case, for polynomials...
   signum = undefined -- XXX: :S
 -}
@@ -92,15 +92,14 @@ instance Field Rational where
 -- | Definition of vector spaces via a class 'VectorSpace' differing from the
 -- mathematical definition in the object it is defined over: 'Ring' scalars
 -- instead of 'Field' ones; that is, a module over a 'Ring' in reality.
-class (Ring (Scalar v)) => VectorSpace v where -- Module over a Ring
+class (Ring (Scalar v)) => VectorSpace v where --(Scalar v)) => VectorSpace v where -- Module over a Ring
   type Scalar v :: *      -- Coefficient ring
   addV  :: v -> v -> v
-  sclV  :: Scalar v -> v -> v
-
-
--- | Derived vector subtraction from 'VectorSpace' class functions.
-subV :: VectorSpace v => v -> v -> v
-subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
+  sclV  :: Scalar v -> v -> v -- Scalar v -> v -> v
+  
+  -- | Derived vector subtraction from 'VectorSpace' class functions.
+  subV :: v -> v -> v
+  subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
 
 -- | Zero vector
 -- XXX: NB: we could add it as a member of the class?? for more "peculiar" types
@@ -125,7 +124,7 @@ instance (Ring a, Eq [a]) => VectorSpace [a] where
 class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
   addA :: v -> v -> v
   (/\) :: v -> v -> v
-  sclA :: Scalar v -> v -> v
+  sclA :: {-r -> v -> v -} Scalar v -> v -> v
 
   addA = addV
   sclA = sclV
@@ -138,11 +137,11 @@ class Dimensioned t where
 -- types which may be interpreted as lists of values (that is, they have an
 -- immeidate definition as coordinates wrt to a basis) and for appropriate inner
 -- products giving rise to metrics.
-class (Eq v, Dimensioned v, VectorSpace v, Eq r, Field r, Scalar v ~ r)
-    => EuclideanSpace v r where
-  dot      :: v   -> v -> r
-  fromList :: [r] -> v
-  toList   :: v   -> [r]
+class (Eq v, Dimensioned v, VectorSpace v, Eq (Scalar v), Field (Scalar v))
+    => EuclideanSpace v where
+  dot      :: v   -> v -> Scalar v
+  fromList :: [Scalar v] -> v
+  toList   :: v   -> [Scalar v]
 -- XXX: add basis??
 
 -- | Inner product space to define the generalised inner product on differential
@@ -174,21 +173,20 @@ class FiniteElement t r where
   type Primitive t :: *
   quadrature :: Int -> t -> (Primitive t -> r) -> r
 
--- | Generalised integration expressed in terms of a quadrature method (with
--- given number of nodes) associated with the 'FiniteElement' type pair.
-integrate :: (FiniteElement t r,
-              Function f (Primitive t), Scalar (Primitive t) ~ r)
+  -- | Generalised integration expressed in terms of a quadrature method (with
+  -- given number of nodes) associated with the 'FiniteElement' type pair.
+  integrate :: (r ~ Scalar (Primitive t), Function f (Primitive t))
     => Int -> t -> f -> r
-integrate i t f = quadrature i t (f $$)
+  integrate i t f = quadrature i t (f $$)
 
 -- | A convenient synomym for the neutral vector with respect to addition in an
 -- 'EuclideanSpace' of some given dimension.
-zero :: EuclideanSpace v (Scalar v) => Int -> v -- XXX: shall we use Dimensioned here?
+zero :: EuclideanSpace v => Int -> v -- XXX: shall we use Dimensioned here?
 zero n = fromList (replicate n addId)
 
 -- | A convenient synomym for unit vectors with respect to an implicit basis
 -- (via indexing of the basis element) in an 'EuclideanSpace' of a given dimension.
-unitVector :: EuclideanSpace v (Scalar v) => Int -> Int -> v
+unitVector :: EuclideanSpace v => Int -> Int -> v
 unitVector n i
     | (n  > 0) && (i >= 0) && (i < n) = fromList $ concat l
     | otherwise = error "unitVector: invalid dimensions!"
@@ -196,11 +194,11 @@ unitVector n i
 
 -- | General translation to 'EuclideanSpace' vectors from a common
 -- representation: lists of 'Double'.
-fromDouble' :: EuclideanSpace v (Scalar v) => [Double] -> v
+fromDouble' :: EuclideanSpace v => [Double] -> v
 fromDouble' = fromList . map fromDouble
 
 -- | General translation from 'EuclideanSpace' vectors to a common
 -- representation: lists of 'Double'.
-toDouble' :: EuclideanSpace v (Scalar v) => v -> [Double]
+toDouble' :: EuclideanSpace v => v -> [Double]
 toDouble' = map toDouble . toList
 
