@@ -31,13 +31,13 @@ data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int deriving (Show)
 --------------------------------------------------------------------------------
 
 -- | Generate a random simplex of given dimension.
-arbitrarySimplex :: (EuclideanSpace v r, Arbitrary v) => Int -> Gen (Simplex v)
+arbitrarySimplex :: (EuclideanSpace v, Arbitrary v) => Int -> Gen (Simplex v)
 arbitrarySimplex n = do l <- Q.infiniteListOf (vectorOf (n+1) (arbitraryVector n))
                         let simplices = map (Simplex [0..n]) l
                         return (head (dropWhile ((addId ==) . volume) simplices))
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
-instance (EuclideanSpace v r, Arbitrary v) => Arbitrary (Simplex v) where
+instance (EuclideanSpace v, Arbitrary v) => Arbitrary (Simplex v) where
     arbitrary = do n <- Q.choose (1, 10)
                    arbitrarySimplex n
 
@@ -48,7 +48,7 @@ instance (EuclideanSpace v r, Arbitrary v) => Arbitrary (Simplex v) where
 -- | Arbitrary instance to test generation of subsimplices. Generates a full
 -- | simplex of arbitrary dimension and integers k and i such that i is a valid
 -- | index of a subsimplex of dimension k.
-instance (EuclideanSpace v r, Arbitrary v) => Arbitrary (SubsimplexTest v) where
+instance (EuclideanSpace v, Arbitrary v) => Arbitrary (SubsimplexTest v) where
     arbitrary = do t <- arbitrary
                    let n = topologicalDimension t
                    k <- Q.choose (0,n)
@@ -78,7 +78,7 @@ prop_subsimplices (SubsimplexTest s@(Simplex _ l) k _) =
 
 -- | The extension of a subsimplex should have full dimensionality and non-zero
 -- | volume.
-prop_extend_subsimplex :: EuclideanSpace v (Scalar v) => SubsimplexTest v -> Bool
+prop_extend_subsimplex :: EuclideanSpace v => SubsimplexTest v -> Bool
 prop_extend_subsimplex (SubsimplexTest s@(Simplex _ l) k i) =
     (volume t' /= addId) && ((topologicalDimension t') == (geometricalDimension t'))
         where t' = extendSimplex (subsimplex s k i)
@@ -88,14 +88,14 @@ prop_extend_subsimplex (SubsimplexTest s@(Simplex _ l) k i) =
 --------------------------------------------------------------------------------
 
 -- Data type for constant functions.
-data Constant = Constant Double
+data Constant a = Constant a
 
-instance EuclideanSpace v Double => Function Constant v where
-    derive v h = (Constant 0.0)
+instance (EuclideanSpace v, r ~ Scalar v) => Function (Constant r) v where
+    derive v h = (Constant (fromDouble 0.0))
     evaluate v (Constant c) = c
 
-prop_vol_integral :: EuclideanSpace v Double => Simplex v -> Bool
-prop_vol_integral t = eqNum (volume t) (integrate 2 t (Constant 1.0))
+prop_vol_integral :: EuclideanSpace v => Simplex v -> Bool
+prop_vol_integral t = eqNum (volume t) (integrate 2 t (Constant (fromDouble 1.0)))
      where n = topologicalDimension t
 
 --------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ newtype Cubic v r = Cubic v deriving (Show, Eq)
 
 -- | Randomly pick a dimension n and a point from the n-dimensional unit
 -- | cube.
-instance EuclideanSpace v r => Arbitrary (Cubic v r) where
+instance (EuclideanSpace v, r ~ Scalar v) => Arbitrary (Cubic v r) where
     arbitrary = do n <- Q.choose (1,10)
                    cs <- Q.vector n
                    let transf l = zipWith (sub) l (map (fromInt . truncate') l)
@@ -118,21 +118,21 @@ instance EuclideanSpace v r => Arbitrary (Cubic v r) where
 -- | Check that the transformation of a point in the n-dimensional unit cube is
 -- | a valid point in barycentric coordinates, i.e. that all components are
 -- |  positive and sum to one and that there are n + 1 components.
-prop_cubicToBarycentric :: EuclideanSpace v r
+prop_cubicToBarycentric :: (EuclideanSpace v, r ~ Scalar v)
                            => Cubic v r -> Bool
 prop_cubicToBarycentric (Cubic v) = (prop_barycentric_range v') && (prop_barycentric_sum v') && (dim v' == dim v + 1)
         where v' = cubicToBarycentric v
 
-prop_barycentric_range :: EuclideanSpace v r => v -> Bool
+prop_barycentric_range :: EuclideanSpace v => v -> Bool
 prop_barycentric_range v = (all (0 <=) cs) && (all (1 >=) cs)
     where cs = toDouble' v
 
-prop_barycentric_sum :: EuclideanSpace v r => v -> Bool
+prop_barycentric_sum :: EuclideanSpace v => v -> Bool
 prop_barycentric_sum v = eqNum (sum ( toDouble' v )) 1.0
 
 -- | Check that the unit vectors in barycentric coordinates reproduce the vertices
 -- | of the simplex when transformed to cartesian coordinates.
-prop_barycentricToCartesian :: EuclideanSpace v (Scalar v)
+prop_barycentricToCartesian :: EuclideanSpace v
                             => Simplex v
                             -> Bool
 prop_barycentricToCartesian t =

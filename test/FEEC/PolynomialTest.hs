@@ -55,8 +55,8 @@ instance Field f => Q.Arbitrary (Vector f) where
 -- multiplication of polynomials must commute with the evaluate operator.
 ------------------------------------------------------------------------------
 
-prop_arithmetic :: (EuclideanSpace v r, Function f v, VectorSpace f,
-                    (Scalar f) ~ r, Ring f)
+prop_arithmetic :: (EuclideanSpace v, Function f v, VectorSpace f, Ring f,
+                    r ~ Scalar v, r ~ Scalar f)
                 => (r -> r -> Bool)
                 -> f
                 -> f
@@ -85,7 +85,8 @@ prop_arithmetic_rf = prop_arithmetic (==)
 --------------------------------------------------------------------------------
 
 -- Linearity
-prop_derivation_linear :: (EuclideanSpace v r, Function f v, VectorSpace f, r ~ (Scalar f))
+prop_derivation_linear :: (EuclideanSpace v, Function f v, VectorSpace f,
+                          r ~ (Scalar v), r ~ (Scalar f))
                        => v
                        -> v
                        -> r
@@ -96,7 +97,7 @@ prop_derivation_linear v1 v2 c p1 p2 =
     prop_linearity (==) ((evaluate v2) . (derive v2)) c p1 p2
 
 -- Product rule
-prop_derivation_product :: (EuclideanSpace v r, Function f v, Ring f)
+prop_derivation_product :: (EuclideanSpace v, Function f v, Ring f)
                         => v
                         -> v
                         -> f
@@ -109,6 +110,13 @@ prop_derivation_product v1 v2 p1 p2 =
               dp2 = derive v2 p2
 
 -- Test for polynomials using exact arithmetic.
+prop_arithmetic_rational :: Polynomial Rational
+                         -> Polynomial Rational
+                         -> Vector Rational
+                         -> Rational
+                         -> Bool
+prop_arithmetic_rational = prop_arithmetic (==)
+
 prop_derivation_linear_rational :: Vector Rational
                                 -> Vector Rational
                                 -> Rational

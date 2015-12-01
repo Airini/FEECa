@@ -31,3 +31,7 @@ inner omega eta
           error "Inner: Need associated simplex to compute inner product."
               where t = catMaybes $ map findSimplex [omega, eta]
 
+integrate :: S.Field a => Simplex (Vector a) -> DifferentialForm a -> a
+integrate t omega = B.integratePolynomial t b
+                    where b = apply omega (spanningVectors t)
+

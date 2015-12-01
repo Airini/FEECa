@@ -7,7 +7,8 @@ import Control.Applicative
 
 import FEEC.DifferentialForm
 import FEEC.Internal.Form
-import FEEC.Internal.Spaces
+import FEEC.Internal.Spaces hiding(inner)
+import qualified FEEC.Internal.Spaces as S(inner)
 import FEEC.Internal.Vector
 import FEEC.Internal.Simplex
 import FEEC.Polynomial
@@ -62,8 +63,8 @@ dxN = flip dx
 dxVP :: (Eq (Vector f), Field f) => Int -> Vector f -> PolyRepresentation f
 dxVP = (fmap . fmap) constant dxV
 
-(#) :: {-Field f => -} Form Double -> [Vector Double] -> Double
-(#) = refine dxV
+(#) :: Form Double -> [Vector Double] -> Double
+(#) = undefined -- refine dxV
 -- TODO: unify
 -- complete (##) :: (Ringh, VectorSpace v) => Form h -> [v] -> h
 --d' :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
@@ -87,7 +88,7 @@ bssIx n = vector . flip canonCoord n
 
 -- or <|> ?
 (<>) :: (Eq (Vector f), Field f) => Form f -> Form f -> f
-(<>) omega eta = inner dxV (bssIx n) omega eta
+(<>) omega eta = undefined -- inner dxV omega eta
   where n = dimVec omega
 
 (⌟) :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f 

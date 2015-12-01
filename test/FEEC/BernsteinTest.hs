@@ -1,14 +1,16 @@
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module FEEC.BernsteinTest where
 
 import FEEC.Bernstein
 import qualified FEEC.Internal.MultiIndex as MI
 import FEEC.Internal.Simplex
-import FEEC.Internal.SimplexTest
 import FEEC.Internal.Vector
 import FEEC.Internal.Spaces
 import FEEC.Utility.Utility
+import FEEC.PolynomialTest(n)
+import FEEC.Utility.Print
 import Properties
 import qualified Test.QuickCheck as Q
 import qualified Test.QuickCheck.Property as Prop
@@ -19,13 +21,24 @@ import qualified FEEC.PolynomialTest as PT
 -- Random Bernstein Polynomials
 --------------------------------------------------------------------------------
 
-n = 8
+-- | Generate a random simplex of given dimension.
+arbitrarySimplex :: (EuclideanSpace v, Q.Arbitrary v)
+                 => Int -> Q.Gen (Simplex v)
+arbitrarySimplex n = do l <- Q.infiniteListOf (Q.vectorOf (n+1) Q.arbitrary)
+                        let simplices = map simplex l
+                        return (head (dropWhile ((addId ==) . volume) simplices))
 
-instance (Ring r, Q.Arbitrary r, Q.Arbitrary v)
+-- | Generate random simplex of dimesion n = 8.
+instance (EuclideanSpace v, Q.Arbitrary v) => Q.Arbitrary (Simplex v) where
+    arbitrary = arbitrarySimplex n
+
+-- | Generate random Bernstein polynomial in n dimensions.
+instance (EuclideanSpace v, r ~ Scalar v, Q.Arbitrary r, Q.Arbitrary v)
     => Q.Arbitrary (BernsteinPolynomial v r) where
     arbitrary = Q.oneof [ arbitraryBernstein PT.n, arbitraryConstant ]
 
-arbitraryBernstein :: (Q.Arbitrary v, Q.Arbitrary r, Ring r)
+arbitraryBernstein :: (EuclideanSpace v, r ~ Scalar v,
+                       Q.Arbitrary v, Q.Arbitrary r, Ring r)
                    => Int
                    -> Q.Gen (BernsteinPolynomial v r)
 arbitraryBernstein n = do t <- arbitrarySimplex n

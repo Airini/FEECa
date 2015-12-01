@@ -52,8 +52,8 @@ instance Functor Form where
 
 
 -- XXX: change to Pretty f once all other modules are up to date
-instance Show f => Pretty (Form f) where
-  pPrint (Form k n cs) = printForm "dx" "0" show cs -- show or pPrint...
+instance Pretty f => Pretty (Form f) where
+  pPrint (Form k n cs) = printForm "dx" "0" pPrint cs -- show or pPrint...
   {- show k ++ "-form in " ++ show n ++ " dimensions: " ++
                           show (printForm "dx" "0" show cs)-}
 

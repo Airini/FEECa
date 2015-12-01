@@ -88,21 +88,12 @@ printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
 -- | Pretty print polynomial
 printBernstein :: [(Double,MI.MultiIndex)] -> Doc
 printBernstein []           = double 0.0
-printBernstein [(c,mon)]  = double c <+> printPrefactor mon
-                            <+> printMonomial0 lambda (MI.toList mon)
+printBernstein [(c,mon)]  = double c <+> printMonomial0 lambda (MI.toList mon)
 printBernstein ((c,mon):ls) = if c == 0
                               then printPolynomial lambda ls
                               else s <+> text "+" <+> printPolynomial lambda ls
-    where s = double c <+> printPrefactor mon
-              <+> printMonomial0 lambda (MI.toList mon)
+    where s = double c <+> printMonomial0 lambda (MI.toList mon)
 
-printPrefactor :: MI.MultiIndex -> Doc
-printPrefactor mi = lparen <> int r <> fac <> div <> lparen <> print mi
-                      <> rparen <> rparen
-    where r = MI.degree mi
-          fac = text "!"
-          div = text "/"
-          print mi = foldl (\x y -> x <> integer y <> fac) empty (MI.toList mi)
 
 -- | Pretty print constant
 printConstant :: Double -> Doc
@@ -140,10 +131,10 @@ printWhitneyForm p ls = hsep $ punctuate (text " + ") (map printPair ls)
     printPhi ls = text phi <> hcat (map printSub ls)
 
 -- OR: unit as f + apply coeff
-printForm :: [Char] -> [Char] -> (f -> [Char]) -> [(f,[Int])] -> Doc
+printForm :: [Char] -> [Char] -> (f -> Doc) -> [(f,[Int])] -> Doc
 printForm _  unit _     []   = text unit -- $ coeff addId
 printForm df _    coeff rest = hsep $ punctuate (text " +") $
-  map (\(a,cs) -> text "(" <> (text . coeff) a <> text ")" <+>
+  map (\(a,cs) -> text "(" <> coeff a <> text ")" <+>
                   hsep (intersperse wedgeD (map ((<>) (text df) . printSub) cs)))
       rest
 

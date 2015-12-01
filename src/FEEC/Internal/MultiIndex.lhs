@@ -43,13 +43,13 @@ module FEEC.Internal.MultiIndex(
   extend,
 
   -- * Mathematical Operations
-  add, decrease, factorial, choose, choose', degree, range
+  add, decrease, derive, factorial, choose, choose', degree, range
 
   ) where
 
 
 import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)
-import FEEC.Internal.Spaces(Dimensioned(..))
+import FEEC.Internal.Spaces(Dimensioned(..),Field(..))
 import FEEC.Utility.Combinatorics(sumRLists)
 import qualified FEEC.Utility.Combinatorics as C(choose, factorial)
 
@@ -303,4 +303,9 @@ function.
 decrease :: Integral a =>  Int -> ZipList a -> ZipList a
 decrease i alpha  = pure f <*> ZipList [0..] <*> alpha
     where f j a = if j == i then max 0 (a-1) else a
+
+-- | Decrease element in multi-index
+derive :: (Integral a, Field b) =>  Int -> ZipList a -> (b, ZipList a)
+derive i alpha  = (c, decrease i alpha)
+    where c = (fromDouble . fromIntegral) ((getZipList alpha) !! i)
 \end{code}

@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module FEEC.Internal.VectorTest (
                                  arbitraryVector
@@ -17,11 +18,11 @@ import qualified Test.QuickCheck as Q(vector)
 --------------------------------------------------------------------------------
 n = 4
 
-arbitraryVector :: EuclideanSpace v r => Int -> Gen v
+arbitraryVector :: EuclideanSpace v => Int -> Gen v
 arbitraryVector n = do cs <- Q.vector n
                        return (fromDouble' cs)
 
-instance EuclideanSpace (Vector r) r => Arbitrary (Vector r) where
+instance EuclideanSpace (Vector r) => Arbitrary (Vector r) where
     arbitrary = arbitraryVector n
 
 --------------------------------------------------------------------------------
@@ -46,7 +47,7 @@ prop_toList l = toList v == l
 -- over a real vector space.
 --------------------------------------------------------------------------------
 
-prop_dot :: (EuclideanSpace v r, Ord r) => r -> v -> v -> v -> Bool
+prop_dot :: (EuclideanSpace v, Ord r, r ~ Scalar v) => r -> v -> v -> v -> Bool
 prop_dot c u v w = prop_symmetric dot u v
                    && prop_linear dot c u v w
                    && prop_pos_def dot u
@@ -62,7 +63,8 @@ prop_symmetric f a1 a2 = (f a1 a2) == (f a2 a1)
 -- Linearity
 --------------------------------------------------------------------------------
 
-prop_linear :: EuclideanSpace v r => (v -> v -> r) -> r -> v -> v -> v -> Bool
+prop_linear :: (EuclideanSpace v, r ~ Scalar v)
+               => (v -> v -> r) -> r -> v -> v -> v -> Bool
 prop_linear f c u v w = eqNum (mul c (f u v)) (f (sclV c v) u)
                             && eqNum (f (addV u v) w) (add (f u w)  (f v w))
 
@@ -70,6 +72,7 @@ prop_linear f c u v w = eqNum (mul c (f u v)) (f (sclV c v) u)
 -- Positive-definiteness
 --------------------------------------------------------------------------------
 
-prop_pos_def :: (EuclideanSpace v r, Ord r) => (v -> v -> r) -> v -> Bool
+prop_pos_def :: (EuclideanSpace v, Ord r, r ~ Scalar v)
+                => (v -> v -> r) -> v -> Bool
 prop_pos_def f u = (f u u) >= addId
                    && if (f u u) == addId then u == zeroV u else True

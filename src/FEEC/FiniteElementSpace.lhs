@@ -24,8 +24,11 @@ where $\kappa$ is the Koszul operator.
 module FEEC.FiniteElementSpace (
                                 FiniteElementSpace(..),
                                 BasisFunction,
+                                Simplex,
+                                Vector,
                                 basis,
-                                vspaceDim
+                                vspaceDim,
+                                whitneyForm
  -- * Introduction
  -- $intro
 )where
@@ -78,6 +81,7 @@ type DifferentialForm = D.DifferentialForm Double
 data FiniteElementSpace = PrLk Int Int Simplex
                         | PrmLk Int Int Simplex
                         | GenSpace [BasisFunction]
+                          deriving( Show )
 
 -- | Type synomym for basis function of finite element spaces that are of type
 -- | Form BernsteinPolynomial.
@@ -154,7 +158,7 @@ basis (PrmLk r k t) = prmLkBasis r k t
 basis (PrLk r k t) = prLkBasis r k t
 
 pPrintBasisFunction :: BasisFunction -> String
-pPrintBasisFunction = show . printForm dlambda "0" (show . P.pPrint)
+pPrintBasisFunction = show . printForm dlambda "0" P.pPrint
                            . constituents
 
 pPrint :: [BasisFunction] -> IO ()
