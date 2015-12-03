@@ -39,7 +39,7 @@ import FEEC.Polynomial ( Polynomial, Term, term, terms, expandTerm,
                         evaluatePolynomial, derivePolynomial, integratePolynomial,
                         multiplyPolynomial,
                         barycentricCoordinates, barycentricGradient,
-                        barycentricGradients', toPairs)
+                        barycentricGradients, toPairs)
 import qualified FEEC.Polynomial as P (degree, multiIndices, monomial,
                                        constant, polynomial)
 
@@ -322,8 +322,8 @@ deriveMonomial :: (EuclideanSpace v, r ~ Scalar v)
                => Simplex v
                -> MI.MultiIndex
                -> [ Polynomial r ]
-deriveMonomial t mi = [ sum' [sclV (grads i j) (dp j) | j <- [0..n]] | i <- [0..n-1] ]
-    where grads i j = toList (barycentricGradients' t !! i) !! j
+deriveMonomial t mi = [ sum' [sclV (grads j i) (dp j)  | j <- [0..n]] | i <- [0..n-1] ]
+    where grads j i = toList (barycentricGradients t !! j) !! i
           dp j = if (mi' !! j) > 0
                  then P.polynomial [MI.derive j mi]
                  else P.constant addId
@@ -339,6 +339,7 @@ deriveBernstein :: (EuclideanSpace v, r ~ Scalar v)
 deriveBernstein v (Bernstein t p) = Bernstein t (derivePolynomial (deriveMonomial t) v p)
 deriveBernstein v (Constant c)  = Constant addId
 \end{code}
+
 
 %------------------------------------------------------------------------------%
 
