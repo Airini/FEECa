@@ -460,7 +460,7 @@ proj :: (EuclideanSpace v, r ~ Scalar v)
      -> Int
      -> v
      -> r
-proj t i = dot u
+proj t i    = dot u
     where u = barycentricGradient t i
 \end{code}
 
