@@ -37,7 +37,7 @@ import Data.List
 import FEEC.Bernstein (monomial, multiIndices)
 import qualified FEEC.Bernstein as B (BernsteinPolynomial(..),extend)
 import FEEC.Utility.Combinatorics
-import qualified FEEC.PolynomialDifferentialForms as D
+import qualified FEEC.PolynomialDifferentialForm as D
 import FEEC.Utility.Print( printBernstein, printForm, dlambda )
 import qualified FEEC.Utility.Print as P ( Pretty(..) )
 import FEEC.Internal.Form hiding (arity, inner)

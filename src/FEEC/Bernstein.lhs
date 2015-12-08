@@ -87,6 +87,10 @@ multiIndices (Bernstein t p) = P.multiIndices n p
 degree :: BernsteinPolynomial v r -> Int
 degree (Bernstein t p) = P.degree p
 degree (Constant _) = 0
+
+domain :: BernsteinPolynomial v r -> Simplex v
+domain (Bernstein t _) = t
+domain _ = error "Domain: No domain associated with constant Bernstein polynomial."
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -145,6 +149,14 @@ monomial t mi
 -- | Create a constant bernstein monomial.
 constant :: (EuclideanSpace v, r ~ Scalar v) => r -> BernsteinPolynomial v r
 constant = Constant
+
+-- | Return a given barycentric coordinate in Bernstein represenation
+barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v)
+                      => Simplex v
+                      -> Int
+                      -> BernsteinPolynomial v r
+barycentricCoordinate t i = monomial t (MI.unit (n+1) i)
+    where n = topologicalDimension t
 
 \end{code}
 

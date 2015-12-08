@@ -11,7 +11,6 @@ module FEEC.Internal.SimplexTest(
 
 import Data.Maybe
 import Data.List
-import FEEC.Internal.Point
 import FEEC.Internal.Simplex
 import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
@@ -34,11 +33,11 @@ data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int deriving (Show)
 arbitrarySimplex :: (EuclideanSpace v, Arbitrary v) => Int -> Gen (Simplex v)
 arbitrarySimplex n = do l <- Q.infiniteListOf (vectorOf (n+1) (arbitraryVector n))
                         let simplices = map (Simplex [0..n]) l
-                        return (head (dropWhile ((addId ==) . volume) simplices))
+                        return (head simplices)
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
 instance (EuclideanSpace v, Arbitrary v) => Arbitrary (Simplex v) where
-    arbitrary = do n <- Q.choose (1, 10)
+    arbitrary = do n <- Q.choose (1, 6)
                    arbitrarySimplex n
 
 --------------------------------------------------------------------------------
