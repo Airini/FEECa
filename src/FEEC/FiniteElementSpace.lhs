@@ -23,12 +23,15 @@ where $\kappa$ is the Koszul operator.
 
 module FEEC.FiniteElementSpace (
                                 FiniteElementSpace(..),
+                                Name(..),
+                                finiteElementSpace,
                                 BasisFunction,
                                 Simplex,
                                 Vector,
                                 basis,
                                 vspaceDim,
                                 whitneyForm
+                                prmLkBasis
  -- * Introduction
  -- $intro
 )where

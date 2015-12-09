@@ -21,11 +21,14 @@ import qualified FEEC.PolynomialTest as PT
 --------------------------------------------------------------------------------
 -- Random Bernstein Polynomials
 --------------------------------------------------------------------------------
+arbitraryVector :: EuclideanSpace v => Int -> Q.Gen v
+arbitraryVector n = do cs <- Q.vector n
+                       return (fromDouble' cs)
 
 -- | Generate a random simplex of given dimension.
 arbitrarySimplex :: (EuclideanSpace v, Q.Arbitrary v)
                  => Int -> Q.Gen (Simplex v)
-arbitrarySimplex n = do l <- Q.infiniteListOf (Q.vectorOf (n+1) Q.arbitrary)
+arbitrarySimplex n = do l <- Q.infiniteListOf (Q.vectorOf (n+1) (arbitraryVector n))
                         let simplices = map simplex l
                         return (head simplices)
 
