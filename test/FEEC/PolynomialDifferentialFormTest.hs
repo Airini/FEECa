@@ -77,11 +77,6 @@ instance Q.Arbitrary (Form Double) where
 -- Apply
 --------------------------------------------------------------------------------
 
--- instance VectorSpace Double where
---     type Scalar Double = Double
---     sclV = (*)
---     addV = (*)
-
 prop_proj :: Simplex (Vector Double) -> Bool
 prop_proj t = and [vector [applyOmega i j | j <- [0..n-1]] == dlambda i | i <- [0..n]]
     where dlambda i      = barycentricGradient t i
@@ -151,19 +146,3 @@ prop_inner c omega@(Form k n cs) eta =
           omega2 = D.inner omega omega
           eta2   = D.inner eta eta
           cc = B.constant c
-
-c = 4.1719564350018687e-299
-cc :: BernsteinPolynomial Double
-cc = B.constant c
-omega = Form {arity = 2, dimVec = 2, constituents = [(B.Bernstein (Simplex {sigma = [0,1,2], vertices = [Vector {components = [2.884626207268346,0.1553520332489132]},Vector {components = [-12.868091627158673,0.8836759455492947]},Vector {components = [2.075565036744233,9.250308828425474]}]}) (Polynomial {degree = 4, terms = [Term (-1.0347126528831319) (ZipList {getZipList = [1,3,0]})]}),[2,2])]}
-eta = Form {arity = 2, dimVec = 2, constituents = [(B.Bernstein (Simplex {sigma = [0,1,2], vertices = [Vector {components = [-0.9632168977354475,5.8167862167008675]},Vector {components = [-3.3013533446631675,-15.23911741456827]},Vector {components = [-2.5018741285220196,3.453867540412189]}]}) (Polynomial {degree = 8, terms = [Term (-1.8308264743574454) (ZipList {getZipList = [4,0,4]}),Term 2.9380426877189243 (ZipList {getZipList = [1,1,6]})]}),[1,0])]}
-
-omega' :: DifferentialForm Double
-omega' = sclV (B.constant addId) omega
-
-eta' :: DifferentialForm Double
-eta' = sclV (B.constant addId) eta
-
-t = fromJust (findSimplex omega)
-v = spanningVectors t
-

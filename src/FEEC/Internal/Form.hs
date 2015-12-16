@@ -5,7 +5,7 @@
 
 module FEEC.Internal.Form (
   -- * Generic form types
-  Dim, Form (Form, arity, dimVec, constituents)
+  Dim, Form (Form, arity, dimVec, terms)
 
   -- * Predefined primitive constructors
   , zeroForm, nullForm, oneForm
@@ -35,17 +35,17 @@ type Dim = Int
 data Form f =  -- we lose dependency on the type of vector!
     Form  { arity :: Dim                    -- ^ For complete evaluation
           , dimVec :: Dim                   -- ^ Of the underlying vector space
-          , constituents :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
+          , terms :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
   deriving (Eq, Show)
 
 
--- constituents [(17, [1,2]), (38, [1,3])] = 17*dx1/\dx2 + 38*dx1/\dx3
+-- terms [(17, [1,2]), (38, [1,3])] = 17*dx1/\dx2 + 38*dx1/\dx3
 
--- | Invariant for constituents of a defined form: all terms have the same arity
+-- | Invariant for terms of a defined form: all terms have the same arity
 --   ie: each is the result of the exterior product of the same number of 1-forms
-constituentsInv :: [(f, [Int])] -> Bool
-constituentsInv []          = True
-constituentsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
+termsInv :: [(f, [Int])] -> Bool
+termsInv []          = True
+termsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
 
 -- NB: because of ((,) t) 's functorial nature, maybe it could make sense to
 --   rearrange our terms so as to have them be (inds,coeff) like they used to be?
@@ -76,7 +76,7 @@ omega +++ eta
     | degNEq omega eta = errForm "(+++)" BiDegEq
     | spaNEq omega eta = errForm "(+++)" BiSpaEq
     | otherwise = Form (arity eta) (dimVec eta)
-                       (step (constituents omega) (constituents eta))
+                       (step (terms omega) (terms eta))
   where step [] ys = ys
         step xs [] = xs
         step (x:xs) (y:ys)
@@ -93,11 +93,9 @@ omega +++ eta
 omega //\\ eta
     | spaNEq omega eta = errForm "(//\\\\)" BiSpaEq
     | otherwise = Form (arity omega + arity eta) (dimVec eta)
-                       (concatMap (\d -> map (combine d) (dxs d)) (constituents eta))
-  where dxs (_,ys) = filter (null . intersect ys . snd) (constituents omega)
-        combine (b,ys) (a,xs)
-          | null (xs `intersect` ys) = (mul a b, xs++ys)
-          | otherwise                = (addId, [])
+                       (concatMap (\d -> map (flip combine d) (dxs d)) (terms eta))
+  where dxs (_,ys) = filter (null . intersect ys . snd) (terms omega)
+        combine (a,xs) = pairM (mul a) (xs++)
 
 -- | Forms over a 'Ring' form a 'VectorSpace'.
 instance Ring f => VectorSpace (Form f) where
@@ -142,7 +140,7 @@ contract proj omega v
     | vecNEq omega v = errForm "contract" MoVecEq
     | otherwise      = Form (max 0 (arity omega - 1)) (dimVec omega) $
         concatMap (\c -> map (pinchado c) [1..arity omega])
-                  (constituents omega)
+                  (terms omega)
   where pinchado (f,[]) _ = (f, []) -- error ??
         pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
                               (mul (fromInt ((-1)^(i+1))) (mul f (proj j v)), ds1 ++ ds2)
@@ -169,7 +167,7 @@ refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs')
 
 
 -- | Helper function in evaluation: given a 1-form basis, converts a single
---   'Form' constituent term into an actual function on vectors
+--   'Form' term into an actual function on vectors
 formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
         => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
 formify _    (s, [])   _  = addId

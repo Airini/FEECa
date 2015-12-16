@@ -204,6 +204,7 @@ exeEsp = do
 ---
 
 
+<<<<<<< HEAD
 -- Static examples: some 'QuickCheck' generated, ie: not likeable to the eye
 {-
 v1 :: Vector Double
@@ -255,3 +256,6 @@ w14 = Vex 4 [-1.8496042438381677,-1.931089886918443,-2.191543818895587,-2.375962
 
 -}
 
+=======
+
+>>>>>>> ae6cb464c3b6027d17cf8144771cb5f68a5b4b08
