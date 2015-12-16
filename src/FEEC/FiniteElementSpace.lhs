@@ -162,7 +162,7 @@ basis (PrLk r k t) = prLkBasis r k t
 
 pPrintBasisFunction :: BasisFunction -> String
 pPrintBasisFunction = show . printForm dlambda "0" P.pPrint
-                           . constituents
+                           . terms
 
 pPrint :: [BasisFunction] -> IO ()
 pPrint [] = putStrLn "Empty List\n"
@@ -420,7 +420,7 @@ prLkBasis r k t = concat [ map (extend t) (prLkFace r k t') | t' <- S.subsimplic
 -- | a given face of a simplex.
 prLkFace :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
 prLkFace r k t = [ sclV b (psi' (alpha b) sigma) | (b, sigma) <- fs ]
-    where fs = map (head . constituents) (prLkFace' r k t)
+    where fs = map (head . terms) (prLkFace' r k t)
           psi' alpha sigma = extend t (psi alpha sigma)
           alpha b = multiIndices b !! 0
           n = S.topologicalDimension t

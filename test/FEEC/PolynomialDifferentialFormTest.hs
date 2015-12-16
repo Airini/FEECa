@@ -78,10 +78,12 @@ instance Q.Arbitrary (Form Double) where
 -- Apply
 --------------------------------------------------------------------------------
 
+{-
 instance VectorSpace Double where
     type Scalar Double = Double
     sclV = (*)
     addV = (*)
+-}
 
 prop_proj :: Simplex (Vector Double) -> Bool
 prop_proj t = and [vector [applyOmega i j | j <- [0..n-1]] == dlambda i | i <- [0..n]]
@@ -150,8 +152,9 @@ prop_inner c omega@(Form k n cs) eta =
           origin = (zero n) :: Vector Double
            -- cc = B.constant c
 
-omega = Form {arity = 2, dimVec = 1, constituents = [(B.Bernstein (Simplex {sigma = [0,2], vertices = [Vector {components = [0,0]},Vector {components = [1,1]}]}) (Polynomial {degree = 2, terms = [Term (1) (ZipList {getZipList = [1,0,0]})]}),[0])]}
-eta = Form {arity = 2, dimVec = 1, constituents = [(B.Bernstein (Simplex {sigma = [0,1], vertices = [Vector {components = [8.764513473006705e-2,5.164242534978496]},Vector {components = [-2.8276642428060055,-3.3931963709096444e-2]}]}) (Polynomial {degree = 1, terms = [Term (-2.8000251605936364) (ZipList {getZipList = [0,1,0]})]}),[0])]}
+{-
+omega = Form {arity = 2, dimVec = 1, Form.terms = [(B.Bernstein (Simplex {sigma = [0,2], vertices = [Vector {components = [0,0]},Vector {components = [1,1]}]}) (Polynomial {degree = 2, Form.terms = [Term (1) (ZipList {getZipList = [1,0,0]})]}),[0])]}
+eta = Form {arity = 2, dimVec = 1, Form.terms = [(B.Bernstein (Simplex {sigma = [0,1], vertices = [Vector {components = [8.764513473006705e-2,5.164242534978496]},Vector {components = [-2.8276642428060055,-3.3931963709096444e-2]}]}) (Polynomial {degree = 1, Form.terms = [Term (-2.8000251605936364) (ZipList {getZipList = [0,1,0]})]}),[0])]}
 
 
 omega' :: DifferentialForm Double
@@ -162,3 +165,5 @@ eta' = sclV (B.constant addId) eta
 
 t = fromJust (findSimplex omega)
 v = spanningVectors t
+-}
+
