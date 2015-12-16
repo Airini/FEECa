@@ -29,7 +29,7 @@
 
 module FEEC.Internal.Simplex(
   -- * The Simplex type
-  Simplex(..), simplex, simplex', referenceSimplex,
+  Simplex(..), simplex, simplex', referenceSimplex, face,
 
   -- ** Properties
   geometricalDimension, topologicalDimension, volume, spanningVectors,
@@ -204,6 +204,8 @@ simplex' p l = error "simplex': Topological dimension is zero."
 referenceSimplex :: EuclideanSpace v => Int -> Simplex v
 referenceSimplex n = Simplex [0..n] (zero n : [unitVector n i | i <- [0..n-1]])
 
+face :: Simplex v -> [Int] -> Simplex v
+face (Simplex sigma1 vs) sigma2 = Simplex [sigma1 !! i | i <- sigma2] [vs !! i | i <-sigma2]
 \end{code}
 
 %------------------------------------------------------------------------------%

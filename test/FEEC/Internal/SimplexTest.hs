@@ -5,10 +5,12 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module FEEC.Internal.SimplexTest(
-                                 arbitrarySimplex
+                                 arbitrarySimplex,
+                                 arbitrarySubsimplex
                                 ) where
 
 
+import Control.Monad
 import Data.Maybe
 import Data.List
 import FEEC.Internal.Simplex
@@ -30,10 +32,20 @@ data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int deriving (Show)
 --------------------------------------------------------------------------------
 
 -- | Generate a random simplex of given dimension.
-arbitrarySimplex :: (EuclideanSpace v, Arbitrary v) => Int -> Gen (Simplex v)
-arbitrarySimplex n = do l <- Q.infiniteListOf (vectorOf (n+1) (arbitraryVector n))
-                        let simplices = map (Simplex [0..n]) l
-                        return (head simplices)
+arbitrarySimplex :: (EuclideanSpace v, Q.Arbitrary v)
+                 => Int -> Q.Gen (Simplex v)
+arbitrarySimplex n =  t `Q.suchThat` ((addId /=) . volume)
+                     where t = liftM simplex vs
+                           vs = Q.vectorOf (n+1) (arbitraryVector n)
+
+-- | Generate a random k-subsimplex of given dimension n.
+arbitrarySubsimplex :: (EuclideanSpace v, Arbitrary v)
+                    => Int
+                    -> Int
+                    -> Q.Gen (Simplex v)
+arbitrarySubsimplex k n = do t <- arbitrarySimplex n
+                             f <- Q.elements (subsimplices t k)
+                             return f
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
 instance (EuclideanSpace v, Arbitrary v) => Arbitrary (Simplex v) where
@@ -81,6 +93,16 @@ prop_extend_subsimplex :: EuclideanSpace v => SubsimplexTest v -> Bool
 prop_extend_subsimplex (SubsimplexTest s@(Simplex _ l) k i) =
     (volume t' /= addId) && ((topologicalDimension t') == (geometricalDimension t'))
         where t' = extendSimplex (subsimplex s k i)
+
+
+-- | The simplex obtained from subsimplex should be the same
+prop_face :: EuclideanSpace v => SubsimplexTest v -> Bool
+prop_face (SubsimplexTest t k i) =
+    subs == face t (sigma subs)
+        where subs = subsimplex t k i
+
+prop_face_vector_double :: SubsimplexTest (Vector Double) -> Bool
+prop_face_vector_double = prop_face
 
 --------------------------------------------------------------------------------
 -- Integration

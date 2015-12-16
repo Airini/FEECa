@@ -278,12 +278,12 @@ of the face $\smp{f}$.
 \begin{code}
 
 -- | The Whitney forms as given by  equation (6.3).
-whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
-whitneyForm t ls = Form k n [( lambda' (ls !! i), subsets !! i) | i <- [0..k]]
-    where k = length ls - 1
-          n = S.topologicalDimension t
-          subsets = sublists ls
-          lambda' i = sclV ((-1)^i) (monomial t (MI.unit (n + 1) i))
+whitneyForm :: Simplex -> Form BernsteinPolynomial
+whitneyForm t = Form k n [ (lambda' i, subsets !! i) | i <- [0..k]]
+    where k = S.topologicalDimension t
+          n = S.geometricalDimension t
+          subsets = sublists [0..k]
+          lambda' i = sclV ((-1)^i) (monomial t (MI.unit (k + 1) i))
 
 \end{code}
 
@@ -345,7 +345,7 @@ prmLkBasis r k t = concat [ map (extend t) (prmLkFace r k t')
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
 -- | a given face of a simplex.
 prmLkFace :: Int -> Int ->Simplex -> [Form BernsteinPolynomial]
-prmLkFace r k t = [sclV (b alpha) (whitneyForm t sigma) | alpha <- alphas,
+prmLkFace r k t = [sclV (b alpha) (whitneyForm (S.face t sigma)) | alpha <- alphas,
                                                           sigma <- sigmas alpha]
     where n = S.topologicalDimension t
           b = monomial t

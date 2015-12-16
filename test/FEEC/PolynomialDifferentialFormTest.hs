@@ -77,10 +77,10 @@ instance Q.Arbitrary (Form Double) where
 -- Apply
 --------------------------------------------------------------------------------
 
-instance VectorSpace Double where
-    type Scalar Double = Double
-    sclV = (*)
-    addV = (*)
+-- instance VectorSpace Double where
+--     type Scalar Double = Double
+--     sclV = (*)
+--     addV = (*)
 
 prop_proj :: Simplex (Vector Double) -> Bool
 prop_proj t = and [vector [applyOmega i j | j <- [0..n-1]] == dlambda i | i <- [0..n]]
@@ -142,7 +142,7 @@ prop_inner :: Double
 prop_inner c omega@(Form k n cs) eta =
     (D.inner omega omega > 0 || S.inner b b `eqNum` 0.0)
     && ((D.inner omega eta' `eqNum` D.inner eta' omega &&
-         D.inner (sclV cc omega eta) `eqNum` mul c (D.inner omega eta))
+         D.inner (sclV cc omega) eta `eqNum` mul c (D.inner omega eta))
          || omega2 `eqNum` 0.0 || eta2 `eqNum` 0.0)
     where b = apply omega (spanningVectors t)
           eta' = redefine (fromJust (findSimplex omega)) eta

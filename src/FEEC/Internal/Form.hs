@@ -23,6 +23,7 @@ import FEEC.Utility.Discrete
 import FEEC.Utility.Utility (pairM, sumR, sumV)
 import FEEC.Utility.Print (Pretty(..), printForm)
 
+import Debug.Trace
 
 -- * General form: does not depend on the underlying vector space it works on
 --   in any way.
@@ -153,12 +154,14 @@ contract proj omega v
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
-refine :: (VectorSpace w , VectorSpace v, Ring w, (Scalar v) ~ (Scalar w)) =>
-          (Int -> v -> (Scalar w))      -- ^ The definition for the projection function
-                               --   for the specific vector space
+refine :: (Ring w, VectorSpace w, VectorSpace v, Scalar v ~ Scalar w)
+       => (Int -> v -> Scalar w)      -- ^ The definition for the projection function
+                                      --   for the specific vector space
        -> Form w
        -> [v] -> w
-refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs)
+refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs')
+  where cs' | null cs   = [(addId,[])]
+            | otherwise = cs
 -- TODO: capture inconsistency between k and length vs here??
 -- ALSO: 0-forms... not evaluating correctly now! Cfr: formify does not accept
 --    empty cs
@@ -167,17 +170,18 @@ refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs)
 
 -- | Helper function in evaluation: given a 1-form basis, converts a single
 --   'Form' constituent term into an actual function on vectors
-formify :: (VectorSpace w, VectorSpace v, Ring w, (Scalar w) ~ (Scalar v)) =>
-              (i -> v -> (Scalar v)) -> (w,[i]) -> [v] -> w
+formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
+        => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
+formify _    (s, [])   _  = addId
 formify proj (s, i:is) vs
-    | null is  = sclV (proj i (head vs)) s
+    | null is   = sclV (proj i (head vs)) s
     | otherwise =
         foldl addV addId
-                  (map (\(w,e) -> sclV
-                                  (mul (sign (w,e)) ((proj i . head) (choose w vs)))
-                                  (formify proj (s,is) (choose e vs)))
-                  (permutationPairs (length is + 1) 1 (length is)))
-                      where choose ns = pick (differences ns)
+              (map (\(w,e) -> sclV
+                                (mul (sign (w,e)) ((proj i . head) (choose w vs)))
+                                (formify proj (s,is) (choose e vs)))
+                   (permutationPairs (length is + 1) 1 (length is)))
+  where choose ns = pick (differences ns)
 
 
 -- We need a basis here
