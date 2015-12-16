@@ -1,13 +1,14 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
-module FormTest where
+module FEEC.Internal.FormTest where
 
-import Form
+import FEEC.Internal.VectorTest
+import FEEC.Internal.Form
 import Test.QuickCheck
-import Spaces
+import FEEC.Internal.Spaces
 import Control.Monad (liftM, liftM2)
-import Discrete
-import Utility (pairM)
+import FEEC.Utility.Discrete
+import FEEC.Utility.Utility (pairM)
 import Properties
 import Debug.Trace
 
@@ -77,9 +78,10 @@ kform n k terms = do
   coeffs <- vectorOf terms (liftM fromIntegral (arbitrary :: Gen Int))
   let capDs = map (map ((+1) . flip mod n)) diffs
   return $ Form k n (zip coeffs capDs)
-
+{-
 instance Arbitrary (Vector Double) where
   arbitrary = sized nVecGen
+-}
 
 -- Truncating generator for vectors of 'Double': to avoid errors in computation
 -- dependent on order of function application when it comes to floating points
@@ -110,22 +112,22 @@ vectorInvariant (Vex n xs) = n == length xs
 instance Show f => Show (Vector f) where
   show (Vex n xs) = show n ++ "-vector " ++ show xs
 
-addList :: Field f => Vector f -> Vector f -> Vector f
+addList :: Ring f => Vector f -> Vector f -> Vector f
 addList (Vex n xs) (Vex m ys)
   | n /= m = error "addList: vectors must belong to the same space"
   | otherwise = Vex n (zipWith add xs ys)
 
-scaleList :: Field f => f -> Vector f -> Vector f
+scaleList :: Ring f => f -> Vector f -> Vector f
 scaleList a (Vex n xs) = Vex n (map (mul a) xs)
 
-instance Field f => VectorSpace (Vector f) where
-  type Fieldf (Vector f) = f
+instance Ring f => VectorSpace (Vector f) where
+  type Scalar (Vector f) = f
   addV = addList
   sclV = scaleList
 
 -- | Our basic projection for 'Vector f': usual 1-form basis == external
 --   derivative of global coordinate functions
-dxV :: Int -> Vector f -> f
+dxV :: Int -> Vector f -> Scalar (Vector f)
 dxV i (Vex n x) = x !! (i-1)
 
 {-

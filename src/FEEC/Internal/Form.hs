@@ -152,7 +152,7 @@ contract proj omega v
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
-refine :: (InnerProductSpace w , VectorSpace v, (Scalar v) ~ (Scalar w))
+refine :: (VectorSpace w, Ring w, VectorSpace v, (Scalar v) ~ (Scalar w))
        => (Int -> v -> Scalar w)      -- ^ The definition for the projection function
                                       --   for the specific vector space
        -> Form w
@@ -166,17 +166,18 @@ refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs)
 
 -- | Helper function in evaluation: given a 1-form basis, converts a single
 --   'Form' constituent term into an actual function on vectors
-formify :: (InnerProductSpace w, VectorSpace v, Scalar w ~ Scalar v)
+formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
         => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
+--formify _    (s, [])   _  = s
 formify proj (s, i:is) vs
-    | null is  = sclV (proj i (head vs)) s
+    | null is   = sclV (proj i (head vs)) s
     | otherwise =
         foldl addV addId
-                  (map (\(w,e) -> sclV
-                                  (mul (sign (w,e)) ((proj i . head) (choose w vs)))
-                                  (formify proj (s,is) (choose e vs)))
-                  (permutationPairs (length is + 1) 1 (length is)))
-                      where choose ns = pick (differences ns)
+              (map (\(w,e) -> sclV
+                                (mul (sign (w,e)) ((proj i . head) (choose w vs)))
+                                (formify proj (s,is) (choose e vs)))
+                   (permutationPairs (length is + 1) 1 (length is)))
+  where choose ns = pick (differences ns)
 
 
 -- We need a basis here
