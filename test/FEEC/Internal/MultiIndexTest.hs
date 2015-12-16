@@ -8,7 +8,7 @@ import Data.List
 import FEEC.Utility.Combinatorics
 import FEEC.Internal.MultiIndex
 import Test.QuickCheck
-import FEEC.Utility.Test
+import FEEC.TestUtility
 import Properties
 
 instance Arbitrary MultiIndex where

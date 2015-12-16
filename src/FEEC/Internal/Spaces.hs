@@ -146,10 +146,8 @@ class (Eq v, Dimensioned v, VectorSpace v, Eq (Scalar v), Field (Scalar v))
 
 -- | Inner product space to define the generalised inner product on differential
 -- | forms.
-class (Ring v, VectorSpace v) => InnerProductSpace v
-    where
-      inner :: v -> v -> (Scalar v)
-
+class (Ring v, VectorSpace v) => InnerProductSpace v where
+  inner :: v -> v -> Scalar v
 
 -- Maybe not necessary to have; a bit ad-hoc
 -- | Class of simple functions over a 'VectorSpace' and which may be

@@ -8,7 +8,7 @@ import qualified FEEC.Internal.MultiIndex as MI
 import FEEC.Internal.Vector
 import FEEC.Polynomial
 import FEEC.Internal.Spaces
-import FEEC.Utility.Test
+import FEEC.TestUtility
 import qualified Test.QuickCheck as Q
 import Properties
 import FEEC.Internal.Simplex
