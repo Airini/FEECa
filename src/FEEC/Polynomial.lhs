@@ -38,7 +38,7 @@ Apart from implementing polynomials over vectors in $\R{n}$, the
 module FEEC.Polynomial (
 
   -- * Polynomial types
-  Polynomial(terms, degree), Term
+  Polynomial(..), Term(..)
 
   -- ** Constructors
   , polynomial, constant, linearPolynomial, term

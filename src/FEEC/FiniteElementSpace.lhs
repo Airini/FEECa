@@ -30,7 +30,7 @@ module FEEC.FiniteElementSpace (
                                 Vector,
                                 basis,
                                 vspaceDim,
-                                whitneyForm
+                                whitneyForm,
                                 prmLkBasis
  -- * Introduction
  -- $intro
