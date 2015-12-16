@@ -23,6 +23,7 @@ import FEEC.Utility.Discrete
 import FEEC.Utility.Utility (pairM, sumR, sumV)
 import FEEC.Utility.Print (Pretty(..), printForm)
 
+import Debug.Trace
 
 -- * General form: does not depend on the underlying vector space it works on
 --   in any way.
@@ -158,7 +159,9 @@ refine :: (Ring w, VectorSpace w, VectorSpace v, Scalar v ~ Scalar w)
                                       --   for the specific vector space
        -> Form w
        -> [v] -> w
-refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs)
+refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs')
+  where cs' | null cs   = [(addId,[])]
+            | otherwise = cs
 -- TODO: capture inconsistency between k and length vs here??
 -- ALSO: 0-forms... not evaluating correctly now! Cfr: formify does not accept
 --    empty cs
@@ -169,7 +172,7 @@ refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs)
 --   'Form' constituent term into an actual function on vectors
 formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
         => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
---formify _    (s, [])   _  = s
+formify _    (s, [])   _  = addId
 formify proj (s, i:is) vs
     | null is   = sclV (proj i (head vs)) s
     | otherwise =

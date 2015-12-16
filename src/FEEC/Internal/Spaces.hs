@@ -75,6 +75,11 @@ instance Field Double where
   fromDouble = id
   toDouble   = id
 
+instance VectorSpace Double where
+  type Scalar Double = Double
+  addV = (+)
+  sclV = (*)
+
 instance Ring Rational where
   add = (+)
   addId = 0
