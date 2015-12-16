@@ -56,11 +56,10 @@ arbitraryForm :: (Q.Arbitrary a, Field a)
               -> Int
               -> Q.Gen (DifferentialForm a)
 arbitraryForm k n = do cs <- arbitraryConstituents k n
-                       return $ Form n k cs
+                       return $ Form k n cs
 
 instance (Field a, Q.Arbitrary a) => Q.Arbitrary (DifferentialForm a) where
-    arbitrary = do k <- ((flip mod) n) `liftM` arbitrary
-                   arbitraryForm (k+1) n
+    arbitrary = do arbitraryForm n n -- k <- ((flip mod) n) `liftM` arbitrary
 
 arbitraryAltForm :: (Q.Arbitrary a, Field a)
                  => Int
@@ -142,17 +141,22 @@ prop_inner :: Double
               -> Bool
 prop_inner c omega@(Form k n cs) eta =
     (D.inner omega omega > 0 || S.inner b b `eqNum` 0.0)
-    && (D.inner omega eta' `eqNum` D.inner eta' omega)
-    -- && (D.inner (sclV cc omega) eta) `eqNum` (D.inner omega (sclV cc eta))
+    && ((D.inner omega eta' `eqNum` D.inner eta' omega &&
+         D.inner (sclV cc omega eta) `eqNum` mul c (D.inner omega eta))
+         || omega2 `eqNum` 0.0 || eta2 `eqNum` 0.0)
     where b = apply omega (spanningVectors t)
           eta' = redefine (fromJust (findSimplex omega)) eta
           t = (fromJust (findSimplex omega))
           origin = (zero n) :: Vector Double
-           -- cc = B.constant c
+          omega2 = D.inner omega omega
+          eta2   = D.inner eta eta
+          cc = B.constant c
 
-omega = Form {arity = 2, dimVec = 1, constituents = [(B.Bernstein (Simplex {sigma = [0,2], vertices = [Vector {components = [0,0]},Vector {components = [1,1]}]}) (Polynomial {degree = 2, terms = [Term (1) (ZipList {getZipList = [1,0,0]})]}),[0])]}
-eta = Form {arity = 2, dimVec = 1, constituents = [(B.Bernstein (Simplex {sigma = [0,1], vertices = [Vector {components = [8.764513473006705e-2,5.164242534978496]},Vector {components = [-2.8276642428060055,-3.3931963709096444e-2]}]}) (Polynomial {degree = 1, terms = [Term (-2.8000251605936364) (ZipList {getZipList = [0,1,0]})]}),[0])]}
-
+c = 4.1719564350018687e-299
+cc :: BernsteinPolynomial Double
+cc = B.constant c
+omega = Form {arity = 2, dimVec = 2, constituents = [(B.Bernstein (Simplex {sigma = [0,1,2], vertices = [Vector {components = [2.884626207268346,0.1553520332489132]},Vector {components = [-12.868091627158673,0.8836759455492947]},Vector {components = [2.075565036744233,9.250308828425474]}]}) (Polynomial {degree = 4, terms = [Term (-1.0347126528831319) (ZipList {getZipList = [1,3,0]})]}),[2,2])]}
+eta = Form {arity = 2, dimVec = 2, constituents = [(B.Bernstein (Simplex {sigma = [0,1,2], vertices = [Vector {components = [-0.9632168977354475,5.8167862167008675]},Vector {components = [-3.3013533446631675,-15.23911741456827]},Vector {components = [-2.5018741285220196,3.453867540412189]}]}) (Polynomial {degree = 8, terms = [Term (-1.8308264743574454) (ZipList {getZipList = [4,0,4]}),Term 2.9380426877189243 (ZipList {getZipList = [1,1,6]})]}),[1,0])]}
 
 omega' :: DifferentialForm Double
 omega' = sclV (B.constant addId) omega
@@ -162,3 +166,4 @@ eta' = sclV (B.constant addId) eta
 
 t = fromJust (findSimplex omega)
 v = spanningVectors t
+

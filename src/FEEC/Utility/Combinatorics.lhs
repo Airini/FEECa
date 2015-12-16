@@ -86,8 +86,8 @@ The main task of generating increasing lists is performed by
 \begin{code}
 -- | List all increasing lists of length k with elements in [0..n]
 increasingLists :: Integral a
-                => a -- n
-                -> a -- k
+                => a -- k
+                -> a -- n
                 -> [[a]]
 increasingLists k n = increasingLists' k n 0
 
