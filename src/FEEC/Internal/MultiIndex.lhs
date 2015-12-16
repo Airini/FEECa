@@ -307,5 +307,5 @@ decrease i alpha  = pure f <*> ZipList [0..] <*> alpha
 -- | Decrease element in multi-index
 derive :: (Integral a, Field b) =>  Int -> ZipList a -> (b, ZipList a)
 derive i alpha  = (c, decrease i alpha)
-    where c = (fromDouble . fromIntegral) ((getZipList alpha) !! i)
+    where c = (fromDouble . fromIntegral) (getZipList alpha !! i)
 \end{code}

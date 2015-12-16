@@ -69,7 +69,7 @@ instance Pretty f => Pretty (Form f) where
 
 -- | Sum of forms
 -- Shall we do: permutation simplification/identification
-(+++) :: (Ring f') => Form f' -> Form f' -> Form f'
+(+++) :: Ring f' => Form f' -> Form f' -> Form f'
 omega +++ eta
     | degNEq omega eta = errForm "(+++)" BiDegEq
     | spaNEq omega eta = errForm "(+++)" BiSpaEq
@@ -98,7 +98,7 @@ omega //\\ eta
           | otherwise                = (addId, [])
 
 -- | Forms over a 'Ring' form a 'VectorSpace'.
-instance (Ring f) => VectorSpace (Form f) where
+instance Ring f => VectorSpace (Form f) where
   type Scalar (Form f) = f
   addV = (+++)
   sclV = (***)
@@ -108,13 +108,13 @@ instance (Ring f) => VectorSpace (Form f) where
 -- This instance is valid this way since we do not have a restrictive typing
 -- for forms and hence addition is blind to arity *type-wise* - however,
 -- runtime errors will take place if invalid addition is attempted.
-instance (Ring f) => Algebra (Form f) where
+instance Ring f => Algebra (Form f) where
   addA = addV
   (/\) = (//\\)
   sclA = sclV
 
 -- | Basic abstract 1-form
-oneForm :: (Ring f) => Dim -> Dim -> Form f
+oneForm :: Ring f => Dim -> Dim -> Form f
 oneForm i n | i <= 0 || i > n = errForm "oneForm" MoProjBd
             | otherwise       = Form 1 n [ (mulId,[i]) ]
 
@@ -134,8 +134,8 @@ nullForm n f = Form 0 n [(f, [])]
 -- Necesitamos una función de pinchado
 --  y así pinchar las consecutivas componentes
 -- If the function was actually a field, this part would be simplified
-contract :: (Ring f, VectorSpace v, Dimensioned v) =>
-              (Int -> v -> f) -> Form f -> v -> Form f
+contract :: (Ring f, VectorSpace v, Dimensioned v)
+         => (Int -> v -> f) -> Form f -> v -> Form f
 contract proj omega v
     | vecNEq omega v = errForm "contract" MoVecEq
     | otherwise      = Form (max 0 (arity omega - 1)) (dimVec omega) $
@@ -152,9 +152,9 @@ contract proj omega v
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
-refine :: (InnerProductSpace w , VectorSpace v, (Scalar v) ~ (Scalar w)) =>
-          (Int -> v -> (Scalar w))      -- ^ The definition for the projection function
-                               --   for the specific vector space
+refine :: (InnerProductSpace w , VectorSpace v, (Scalar v) ~ (Scalar w))
+       => (Int -> v -> Scalar w)      -- ^ The definition for the projection function
+                                      --   for the specific vector space
        -> Form w
        -> [v] -> w
 refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs)
@@ -166,8 +166,8 @@ refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs)
 
 -- | Helper function in evaluation: given a 1-form basis, converts a single
 --   'Form' constituent term into an actual function on vectors
-formify :: (InnerProductSpace w, VectorSpace v, (Scalar w) ~ (Scalar v)) =>
-              (i -> v -> (Scalar v)) -> (w,[i]) -> [v] -> w
+formify :: (InnerProductSpace w, VectorSpace v, Scalar w ~ Scalar v)
+        => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
 formify proj (s, i:is) vs
     | null is  = sclV (proj i (head vs)) s
     | otherwise =
@@ -180,11 +180,8 @@ formify proj (s, i:is) vs
 
 
 -- We need a basis here
-inner :: (InnerProductSpace w,
-          EuclideanSpace v,
-          Dimensioned v,
-          (Scalar w) ~ (Scalar v)) =>
-         (Int -> v -> (Scalar w))  -- ^ Projection function in the specific vector space
+inner :: (InnerProductSpace w, EuclideanSpace v, Dimensioned v, Scalar w ~ Scalar v)
+      => (Int -> v -> Scalar w)  -- ^ Projection function in the specific vector space
       -> Form w -> Form w -> Scalar w
 inner proj omega eta
     | degNEq omega eta = errForm "inner" BiDegEq -- TODO (??)

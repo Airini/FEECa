@@ -166,7 +166,7 @@ simplex :: EuclideanSpace v => [v] -> Simplex v
 simplex l@(p:ps)
     | dim p == n = Simplex [0..n] l
     | otherwise = error "simplex: Dimensions don't agree."
-  where n = (length l) - 1
+  where n = length l - 1
 simplex [] = error "simplex: empty list."
 
 -- | Construct a full simplex from a reference vertex and n direction vectors.
