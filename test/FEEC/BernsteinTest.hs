@@ -3,6 +3,7 @@
 
 module FEEC.BernsteinTest where
 
+import Control.Monad
 import FEEC.Bernstein
 import qualified FEEC.Internal.MultiIndex as MI
 import FEEC.Internal.Simplex
@@ -28,13 +29,13 @@ arbitraryVector n = do cs <- Q.vector n
 -- | Generate a random simplex of given dimension.
 arbitrarySimplex :: (EuclideanSpace v, Q.Arbitrary v)
                  => Int -> Q.Gen (Simplex v)
-arbitrarySimplex n = do l <- Q.infiniteListOf (Q.vectorOf (n+1) (arbitraryVector n))
-                        let simplices = map simplex l
-                        return (head simplices)
+arbitrarySimplex n =  t `Q.suchThat` ((addId /=) . volume)
+                     where t = liftM simplex vs
+                           vs = Q.vectorOf (n+1) (arbitraryVector n)
 
 -- | Generate random simplex of dimesion n = 8.
 instance (EuclideanSpace v, Q.Arbitrary v) => Q.Arbitrary (Simplex v) where
-    arbitrary = arbitrarySimplex n
+    arbitrary = (arbitrarySimplex n) `Q.suchThat` ((addId /=) . volume)
 
 -- | Generate random Bernstein polynomial in n dimensions.
 instance (EuclideanSpace v, r ~ Scalar v, Q.Arbitrary r, Q.Arbitrary v)
@@ -87,11 +88,11 @@ prop_integration _ = property True
 -- Linearity
 prop_integration_linear :: Double -> Bernstein -> Bernstein -> Property
 prop_integration_linear c b1@(Bernstein t1 _) b2 =
-    volume t > 0 ==>
+    volume t1 > 0 ==>
            prop_linearity eqNum integrateBernstein c b1 b2'
     where b2' = redefine t1 b2
 prop_integration_linear c b1 b2@(Bernstein t1 _) =
-    volume t > 0 ==>
+    volume t1 > 0 ==>
            prop_linearity eqNum integrateBernstein c b1' b2
     where b1' = redefine t1 b1
 prop_integration_linear c b1 b2 = property True
@@ -120,16 +121,14 @@ prop_derivation_product :: Vector Double
                         -> Vector Double
                         -> Bernstein
                         -> Bernstein
-                        -> Property
+                        -> Bool
 prop_derivation_product v1 v2 b1@(Bernstein t _) b2 =
-    (volume t) > 0 ==>
                eqNum (evaluate v1 (add (mul db1 b2') (mul db2' b1)))
                      (evaluate v1 (derive v2 (mul b1 b2')))
         where b2' = redefine t b2
               db1 = derive v2 b1
               db2' = derive v2 b2'
 prop_derivation_product v1 v2 b1 b2 =
-    (volume t) > 0 ==>
                eqNum (evaluate v1 (add (mul db1 b2) (mul db2 b1)))
                      (evaluate v1 (derive v2 (mul b1 b2)))
         where db1 = derive v2 b1
@@ -137,19 +136,3 @@ prop_derivation_product v1 v2 b1 b2 =
 
 type Bernstein = BernsteinPolynomial (Vector Double) Double
 
-v1 = vector [2.23058424950095,-1.3759080736803717]
-t1 = simplex [vector [-3.050661050751067,1.445959300774541],vector [5.637624974734768,-4.118531033824756], vector [-1.9035009617473688,-2.7304505972438835]]
-b1 :: Bernstein
-b1 = polynomial t1 [(-2.971128240435243, MI.multiIndex [0,0,2])]
-b2 :: Bernstein
-b2 = polynomial t1 [(3.668944588464215, MI.multiIndex [3,1,6])]
-v :: Vector Double
-v = vector [0,1]
-v2 :: Vector Double
-v2 = vector [1,0]
-t :: Simplex (Vector Double)
-t = simplex [vector [0,0], vector [0,0], vector [0,-0]] 
-b :: Bernstein
-b = polynomial t [(1.0,MI.multiIndex [])]
-bb :: Bernstein
-bb = polynomial t [(1.0,MI.multiIndex [0,1,1])]

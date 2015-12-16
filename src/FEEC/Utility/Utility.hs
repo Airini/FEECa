@@ -35,7 +35,7 @@ sumV _ = error "sumV: Need at least one vector to sum! \n"
 eqNum :: Field a => a -> a -> Bool
 eqNum a b
     | (a' /= 0.0) && (b' /= 0.0) = toDouble (abs ((a' - b') / max a' b')) < 2e-10
-    | otherwise = True
+    | otherwise = max (abs a') (abs b') < 2e-10
     where a' = toDouble a
           b' = toDouble b
 

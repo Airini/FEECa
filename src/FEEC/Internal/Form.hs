@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module FEEC.Internal.Form (
   -- * Generic form types
@@ -152,9 +153,15 @@ contract proj omega v
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
+<<<<<<< HEAD
 refine :: (VectorSpace w, Ring w, VectorSpace v, (Scalar v) ~ (Scalar w))
        => (Int -> v -> Scalar w)      -- ^ The definition for the projection function
                                       --   for the specific vector space
+=======
+refine :: (VectorSpace w , VectorSpace v, Ring w, (Scalar v) ~ (Scalar w)) =>
+          (Int -> v -> (Scalar w))      -- ^ The definition for the projection function
+                               --   for the specific vector space
+>>>>>>> 9787c68691eb1181a20ddacb668f6622b2abdd49
        -> Form w
        -> [v] -> w
 refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs)
