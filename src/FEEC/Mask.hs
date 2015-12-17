@@ -17,7 +17,7 @@ import qualified FEEC.Internal.MultiIndex as MI
 
 type Monop t = t -> t
 type Binop t = t -> t -> t
-type PolyRepresentation = Polynomial
+type PolyRepresentation a = Polynomial a
 type VectorField a = Vector (PolyRepresentation a)
 
 tangential :: Ring a => Int -> VectorField a
@@ -105,11 +105,11 @@ bssIx n = vector . flip canonCoord n
 interior :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f 
 interior = (⌟)
 
-𝝹 :: Form (PolyRepresentation Double) -> Form (PolyRepresentation Double)
-𝝹 form = undefined -- contract (const . flip coordinate n) form (tangential n) --(undefined::Vector (PolyRepresentation Double))
+𝝹 :: Ring f => Form (PolyRepresentation f) -> Form (PolyRepresentation f)
+𝝹 form = undefined --contract undefined form undefined --(const . flip coordinate n) form (tangential n) --(undefined::Vector (PolyRepresentation Double))
   where n = dimVec form
 -- TODO: extract degree from polynomial
-kappa = 𝝹
+--kappa = 𝝹
 
 -- | Exterior derivative
 d :: Monop (Form (PolyRepresentation Double))

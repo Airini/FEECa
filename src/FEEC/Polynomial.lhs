@@ -287,7 +287,7 @@ The functions \code{constant}, \code{monomial}, \code{term} and
 -- | Create a constant polynomial with the given value.
 constant :: a -> Polynomial a
 constant c = Polynomial 0 [Constant c]
--- | Create a polynomial consisting of a single monomial from a give
+-- | Create a polynomial consisting of a single monomial from a given
 -- | multi-index.
 monomial :: Ring a => MI.MultiIndex -> Polynomial a
 monomial mi = Polynomial (MI.degree mi) [Term mulId mi]
