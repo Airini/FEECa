@@ -274,7 +274,7 @@ instance (EuclideanSpace v, r ~ Scalar v) => S.Function (Polynomial r) v where
 The \module{Polynomial} provides smart constructors to simplify the creation of
  valid polynomials. The stress here lies on valid, because not every instance of
  \code{Polynomial} represents a valid polynomial. For a polynomials to be valid,
- all multi-indices representing the monomials must be of the same langth.
+ all multi-indices representing the monomials must be of the same length.
 
 The functions \code{constant}, \code{monomial}, \code{term} and
  \code{polynomial} can be used to create a constant polynomial, a monomial,
@@ -285,7 +285,7 @@ The functions \code{constant}, \code{monomial}, \code{term} and
 \begin{code}
 
 -- | Create a constant polynomial with the given value.
-constant :: Ring a => a -> Polynomial a
+constant :: a -> Polynomial a
 constant c = Polynomial 0 [Constant c]
 -- | Create a polynomial consisting of a single monomial from a give
 -- | multi-index.

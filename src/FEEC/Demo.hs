@@ -139,8 +139,8 @@ val6 = (w1 <> w2) -- summation over the basis
 v5 = vector [1..5]
 u5 = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (constant 0.5 .* dxs' 1 /\ dxs' 2)
 val7 = w1 ⌟ v5
-val8 = u5 & v5
-val9 = w1' & v5
-val10 = v & v5
+val8 = u5 & (fmap pure v5)
+val9 = w1' & (fmap pure v5)
+val10 = v & (fmap pure v5)
 val11 = w4 ⌟ v2
 

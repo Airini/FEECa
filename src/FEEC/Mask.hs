@@ -13,10 +13,15 @@ import FEEC.Internal.Vector
 import FEEC.Internal.Simplex
 import FEEC.Polynomial
 import FEEC.Utility.Utility
+import qualified FEEC.Internal.MultiIndex as MI
 
 type Monop t = t -> t
 type Binop t = t -> t -> t
-type PolyRepresentation = Polynomial 
+type PolyRepresentation = Polynomial
+type VectorField a = Vector (PolyRepresentation a)
+
+tangential :: Ring a => Int -> VectorField a
+tangential n = vector (map (monomial . MI.unit n) [1..n])
 
 (.*) :: VectorSpace v => Scalar v -> v -> v
 (.*) = sclV
@@ -63,6 +68,9 @@ dxN = flip dx
 dxVP :: (Eq (Vector f), Field f) => Int -> Vector f -> PolyRepresentation f
 dxVP = (fmap . fmap) constant dxV
 
+dxVF :: (Eq (VectorField f), Ring f) => Int -> VectorField f -> PolyRepresentation f
+dxVF i (Vector v) = v !! (i-1)
+
 (#) :: Form Double -> [Vector Double] -> Double
 (#) = undefined -- refine dxV
 -- TODO: unify
@@ -98,7 +106,7 @@ interior :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f
 interior = (⌟)
 
 𝝹 :: Form (PolyRepresentation Double) -> Form (PolyRepresentation Double)
-𝝹 form = contract (const . flip coordinate n) form (undefined::Vector Double)
+𝝹 form = undefined -- contract (const . flip coordinate n) form (tangential n) --(undefined::Vector (PolyRepresentation Double))
   where n = dimVec form
 -- TODO: extract degree from polynomial
 kappa = 𝝹
@@ -114,8 +122,8 @@ d form = df (vector . flip canonCoord n) form
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors
 --   (some kind of canonical projection)
-(&) :: (Field f, Eq (Vector f)) => DifferentialForm (PolyRepresentation f) -> Vector f -> DifferentialForm (PolyRepresentation f)
-(&) = contract dxVP
+(&) :: (Field f, Eq (Vector f)) => DifferentialForm (PolyRepresentation f) -> VectorField f -> DifferentialForm (PolyRepresentation f)
+(&) = contract dxVF
 -- ALSO: generalise Vector? that way we can have parameterised vectors :)
 -- kappa, etc. => explicit symbols
 -- integration, inner product
@@ -133,4 +141,21 @@ instance Field f => Field (PolyRepresentation f) where
   fromDouble = constant . fromDouble
   toDouble = undefined
 -}
+
+
+-- XXX: additional instances for now
+instance Functor Vector where
+  fmap f (Vector v) = Vector (fmap f v)
+
+instance Functor Term where
+  fmap f (Constant a) = Constant (f a)
+  fmap f (Term a mi)  = Term (f a) mi
+
+instance Functor Polynomial where
+  fmap f (Polynomial n ts) = Polynomial n (fmap (fmap f) ts)
+
+instance Applicative Polynomial where
+  pure = constant
+  (<*>) = undefined
+
 
