@@ -422,8 +422,8 @@ redefine t1 (Bernstein t2 p) = Bernstein t1 p
 redefine t (Constant c)      = Bernstein t (P.constant c)
 
 -- | Inner product of Bernstein polynomials defined over a simplex T. If both
--- | polynomials are constant and have no associated simplex, a simplex of
--- | with volume 1 is assumed.
+-- | polynomials are constant and have no associated simplex, a simplex with
+-- | volume 1 is assumed.
 innerBernstein :: (EuclideanSpace v, r ~ Scalar v)
                   => BernsteinPolynomial v r
                   -> BernsteinPolynomial v r

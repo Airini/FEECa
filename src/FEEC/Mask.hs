@@ -1,6 +1,10 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module FEEC.Mask where
 
 import Control.Applicative
@@ -14,10 +18,11 @@ import FEEC.Internal.Simplex
 import FEEC.Polynomial
 import FEEC.Utility.Utility
 import qualified FEEC.Internal.MultiIndex as MI
+import qualified FEEC.Bernstein as B
 
 type Monop t = t -> t
 type Binop t = t -> t -> t
-type PolyRepresentation a = Polynomial a
+type PolyRepresentation = Polynomial
 type VectorField a = Vector (PolyRepresentation a)
 
 tangential :: Ring a => Int -> VectorField a
@@ -96,7 +101,7 @@ bssIx n = vector . flip canonCoord n
 
 -- or <|> ?
 (<>) :: (Eq (Vector f), Field f) => Form f -> Form f -> f
-(<>) omega eta = undefined -- inner dxV omega eta
+(<>) omega eta = undefined --S.inner omega eta -- inner dxV omega eta
   where n = dimVec omega
 
 (⌟) :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f 
@@ -106,10 +111,12 @@ interior :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f
 interior = (⌟)
 
 𝝹 :: Ring f => Form (PolyRepresentation f) -> Form (PolyRepresentation f)
-𝝹 form = undefined --contract undefined form undefined --(const . flip coordinate n) form (tangential n) --(undefined::Vector (PolyRepresentation Double))
+𝝹 form = contract dxVF form (tangential n) --(const . flip coordinate n)
   where n = dimVec form
 -- TODO: extract degree from polynomial
---kappa = 𝝹
+
+kappa :: Ring f => Form (PolyRepresentation f) -> Form (PolyRepresentation f)
+kappa = 𝝹
 
 -- | Exterior derivative
 d :: Monop (Form (PolyRepresentation Double))
@@ -158,4 +165,10 @@ instance Applicative Polynomial where
   pure = constant
   (<*>) = undefined
 
+{-
+instance (Field r, EuclideanSpace (Vector r), r ~ Scalar (Vector r))  =>
+    InnerProductSpace (Polynomial r) where
+  inner :: forall r. Polynomial r -> Polynomial r -> r
+  inner p1 p2 = integratePolynomial (referenceSimplex 4 :: Simplex (Vector r)) (mul p1 p2)
+-}
 
