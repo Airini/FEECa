@@ -14,62 +14,59 @@ import FEEC.Internal.Vector
 import FEEC.Mask
 import Test.QuickCheck as TQ
 import Control.Monad ((>=>))
---import Data.Type.Natural
 
 
 -- | Abstract properties
-prop_linearity :: VectorSpace v => ((Scalar v) -> (Scalar v) -> Bool)
-                                -> (v -> Scalar v)
-                                -> (Scalar v)
-                                -> v
-                                -> v
-                                -> Bool
-prop_linearity eq f c a b = (mul c (f a)) `eq` (f (sclV c a))
-                            && (add (f a) (f b)) `eq` (f (addV a b))
+prop_linearity :: VectorSpace v => (Scalar v -> Scalar v -> Bool)
+  -> (v -> Scalar v)
+  -> Scalar v -> v -> v -> Bool
+prop_linearity eq f c a b = mul c (f a) `eq` f (sclV c a)
+                         && add (f a) (f b) `eq` f (addV a b)
 
-prop_commutativity :: Eq t => (f -> t) -> (f -> f -> f) -> f -> f -> Bool
+prop_commutativity :: Eq t =>
+    (f -> t) -> Binop f
+  -> f -> f -> Bool
 prop_commutativity render f x y = render (f x y) == render (f y x)
 
 prop_operator_commutativity :: (b -> b -> Bool)
-                            -> (a -> a)
-                            -> (b -> b)
-                            -> (a -> b)
-                            -> a
-                            -> Bool
+  -> Monop a -> Monop b -> (a -> b)
+  -> a -> Bool
 prop_operator_commutativity eq f1 f2 map a =
     map (f1 a) `eq` f2 (map a)
 
 prop_operator2_commutativity :: (b -> b -> Bool)
-                            -> (a -> a -> a)
-                            -> (b -> b -> b)
-                            -> (a -> b)
-                            -> a
-                            -> a
-                            -> Bool
+  -> Binop a -> Binop b -> (a -> b)
+  -> a -> a -> Bool
 prop_operator2_commutativity eq f1 f2 map a1 a2 =
-    (map (f1 a1 a2)) `eq` (f2 (map a1) (map a2))
+  map (f1 a1 a2) `eq` f2 (map a1) (map a2)
 
-prop_associativity :: Eq t => (f -> t) -> (f -> f -> f) -> f -> f -> f -> Bool
+prop_associativity :: Eq t => (f -> t) -> Binop f
+  -> f -> f -> f -> Bool
 prop_associativity render f x y z = render (f (f x y) z) == render (f x (f y z))
 
-prop_opRightIdentity :: Eq t => (f -> t) -> (f -> f -> f) -> f -> f -> Bool
+prop_opRightIdentity :: Eq t => (f -> t) -> Binop f
+  -> f -> f -> Bool
 prop_opRightIdentity render f i x = render (f x i) == render x
 
-prop_opLeftIdentity :: Eq t => (f -> t) -> (f -> f -> f) -> f -> f -> Bool
+prop_opLeftIdentity :: Eq t => (f -> t) -> Binop f
+  -> f -> f -> Bool
 prop_opLeftIdentity render f i x = render (f i x) == render x
 
-prop_opId :: (Eq t, Arbitrary f, Show f) => (f -> t) -> (f -> f -> f) -> f -> Property
+prop_opId :: (Eq t, Arbitrary f, Show f) => (f -> t) -> Binop f
+  -> f -> Property
 prop_opId render f i = forAll arbitrary $ \x ->
                         prop_opLeftIdentity render f i x &&
                         prop_opRightIdentity render f i x
 
-prop_distributivityA :: Eq t => (g -> t) ->
-  Binop f -> Binop g -> (f -> g -> g) -> f -> f -> g -> Bool
+prop_distributivityA :: Eq t => (g -> t)
+  -> Binop f -> Binop g -> (f -> g -> g)
+  -> f -> f -> g -> Bool
 prop_distributivityA render add1 add2 dot x y u =
   render (dot (add1 x y) u) == render (add2 (dot x u) (dot y u))
 
-prop_distributivityB :: Eq t => (g -> t) ->
-  Binop g -> (f -> g -> g) -> f -> g -> g -> Bool
+prop_distributivityB :: Eq t => (g -> t)
+  -> Binop g -> (f -> g -> g)
+  -> f -> g -> g -> Bool
 prop_distributivityB render plus dot a u v =
   render (dot a (plus u v)) == render (plus (dot a u) (dot a v))
 
