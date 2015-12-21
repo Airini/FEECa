@@ -131,13 +131,34 @@ propA_wedgeAssocEvl vs = prop_associativity (#vs) (/\)
 
 -- Will turn into check without evaluation if simplification + grouping of
 -- terms with canonicalization is done
-propA_wedgeAntiComm :: (Field f, VectorSpace f,
+propA_wedgeAntiComm :: (Ring f, VectorSpace f,
                         Projectable v (Scalar f), Scalar v ~ Scalar f)
                     => Form f -> Form f -> [v] -> Bool
 propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) == (expSign jk (y /\ x # vs))
   where j = arity x
         k = arity y
         jk = j * k
+
+propA_contractLeibniz :: (Ring f, VectorSpace f, Dimensioned v,
+                          Projectable v f, Projectable v (Scalar v),
+                          Scalar v ~ Scalar f)
+                      => Form f -> Form f -> v -> [v] -> Bool
+propA_contractLeibniz w t v vs =
+  ((w /\ t) %# v) # vs
+    ==
+  (addV ((w %# v) /\ t) (sclV (expSign (arity w) addId) (w /\ (t %# v)))) # vs
+
+(%#) :: (Ring f, VectorSpace f, Projectable v f, Scalar v ~ Scalar f, Dimensioned v)
+     => Form f -> v -> Form f
+(%#) = contract projection
+
+propA_contractCochain :: (Ring f, VectorSpace f, Dimensioned v,
+                          Projectable v f, Projectable v (Scalar v),
+                          Scalar v ~ Scalar f)
+                      => Form f -> v -> [v] -> Bool
+propA_contractCochain w v = \vs ->
+  (w %# v %# v) # vs == (zeroForm (arity w) (dimVec w)) # vs
+
 
 {-
 (%#) :: (Ring f, k ~ (S predK)) => Form k n f -> Vex n f -> Form predK n f

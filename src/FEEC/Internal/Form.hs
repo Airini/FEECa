@@ -187,9 +187,9 @@ inner :: (InnerProductSpace w, EuclideanSpace v, Dimensioned v, Scalar w ~ Scala
 inner proj omega eta
     | degNEq omega eta = errForm "inner" BiDegEq -- TODO (??)
     | otherwise = foldl
-            (flip $ \vs -> add (S.inner (apply omega vs) (apply eta vs)))
-            addId
-            (map choose (permutations n (arity omega)))
+          (flip $ \vs -> add (S.inner (apply omega vs) (apply eta vs)))
+          addId
+          (map choose (permutations n (arity omega)))
   where choose is = pick (differences is) (map (unitVector n) [0..n-1])
         apply = refine proj
         n = dimVec omega

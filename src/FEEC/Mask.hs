@@ -77,7 +77,7 @@ dxVF :: (Eq f, Ring f) => Int -> VectorField f -> PolyRepresentation f
 dxVF i (Vector v) = v !! (i-1)
 
 (#) :: forall f v. (Ring f, VectorSpace f,
-                    Projectable v (Scalar f), Scalar v ~Scalar f)
+                    Projectable v (Scalar f), Scalar v ~ Scalar f)
     => Form f -> [v] -> f
 (#) = refine projection
 -- TODO: unify
@@ -115,12 +115,17 @@ bssIx n = vector . flip canonCoord n
 (<>) :: (Eq f, Field f{-, InnerProductSpace (Form f)-}) => Form f -> Form f -> Scalar f
 (<>) omega eta = undefined --S.inner omega eta -- inner dxV omega eta
   where n = dimVec omega
-
+{-
 (⌟) :: (Eq f, Field f) => Form f -> Vector f -> Form f 
 (⌟) = contract dxV
+-}
 
-interior :: (Eq f, Field f) => Form f -> Vector f -> Form f 
-interior = (⌟)
+(⌟) :: (Ring f, Projectable v f, Dimensioned v)
+     => Form f -> v -> Form f
+(⌟) = contract projection
+
+{-interior :: (Eq f, Field f) => Form f -> Vector f -> Form f 
+interior = (⌟)-}
 
 𝝹 :: Ring f => Form (PolyRepresentation f) -> Form (PolyRepresentation f)
 𝝹 form = contract dxVF form (tangential n) --(const . flip coordinate n)
