@@ -33,9 +33,9 @@ type Dim = Int
 
 -- | Bilinear, alternating forms over vectorspaces
 data Form f =  -- we lose dependency on the type of vector!
-    Form  { arity :: Dim                    -- ^ For complete evaluation
-          , dimVec :: Dim                   -- ^ Of the underlying vector space
-          , terms :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
+    Form  { arity   :: Dim              -- ^ For complete evaluation
+          , dimVec  :: Dim              -- ^ Of the underlying vector space
+          , terms   :: [(f, [Int])] }   -- ^ List of terms of (coeff,wedge)'s
   deriving (Eq, Show)
 
 

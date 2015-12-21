@@ -99,7 +99,7 @@ w3 = w1  /\ w2
 
 w4 = dx1_2 /\ dx2_2
 
--- val1, val2 :: Double
+val1, val2 :: Double
 val1 = w4 # [v2, v2]
 val2 = (dx 1 2 /\ dx 2 2) # [vector [1,2], vector [3,4]]
 

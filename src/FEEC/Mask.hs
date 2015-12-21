@@ -76,7 +76,7 @@ dxVP = (fmap . fmap) constant dxV
 dxVF :: (Eq (VectorField f), Ring f) => Int -> VectorField f -> PolyRepresentation f
 dxVF i (Vector v) = v !! (i-1)
 
-(#) :: Form Double -> [Vector Double] -> Double
+(#) :: Ring f => Form f -> [Vector f] -> f
 (#) = undefined -- refine dxV
 -- TODO: unify
 -- complete (##) :: (Ringh, VectorSpace v) => Form h -> [v] -> h

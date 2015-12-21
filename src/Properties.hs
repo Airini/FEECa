@@ -128,7 +128,7 @@ propA_wedgeAssocEvl vs = prop_associativity (#vs) (/\)
 
 -- Will turn into check without evaluation if simplification + grouping of
 -- terms with canonicalization is done
-propA_wedgeAntiComm :: Form Double -> Form Double -> [Vector Double] -> Bool
+propA_wedgeAntiComm :: (Ring f, Num f) => Form f -> Form f -> [Vector f] -> Bool
 propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) == ((-1)^jk * (y /\ x # vs))
   where j = arity x
         k = arity y
