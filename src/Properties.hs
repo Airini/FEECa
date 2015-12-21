@@ -124,7 +124,9 @@ propA_wedgeAssoc = prop_associativity id (/\)
 --   arbitrary = sized (TQ.vector >=> return . vector)
 
 -- TODO: Eq?? would have to implement simplification + "canonising"
-propA_wedgeAssocEvl :: [Vector Double] -> Form Double -> Form Double -> Form Double -> Bool
+propA_wedgeAssocEvl :: (Ring f, VectorSpace f,
+                        Projectable v (Scalar f), Scalar v ~ Scalar f)
+                    => [v] -> Form f -> Form f -> Form f -> Bool
 propA_wedgeAssocEvl vs = prop_associativity (#vs) (/\)
 
 -- Will turn into check without evaluation if simplification + grouping of

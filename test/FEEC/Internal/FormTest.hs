@@ -107,9 +107,7 @@ nVecGen n = liftM (V.vector) $ -- map (fromIntegral . round)) $
 knTupGen :: Num f => Int -> Int -> Gen [V.Vector f]
 knTupGen k n = vectorOf k (nVecGen n)
 
---ffkn :: Ring r => Int -> Int -> Form r
---ffkn n k = undefined
-  
+
 -- An example
 dd :: Double
 omm = Form 1 2 [(1.0,[1])]
