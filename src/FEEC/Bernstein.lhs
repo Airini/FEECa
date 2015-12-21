@@ -26,7 +26,6 @@ of homogeneous polynomials over the $k+1$ barycentric coordinates
 
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module FEEC.Bernstein where

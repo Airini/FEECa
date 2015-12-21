@@ -20,11 +20,9 @@
 
 \begin{code}
 {-# LANGUAGE
-   GADTs,
    MultiParamTypeClasses,
    FlexibleContexts,
    TypeFamilies,
-   UndecidableInstances,
    FlexibleInstances #-}
 
 module FEEC.Internal.Simplex(

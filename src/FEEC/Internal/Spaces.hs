@@ -3,8 +3,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
--- {-# LANGUAGE OverlappingInstances #-}
--- {-# LANGUAGE IncoherentInstances #-}
 
 module FEEC.Internal.Spaces where
 

@@ -32,7 +32,6 @@ Apart from implementing polynomials over vectors in $\R{n}$, the
 
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module FEEC.Polynomial (

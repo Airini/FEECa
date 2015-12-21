@@ -11,7 +11,7 @@ module to be used with the \code{QuickCheck}\cite{package:qc} module.
 
 {-# LANGUAGE TemplateHaskell #-}
 
-module CombinatoricsTest (
+module FEEC.Utility.CombinatoricsTest (
                           testCombinatorics
                           ) where
 

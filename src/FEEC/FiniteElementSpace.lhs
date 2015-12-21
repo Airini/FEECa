@@ -18,7 +18,6 @@ where $\kappa$ is the Koszul operator.
 
 \begin{code}
 
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 module FEEC.FiniteElementSpace (

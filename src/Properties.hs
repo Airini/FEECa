@@ -1,20 +1,14 @@
-{-# LANGUAGE AllowAmbiguousTypes#-}
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ExistentialQuantification #-}
 
 module Properties where
 
---import Definitions
 import FEEC.Internal.Form
 import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
 import FEEC.Utility.Utility (expSign)
 import FEEC.Mask
 import Test.QuickCheck as TQ
-import Control.Monad ((>=>))
 
 
 -- | Abstract properties
@@ -144,9 +138,10 @@ propA_contractLeibniz :: (Ring f, VectorSpace f, Dimensioned v,
                           Scalar v ~ Scalar f)
                       => Form f -> Form f -> v -> [v] -> Bool
 propA_contractLeibniz w t v vs =
-  ((w /\ t) %# v) # vs
+  ((w /\ t) ⌟ v) # vs
     ==
-  (addV ((w %# v) /\ t) (sclV (expSign (arity w) addId) (w /\ (t %# v)))) # vs
+  (addV ((w ⌟ v) /\ t) (sclV (expSign (arity w) addId) (w /\ (t ⌟ v)))) # vs
+-- TODO: Abstract Leibniz rule away
 
 (%#) :: (Ring f, VectorSpace f, Projectable v f, Scalar v ~ Scalar f, Dimensioned v)
      => Form f -> v -> Form f
@@ -157,27 +152,13 @@ propA_contractCochain :: (Ring f, VectorSpace f, Dimensioned v,
                           Scalar v ~ Scalar f)
                       => Form f -> v -> [v] -> Bool
 propA_contractCochain w v = \vs ->
-  (w %# v %# v) # vs == (zeroForm (arity w) (dimVec w)) # vs
+  (w ⌟ v ⌟ v) # vs == (zeroForm (arity w) (dimVec w)) # vs
 
 
-{-
-(%#) :: (Ring f, k ~ (S predK)) => Form k n f -> Vex n f -> Form predK n f
-(%#) = contract -- contraction
--}
 
--- Abstract Leibniz rule away
-{-
-propA_contractLeibniz :: (Ring f, Num f, k ~ (S k'), l ~ (S l'), (k :+ l) :<= n) => 
-                         -- S (k' :+ l') ~ (k' :+ l)) =>
-                         Form k n f -> Form l n f -> Vex n f -> [Vex n f] -> Bool
-propA_contractLeibniz w t v vs = ((w /\ t) %# v) %$ vs == (addV ((w %# v) /\ t) (sclV ((-1)^kv) (w /\ (t %# v)))) %$ vs
-  where kv = natToInt (undefined :: k)
--}
 
---propA_contractAlt w v = w %# v %# v == const 0
--- For now :: assumes k >= 2 (until 'contraction' is fixed)
---propA_contractAlt' w v = \x -> (w %# v %# v) %$ x  == (const 0) %$ x
 
+-- XXX: ??? let there be dragons below?
 
 --propA_basis basisV basisAF = undefined
 -- Either. contraint basisAF to be associated to basisV OR derive from it
