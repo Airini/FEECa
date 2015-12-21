@@ -11,6 +11,7 @@ module Properties where
 import FEEC.Internal.Form
 import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
+import FEEC.Utility.Utility (expSign)
 import FEEC.Mask
 import Test.QuickCheck as TQ
 import Control.Monad ((>=>))
@@ -128,8 +129,10 @@ propA_wedgeAssocEvl vs = prop_associativity (#vs) (/\)
 
 -- Will turn into check without evaluation if simplification + grouping of
 -- terms with canonicalization is done
-propA_wedgeAntiComm :: (Ring f, Num f) => Form f -> Form f -> [Vector f] -> Bool
-propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) == ((-1)^jk * (y /\ x # vs))
+propA_wedgeAntiComm :: (Field f, VectorSpace f,
+                        Projectable v (Scalar f), Scalar v ~ Scalar f)
+                    => Form f -> Form f -> [v] -> Bool
+propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) == (expSign jk (y /\ x # vs))
   where j = arity x
         k = arity y
         jk = j * k

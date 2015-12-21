@@ -20,7 +20,7 @@ import Data.List (intersect)
 import FEEC.Internal.Spaces hiding( inner )
 import qualified FEEC.Internal.Spaces as S( inner )
 import FEEC.Utility.Discrete
-import FEEC.Utility.Utility (pairM, sumR, sumV)
+import FEEC.Utility.Utility (pairM, sumR, sumV, expSign, sign)
 import FEEC.Utility.Print (Pretty(..), printForm)
 
 import Debug.Trace
@@ -143,11 +143,9 @@ contract proj omega v
                   (terms omega)
   where pinchado (f,[]) _ = (f, []) -- error ??
         pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
-                              (mul (fromInt ((-1)^(i+1))) (mul f (proj j v)), ds1 ++ ds2)
-  {- TODO:  no exponentiation
-            optimise
+                              (expSign i $ mul f (proj j v), ds1 ++ ds2)
+  {- TODO:  optimise
             error handling: proj indexing beyond dimension of v -}
-
 
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
@@ -196,14 +194,8 @@ inner proj omega eta
         apply = refine proj
         n = dimVec omega
 
--- * Helper functions
 
--- | Sign of a permutation defined by a pair of increasing permutations:
---   specialised to an appropriate 'Ring' type (required for operations)
-sign :: Ring f => ([Int], [Int]) -> f
-sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
-                  then mulId
-                  else addInv mulId
+-- * Helper functions
 
 -- | Checks arity equality
 degNEq :: Form f -> Form f -> Bool
@@ -223,7 +215,7 @@ vecNEq :: Dimensioned v => Form f -> v -> Bool
 vecNEq omega v = dimVec omega /= dim v
 
 errForm :: String -> FormMust -> t
-errForm callee obligation = error $ "Forms." ++ callee ++
+errForm callee obligation = error $ "Form." ++ callee ++
                                     ": forms must " ++ show obligation
 
 

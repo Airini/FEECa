@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -26,7 +27,7 @@ type PolyRepresentation = Polynomial
 type VectorField a = Vector (PolyRepresentation a)
 
 tangential :: Ring a => Int -> VectorField a
-tangential n = vector (map (monomial . MI.unit n) [1..n])
+tangential n = vector (map (monomial . MI.unit n) [0..n-1])
 
 (.*) :: VectorSpace v => Scalar v -> v -> v
 (.*) = sclV
@@ -49,12 +50,11 @@ tangential n = vector (map (monomial . MI.unit n) [1..n])
 ı :: Ring f => f
 ı = mulId
 
-{- No inverses for rings
-(¬) :: Ring f => Monop f
+(¬) :: Field f => Monop f
 (¬) = mulInv
 
-(÷) :: Ring f => Binop f 
-a ÷ b = a · mulInv b  -}
+(÷) :: Field f => Binop f 
+a ÷ b = a · mulInv b
 
 (†) :: Algebra a => Binop a
 (†) = addA
@@ -70,18 +70,30 @@ dx = oneForm
 dxN :: Ring f => Dim -> Dim -> Form f
 dxN = flip dx
 
-dxVP :: (Eq (Vector f), Field f) => Int -> Vector f -> PolyRepresentation f
+dxVP :: (Eq f, Field f) => Int -> Vector f -> PolyRepresentation f
 dxVP = (fmap . fmap) constant dxV
 
-dxVF :: (Eq (VectorField f), Ring f) => Int -> VectorField f -> PolyRepresentation f
+dxVF :: (Eq f, Ring f) => Int -> VectorField f -> PolyRepresentation f
 dxVF i (Vector v) = v !! (i-1)
 
-(#) :: Ring f => Form f -> [Vector f] -> f
-(#) = undefined -- refine dxV
+(#) :: forall f v. (Ring f, VectorSpace f,
+                    Projectable v (Scalar f), Scalar v ~Scalar f)
+    => Form f -> [v] -> f
+(#) = refine projection
 -- TODO: unify
 -- complete (##) :: (Ringh, VectorSpace v) => Form h -> [v] -> h
 --d' :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
 --d' = df'
+
+class (Ring f, VectorSpace v) => Projectable v f where
+  projection :: Int -> v -> f
+
+instance Field f => Projectable (Vector f) f where
+  projection = dxV
+instance Field f => Projectable (Vector f) (PolyRepresentation f) where
+  projection = (fmap . fmap) constant dxV
+instance Ring f => Projectable (VectorField f) (PolyRepresentation f) where
+  projection i (Vector v) = v !! (i-1)
 
 canonCoord :: Ring a => Int -> Int -> [a]
 canonCoord i n = take n $
@@ -100,14 +112,14 @@ coordinates = fmap linearPolynomial . canonCoords
 bssIx n = vector . flip canonCoord n
 
 -- or <|> ?
-(<>) :: (Eq (Vector f), Field f) => Form f -> Form f -> f
+(<>) :: (Eq f, Field f{-, InnerProductSpace (Form f)-}) => Form f -> Form f -> Scalar f
 (<>) omega eta = undefined --S.inner omega eta -- inner dxV omega eta
   where n = dimVec omega
 
-(⌟) :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f 
+(⌟) :: (Eq f, Field f) => Form f -> Vector f -> Form f 
 (⌟) = contract dxV
 
-interior :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f 
+interior :: (Eq f, Field f) => Form f -> Vector f -> Form f 
 interior = (⌟)
 
 𝝹 :: Ring f => Form (PolyRepresentation f) -> Form (PolyRepresentation f)

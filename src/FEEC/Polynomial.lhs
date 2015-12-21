@@ -396,8 +396,8 @@ multiplyTerm :: Ring a
              -> Term a -- mi2
              -> Term a
 multiplyTerm f (Term c1 mi1) (Term c2 mi2) = scaleTerm (mul c1 c2) (f mi1 mi2)
-multiplyTerm _ (Term c1 mi) (Constant c2) = Term (mul c1 c2) mi
-multiplyTerm _ (Constant c2) (Term c1 mi) = Term (mul c1 c2) mi
+multiplyTerm _ (Term c1 mi)  (Constant c2) = Term (mul c1 c2) mi
+multiplyTerm _ (Constant c2) (Term c1 mi)  = Term (mul c1 c2) mi
 multiplyTerm _ (Constant c1) (Constant c2) = Constant (mul c1 c2)
 
 -- | Multiplication of two monomials.

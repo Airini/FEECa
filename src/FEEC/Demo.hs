@@ -101,7 +101,7 @@ w4 = dx1_2 /\ dx2_2
 
 val1, val2 :: Double
 val1 = w4 # [v2, v2]
-val2 = (dx 1 2 /\ dx 2 2) # [vector [1,2], vector [3,4]]
+val2 = (dx 1 2 /\ dx 2 2) # ([vector [1,2], vector [3,4]] :: [Vector Double])
 
 -- dxs' :: [DifferentialForm Double]
 dxs' = (fmap constant) . dxs
@@ -114,7 +114,7 @@ dx1' = dxs_2' 1
 dx2' = dxs_2' 2
 
 w1_2 = dxs_2' 1 /\ dxs_2' 2
-w2_2 = dxs_2' 2 /\ dxs' 1
+w2_2 = dxs_2' 2 /\ dxs_2' 1
 
 -- u :: DifferentialForm Double
 u = (hs 2 !! 0) .* w1_2 .+. ((hs 2 !! 3) .* w2_2) .+. (constant 0.5 .* dx1' /\ dx2')
@@ -122,14 +122,14 @@ v = p .* dxs' 1 .+. (constant 2 · p .* dxs' 2)
 
 -- -- Evaluation of differential forms
 val3 = u § x20 # [v2, v2]
-val4 = (dx1' /\ dx2') § x22 # [vector [1, 2], vector [3, 4]]
+val4 = (dx1' /\ dx2') § x22 # ([vector [1, 2], vector [3, 4]] :: [Vector Double])
 val5 = p .* dx1' § x21 # [v2]
 
 -- Differentiation: TODO: control over arity? (bound by dimVec)
 du = d u
 
--- Koszul differential: TODO: undefined now => express X(x) as polynomial...
--- ku = 𝝹 u
+-- Koszul differential:
+ku = 𝝹 u
 
 -- Inner product
 val6 = (w1 <> w2) -- summation over the basis
