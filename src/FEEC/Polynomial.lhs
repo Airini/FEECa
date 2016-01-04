@@ -32,7 +32,6 @@ Apart from implementing polynomials over vectors in $\R{n}$, the
 
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module FEEC.Polynomial (
@@ -274,7 +273,7 @@ instance (EuclideanSpace v, r ~ Scalar v) => S.Function (Polynomial r) v where
 The \module{Polynomial} provides smart constructors to simplify the creation of
  valid polynomials. The stress here lies on valid, because not every instance of
  \code{Polynomial} represents a valid polynomial. For a polynomials to be valid,
- all multi-indices representing the monomials must be of the same langth.
+ all multi-indices representing the monomials must be of the same length.
 
 The functions \code{constant}, \code{monomial}, \code{term} and
  \code{polynomial} can be used to create a constant polynomial, a monomial,
@@ -285,9 +284,9 @@ The functions \code{constant}, \code{monomial}, \code{term} and
 \begin{code}
 
 -- | Create a constant polynomial with the given value.
-constant :: Ring a => a -> Polynomial a
+constant :: a -> Polynomial a
 constant c = Polynomial 0 [Constant c]
--- | Create a polynomial consisting of a single monomial from a give
+-- | Create a polynomial consisting of a single monomial from a given
 -- | multi-index.
 monomial :: Ring a => MI.MultiIndex -> Polynomial a
 monomial mi = Polynomial (MI.degree mi) [Term mulId mi]
@@ -396,8 +395,8 @@ multiplyTerm :: Ring a
              -> Term a -- mi2
              -> Term a
 multiplyTerm f (Term c1 mi1) (Term c2 mi2) = scaleTerm (mul c1 c2) (f mi1 mi2)
-multiplyTerm _ (Term c1 mi) (Constant c2) = Term (mul c1 c2) mi
-multiplyTerm _ (Constant c2) (Term c1 mi) = Term (mul c1 c2) mi
+multiplyTerm _ (Term c1 mi)  (Constant c2) = Term (mul c1 c2) mi
+multiplyTerm _ (Constant c2) (Term c1 mi)  = Term (mul c1 c2) mi
 multiplyTerm _ (Constant c1) (Constant c2) = Constant (mul c1 c2)
 
 -- | Multiplication of two monomials.

@@ -1,7 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts #-}
 
 module FEEC.Internal.Form (
   -- * Generic form types
@@ -20,7 +17,7 @@ import Data.List (intersect)
 import FEEC.Internal.Spaces hiding( inner )
 import qualified FEEC.Internal.Spaces as S( inner )
 import FEEC.Utility.Discrete
-import FEEC.Utility.Utility (pairM, sumR, sumV)
+import FEEC.Utility.Utility (pairM, sumR, sumV, expSign, sign)
 import FEEC.Utility.Print (Pretty(..), printForm)
 
 import Debug.Trace
@@ -33,9 +30,9 @@ type Dim = Int
 
 -- | Bilinear, alternating forms over vectorspaces
 data Form f =  -- we lose dependency on the type of vector!
-    Form  { arity :: Dim                    -- ^ For complete evaluation
-          , dimVec :: Dim                   -- ^ Of the underlying vector space
-          , terms :: [(f, [Int])] }  -- ^ List of terms of (coeff,wedge)'s
+    Form  { arity   :: Dim              -- ^ For complete evaluation
+          , dimVec  :: Dim              -- ^ Of the underlying vector space
+          , terms   :: [(f, [Int])] }   -- ^ List of terms of (coeff,wedge)'s
   deriving (Eq, Show)
 
 
@@ -143,11 +140,9 @@ contract proj omega v
                   (terms omega)
   where pinchado (f,[]) _ = (f, []) -- error ??
         pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
-                              (mul (fromInt ((-1)^(i+1))) (mul f (proj j v)), ds1 ++ ds2)
-  {- TODO:  no exponentiation
-            optimise
+                              (expSign i $ mul f (proj j v), ds1 ++ ds2)
+  {- TODO:  optimise
             error handling: proj indexing beyond dimension of v -}
-
 
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
@@ -189,21 +184,15 @@ inner :: (InnerProductSpace w, EuclideanSpace v, Dimensioned v, Scalar w ~ Scala
 inner proj omega eta
     | degNEq omega eta = errForm "inner" BiDegEq -- TODO (??)
     | otherwise = foldl
-            (flip $ \vs -> add (S.inner (apply omega vs) (apply eta vs)))
-            addId
-            (map choose (permutations n (arity omega)))
+          (flip $ \vs -> add (S.inner (apply omega vs) (apply eta vs)))
+          addId
+          (map choose (permutations n (arity omega)))
   where choose is = pick (differences is) (map (unitVector n) [0..n-1])
         apply = refine proj
         n = dimVec omega
 
--- * Helper functions
 
--- | Sign of a permutation defined by a pair of increasing permutations:
---   specialised to an appropriate 'Ring' type (required for operations)
-sign :: Ring f => ([Int], [Int]) -> f
-sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
-                  then mulId
-                  else addInv mulId
+-- * Helper functions
 
 -- | Checks arity equality
 degNEq :: Form f -> Form f -> Bool
@@ -223,7 +212,7 @@ vecNEq :: Dimensioned v => Form f -> v -> Bool
 vecNEq omega v = dimVec omega /= dim v
 
 errForm :: String -> FormMust -> t
-errForm callee obligation = error $ "Forms." ++ callee ++
+errForm callee obligation = error $ "Form." ++ callee ++
                                     ": forms must " ++ show obligation
 
 

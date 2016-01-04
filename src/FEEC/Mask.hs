@@ -1,6 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module FEEC.Mask where
 
 import Control.Applicative
@@ -13,10 +16,16 @@ import FEEC.Internal.Vector
 import FEEC.Internal.Simplex
 import FEEC.Polynomial
 import FEEC.Utility.Utility
+import qualified FEEC.Internal.MultiIndex as MI
+import qualified FEEC.Bernstein as B
 
 type Monop t = t -> t
 type Binop t = t -> t -> t
-type PolyRepresentation = Polynomial 
+type PolyRepresentation = Polynomial
+type VectorField a = Vector (PolyRepresentation a)
+
+tangential :: Ring a => Int -> VectorField a
+tangential n = vector (map (monomial . MI.unit n) [0..n-1])
 
 (.*) :: VectorSpace v => Scalar v -> v -> v
 (.*) = sclV
@@ -39,12 +48,11 @@ type PolyRepresentation = Polynomial
 ı :: Ring f => f
 ı = mulId
 
-{- No inverses for rings
-(¬) :: Ring f => Monop f
+(¬) :: Field f => Monop f
 (¬) = mulInv
 
-(÷) :: Ring f => Binop f 
-a ÷ b = a · mulInv b  -}
+(÷) :: Field f => Binop f 
+a ÷ b = a · mulInv b
 
 (†) :: Algebra a => Binop a
 (†) = addA
@@ -60,15 +68,30 @@ dx = oneForm
 dxN :: Ring f => Dim -> Dim -> Form f
 dxN = flip dx
 
-dxVP :: (Eq (Vector f), Field f) => Int -> Vector f -> PolyRepresentation f
+dxVP :: (Eq f, Field f) => Int -> Vector f -> PolyRepresentation f
 dxVP = (fmap . fmap) constant dxV
 
-(#) :: Form Double -> [Vector Double] -> Double
-(#) = undefined -- refine dxV
+dxVF :: (Eq f, Ring f) => Int -> VectorField f -> PolyRepresentation f
+dxVF i (Vector v) = v !! (i-1)
+
+(#) :: forall f v. (Ring f, VectorSpace f,
+                    Projectable v (Scalar f), Scalar v ~ Scalar f)
+    => Form f -> [v] -> f
+(#) = refine projection
 -- TODO: unify
 -- complete (##) :: (Ringh, VectorSpace v) => Form h -> [v] -> h
 --d' :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
 --d' = df'
+
+class (Ring f, VectorSpace v) => Projectable v f where
+  projection :: Int -> v -> f
+
+instance Field f => Projectable (Vector f) f where
+  projection = dxV
+instance Field f => Projectable (Vector f) (PolyRepresentation f) where
+  projection = (fmap . fmap) constant dxV
+instance Ring f => Projectable (VectorField f) (PolyRepresentation f) where
+  projection i (Vector v) = v !! (i-1)
 
 canonCoord :: Ring a => Int -> Int -> [a]
 canonCoord i n = take n $
@@ -87,20 +110,27 @@ coordinates = fmap linearPolynomial . canonCoords
 bssIx n = vector . flip canonCoord n
 
 -- or <|> ?
-(<>) :: (Eq (Vector f), Field f) => Form f -> Form f -> f
-(<>) omega eta = undefined -- inner dxV omega eta
+(<>) :: (Eq f, Field f{-, InnerProductSpace (Form f)-}) => Form f -> Form f -> Scalar f
+(<>) omega eta = undefined --S.inner omega eta -- inner dxV omega eta
   where n = dimVec omega
-
-(⌟) :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f 
+{-
+(⌟) :: (Eq f, Field f) => Form f -> Vector f -> Form f 
 (⌟) = contract dxV
+-}
 
-interior :: (Eq (Vector f), Field f) => Form f -> Vector f -> Form f 
-interior = (⌟)
+(⌟) :: (Ring f, Projectable v f, Dimensioned v)
+     => Form f -> v -> Form f
+(⌟) = contract projection
 
-𝝹 :: Form (PolyRepresentation Double) -> Form (PolyRepresentation Double)
-𝝹 form = contract (const . flip coordinate n) form (undefined::Vector Double)
+{-interior :: (Eq f, Field f) => Form f -> Vector f -> Form f 
+interior = (⌟)-}
+
+𝝹 :: Ring f => Form (PolyRepresentation f) -> Form (PolyRepresentation f)
+𝝹 form = contract dxVF form (tangential n) --(const . flip coordinate n)
   where n = dimVec form
 -- TODO: extract degree from polynomial
+
+kappa :: Ring f => Form (PolyRepresentation f) -> Form (PolyRepresentation f)
 kappa = 𝝹
 
 -- | Exterior derivative
@@ -114,8 +144,8 @@ d form = df (vector . flip canonCoord n) form
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors
 --   (some kind of canonical projection)
-(&) :: (Field f, Eq (Vector f)) => DifferentialForm (PolyRepresentation f) -> Vector f -> DifferentialForm (PolyRepresentation f)
-(&) = contract dxVP
+(&) :: (Field f, Eq (Vector f)) => DifferentialForm (PolyRepresentation f) -> VectorField f -> DifferentialForm (PolyRepresentation f)
+(&) = contract dxVF
 -- ALSO: generalise Vector? that way we can have parameterised vectors :)
 -- kappa, etc. => explicit symbols
 -- integration, inner product
@@ -132,5 +162,28 @@ instance Field f => Field (PolyRepresentation f) where
   mulInv = undefined
   fromDouble = constant . fromDouble
   toDouble = undefined
+-}
+
+
+-- XXX: additional instances for now
+instance Functor Vector where
+  fmap f (Vector v) = Vector (fmap f v)
+
+instance Functor Term where
+  fmap f (Constant a) = Constant (f a)
+  fmap f (Term a mi)  = Term (f a) mi
+
+instance Functor Polynomial where
+  fmap f (Polynomial n ts) = Polynomial n (fmap (fmap f) ts)
+
+instance Applicative Polynomial where
+  pure = constant
+  (<*>) = undefined
+
+{-
+instance (Field r, EuclideanSpace (Vector r), r ~ Scalar (Vector r))  =>
+    InnerProductSpace (Polynomial r) where
+  inner :: forall r. Polynomial r -> Polynomial r -> r
+  inner p1 p2 = integratePolynomial (referenceSimplex 4 :: Simplex (Vector r)) (mul p1 p2)
 -}
 

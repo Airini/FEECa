@@ -1,75 +1,67 @@
-{-# LANGUAGE AllowAmbiguousTypes#-}
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ExistentialQuantification #-}
 
 module Properties where
 
---import Definitions
 import FEEC.Internal.Form
 import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
+import FEEC.Utility.Utility (expSign)
 import FEEC.Mask
 import Test.QuickCheck as TQ
-import Control.Monad ((>=>))
---import Data.Type.Natural
 
 
 -- | Abstract properties
-prop_linearity :: VectorSpace v => ((Scalar v) -> (Scalar v) -> Bool)
-                                -> (v -> Scalar v)
-                                -> (Scalar v)
-                                -> v
-                                -> v
-                                -> Bool
-prop_linearity eq f c a b = (mul c (f a)) `eq` (f (sclV c a))
-                            && (add (f a) (f b)) `eq` (f (addV a b))
+prop_linearity :: VectorSpace v => (Scalar v -> Scalar v -> Bool)
+  -> (v -> Scalar v)
+  -> Scalar v -> v -> v -> Bool
+prop_linearity eq f c a b = mul c (f a) `eq` f (sclV c a)
+                         && add (f a) (f b) `eq` f (addV a b)
 
-prop_commutativity :: Eq t => (f -> t) -> (f -> f -> f) -> f -> f -> Bool
+prop_commutativity :: Eq t =>
+    (f -> t) -> Binop f
+  -> f -> f -> Bool
 prop_commutativity render f x y = render (f x y) == render (f y x)
 
 prop_operator_commutativity :: (b -> b -> Bool)
-                            -> (a -> a)
-                            -> (b -> b)
-                            -> (a -> b)
-                            -> a
-                            -> Bool
+  -> Monop a -> Monop b -> (a -> b)
+  -> a -> Bool
 prop_operator_commutativity eq f1 f2 map a =
     map (f1 a) `eq` f2 (map a)
 
 prop_operator2_commutativity :: (b -> b -> Bool)
-                            -> (a -> a -> a)
-                            -> (b -> b -> b)
-                            -> (a -> b)
-                            -> a
-                            -> a
-                            -> Bool
+  -> Binop a -> Binop b -> (a -> b)
+  -> a -> a -> Bool
 prop_operator2_commutativity eq f1 f2 map a1 a2 =
-    (map (f1 a1 a2)) `eq` (f2 (map a1) (map a2))
+  map (f1 a1 a2) `eq` f2 (map a1) (map a2)
 
-prop_associativity :: Eq t => (f -> t) -> (f -> f -> f) -> f -> f -> f -> Bool
+prop_associativity :: Eq t => (f -> t) -> Binop f
+  -> f -> f -> f -> Bool
 prop_associativity render f x y z = render (f (f x y) z) == render (f x (f y z))
 
-prop_opRightIdentity :: Eq t => (f -> t) -> (f -> f -> f) -> f -> f -> Bool
+prop_opRightIdentity :: Eq t => (f -> t) -> Binop f
+  -> f -> f -> Bool
 prop_opRightIdentity render f i x = render (f x i) == render x
 
-prop_opLeftIdentity :: Eq t => (f -> t) -> (f -> f -> f) -> f -> f -> Bool
+prop_opLeftIdentity :: Eq t => (f -> t) -> Binop f
+  -> f -> f -> Bool
 prop_opLeftIdentity render f i x = render (f i x) == render x
 
-prop_opId :: (Eq t, Arbitrary f, Show f) => (f -> t) -> (f -> f -> f) -> f -> Property
+prop_opId :: (Eq t, Arbitrary f, Show f) => (f -> t) -> Binop f
+  -> f -> Property
 prop_opId render f i = forAll arbitrary $ \x ->
                         prop_opLeftIdentity render f i x &&
                         prop_opRightIdentity render f i x
 
-prop_distributivityA :: Eq t => (g -> t) ->
-  Binop f -> Binop g -> (f -> g -> g) -> f -> f -> g -> Bool
+prop_distributivityA :: Eq t => (g -> t)
+  -> Binop f -> Binop g -> (f -> g -> g)
+  -> f -> f -> g -> Bool
 prop_distributivityA render add1 add2 dot x y u =
   render (dot (add1 x y) u) == render (add2 (dot x u) (dot y u))
 
-prop_distributivityB :: Eq t => (g -> t) ->
-  Binop g -> (f -> g -> g) -> f -> g -> g -> Bool
+prop_distributivityB :: Eq t => (g -> t)
+  -> Binop g -> (f -> g -> g)
+  -> f -> g -> g -> Bool
 prop_distributivityB render plus dot a u v =
   render (dot a (plus u v)) == render (plus (dot a u) (dot a v))
 
@@ -126,35 +118,47 @@ propA_wedgeAssoc = prop_associativity id (/\)
 --   arbitrary = sized (TQ.vector >=> return . vector)
 
 -- TODO: Eq?? would have to implement simplification + "canonising"
-propA_wedgeAssocEvl :: [Vector Double] -> Form Double -> Form Double -> Form Double -> Bool
+propA_wedgeAssocEvl :: (Ring f, VectorSpace f,
+                        Projectable v (Scalar f), Scalar v ~ Scalar f)
+                    => [v] -> Form f -> Form f -> Form f -> Bool
 propA_wedgeAssocEvl vs = prop_associativity (#vs) (/\)
 
 -- Will turn into check without evaluation if simplification + grouping of
 -- terms with canonicalization is done
-propA_wedgeAntiComm :: Form Double -> Form Double -> [Vector Double] -> Bool
-propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) == ((-1)^jk * (y /\ x # vs))
+propA_wedgeAntiComm :: (Ring f, VectorSpace f,
+                        Projectable v (Scalar f), Scalar v ~ Scalar f)
+                    => Form f -> Form f -> [v] -> Bool
+propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) == (expSign jk (y /\ x # vs))
   where j = arity x
         k = arity y
         jk = j * k
 
-{-
-(%#) :: (Ring f, k ~ (S predK)) => Form k n f -> Vex n f -> Form predK n f
-(%#) = contract -- contraction
--}
+propA_contractLeibniz :: (Ring f, VectorSpace f, Dimensioned v,
+                          Projectable v f, Projectable v (Scalar v),
+                          Scalar v ~ Scalar f)
+                      => Form f -> Form f -> v -> [v] -> Bool
+propA_contractLeibniz w t v vs =
+  ((w /\ t) ⌟ v) # vs
+    ==
+  (addV ((w ⌟ v) /\ t) (sclV (expSign (arity w) addId) (w /\ (t ⌟ v)))) # vs
+-- TODO: Abstract Leibniz rule away
 
--- Abstract Leibniz rule away
-{-
-propA_contractLeibniz :: (Ring f, Num f, k ~ (S k'), l ~ (S l'), (k :+ l) :<= n) => 
-                         -- S (k' :+ l') ~ (k' :+ l)) =>
-                         Form k n f -> Form l n f -> Vex n f -> [Vex n f] -> Bool
-propA_contractLeibniz w t v vs = ((w /\ t) %# v) %$ vs == (addV ((w %# v) /\ t) (sclV ((-1)^kv) (w /\ (t %# v)))) %$ vs
-  where kv = natToInt (undefined :: k)
--}
+(%#) :: (Ring f, VectorSpace f, Projectable v f, Scalar v ~ Scalar f, Dimensioned v)
+     => Form f -> v -> Form f
+(%#) = contract projection
 
---propA_contractAlt w v = w %# v %# v == const 0
--- For now :: assumes k >= 2 (until 'contraction' is fixed)
---propA_contractAlt' w v = \x -> (w %# v %# v) %$ x  == (const 0) %$ x
+propA_contractCochain :: (Ring f, VectorSpace f, Dimensioned v,
+                          Projectable v f, Projectable v (Scalar v),
+                          Scalar v ~ Scalar f)
+                      => Form f -> v -> [v] -> Bool
+propA_contractCochain w v = \vs ->
+  (w ⌟ v ⌟ v) # vs == (zeroForm (arity w) (dimVec w)) # vs
 
+
+
+
+
+-- XXX: ??? let there be dragons below?
 
 --propA_basis basisV basisAF = undefined
 -- Either. contraint basisAF to be associated to basisV OR derive from it

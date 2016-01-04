@@ -9,10 +9,6 @@ functions for the handling of vectors in $n$-dimensional Euclidean space
 \begin{code}
 
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 
 module FEEC.Internal.Vector(
 
