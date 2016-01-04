@@ -234,7 +234,9 @@ face (Simplex sigma1 vs) sigma2 = Simplex [sigma1 !! i | i <- sigma2] [vs !! i |
 
 \begin{code}
 
-volume :: EuclideanSpace v 
+-- | Computes the k-dimensional volume (Lebesgue measure) of a simplex
+-- | in n dimensions using the Gram Determinant rule.
+volume :: EuclideanSpace v
        => Simplex v
        -> Scalar v
 volume t
@@ -253,9 +255,7 @@ project bs vs
         proj b v = divide (dot b v) (sqrt' (dot b b))
         sqrt' = fromDouble . sqrt . toDouble
 
--- | Computes the k-dimensional volume (Lebesgue measure) of a simplex
--- | in n dimensions using the Gram Determinant rule.
-volume' :: EuclideanSpace v 
+volume' :: EuclideanSpace v
         => Simplex v
         -> Scalar v
 volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
