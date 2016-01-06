@@ -357,8 +357,9 @@ extendVectors :: (EuclideanSpace v , Eq (Scalar v))
               => Int
               -> [v]
               -> [v]
-extendVectors n vs = take n $ sortBy norm vs'
-  where vs' = gramSchmidt' vs [unitVector n i | i <- [0..n-1]]
+extendVectors n vs = vs ++ (take (n - k) (reverse (sortBy norm vs')))
+  where vs' = drop k $ gramSchmidt $ vs ++ [unitVector n i | i <- [0..n-1]]
+        k   = length vs
 
 
 \end{code}

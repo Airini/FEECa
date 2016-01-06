@@ -72,7 +72,7 @@ import FEEC.Internal.Point
 import FEEC.Internal.Vector(Vector, toList)
 import qualified FEEC.Internal.Vector as V(pow)
 import FEEC.Utility.Print(Pretty(..), printPolynomial)
-import FEEC.Utility.Utility(pairM)
+import FEEC.Utility.Utility(pairM, takeIndices)
 import Text.PrettyPrint
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
@@ -690,8 +690,9 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 barycentricCoordinates :: (EuclideanSpace v, r ~ Scalar v)
                        => Simplex v
                        -> [ Polynomial r ]
-barycentricCoordinates s = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
-    where mat = M.inv (simplexToMatrix (extendSimplex s))
+barycentricCoordinates s = take (nt + 1) bs
+    where bs  = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
+          mat = M.inv (simplexToMatrix (extendSimplex s))
           n   = geometricalDimension s
           nt  = topologicalDimension s
 
