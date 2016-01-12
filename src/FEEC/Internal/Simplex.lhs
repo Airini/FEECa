@@ -408,9 +408,8 @@ barycentricToCartesian :: EuclideanSpace v
                        -> v
 barycentricToCartesian t@(Simplex _ vs) v = foldl sclAdd zero (zip v' vs)
   where sclAdd p (c, p0) = addV p (sclV c p0)
-        zero             = zeroV v
+        zero             = zeroV (head vs)
         v'               = toList v
-        n                = geometricalDimension t
 
 \end{code}
 
