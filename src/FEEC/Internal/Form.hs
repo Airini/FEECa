@@ -91,7 +91,7 @@ omega +++ eta
 omega //\\ eta
     | spaNEq omega eta = errForm "(//\\\\)" BiSpaEq
     | otherwise = Form (arity omega + arity eta) (dimVec eta)
-                       (concatMap (\d -> map (flip combine d) (dxs d)) (terms eta))
+                       (concatMap (\d -> map (`combine` d) (dxs d)) (terms eta))
   where dxs (_,ys) = filter (null . intersect ys . snd) (terms omega)
         combine (a,xs) = pairM (mul a) (xs++)
 

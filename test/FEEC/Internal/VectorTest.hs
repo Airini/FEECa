@@ -13,6 +13,10 @@ import FEEC.Utility.Utility
 import Test.QuickCheck (Arbitrary(..), (==>), Gen, Property, quickCheck)
 import qualified Test.QuickCheck as Q(vector)
 
+main = do
+  mapM_ quickCheck [ prop_dim, prop_toList ]
+  quickCheck (prop_dot :: Double -> Vector Double -> Vector Double -> Vector Double -> Bool)
+
 --------------------------------------------------------------------------------
 -- Generate random 4-dimensional vectors as a radom list of doubles.
 --------------------------------------------------------------------------------

@@ -36,6 +36,26 @@ prop_extend (IncreasingList sigma) mi = (degree mi' == r)
           r = degree mi
           mi' = extend n sigma mi
 
+{- TODO
+  ERROR when testing. Two examples:
+
+*** Failed! (after 1 test):
+Exception:
+  [2,3,4,5,6,8]
+     ZipList {getZipList = [1,0,2,1,1]}extend: Dimensions of sigma and
+     multi-index don't agree
+     [2,3,4,5,6,8]
+     ZipList {getZipList = [1,0,2,1,1]}
+
+*** Failed! (after 1 test):
+Exception:
+  [0,1,6,7,8,10]
+     ZipList {getZipList = [0,0,1,3,1]}extend: Dimensions of sigma and
+     multi-index don't agree
+     [0,1,6,7,8,10]
+     ZipList {getZipList = [0,0,1,3,1]}
+-}
+
 prop_add :: MultiIndex -> MultiIndex -> Bool
 prop_add mi1 mi2 = degree mi3 == (degree mi1) + (degree mi2)
                    && range mi3 == sort ((range mi1) `union` (range mi2))
