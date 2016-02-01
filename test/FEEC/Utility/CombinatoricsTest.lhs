@@ -85,8 +85,8 @@ increasing l = and $ zipWith (<) l (tail l)
 -- | Lists returned by 'increasingLists', 'increasingLists'' and 'unrank' should be
 -- | increasing.
 prop_increasing :: Parameters -> Bool
-prop_increasing (Parameters k n) = (increasing (increasingLists k n))
-                                  && (increasing (increasingLists1 k n))
+prop_increasing (Parameters k n) = increasing (increasingLists k n)
+                                  && increasing (increasingLists1 k n)
 
 \end{code}
 
@@ -150,7 +150,7 @@ shoul be chaged.
 -- | lists in lexicographic order.
 prop_index :: Parameters -> Int -> Bool
 prop_index (Parameters k n) i =
-    (increasingLists k n) !! i' == unrank k n i'
+    increasingLists k n !! i' == unrank k n i'
         where i' = i `mod` ((n + 1) `C.choose` k)
 
 \end{code}
@@ -229,7 +229,7 @@ prop_sum_r_length (SmallInt n) (SmallInt r) = all (n ==) $ map length (sumRLists
 -- | Lists returend by 'prop_sum_r_positive' should contain only elements
 -- | larger or equal zero.
 prop_sum_r_positive :: SmallInt -> SmallInt -> Bool
-prop_sum_r_positive (SmallInt n) (SmallInt r) = and $ map (all (0<=)) (sumRLists n r)
+prop_sum_r_positive (SmallInt n) (SmallInt r) = all (all (0<=)) (sumRLists n r)
 \end{code}
 
 The same properties should of course hold for \code{sumRLists'} with the
@@ -249,7 +249,7 @@ prop_sum_r'_length (SmallInt n) (SmallInt r) = all (n ==) $ map length l
 -- | Lists returend by 'prop_sum_r_positive' should contain only elements
 -- | larger or equal zero.
 prop_sum_r'_positive :: SmallInt -> SmallInt -> Bool
-prop_sum_r'_positive (SmallInt n) (SmallInt r) = and $ map (all (0<=)) l
+prop_sum_r'_positive (SmallInt n) (SmallInt r) = all (all (0<=)) l
     where l = sumRLists' n r
 
 \end{code}

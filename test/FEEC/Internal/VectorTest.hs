@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -61,7 +60,7 @@ prop_dot c u v w = prop_symmetric dot u v
 --------------------------------------------------------------------------------
 
 prop_symmetric :: Eq b => ( a -> a -> b ) -> a -> a -> Bool
-prop_symmetric f a1 a2 = (f a1 a2) == (f a2 a1)
+prop_symmetric f a1 a2 = f a1 a2 == f a2 a1
 
 --------------------------------------------------------------------------------
 -- Linearity
@@ -78,5 +77,5 @@ prop_linear f c u v w = eqNum (mul c (f u v)) (f (sclV c v) u)
 
 prop_pos_def :: (EuclideanSpace v, Ord r, r ~ Scalar v)
                 => (v -> v -> r) -> v -> Bool
-prop_pos_def f u = (f u u) >= addId
-                   && if (f u u) == addId then u == zeroV u else True
+prop_pos_def f u = f u u >= addId
+                   && (f u u /= addId || u == zeroV u)
