@@ -53,7 +53,7 @@ module FEEC.Polynomial (
   , barycentricGradient, barycentricGradients
   , barycentricGradients'
 
-
+  , simplifyT, simplifyP
   ) where
 
 import Data.Maybe (fromJust)
@@ -636,7 +636,7 @@ $$
  $\delta_{ij}$ is the Kronecker delta. Equation $\eqref{eq:barycentric_prop}$ can
  be used to determine the barycentric coordinates of a given full simplex
  $\smp{T}$ with vertices $\vec{v}_0,\ldots,\vec{v}_n$ by solving the resulting
- linear system of equations. The linear system can be written as a matrix 
+ linear system of equations. The linear system can be written as a matrix
 equation with a $n+1 \times n+1$ matrix $\vec{A}$ of the form
 
 \begin{align}
@@ -706,7 +706,7 @@ barycentricCoordinate s i = barycentricCoordinates s !! i
 
 -- Transforms a given simplex into the matrix representing the linear
 -- equation system for the barycentric coordinates.
-simplexToMatrix :: EuclideanSpace v 
+simplexToMatrix :: EuclideanSpace v
                 => Simplex v
                 -> M.Matrix Double
 simplexToMatrix s@(Simplex _ l) = M.matrix (n+1) (concatMap append1 l)
@@ -737,13 +737,13 @@ repsectively.
 
 -- Transforms a solution vector of the linear equation system into the
 -- gradients of the barycentric coordinates.
-vectorToGradient :: EuclideanSpace v 
+vectorToGradient :: EuclideanSpace v
                  => M.Vector Double
                  -> v
 vectorToGradient v  = fromDouble' (tail (M.toList v))
 
 -- | Compute gradients of the barycentric coordinates.
-barycentricGradients :: EuclideanSpace v 
+barycentricGradients :: EuclideanSpace v
                      => Simplex v
                      -> [v]
 barycentricGradients t = map vectorToGradient (take (nt+1) (M.toColumns mat))
@@ -752,7 +752,7 @@ barycentricGradients t = map vectorToGradient (take (nt+1) (M.toColumns mat))
           nt = topologicalDimension t
 
 -- | Compute gradients of the barycentric coordinates.
-barycentricGradients' :: EuclideanSpace v 
+barycentricGradients' :: EuclideanSpace v
                       => Simplex v
                       -> [v]
 barycentricGradients' t = map (fromDouble' . M.toList) (tail (M.toRows mat))
@@ -761,10 +761,40 @@ barycentricGradients' t = map (fromDouble' . M.toList) (tail (M.toRows mat))
           nt = topologicalDimension t
 
 -- | Compute gradient of the barycentric coordinate corresponding to edge i
-barycentricGradient :: EuclideanSpace v 
+barycentricGradient :: EuclideanSpace v
                     => Simplex v
                     -> Int
                     -> v
 barycentricGradient t i = barycentricGradients t !! i
 
+\end{code}
+
+\begin{code}
+simplifyP :: Ring a => Polynomial a -> Polynomial a
+simplifyP (Polynomial d ts) = Polynomial d (aggregate (map simplifyT ts))
+
+-- combine all Constant into one
+-- combine all terms of the same ZipList into one
+type SimpleTerms a = [Term a]
+aggregate :: Ring a => [Term a] -> SimpleTerms a
+aggregate = foldr aggStep []
+  where aggStep :: Ring a => Term a -> SimpleTerms a -> SimpleTerms a
+        aggStep t [] = [t]
+        aggStep (Constant c1) (Constant c2 : ts) = Constant (add c1 c2) : ts
+        aggStep (Constant c1) ts                 = Constant c1 : ts
+        aggStep (Term fa1 mi) ts = if null matches then insertTerm (Term fa1 mi) ts
+                                                   else insertTerm (Term (add fa1 fa2) mi) rest
+          where (matches, rest) = partition (eqMI mi) ts
+                [Term fa2 mi'] = matches
+                eqMI :: MI.MultiIndex -> Term a -> Bool
+                eqMI mi (Constant _)  = False -- all (0==) mi
+                eqMI mi (Term fa mi') = mi == mi'
+
+insertTerm :: Term a -> SimpleTerms a -> SimpleTerms a
+insertTerm t (Constant c : ts) = Constant c : t : ts
+insertTerm t ts                = t : ts
+
+simplifyT :: Ring a => Term a -> Term a
+simplifyT (Term fa mi) | fa == addId = Constant addId
+simplifyT t = t
 \end{code}
