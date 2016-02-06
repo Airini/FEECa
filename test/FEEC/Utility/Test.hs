@@ -1,9 +1,12 @@
-module FEEC.TestUtility where
+module FEEC.Utility.Test where
 
-
+import FEEC.Internal.Vector
+import FEEC.Internal.Simplex
+import FEEC.Internal.Spaces
 import qualified FEEC.Internal.MultiIndex as MI
-import Test.QuickCheck
+import qualified Test.QuickCheck as Q
 import Data.List
+import Control.Monad
 
 ------------------------------------------------------------------------------
 -- Auxiliary Int type for randomly generated values between 0 and 10.
@@ -11,8 +14,8 @@ import Data.List
 
 data SmallInt = SmallInt Int
 
-instance Arbitrary SmallInt where
-    arbitrary = do i <- choose (1,10)
+instance Q.Arbitrary SmallInt where
+    arbitrary = do i <- Q.choose (1,10)
                    return (SmallInt i)
 
 instance Show SmallInt where
@@ -24,8 +27,8 @@ instance Show SmallInt where
 
 data SmallInt' = SmallInt' Int
 
-instance Arbitrary SmallInt' where
-    arbitrary = do i <- choose (1,10)
+instance Q.Arbitrary SmallInt' where
+    arbitrary = do i <- Q.choose (1,10)
                    return (SmallInt' i)
 
 instance Show  SmallInt' where
@@ -35,8 +38,8 @@ instance Show  SmallInt' where
 -- Generate a random multi-index of given dimension and degree r.
 ------------------------------------------------------------------------------
 
-arbitraryMI :: Int -> Int -> Gen MI.MultiIndex
-arbitraryMI n r = elements ( MI.degreeR n r )
+arbitraryMI :: Int -> Int -> Q.Gen MI.MultiIndex
+arbitraryMI n r = Q.elements ( MI.degreeR n r )
 
 ------------------------------------------------------------------------------
 -- Data type for increasing lists to represent subsets.
@@ -54,7 +57,28 @@ unique (l:ls) = l : (filter (l /=) (unique ls))
 ------------------------------------------------------------------------------
 -- Generate an increasing list as a random sublist of [0..n].
 ------------------------------------------------------------------------------
-increasingList :: Int -> Int -> Gen IncreasingList
-increasingList k n = do l <- infiniteListOf (choose (0,n))
+increasingList :: Int -> Int -> Q.Gen IncreasingList
+increasingList k n = do l <- Q.infiniteListOf (Q.choose (0,n))
                         let l' = take k (unique l)
                         return $ IncreasingList (sort l')
+
+-- | Generate a random vector of given length.
+arbitraryVector :: EuclideanSpace v => Int -> Q.Gen v
+arbitraryVector n = do cs <- Q.vector n
+                       return (fromDouble' cs)
+
+-- | Generate a random simplex of given dimension.
+arbitrarySimplex :: (EuclideanSpace v, Q.Arbitrary v)
+                 => Int -> Q.Gen (Simplex v)
+arbitrarySimplex n =  t `Q.suchThat` ((addId /=) . volume)
+                     where t = liftM simplex vs
+                           vs = Q.vectorOf (n+1) (arbitraryVector n)
+
+-- | Generate a random k-subsimplex of given dimension n.
+arbitrarySubsimplex :: (EuclideanSpace v, Q.Arbitrary v)
+                    => Int
+                    -> Int
+                    -> Q.Gen (Simplex v)
+arbitrarySubsimplex k n = do t <- arbitrarySimplex n
+                             f <- Q.elements (subsimplices t k)
+                             return f
