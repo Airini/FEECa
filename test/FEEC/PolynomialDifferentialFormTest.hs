@@ -36,8 +36,7 @@ arbitrarySubsimplex :: (EuclideanSpace v, Arbitrary v)
                     -> Int
                     -> Q.Gen (Simplex v)
 arbitrarySubsimplex k n = do t <- arbitrarySimplex n
-                             f <- Q.elements (subsimplices t k)
-                             return f
+                             Q.elements (subsimplices t k)
 
 
 arbitraryConstituents :: (Q.Arbitrary a, Field a)
@@ -45,7 +44,7 @@ arbitraryConstituents :: (Q.Arbitrary a, Field a)
                         -> Int
                         -> Q.Gen [(BernsteinPolynomial a, [Int])]
 arbitraryConstituents k n = do let b = arbitraryBernstein n
-                                   c = Q.vectorOf k $ ((flip mod) (k+1)) `liftM` arbitrary 
+                                   c = Q.vectorOf k $ flip mod (k+1) `liftM` arbitrary 
                                t  <- arbitrarySubsimplex k n
                                bs <- Q.listOf1 b
                                cs <- Q.listOf1 c
@@ -59,13 +58,13 @@ arbitraryForm k n = do cs <- arbitraryConstituents k n
                        return $ Form k n cs
 
 instance (Field a, Q.Arbitrary a) => Q.Arbitrary (DifferentialForm a) where
-    arbitrary = do arbitraryForm n n -- k <- ((flip mod) n) `liftM` arbitrary
+    arbitrary = arbitraryForm n n -- k <- ((flip mod) n) `liftM` arbitrary
 
 arbitraryAltForm :: (Q.Arbitrary a, Field a)
                  => Int
                  -> Int
                  -> Q.Gen (Form a)
-arbitraryAltForm k n = do let c = Q.vectorOf k $ ((flip mod) (k+1)) `liftM` arbitrary 
+arbitraryAltForm k n = do let c = Q.vectorOf k $ flip mod (k+1) `liftM` arbitrary 
                           as <- Q.listOf1 arbitrary
                           cs <- Q.listOf1 c
                           return $ Form k n (zip as cs)
@@ -79,7 +78,7 @@ instance Q.Arbitrary (Form Double) where
 
 prop_proj :: Simplex (Vector Double) -> Bool
 prop_proj t = and [vector [applyOmega i j | j <- [0..n-1]] == dlambda i | i <- [0..n]]
-    where dlambda i      = barycentricGradient t i
+    where dlambda        = barycentricGradient t
           applyOmega i j = refine (B.proj t) (omega i) [S.unitVector n j]
           omega i        = Form 1 n [(1.0,[i])]
           n              = geometricalDimension t
@@ -101,7 +100,7 @@ prop_proj t = and [vector [applyOmega i j | j <- [0..n-1]] == dlambda i | i <- [
 
 -- | Check that lambda_1 /\ ... /\ lambda_n ( v_1, ..., v_n) == 1.0 as stated
 -- | on p. 44 in Arnold, Falk, Winther.
-prop_volume_form :: Simplex (Vector Double) -> (Vector Double) -> Property
+prop_volume_form :: Simplex (Vector Double) -> Vector Double -> Property
 prop_volume_form t v = volume t > 0 ==> evaluate v b `eqNum` 1.0
     where b = apply omega vs
           vs = spanningVectors t
@@ -116,10 +115,10 @@ prop_volume_form t v = volume t > 0 ==> evaluate v b `eqNum` 1.0
 prop_integral :: Simplex (Vector Double) -> Property
 prop_integral t = volume t > 0
                   ==> all (nfac `eqNum`) [D.integrate t (omega i) | i <- [1..n]]
-    where omega i  = Form n n [(lambda i, [1..n])]
-          lambda i = B.barycentricCoordinate t i
-          nfac     = 1.0 / (factorial (n + 1))
-          n        = topologicalDimension t
+    where omega i = Form n n [(lambda i, [1..n])]
+          lambda  = B.barycentricCoordinate t
+          nfac    = 1.0 / factorial (n + 1)
+          n       = topologicalDimension t
 
 --------------------------------------------------------------------------------
 -- Inner Product
@@ -139,10 +138,10 @@ prop_inner c omega@(Form k n cs) eta =
     && ((D.inner omega eta' `eqNum` D.inner eta' omega &&
          D.inner (sclV cc omega) eta `eqNum` mul c (D.inner omega eta))
          || omega2 `eqNum` 0.0 || eta2 `eqNum` 0.0)
-    where b = apply omega (spanningVectors t)
+    where b    = apply omega (spanningVectors t)
           eta' = redefine (fromJust (findSimplex omega)) eta
-          t = (fromJust (findSimplex omega))
-          origin = (zero n) :: Vector Double
+          t    = fromJust (findSimplex omega)
+          origin = zero n :: Vector Double
           omega2 = D.inner omega omega
           eta2   = D.inner eta eta
           cc = B.constant c

@@ -34,7 +34,7 @@ arbitrarySimplex n =  t `Q.suchThat` ((addId /=) . volume)
 
 -- | Generate random simplex of dimesion n = 8.
 instance (EuclideanSpace v, Q.Arbitrary v) => Q.Arbitrary (Simplex v) where
-    arbitrary = (arbitrarySimplex n) `Q.suchThat` ((addId /=) . volume)
+    arbitrary = arbitrarySimplex n `Q.suchThat` (addId /=) . volume
 
 -- | Generate random Bernstein polynomial in n dimensions.
 instance (EuclideanSpace v, r ~ Scalar v, Q.Arbitrary r, Q.Arbitrary v)
@@ -66,7 +66,7 @@ prop_arithmetic :: BernsteinPolynomial (Vector Double) Double
                 -> Property
 prop_arithmetic b1@(Bernstein t1 p1) (Bernstein t2 p2) v c
     = volume t1 > 0 ==> PT.prop_arithmetic eqNum b1 b2' v c
-    where b2' = (Bernstein t1 p2)
+    where b2' = Bernstein t1 p2
 prop_arithmetic b1@(Bernstein t1 p1) b2 v c
     = volume t1 > 0 ==> PT.prop_arithmetic eqNum b1 b2 v c
 prop_arithmetic b1 b2 v c = property $ PT.prop_arithmetic eqNum b1 b2 v c
@@ -108,10 +108,10 @@ prop_derivation_linear :: Vector Double
                        -> Bernstein
                        -> Bool
 prop_derivation_linear v1 v2 c b1@(Bernstein t1 _) b2 =
-    prop_linearity eqNum ((evaluate v1) . (derive v2)) c b1 b2'
-    where b2' = redefine t1 b2
+    prop_linearity eqNum (evaluate v1 . derive v2) c b1 b2'
+  where b2' = redefine t1 b2
 prop_derivation_linear v1 v2 c b1 b2 =
-    prop_linearity eqNum ((evaluate v2) . (derive v2)) c b1 b2
+    prop_linearity eqNum (evaluate v2 . derive v2) c b1 b2
 
 
 -- Product rule

@@ -27,7 +27,7 @@ sumR = foldl add addId
 
 -- | Returns the appropriate function for arithmetic expressions having
 --   products with exponentials of -1 over 'Ring' types
-expSign :: Ring f => Int -> (f -> f)
+expSign :: Ring f => Int -> f -> f
 expSign i | mod (i+1) 2 == 0 = id
           | otherwise        = mul (addInv mulId)
 

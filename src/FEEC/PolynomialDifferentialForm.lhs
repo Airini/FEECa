@@ -23,18 +23,18 @@ findSimplex' :: BernsteinPolynomial a -> Maybe (Simplex (Vector a))
 findSimplex' (B.Bernstein t _) = Just t
 findSimplex' _ = Nothing
 
-apply :: (Show a, S.Field a) => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
+apply :: S.Field a => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
 apply omega = F.refine (B.proj t) omega
   where t = fromJust (findSimplex omega)
 
-inner :: ( Show a, S.Field a) => DifferentialForm a -> DifferentialForm a -> a
+inner :: S.Field a => DifferentialForm a -> DifferentialForm a -> a
 inner omega eta
     | not (null t) = F.inner (B.proj (head t)) omega eta
     | otherwise =
         error "Inner: Need associated simplex to compute inner product."
   where t = mapMaybe findSimplex [omega, eta]
 
-integrate :: ( Show a, S.Field a) => Simplex (Vector a) -> DifferentialForm a -> a
+integrate :: S.Field a => Simplex (Vector a) -> DifferentialForm a -> a
 integrate t omega = B.integratePolynomial t b'
   where b' = S.sclV (S.mulInv (S.mul kfac (volume t))) b
         b  = apply omega (spanningVectors t)

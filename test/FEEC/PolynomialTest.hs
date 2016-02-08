@@ -95,8 +95,8 @@ prop_derivation_linear :: (EuclideanSpace v, Function f v, VectorSpace f,
                        -> f
                        -> f
                        -> Bool
-prop_derivation_linear v1 v2 c p1 p2 =
-    prop_linearity (==) ((evaluate v2) . (derive v2)) c p1 p2
+prop_derivation_linear v1 v2 =
+    prop_linearity (==) (evaluate v2 . derive v2)
 
 -- Product rule
 prop_derivation_product :: (EuclideanSpace v, Function f v, Ring f)
@@ -106,8 +106,8 @@ prop_derivation_product :: (EuclideanSpace v, Function f v, Ring f)
                         -> f
                         -> Bool
 prop_derivation_product v1 v2 p1 p2 =
-    (evaluate v1 (add (mul dp1 p2) (mul dp2 p1)))
-    == (evaluate v1 (derive v2 (mul p1 p2)))
+    evaluate v1 (add (mul dp1 p2) (mul dp2 p1))
+    == evaluate v1 (derive v2 (mul p1 p2))
         where dp1 = derive v2 p1
               dp2 = derive v2 p2
 

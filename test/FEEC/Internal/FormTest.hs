@@ -100,7 +100,7 @@ kform n k coeffg terms = do
 -- OR: small values (overflows and sizing in testing... otherwise size number of terms)
 --    Also somewhat dependent on possibility of simplifying forms
 nVecGen :: Num f => Int -> Gen (V.Vector f)
-nVecGen n = liftM (V.vector) $ -- map (fromIntegral . round)) $
+nVecGen n = liftM V.vector $ -- map (fromIntegral . round)) $
               vectorOf n intNumG--(liftM fromInteger (choose (-11,11::Integer))) -- liftM fromIntegral (arbitrary :: Gen Int)) -- :: Gen Double)
 
 

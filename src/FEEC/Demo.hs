@@ -68,7 +68,7 @@ xs = coordinates 2
 -- hs :: Field a => Int -> [PolyN a]
 hs n = constant ı : rec pn1s
   where pn1s = coordinates n
-        rec ps = ps ++ (concatMap (\q -> map (q ·) pn1s) ps)
+        rec ps = ps ++ concatMap (\q -> map (q ·) pn1s) ps
 
 
 -- p :: PolyN Double
@@ -104,8 +104,8 @@ val1 = w4 # [v2, v2]
 val2 = (dx 1 2 /\ dx 2 2) # ([vector [1,2], vector [3,4]] :: [Vector Double])
 
 -- dxs' :: [DifferentialForm Double]
-dxs' = (fmap constant) . dxs
-dxs_2' = (fmap constant) . dxs2
+dxs' = fmap constant . dxs
+dxs_2' = fmap constant . dxs2
 
 w1' = dxs' 1 /\ dxs' 2
 w2' = dxs' 3 /\ dxs' 5
@@ -117,7 +117,7 @@ w1_2 = dxs_2' 1 /\ dxs_2' 2
 w2_2 = dxs_2' 2 /\ dxs_2' 1
 
 -- u :: DifferentialForm Double
-u = (hs 2 !! 0) .* w1_2 .+. ((hs 2 !! 3) .* w2_2) .+. (constant 0.5 .* dx1' /\ dx2')
+u = (head $ hs 2) .* w1_2 .+. ((hs 2 !! 3) .* w2_2) .+. (constant 0.5 .* dx1' /\ dx2')
 v = p .* dxs' 1 .+. (constant 2 · p .* dxs' 2)
 
 -- -- Evaluation of differential forms
@@ -132,15 +132,15 @@ du = d u
 ku = 𝝹 u
 
 -- Inner product
-val6 = (w1 <> w2) -- summation over the basis
+val6 = w1 <> w2 -- summation over the basis
 -- val7 = inner u v t3 -- same summation but also an integration over all x in t3
 
 -- Interior product/contraction
 v5 = vector [1..5]
-u5 = (hs 2 !! 0) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (constant 0.5 .* dxs' 1 /\ dxs' 2)
+u5 = (head $ hs 2) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (constant 0.5 .* dxs' 1 /\ dxs' 2)
 val7 = w1 ⌟ v5
-val8 = u5 & (fmap pure v5)
-val9 = w1' & (fmap pure v5)
-val10 = v & (fmap pure v5)
+val8 = u5 & fmap pure v5
+val9 = w1' & fmap pure v5
+val10 = v & fmap pure v5
 val11 = w4 ⌟ v2
 

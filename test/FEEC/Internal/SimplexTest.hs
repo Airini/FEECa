@@ -76,7 +76,7 @@ prop_subsimplices (SubsimplexTest s@(Simplex _ l) k _) =
 -- | volume.
 prop_extend_subsimplex :: ( Show v, EuclideanSpace v) => SubsimplexTest v -> Bool
 prop_extend_subsimplex (SubsimplexTest s@(Simplex _ l) k i) =
-    (volume t' /= addId) && ((topologicalDimension t') == (geometricalDimension t'))
+    (volume t' /= addId) && (topologicalDimension t' == geometricalDimension t')
         where t' = extendSimplex (subsimplex s k i)
 
 
@@ -97,7 +97,7 @@ prop_face_vector_double = prop_face
 data Constant a = Constant a
 
 instance (EuclideanSpace v, r ~ Scalar v) => Function (Constant r) v where
-    derive v h = (Constant (fromDouble 0.0))
+    derive v h = Constant (fromDouble 0.0)
     evaluate v (Constant c) = c
 
 prop_vol_integral :: EuclideanSpace v => Simplex v -> Bool
@@ -116,7 +116,7 @@ newtype Cubic v r = Cubic v deriving (Show, Eq)
 instance (EuclideanSpace v, r ~ Scalar v) => Arbitrary (Cubic v r) where
     arbitrary = do n <- Q.choose (1,10)
                    cs <- Q.vector n
-                   let transf l = zipWith (sub) l (map (fromInt . truncate') l)
+                   let transf l = zipWith sub l (map (fromInt . truncate') l)
                    return (Cubic (fromDouble' (transf cs)))
         where truncate' :: Double -> Integer
               truncate' = truncate
@@ -126,11 +126,11 @@ instance (EuclideanSpace v, r ~ Scalar v) => Arbitrary (Cubic v r) where
 -- |  positive and sum to one and that there are n + 1 components.
 prop_cubicToBarycentric :: (EuclideanSpace v, r ~ Scalar v)
                            => Cubic v r -> Bool
-prop_cubicToBarycentric (Cubic v) = (prop_barycentric_range v') && (prop_barycentric_sum v') && (dim v' == dim v + 1)
+prop_cubicToBarycentric (Cubic v) = prop_barycentric_range v' && prop_barycentric_sum v' && (dim v' == dim v + 1)
         where v' = cubicToBarycentric v
 
 prop_barycentric_range :: EuclideanSpace v => v -> Bool
-prop_barycentric_range v = (all (0 <=) cs) && (all (1 >=) cs)
+prop_barycentric_range v = all (0 <=) cs && all (1 >=) cs
     where cs = toDouble' v
 
 prop_barycentric_sum :: EuclideanSpace v => v -> Bool
@@ -161,7 +161,7 @@ t = referenceSimplex 3
 t1 = subsimplex t 2 1
 vs = spanningVectors t1
 
-main = do quickCheck (prop_extend_subsimplex :: SubsimplexTest VectorD -> Bool)
+main = quickCheck (prop_extend_subsimplex :: SubsimplexTest VectorD -> Bool)
 
 t3 = Simplex {sigma = [0,1,2,3,4], vertices = [Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]}]}
 
