@@ -10,6 +10,7 @@ module FEEC.Internal.VectorTest (
 import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
 import FEEC.Utility.Utility
+import FEEC.Utility.Test
 import Test.QuickCheck (Arbitrary(..), (==>), Gen, Property, quickCheck)
 import qualified Test.QuickCheck as Q(vector)
 
@@ -17,10 +18,6 @@ import qualified Test.QuickCheck as Q(vector)
 -- Generate random 4-dimensional vectors as a radom list of doubles.
 --------------------------------------------------------------------------------
 n = 4
-
-arbitraryVector :: EuclideanSpace v => Int -> Gen v
-arbitraryVector n = do cs <- Q.vector n
-                       return (fromDouble' cs)
 
 instance EuclideanSpace (Vector r) => Arbitrary (Vector r) where
     arbitrary = arbitraryVector n

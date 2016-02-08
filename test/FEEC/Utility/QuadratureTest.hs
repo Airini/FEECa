@@ -2,7 +2,7 @@ module FEEC.Utility.QuadratureTest where
 
 import FEEC.Utility.Quadrature
 import FEEC.Utility.Utility
-import FEEC.TestUtility
+import FEEC.Utility.Test
 import Test.QuickCheck
 
 -- | Evaluate Jacobi polynomials at the Gauss quadrature nodes and check

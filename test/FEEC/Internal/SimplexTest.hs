@@ -19,6 +19,7 @@ import FEEC.Internal.Vector
 import FEEC.Internal.VectorTest
 import FEEC.Utility.Combinatorics
 import FEEC.Utility.Utility
+import FEEC.Utility.Test
 import System.Random
 import Test.QuickCheck(Arbitrary, arbitrary, quickCheck, (==>), Property)
 import Test.QuickCheck.Gen(Gen, vectorOf)
@@ -30,22 +31,6 @@ data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int deriving (Show)
 --------------------------------------------------------------------------------
 -- Random Simplices
 --------------------------------------------------------------------------------
-
--- | Generate a random simplex of given dimension.
-arbitrarySimplex :: (EuclideanSpace v, Q.Arbitrary v)
-                 => Int -> Q.Gen (Simplex v)
-arbitrarySimplex n =  t `Q.suchThat` ((addId /=) . volume)
-                     where t = liftM simplex vs
-                           vs = Q.vectorOf (n+1) (arbitraryVector n)
-
--- | Generate a random k-subsimplex of given dimension n.
-arbitrarySubsimplex :: (EuclideanSpace v, Arbitrary v)
-                    => Int
-                    -> Int
-                    -> Q.Gen (Simplex v)
-arbitrarySubsimplex k n = do t <- arbitrarySimplex n
-                             f <- Q.elements (subsimplices t k)
-                             return f
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
 instance (EuclideanSpace v, Arbitrary v) => Arbitrary (Simplex v) where
@@ -89,7 +74,7 @@ prop_subsimplices (SubsimplexTest s@(Simplex _ l) k _) =
 
 -- | The extension of a subsimplex should have full dimensionality and non-zero
 -- | volume.
-prop_extend_subsimplex :: EuclideanSpace v => SubsimplexTest v -> Bool
+prop_extend_subsimplex :: ( Show v, EuclideanSpace v) => SubsimplexTest v -> Bool
 prop_extend_subsimplex (SubsimplexTest s@(Simplex _ l) k i) =
     (volume t' /= addId) && ((topologicalDimension t') == (geometricalDimension t'))
         where t' = extendSimplex (subsimplex s k i)
@@ -161,7 +146,6 @@ prop_barycentricToCartesian t =
         where n = geometricalDimension t
               vs = [unitVector (n+1) i | i <- [0..n]]
 
-
 -- TODO: Add testing for barycentric coordinates of subsimplices.
 
 --main = do quickCheck (prop_subsimplex :: SubsimplexTest v -> Bool)
@@ -180,3 +164,5 @@ vs = spanningVectors t1
 main = do quickCheck (prop_extend_subsimplex :: SubsimplexTest VectorD -> Bool)
 
 t3 = Simplex {sigma = [0,1,2,3,4], vertices = [Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]}]}
+
+

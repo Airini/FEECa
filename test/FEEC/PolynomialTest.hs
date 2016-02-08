@@ -2,14 +2,18 @@
 module FEEC.PolynomialTest where
 
 
-import qualified FEEC.Internal.MultiIndex as MI
-import FEEC.Internal.Vector
-import FEEC.Polynomial
-import FEEC.Internal.Spaces
-import FEEC.TestUtility
-import qualified Test.QuickCheck as Q
 import Properties
+import FEEC.Polynomial
+import FEEC.Internal.Vector
 import FEEC.Internal.Simplex
+import FEEC.Internal.Spaces
+import FEEC.Utility.Utility
+import FEEC.Utility.Combinatorics
+import FEEC.Utility.Test
+import FEEC.Utility.Print
+import qualified Test.QuickCheck as Q
+import qualified FEEC.Internal.MultiIndex as MI
+import qualified Numeric.LinearAlgebra.HMatrix as M
 
 ------------------------------------------------------------------------------
 -- Dimension of the space to be tested. Must be greater than zero.
@@ -130,3 +134,31 @@ prop_derivation_product_rational :: Vector Rational
                                  -> Polynomial Rational
                                  -> Bool
 prop_derivation_product_rational = prop_derivation_linear
+
+--------------------------------------------------------------------------------
+-- Barycentric Coordinates
+--------------------------------------------------------------------------------
+
+-- | Generate random simplex of dimesion 1 <= n <= 10.
+instance (EuclideanSpace v, Q.Arbitrary v) => Q.Arbitrary (Simplex v) where
+    arbitrary = do n <- Q.choose (1, 3)
+                   k <- Q.choose (1, n)
+                   arbitrarySubsimplex k n
+
+-- TODO: Fails for n > 3 apparently due to numerical instability. To investigate
+-- further.
+prop_barycentric :: Simplex (Vector Double) -> Bool
+prop_barycentric t =
+    allEq [[evaluate v b | v <- vs] | b <- bs] oneLists
+    where allEq l1 l2 = and $ zipWith (\l3 l4 -> (and (zipWith eqNum l3 l4))) l1 l2
+          bs          = barycentricCoordinates t
+          vs          = vertices t
+          k           = topologicalDimension t
+          oneLists    = (map (map fromInt') (sumRLists (k+1) 1))
+
+bs = barycentricCoordinates t
+vs = vertices t
+l1 = [[evaluate v b | v <- vs] | b <- bs]
+l2 = (map (map fromInt') $ sumRLists (topologicalDimension t + 1) 1) :: [[Double]]
+
+allEq l1 l2 = and $ zipWith (\l3 l4 -> (and (zipWith eqNum l3 l4))) l1 l2

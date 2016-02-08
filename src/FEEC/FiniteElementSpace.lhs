@@ -30,7 +30,8 @@ module FEEC.FiniteElementSpace (
                                 basis,
                                 vspaceDim,
                                 whitneyForm,
-                                prmLkBasis
+                                prmLkBasis,
+                                prmLkFace
  -- * Introduction
  -- $intro
 )where
@@ -50,6 +51,7 @@ import qualified FEEC.Internal.Spaces as S(inner)
 import qualified FEEC.Internal.Vector as V
 import qualified FEEC.Internal.MultiIndex as MI
 import qualified Math.Combinatorics.Exact.Binomial as CBin
+import Debug.Trace
 
 -- $intro
 -- This file implements the finite element space $P_r\Lambda^k$ and $P_r^-\Lambda^k$
@@ -277,13 +279,12 @@ of the face $\smp{f}$.
 \begin{code}
 
 -- | The Whitney forms as given by  equation (6.3).
-whitneyForm :: Simplex -> Form BernsteinPolynomial
-whitneyForm t = Form k n [ (lambda' i, subsets !! i) | i <- [0..k]]
-    where k = S.topologicalDimension t
-          n = S.geometricalDimension t
+whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
+whitneyForm t sigma = Form k n [ (lambda' i, subsets !! i) | i <- [0..k]]
+    where k = (length sigma) - 1
+          n = S.topologicalDimension t
           subsets = sublists [0..k]
-          lambda' i = sclV ((-1)^i) (monomial t (MI.unit (k + 1) i))
-
+          lambda' i = sclV ((-1)^i) (monomial t (MI.unit (n + 1) (sigma !! i)))
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -338,21 +339,23 @@ The construction of this set is implemented in the function \code{prmLkBasis}.
 -- | The basis of the $P_r^-\Lambda^k$ space over the given simplex constructed
 -- | using the geometric composition given by Anrold, Falk, Winther.
 prmLkBasis :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
-prmLkBasis r k t = concat [ map (extend t) (prmLkFace r k t')
-                                | t' <- S.subsimplices' t k ]
+prmLkBasis r k t = concat [prmLkFace t f r k | f <- fs]
+    where n      = S.topologicalDimension t
+          fs     = concat [S.subsimplices t i | i <- [k..n]]
 
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
 -- | a given face of a simplex.
-prmLkFace :: Int -> Int ->Simplex -> [Form BernsteinPolynomial]
-prmLkFace r k t = [sclV (b alpha) (whitneyForm (S.face t sigma)) | alpha <- alphas,
-                                                          sigma <- sigmas alpha]
-    where n = S.topologicalDimension t
-          b = monomial t
-          alphas = MI.degreeR n (r-1)
-          sigmas alpha = [ sigma | sigma <- increasingLists n k,
-                                   range alpha sigma == [0..n],
-                                   zero alpha sigma ]
-          zero alpha sigma = all (0==) (take (minimum sigma) (MI.toList alpha))
+prmLkFace :: Simplex -> Simplex -> Int -> Int -> [Form BernsteinPolynomial]
+prmLkFace t f r k = [ sclV (lambda a) (phi s) | a <- alphas, s <- sigmas, valid a s ]
+    where alphas     = MI.degreeR (n+1) (r-1)
+          sigmas     = increasingLists (k+1) n
+          n          = S.topologicalDimension t
+          valid a s  = setEq (domain a s) (S.sigma f) && zeros a s
+          zeros a s  = 0 == sum (take (minimum s) (MI.toList a))
+          setEq d l  = sort d == l
+          domain a s = union (MI.range a) s
+          phi s      = whitneyForm t s
+          lambda a   = monomial t a
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -383,11 +386,11 @@ psi alpha sigma  = foldl (/\) unit [ psi' alpha i | i <- sigma]
 -- TODO: Check form indices.
 psi' :: MI.MultiIndex -> Int -> Form BernsteinPolynomial
 psi' alpha i = foldl subV (db i) [ sclV (c j) (db j) | j <- [0..n]]
-    where db j = oneForm (j+1) (n+1) -- Dimension should be n ?
-          c j = sclV (fromIntegral (alpha' !! i) / fromIntegral r) mulId
-          r = MI.degree alpha :: Int
+    where db j   = oneForm (j+1) (n+1) -- Dimension should be n ?
+          c j    = sclV (fromIntegral (alpha' !! i) / fromIntegral r) mulId
+          r      = MI.degree alpha :: Int
           alpha' = MI.toList alpha :: [Int]
-          n = dim alpha - 1
+          n      = dim alpha - 1
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -438,18 +441,17 @@ prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas,
           zero alpha sigma = all (0==) (take (minimum' sigma) (MI.toList alpha))
           minimum' sigma = minimum ([0..n] \\ sigma)
 
-t = S.referenceSimplex 3
+t = S.referenceSimplex 2
 t2 = S.subsimplex t 2 0
 t1 = S.subsimplex t 1 0
 
 b = monomial t1 (MI.multiIndex [1,2])
-omega = Form 2 2 [(b, [0,1])]
+omega = Form 2 2 [(b, [0,1])] :: DifferentialForm
 eta = Form 0 2 [(b,[0])]
 
 alpha = MI.multiIndex [2,1]
-sigma = [0]
+sigma = [0,1]
 s1 = finiteElementSpace N2f 3 t
-
 
 
 \end{code}

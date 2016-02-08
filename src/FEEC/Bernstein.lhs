@@ -33,6 +33,7 @@ import qualified FEEC.Internal.MultiIndex as MI
 import FEEC.Internal.Simplex
 import FEEC.Internal.Spaces
 import FEEC.Internal.Vector
+import Debug.Trace
 
 import FEEC.Polynomial ( Polynomial, Term, term, terms, expandTerm,
                         evaluatePolynomial, derivePolynomial, integratePolynomial,
@@ -137,11 +138,11 @@ polynomial t l
 
 -- | Create a Bernstein monomial over a given simplex from a given
 -- | multi-index.
-monomial :: (EuclideanSpace v, r ~ Scalar v)
+monomial :: (Show v, EuclideanSpace v, r ~ Scalar v)
          => Simplex v -> MI.MultiIndex -> BernsteinPolynomial v r
 monomial t mi
     | n1 == n2 + 1 = Bernstein t (P.monomial mi)
-    | otherwise   = error "monomial: Dimension of Simplex and Polynomials do not match."
+    | otherwise   = (error "monomial: Dimension of Simplex and Polynomials do not match.")
   where n1 = dim mi
         n2 = topologicalDimension t
 
@@ -150,7 +151,7 @@ constant :: (EuclideanSpace v, r ~ Scalar v) => r -> BernsteinPolynomial v r
 constant = Constant
 
 -- | Return a given barycentric coordinate in Bernstein represenation
-barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v)
+barycentricCoordinate :: (Show v, EuclideanSpace v, r ~ Scalar v)
                       => Simplex v
                       -> Int
                       -> BernsteinPolynomial v r
@@ -224,7 +225,7 @@ derived so they are declared an instance of the \code{Function}.
 
 \begin{code}
 
-instance (EuclideanSpace v, r ~ Scalar v) => Function (BernsteinPolynomial v r) v  where
+instance ( Show v, EuclideanSpace v, r ~ Scalar v) => Function (BernsteinPolynomial v r) v  where
   evaluate = evaluateBernstein
   derive   = deriveBernstein
 
@@ -291,7 +292,7 @@ and then evaluating the internal polynomial at the resulting vector.
 \begin{code}
 -- | Evaluate Bernstein polynomial by first evaluating the barycentric coordinates
 -- | and then evaluating the internal polynomial at the resulting vector.
-evaluateBernstein :: (EuclideanSpace v, r ~ Scalar v)
+evaluateBernstein :: ( Show v, EuclideanSpace v, r ~ Scalar v)
                      => v
                      -> BernsteinPolynomial v r
                      -> r
@@ -329,7 +330,7 @@ function provided by the \module{Polynomial} module.
 \begin{code}
 
 -- | Derivative of a Bernstein monomial
-deriveMonomial :: (EuclideanSpace v, r ~ Scalar v)
+deriveMonomial :: ( Show v, EuclideanSpace v, r ~ Scalar v)
                => Simplex v
                -> MI.MultiIndex
                -> [ Polynomial r ]
@@ -343,7 +344,7 @@ deriveMonomial t mi = [ sum' [sclV (grads j i) (dp j)  | j <- [0..n]] | i <- [0.
           n    = dim mi - 1
 
 -- | Derive Bernstein polynomial.
-deriveBernstein :: (EuclideanSpace v, r ~ Scalar v)
+deriveBernstein :: ( Show v, EuclideanSpace v, r ~ Scalar v)
                 => v
                 -> BernsteinPolynomial v r
                 -> BernsteinPolynomial v r
@@ -367,7 +368,7 @@ deriveBernstein v (Constant c)  = Constant addId
 
 -- | Numerically integrate the Bernstein polyonomial p over the simplex t using
 -- | a Gauss-Jacobi quadrature rule.
-integratePolynomial :: (EuclideanSpace v, r ~ Scalar v)
+integratePolynomial :: (Show v, EuclideanSpace v, r ~ Scalar v)
                     => Simplex v                  -- t
                     -> BernsteinPolynomial v r    -- b
                     -> r
@@ -454,7 +455,7 @@ with the gradient vector.
 
 -- | Projection fuction for gradients of barycentric coordinates as basis for
 -- | the space of alternating forms.
-proj :: (EuclideanSpace v, r ~ Scalar v)
+proj :: ( Show v, EuclideanSpace v, r ~ Scalar v)
      => Simplex v
      -> Int
      -> v
