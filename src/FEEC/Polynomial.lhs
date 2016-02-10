@@ -688,7 +688,7 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 -- | as large as the geometrical dimension, i.e. the simplex must contain n+1
 -- | vertices if the underlying space has dimensionality n.
 -- TODO: check take
-barycentricCoordinates :: ( Show v, EuclideanSpace v, r ~ Scalar v)
+barycentricCoordinates :: (EuclideanSpace v, r ~ Scalar v)
                        => Simplex v
                        -> [ Polynomial r ]
 barycentricCoordinates s = take (nt + 1) bs
@@ -699,7 +699,7 @@ barycentricCoordinates s = take (nt + 1) bs
 
 -- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial
 -- | in the list
-barycentricCoordinate :: (Show v, EuclideanSpace v, r ~ Scalar v)
+barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v)
                       => Simplex v
                       -> Int
                       -> Polynomial r

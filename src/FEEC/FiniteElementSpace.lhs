@@ -139,7 +139,7 @@ are given by
 
 -- | The dimension of the finite element space.
 instance Dimensioned FiniteElementSpace where
-    dim (PrmLk r k t) = ((r + k - 1) `CBin.choose` k) * ((n + k) `CBin.choose` (n - k))
+    dim (PrmLk r k t) = ((r + k - 1) `CBin.choose` k) * ((n + r) `CBin.choose` (n - k))
         where n = S.geometricalDimension t
     dim (PrLk r k t) = ((r + k) `CBin.choose` r ) * ((n + r) `CBin.choose` (n - k))
         where n = S.geometricalDimension t
@@ -283,7 +283,7 @@ whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
 whitneyForm t sigma = Form k n [ (lambda' i, subsets !! i) | i <- [0..k]]
     where k = (length sigma) - 1
           n = S.topologicalDimension t
-          subsets = sublists [0..k]
+          subsets = sublists sigma
           lambda' i = sclV ((-1)^i) (monomial t (MI.unit (n + 1) (sigma !! i)))
 \end{code}
 

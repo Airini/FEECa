@@ -54,7 +54,6 @@ import FEEC.Utility.Quadrature
 import qualified FEEC.Utility.Utility as U
 
 import qualified Numeric.LinearAlgebra.HMatrix as M
-import Debug.Trace
 
 \end{code}
 
@@ -332,7 +331,7 @@ For the computation of the barycentric coordinates of a simplex whose
 \begin{code}
 -- | Extend the given simplex to a full simplex so that its geometrical
 -- | dimension is the same as its topological dimension.
-extendSimplex :: (Show v, EuclideanSpace v)
+extendSimplex :: (EuclideanSpace v)
               => Simplex v
               -> Simplex v
 extendSimplex t@(Simplex _ ps)
@@ -354,7 +353,7 @@ norm v1 v2
 -- | Uses the Gram-Schmidt method to add at most n orthogonal vectors to the
 -- | given set of vectors. Due to round off error the resulting list may contain
 -- | more than n vectors, which then have to be removed manually.
-extendVectors :: (Show v, EuclideanSpace v , Eq (Scalar v))
+extendVectors :: (EuclideanSpace v , Eq (Scalar v))
               => Int
               -> [v]
               -> [v]
