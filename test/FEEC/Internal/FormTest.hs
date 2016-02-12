@@ -1,18 +1,20 @@
 module FEEC.Internal.FormTest where
 
+import Test.QuickCheck
+
 import qualified FEEC.Internal.Vector as V
 import FEEC.Internal.VectorTest
 import FEEC.Internal.Vector
 import FEEC.Internal.Form
 import FEEC.Bernstein
-import Test.QuickCheck
 import FEEC.Internal.Spaces
-import Control.Monad (liftM, liftM2)
 import FEEC.Utility.Discrete
-import FEEC.Utility.Utility (pairM)
+import FEEC.Utility.Utility (pairM, sumV)
 import Properties
-import Debug.Trace
 
+import Control.Monad (liftM, liftM2)
+import Data.List (nub, deleteBy)
+import Debug.Trace
 
 -- TODO: inner + interior product properties
 
@@ -62,20 +64,21 @@ calls max argFs prop n = p (mod (abs n) max + 1)
 -- | Anticommutativity property
 -- TODO: update to new property (propA_wedgeAntiComm)
 prop_antiComm :: Int -> Property
-prop_antiComm n = p (mod (abs n) 5 +2)  -- manually limited the vectorspace dimension...
-  where c   = nIntNumG :: Int -> Gen Double
-        p n = forAll (elements (arityPairs n)) $ \(k,j) ->
-              forAll (pairOf (sized $ kform n k c) (sized $ kform n j c)) $ \(df1, df2) ->
-              forAll (knTupGen (k+j) n) $ \vs ->
-                refine dxV (df1 /\ df2) vs ==  -- =~
-                ((-1) ^ (k * j)) * refine dxV (df2 /\ df1) vs
+prop_antiComm n = p (2 + abs n `mod` 9)   -- manually limited vectorspace dimension
+  where
+    c   = nIntNumG :: Int -> Gen Double
+    p n = forAll (elements (arityPairs n)) $ \(k,j) ->
+          forAll (pairOf (sized $ kform n k c) (sized $ kform n j c)) $ \(w1, w2) ->
+          forAll (knTupGen (k+j) n) $ \vs ->
+            refine dxV (w1 /\ w2) vs ==  -- =~
+            ((-1) ^ (k * j)) * refine dxV (w2 /\ w1) vs
 
 
 -- * Generating functions and examples
 
 -- | "Integer" coefficients generator
 intNumG :: Num f => Gen f
-intNumG = liftM fromInteger (arbitrary :: Gen Integer)
+intNumG = liftM (fromInteger . getNonZero) (arbitrary :: Gen (NonZero Integer))
 
 nIntNumG :: Num f => Int -> Gen f
 nIntNumG = const intNumG
@@ -83,17 +86,39 @@ nIntNumG = const intNumG
 nkIntNumG :: Num f => Int -> Int -> Gen f
 nkIntNumG = const nIntNumG
 
+prop_genf n k s = forAll (kform n' k' (nIntNumG :: Int -> Gen Double) s) $ \w ->
+    prop_invar w
+  where n' = (1+) $ n `mod` 5
+        k' = 1 + (k `mod` n')
+
+prop_invar (Form _ _ ts) = nub iss == iss &&
+                         all ((/= addId) . fst) ts
+  where iss = map snd ts
+
+prop_anti :: Int -> Property
+prop_anti n = p (2 + abs n `mod` 9)
+  where
+    c   = nIntNumG :: Int -> Gen Double
+    p n = forAll (elements (arityPairs n)) $ \(k,j) ->
+          forAll (pairOf (sized $ kform n k c) (sized $ kform n j c)) $ \(w1, w2) ->
+            prop_invar (w1 /\ w2) &&
+            prop_invar (w2 /\ w1)
+
+
 -- | Form generator
-kform :: Int  -- ^ n: vectorspace to be applied to dimension
+kform :: Ring f
+      => Int  -- ^ n: vectorspace to be applied to dimension
       -> Int  -- ^ k: form arity
       -> (Int -> Gen f)
       -> Int  -- ^ terms: number of terms (constituents)
       -> Gen (Form f)
 kform n k coeffg terms = do
-  diffs  <- vectorOf (terms+1) (vectorOf k arbitrary)
+  diffs  <- vectorOf (terms+1) (vectorOf k (choose (1,n)))
   coeffs <- vectorOf (terms+1) (coeffg n)
-  let capDs = map (map ((+1) . flip mod n)) diffs
-  return $ Form k n (zip coeffs capDs)
+  return . sumV $ zipWith (\c is -> Form k n [(c,is)]) coeffs diffs
+  {-foldl (\w t -> addV w (Form k n [t])) (zeroForm k n) $-}
+  {-Form k n (zip coeffs (take (length coeffs) diffs)) -} 
+  --zipWith (\c is -> sclV c (Form k n [(mulId, is)])) coeffs capDs
 
 -- Truncating generator for vectors of 'Double': to avoid errors in computation
 -- dependent on order of function application when it comes to floating points

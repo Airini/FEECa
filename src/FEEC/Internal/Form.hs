@@ -27,13 +27,16 @@ import Debug.Trace
 --   in any way.
 
 type Dim = Int
+type Idx = Int
+type Prd = [Idx] -- a product of projections / indexed 1-forms
+type LinComb f = [(f, Prd)]
 
 
 -- | Bilinear, alternating forms over vectorspaces
 data Form f =  -- we lose dependency on the type of vector!
-    Form  { arity   :: Dim              -- ^ For complete evaluation
-          , dimVec  :: Dim              -- ^ Of the underlying vector space
-          , terms   :: [(f, [Int])] }   -- ^ List of terms of (coeff,wedge)'s
+    Form  { arity   :: Dim            -- ^ For complete evaluation
+          , dimVec  :: Dim            -- ^ Of the underlying vector space
+          , terms   :: [(f, Prd)] }   -- ^ List of terms of (coeff,wedge)'s
   deriving (Eq, Show)
 
 
@@ -41,21 +44,31 @@ data Form f =  -- we lose dependency on the type of vector!
 
 -- | Invariant for terms of a defined form: all terms have the same arity
 --   ie: each is the result of the exterior product of the same number of 1-forms
-termsInv :: [(f, [Int])] -> Bool
+termsInv :: [(f, Prd)] -> Bool
 termsInv []          = True
 termsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
 
 -- NB: because of ((,) t) 's functorial nature, maybe it could make sense to
 --   rearrange our terms so as to have them be (inds,coeff) like they used to be?
+-- XXX: change so as to inspect result (in case f zeroes out a coeff?)
 instance Functor Form where
   fmap f (Form k n cs) = Form k n (map (pairM f id) cs)
 
 
--- XXX: change to Pretty f once all other modules are up to date
 instance Pretty f => Pretty (Form f) where
   pPrint (Form k n cs) = printForm "dx" "0" pPrint cs -- show or pPrint...
   {- show k ++ "-form in " ++ show n ++ " dimensions: " ++
                           show (printForm "dx" "0" show cs)-}
+
+
+-- NB: will be (i -> i -> Ordering) once we normalise all products to be in
+--      their normal form - an increasing list
+combineWithBy :: (a -> a -> a) -> (i -> i -> Bool)
+              -> [(a, i)] -> [(a, i)] -> [(a,i)]
+combineWithBy f p es1 es2 = foldl ins es1 es2
+  where ins [] x = [x]
+        ins (y:ys) x | p (snd x) (snd y) = (fst x `f` fst y, snd y) : ys
+                     | otherwise         = y : ins ys x
 
 -- XXX: have combinator
 --        aggregate f p cs1 cs2
@@ -69,7 +82,7 @@ instance Pretty f => Pretty (Form f) where
 
 -- | Sum of forms
 -- Shall we do: permutation simplification/identification
-(+++) :: Ring f' => Form f' -> Form f' -> Form f'
+(+++) :: Ring f => Form f -> Form f -> Form f
 omega +++ eta
     | degNEq omega eta = errForm "(+++)" BiDegEq
     | spaNEq omega eta = errForm "(+++)" BiSpaEq
@@ -78,13 +91,16 @@ omega +++ eta
   where step [] ys = ys
         step xs [] = xs
         step (x:xs) (y:ys)
-          | snd x == snd y = (add (fst x) (fst y), snd x) : step xs ys
+          | snd x == snd y = let z = add (fst x) (fst y) in
+              if fst x /= (addInv . fst) y then (z, snd x) : step xs ys
+                            else step xs ys
           | snd x < snd y  = x : step xs (y:ys)
           | otherwise      = y : step (x:xs) ys
 
 -- | Scaling of forms
 (***) :: Ring f => f -> Form f -> Form f
-(***) a = fmap (mul a)
+(***) a | a == addId = \(Form k n _) -> zeroForm k n
+        | otherwise  = fmap (mul a)
 
 -- | (Exterior) Product of forms
 (//\\) :: Ring f => Form f -> Form f -> Form f
@@ -133,7 +149,7 @@ nullForm n f = Form 0 n [(f, [])]
 --  y así pinchar las consecutivas componentes
 -- If the function was actually a field, this part would be simplified
 contract :: (Ring f, VectorSpace v, Dimensioned v)
-         => (Int -> v -> f) -> Form f -> v -> Form f
+         => (Idx -> v -> f) -> Form f -> v -> Form f
 contract proj omega v
     | vecNEq omega v = errForm "contract" MoVecEq
     | otherwise      = Form (max 0 (arity omega - 1)) (dimVec omega) $
@@ -149,7 +165,7 @@ contract proj omega v
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
 refine :: (Ring w, VectorSpace w, VectorSpace v, Scalar v ~ Scalar w)
-       => (Int -> v -> Scalar w)      -- ^ The definition for the projection function
+       => (Idx -> v -> Scalar w)      -- ^ The definition for the projection function
                                       --   for the specific vector space
        -> Form w
        -> [v] -> w
@@ -180,7 +196,7 @@ formify proj (s, i:is) vs
 
 -- We need a basis here
 inner :: (InnerProductSpace w, EuclideanSpace v, Dimensioned v, Scalar w ~ Scalar v)
-      => (Int -> v -> Scalar w)  -- ^ Projection function in the specific vector space
+      => (Idx -> v -> Scalar w)  -- ^ Projection function in the specific vector space
       -> Form w -> Form w -> Scalar w
 inner proj omega eta
     | degNEq omega eta = errForm "inner" BiDegEq -- TODO (??)
