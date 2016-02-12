@@ -15,7 +15,7 @@ instance Arbitrary MultiIndex where
     arbitrary = arbitraryMI 5 5
 
 instance Arbitrary IncreasingList where
-    arbitrary = increasingList 6 10
+    arbitrary = increasingList 5 10
 
 prop_zero :: Int -> Property
 prop_zero n = n > 0 ==> degree (zero n) == 0
@@ -29,9 +29,9 @@ prop_degreeR (SmallInt n) (SmallInt' r) =
     all ((r ==) . degree) (degreeR n r)
 
 prop_extend :: IncreasingList -> MultiIndex -> Bool
-prop_extend (IncreasingList sigma) mi = (degree mi' == r)
-                                        && map (toList mi' !!) sigma ==
-                                               toList mi
+prop_extend (IncreasingList sigma) mi =
+      degree mi' == r &&
+      map (toList mi' !!) sigma == toList mi
     where n = 10
           r = degree mi
           mi' = extend n sigma mi
