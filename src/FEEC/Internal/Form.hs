@@ -129,7 +129,7 @@ instance Ring f => Algebra (Form f) where
 
 -- | Basic abstract 1-form
 oneForm :: Ring f => Dim -> Dim -> Form f
-oneForm i n | i <= 0 || i > n = errForm "oneForm" MoProjBd
+oneForm i n | i < 0 || i > n = errForm "oneForm" MoProjBd
             | otherwise       = Form 1 n [ (mulId,[i]) ]
 
 

@@ -34,7 +34,7 @@ module FEEC.Internal.Simplex(
   referenceVertex, extendVectors,
 
   -- * Subsimplices
-  subsimplex, subsimplices, subsimplices', extendSimplex,
+  subsimplex, subsimplices, subsimplices', extendSimplex, complement,
 
   -- * Integration
   integrateOverSimplex,
@@ -315,6 +315,15 @@ subsimplices' :: Simplex v -> Int -> [Simplex v]
 subsimplices' t k = concat [ subsimplices t k' | k' <- [k..n] ]
   where n = topologicalDimension t
 
+\end{code}
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+
+complement :: Simplex v -> Simplex v -> [v]
+complement (Simplex _ l) (Simplex sigma _) = [l !! i | i <- [0..n], notElem i sigma]
+    where n = (length l) - 1
 \end{code}
 
 %------------------------------------------------------------------------------%

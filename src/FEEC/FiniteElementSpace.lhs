@@ -31,13 +31,14 @@ module FEEC.FiniteElementSpace (
                                 vspaceDim,
                                 whitneyForm,
                                 prmLkBasis,
-                                prmLkFace
+                                          prmLkFace,
+                                                   psi'
  -- * Introduction
  -- $intro
 )where
 
 import Data.List
-import FEEC.Bernstein (monomial, multiIndices)
+import FEEC.Bernstein (constant, monomial, multiIndices)
 import qualified FEEC.Bernstein as B (BernsteinPolynomial(..),extend)
 import FEEC.Utility.Combinatorics
 import qualified FEEC.PolynomialDifferentialForm as D
@@ -378,19 +379,21 @@ Define $\psf{\alpha}{f}{g}{\sigma}$
 \begin{code}
 -- | The psi forms that implement the extension operator for the $P_r\Lambda^k$
 -- | spaces as given in equations (8.1) and (8.2) in Arnold, Falk, Winther.
-psi :: MI.MultiIndex -> [Int] -> Form BernsteinPolynomial
-psi alpha sigma  = foldl (/\) unit [ psi' alpha i | i <- sigma]
-    where unit = nullForm (n+1) mulId
+psi :: Simplex -> Simplex -> MI.MultiIndex -> [Int] -> Form BernsteinPolynomial
+psi t f alpha sigma  = foldl (/\) unit [psi' t f alpha i | i <- sigma]
+    where unit = nullForm n mulId
           n = dim alpha - 1
 
 -- TODO: Check form indices.
-psi' :: MI.MultiIndex -> Int -> Form BernsteinPolynomial
-psi' alpha i = foldl subV (db i) [ sclV (c j) (db j) | j <- [0..n]]
-    where db j   = oneForm (j+1) (n+1) -- Dimension should be n ?
-          c j    = sclV (fromIntegral (alpha' !! i) / fromIntegral r) mulId
-          r      = MI.degree alpha :: Int
-          alpha' = MI.toList alpha :: [Int]
-          n      = dim alpha - 1
+psi' :: Simplex -> Simplex -> MI.MultiIndex -> Int -> Form BernsteinPolynomial
+psi' t f alpha i = foldl subV (db i) [ sclV (c j) (db j) | j <- sigma]
+    where db j   = sclV (constant t 1.0) $ oneForm j n
+          c j    = sclV ((alpha' !! i) / r) mulId
+          r      = fromInteger $ MI.degree alpha
+          alpha' = map fromInteger $ MI.toList alpha
+          n      = S.geometricalDimension f
+          sigma  = S.sigma f
+
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -416,16 +419,24 @@ $$
 -- | Basis of the $P_r\Lambda^k$ space over the given simplex constructed using
 -- | the geometric decomposition given by Arnold, Falk, Winther.
 prLkBasis :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
-prLkBasis r k t = concat [ map (extend t) (prLkFace r k t') | t' <- S.subsimplices' t k ]
+prLkBasis r k t = concat [prLkFace t f r k | f <- fs]
+    where n  = S.topologicalDimension t
+          fs = concat [S.subsimplices t i | i <- [k..n]]
 
 -- | Basis functions  for the space PrMinusLambdak associated to
 -- | a given face of a simplex.
-prLkFace :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
-prLkFace r k t = [ sclV b (psi' (alpha b) sigma) | (b, sigma) <- fs ]
-    where fs = map (head . terms) (prLkFace' r k t)
-          psi' alpha sigma = extend t (psi alpha sigma)
-          alpha b = multiIndices b !! 0
-          n = S.topologicalDimension t
+prLkFace :: Simplex -> Simplex -> Int -> Int -> [Form BernsteinPolynomial]
+prLkFace t f r k = [ sclV (lambda a) (psi'' a s) | a <- alphas, s <- sigmas, valid a s ]
+    where alphas     = MI.degreeR (n+1) r
+          sigmas     = increasingLists k n
+          n          = S.topologicalDimension t
+          valid a s  = setEq (domain a s) (S.sigma f) && zeros a s
+          zeros a s  = 0 == sum (take (minimum' $ (S.sigma f) \\ s) (MI.toList a))
+          setEq d l  = sort d == l
+          domain a s = union (MI.range a) s
+          psi'' a s  = psi t f a s
+          lambda a   = monomial t a
+          minimum' s = if (null s) then 0 else (minimum s)
 
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
 -- | a given face of a simplex.

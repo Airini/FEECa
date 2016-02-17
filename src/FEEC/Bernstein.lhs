@@ -147,8 +147,11 @@ monomial t mi
         n2 = topologicalDimension t
 
 -- | Create a constant bernstein monomial.
-constant :: (EuclideanSpace v, r ~ Scalar v) => r -> BernsteinPolynomial v r
-constant = Constant
+constant :: (EuclideanSpace v, r ~ Scalar v)
+         => Simplex v
+         -> r
+         -> BernsteinPolynomial v r
+constant t c = Bernstein t (P.constant c)
 
 -- | Return a given barycentric coordinate in Bernstein represenation
 barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v)
