@@ -47,7 +47,7 @@ arbitraryPrmLk = do n <- Q.choose (1, max_n)
                     return $ PrmLk r k t
 
 instance Q.Arbitrary FiniteElementSpace where
-    arbitrary = arbitraryPrLk
+    arbitrary = arbitraryPrmLk
 
 n = 4
 
@@ -103,15 +103,6 @@ projectionAxes :: Simplex -> Simplex -> MI.MultiIndex -> [Vector]
 projectionAxes t f mi = map (subV xmi) (S.complement t f)
     where xmi = convexCombination f mi
 
-f  = undefined
-t  = undefined
-mi = undefined
-v  = undefined
-
-axs = map (flip (:) []) $ projectionAxes t f mi
-ps  = psi' t f mi 2
---ps' = evaluate v (D.apply ps (axs!!0))
-
 prop_basis :: FiniteElementSpace -> Q.Property
 prop_basis s = length bs > 0 Q.==>
                (length bs) == (dim s) && linearIndependent D.inner bs'
@@ -124,22 +115,7 @@ prop_basis s = length bs > 0 Q.==>
 --------------------------------------------------------------------------------
 
 linearIndependent ::  VectorSpace v => (v -> v -> Double) -> [v] -> Bool
-linearIndependent f bs = (M.rank mat) > 0
+linearIndependent f bs = (M.rank mat) == (length bs)
     where es = M.eigenvaluesSH mat
           mat = M.matrix n $ [ f omega eta | omega <- bs, eta <- bs ]
           n = length bs
-
-ws = [ V.vector [1.0, 0.0, 0.0], V.vector [0.0, 1.0, 0.0], V.vector [0.0, 1.0, 0.0] ]
-
-
-
-space = PrLk 2 1 (S.Simplex {S.sigma = [0,1,2], S.vertices = [V.Vector {V.components = [0.9636521027274948,0.8119987749173205]},V.Vector {V.components = [-0.45272955850518726,-0.6121936713301906]},V.Vector {V.components = [0.18658420888905336,-0.9970618163249919]}]})
-tt = S.Simplex {S.sigma = [0,1,2], S.vertices = [V.Vector {V.components = [-2.784907123707038,-1.6532876554872296]},V.Vector {V.components = [-3.4615647789358106e-2,-1.1346265590395175]},V.Vector {V.components = [0.38249423114777337,5.421970782899612]}]}
-bs  = basis space
-mat = [D.inner omega eta | omega <- bs, eta <- bs]
-
-omega = whitneyForm f [0..(S.topologicalDimension f)]
-
-vs = S.vertices f
-
---rs = [[evaluate v b | v <- vs ] | b <- bs]
