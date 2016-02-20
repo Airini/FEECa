@@ -35,14 +35,14 @@ max_k = 3
 arbitraryPrLk :: Q.Gen FiniteElementSpace
 arbitraryPrLk = do n <- Q.choose (1, max_n)
                    r <- Q.choose (0, max_r)
-                   k <- Q.choose (1, max_k)
+                   k <- Q.choose (0, max_k)
                    t <- arbitrarySimplex n
                    return $ PrLk r k t
 
 arbitraryPrmLk :: Q.Gen FiniteElementSpace
 arbitraryPrmLk = do n <- Q.choose (1, max_n)
                     r <- Q.choose (0, max_r)
-                    k <- Q.choose (1, max_k)
+                    k <- Q.choose (0, max_k)
                     t <- arbitrarySimplex n
                     return $ PrmLk r k t
 
@@ -119,3 +119,6 @@ linearIndependent f bs = (M.rank mat) == (length bs)
     where es = M.eigenvaluesSH mat
           mat = M.matrix n $ [ f omega eta | omega <- bs, eta <- bs ]
           n = length bs
+
+
+space = PrmLk 3 0 (S.referenceSimplex 3)

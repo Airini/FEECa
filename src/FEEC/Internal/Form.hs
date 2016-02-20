@@ -182,7 +182,7 @@ refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs')
 --   'Form' term into an actual function on vectors
 formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
         => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
-formify _    (s, [])   _  = addId
+formify _    (s, [])   _  = s
 formify proj (s, i:is) vs
     | null is   = sclV (proj i (head vs)) s
     | otherwise =
