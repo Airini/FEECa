@@ -40,7 +40,7 @@ differences = fst . foldl (\(l,acc) x -> (l ++ [x-acc],x)) ([],0)
 
 -- All possible increasing k-permutations of n elements
 permutations :: Int -> Int -> [[Int]]
-permutations n 0 = []
+permutations n 0 = [[]]
 permutations n 1 = [ [j]  | j <- [1..n]]
 permutations n k = [ j:xs | j <- [1..n], xs <- permutations n (k-1), head xs > j ]
 
