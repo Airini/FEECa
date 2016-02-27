@@ -71,7 +71,6 @@ prop_whitney_integral (WhitneyTest t) =
 -- Psi Forms
 --------------------------------------------------------------------------------
 
-
 data PsiTest = PsiTest Simplex Simplex MI.MultiIndex Vector
                  deriving Show
 instance Q.Arbitrary PsiTest where
