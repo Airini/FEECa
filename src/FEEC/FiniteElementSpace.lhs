@@ -253,7 +253,7 @@ Moreover, we define the range operator applied to a face and a map $\sigma$:
 
 -- | The range operator for a multi-index and an increasing list.
 range :: MI.MultiIndex -> [Int] -> [Int]
-range mi sigma = sort (union sigma (MI.range mi))
+range mi sigma = sort sigma `union` MI.range mi
 
 \end{code}
 
@@ -282,7 +282,7 @@ of the face $\smp{f}$.
 -- | The Whitney forms as given by  equation (6.3).
 whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
 whitneyForm t sigma = Form k n [ (lambda' i, subsets !! i) | i <- [0..k]]
-    where k = (length sigma) - 1
+    where k = length sigma - 1
           n = S.topologicalDimension t
           subsets = sublists sigma
           lambda' i = sclV ((-1)^i) (monomial t (MI.unit (n + 1) (sigma !! i)))
@@ -354,9 +354,9 @@ prmLkFace t f r k = [ sclV (lambda a) (phi s) | a <- alphas, s <- sigmas, valid 
           valid a s  = setEq (domain a s) (S.sigma f) && zeros a s
           zeros a s  = 0 == sum (take (minimum s) (MI.toList a))
           setEq d l  = sort d == l
-          domain a s = union (MI.range a) s
-          phi s      = whitneyForm t s
-          lambda a   = monomial t a
+          domain a   = union (MI.range a)
+          phi        = whitneyForm t
+          lambda     = monomial t 
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -431,12 +431,12 @@ prLkFace t f r k = [ sclV (lambda a) (psi'' a s) | a <- alphas, s <- sigmas, val
           sigmas     = increasingLists k n
           n          = S.topologicalDimension t
           valid a s  = setEq (domain a s) (S.sigma f) && zeros a s
-          zeros a s  = 0 == sum (take (minimum' $ (S.sigma f) \\ s) (MI.toList a))
+          zeros a s  = 0 == sum (take (minimum' $ S.sigma f \\ s) (MI.toList a))
           setEq d l  = sort d == l
-          domain a s = union (MI.range a) s
-          psi'' a s  = psi t f a s
-          lambda a   = monomial t a
-          minimum' s = if (null s) then 0 else (minimum s)
+          domain a s = MI.range a `union` s
+          psi''      = psi t f
+          lambda     = monomial t
+          minimum' s = if null s then 0 else minimum s
 
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
 -- | a given face of a simplex.
