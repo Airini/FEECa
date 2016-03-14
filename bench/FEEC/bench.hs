@@ -1,21 +1,25 @@
-import FEEC.FiniteElementSpace
+{-# LANGUAGE FlexibleContexts #-}
+module Main where
+
 import FEEC.FiniteElementSpace
 import FEEC.Internal.Spaces
 import FEEC.Internal.Form
 import FEEC.Utility.Print
-import qualified FEEC.Polynomial as P
-import qualified FEEC.Bernstein as B
+import qualified FEEC.Polynomial    as P
+import qualified FEEC.Bernstein     as B
 import qualified FEEC.Internal.Form as F
 import qualified FEEC.PolynomialDifferentialForm as D
-import qualified FEEC.Internal.Vector as V
-import qualified FEEC.Internal.Simplex as S
+import qualified FEEC.Internal.Vector     as V
+import qualified FEEC.Internal.Simplex    as S
 import qualified FEEC.Internal.MultiIndex as MI
 
 import System.TimeIt
 import Data.List
 import Control.DeepSeq
 import qualified Control.Exception.Base as C
-import Debug.Trace
+
+import Criterion.Main
+
 
 type Family = Int -> Int -> Simplex -> FiniteElementSpace
 
@@ -23,8 +27,8 @@ create_vectors :: Int -> Int -> [Vector]
 create_vectors d n = [V.vector (replicate d ((i + 1) `over` n)) | i <- [0..n-1]]
     where over i n = divide (fromInt i) (fromInt $ (n + 1) * d)
 
-faces :: Simplex -> [Int] -> [Simplex]
-faces t ks = [S.subsimplex t k 0 | k <- ks]
+--faces :: Simplex -> [Int] -> [Simplex]
+--faces t ks = [S.subsimplex t k 0 | k <- ks]
 
 toString :: Int -> FiniteElementSpace -> [Int] -> [Double] -> [Double] -> [Char]
 toString n (PrLk _ k _) rs t1s t2s = "P," ++ show(n) ++ "," ++ show(k)
@@ -71,51 +75,54 @@ evaluate_basis i bs fs vs =
 
 
 run_benchmark' :: FiniteElementSpace -> [Simplex] -> [Vector] -> IO (Double,Double)
-run_benchmark' s fs vs = do (t1,bs) <- timeItT $ sequence $ compute_basis 1 s
-                            (t2,_) <- timeItT $ sequence $ evaluate_basis 1 (head bs) fs vs
-                            return (t1 / 1, t2 / 1)
+run_benchmark' s fs vs = do
+  (t1, bs) <- timeItT . sequence $ compute_basis 1 s
+  (t2,  _) <- timeItT . sequence $ evaluate_basis 1 (head bs) fs vs
+  return (t1, t2)
 
 run_benchmark :: Family
-               -> Int
-               -> Int
-               -> Simplex
-               -> [Simplex]
-               -> [Vector]
-               -> IO [Char]
-run_benchmark s rmax k t fs vs = do let n  = S.topologicalDimension t
-                                        rs = [1..rmax]
-                                        ss = [s r k t | r <- rs]
-                                        rb s = run_benchmark' s fs vs
-                                    (t1s, t2s) <- fmap unzip (sequence [rb s | s <- ss])
-                                    return $ toString n (s 0 k t) rs t1s t2s
+              -> Int
+              -> Int
+              -> Simplex
+              -> [Simplex]
+              -> [Vector]
+              -> IO [Char]
+run_benchmark s rmax k t fs vs = do
+  let n  = S.topologicalDimension t
+      rs = [1..rmax]
+      ss = [s r k t | r <- rs]
+      rb s = run_benchmark' s fs vs
+  (t1s, t2s) <- fmap unzip (sequence [rb s | s <- ss])
+  return $ toString n (s 0 k t) rs t1s t2s
 
 benchmarks :: Int
-            -> [Family]
-            -> Int
-            -> Int
-            -> IO [Char]
+           -> [Family]
+           -> Int
+           -> Int
+           -> IO [Char]
 benchmarks nmax families rmax kmax =
-    fmap unlines $ sequence $ concat cases
-    where cases = [[run_benchmark fam rmax k (ts n) (fs n k) vs
-                        | k <- [0..n]] | fam <- families, n <- [1..nmax]]
-          vs     = create_vectors nmax 10
-          ts n   = S.referenceSimplex n
-          fs n k =  S.subsimplices (S.referenceSimplex n) k
+    (fmap unlines . sequence . concat) cases
+  where cases = [ [ run_benchmark fam rmax k (ts n) (fs n k) vs
+                    | k <- [0..n] ]
+                  | fam <- families, n <- [1..nmax] ]
+        vs     = create_vectors nmax 10
+        ts n   = S.referenceSimplex n
+        fs n k =  S.subsimplices (S.referenceSimplex n) k
 
 
 --------------------------------------------------------------------------------
 -- Benchmark main
 --------------------------------------------------------------------------------
 
-num_points = 10
-num_runs   = 10
+--num_points = 10
+--num_runs   = 10
 max_degree = 5
 max_dim    = 3
 families   = [PrLk, PrmLk]
-filename   = "timings_haskell.csv"
+filename   = "timings_FEEC.csv"
 
 main = do results <- benchmarks max_dim families max_degree 3
-          writeFile "timings_FEEC.csv" results
+          writeFile filename results
           putStrLn results
 
-space = PrmLk 3 0 (S.referenceSimplex 2)
+--space = PrmLk 3 0 (S.referenceSimplex 2)
