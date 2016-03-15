@@ -13,6 +13,8 @@ import qualified FEEC.Internal.Vector     as V
 import qualified FEEC.Internal.Simplex    as S
 import qualified FEEC.Internal.MultiIndex as MI
 
+import System.Environment
+
 import System.TimeIt
 import Data.List
 import Control.DeepSeq
@@ -98,16 +100,16 @@ run_benchmark s rmax k t fs vs = do
 benchmarks :: Int
            -> [Family]
            -> Int
-           -> Int
+--           -> Int       currently not used
            -> IO [Char]
-benchmarks nmax families rmax kmax =
+benchmarks nmax families rmax = --kmax =
     (fmap unlines . sequence . concat) cases
   where cases = [ [ run_benchmark fam rmax k (ts n) (fs n k) vs
                     | k <- [0..n] ]
                   | fam <- families, n <- [1..nmax] ]
         vs     = create_vectors nmax 10
         ts n   = S.referenceSimplex n
-        fs n k =  S.subsimplices (S.referenceSimplex n) k
+        fs n k = S.subsimplices (ts n) k
 
 
 --------------------------------------------------------------------------------
@@ -116,13 +118,27 @@ benchmarks nmax families rmax kmax =
 
 --num_points = 10
 --num_runs   = 10
-max_degree = 5
-max_dim    = 3
-families   = [PrLk, PrmLk]
-filename   = "timings_FEEC.csv"
+--max_degree = 5
+--max_dimens = 3
+--families   = [PrLk, PrmLk]
+--filename = "timings_FEEC.csv"
 
-main = do results <- benchmarks max_dim families max_degree 3
-          writeFile filename results
+data FEECBenchOptions = FBO { max_deg :: Int, max_dim :: Int, max_kar :: Int
+                            , families :: [Int -> Int -> Simplex -> FiniteElementSpace]
+                            , npoints :: Int, nruns :: Int
+                            , filename :: String }
+
+defaultOpts = FBO 5 3 3 [PrLk, PrmLk] 10 10 "timings_FEEC.csv"
+
+main = do as <- getArgs >>= return . parseArgs
+          results <- benchmarks (max_dim as) (families as) (max_deg as) -- 3
+          writeFile (filename as) results
           putStrLn results
+
+parseArgs :: [String] -> FEECBenchOptions
+parseArgs ("-f":x:xs) = (parseArgs xs) { filename = x }
+parseArgs ("-r":x:xs) = (parseArgs xs) { max_deg  = read x }
+parseArgs ("-n":x:xs) = (parseArgs xs) { max_dim  = read x }
+parseArgs []          = defaultOpts
 
 --space = PrmLk 3 0 (S.referenceSimplex 2)
