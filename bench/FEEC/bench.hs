@@ -3,7 +3,6 @@ module Main where
 
 import FEEC.FiniteElementSpace
 import FEEC.Internal.Spaces
-import FEEC.Internal.Form
 import FEEC.Utility.Print
 import qualified FEEC.Polynomial    as P
 import qualified FEEC.Bernstein     as B
@@ -54,7 +53,7 @@ instance NFData a => NFData (B.BernsteinPolynomial v a) where
     rnf (B.Constant c)  = rnf c
 
 instance NFData a => NFData (F.Form a) where
-    rnf (Form k n terms) = rnf terms
+    rnf (F.Form k n terms) = rnf terms
 
 --------------------------------------------------------------------------------
 -- Benchmark parameters
