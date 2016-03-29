@@ -10,6 +10,9 @@ import qualified FEEC.PolynomialDifferentialForm as D
 import qualified FEEC.Internal.Vector as V
 import qualified FEEC.Internal.Simplex as S
 import qualified FEEC.Internal.MultiIndex as MI
+import FEEC.Utility.Combinatorics
+import Criterion
+import Criterion.Main
 
 import System.TimeIt
 import Data.List
@@ -19,22 +22,24 @@ import Debug.Trace
 
 type Family = Int -> Int -> Simplex -> FiniteElementSpace
 
+--------------------------------------------------------------------------------
+-- Helper Functions
+--------------------------------------------------------------------------------
+
 create_vectors :: Int -> Int -> [Vector]
 create_vectors d n = [V.vector (replicate d ((i + 1) `over` n)) | i <- [0..n-1]]
     where over i n = divide (fromInt i) (fromInt $ (n + 1) * d)
 
-faces :: Simplex -> [Int] -> [Simplex]
-faces t ks = [S.subsimplex t k 0 | k <- ks]
+evaluate_basis :: [BasisFunction]
+               -> [Simplex]
+               -> [Vector]
+               -> [Double]
+evaluate_basis bs fs vs = [applyEval b f v | b <- bs, f <- fs, v <- vs]
+  where applyEval b f v = evaluate v (D.apply b (S.spanningVectors f))
 
-toString :: Int -> FiniteElementSpace -> [Int] -> [Double] -> [Double] -> [Char]
-toString n (PrLk _ k _) rs t1s t2s = "P," ++ show(n) ++ "," ++ show(k)
-                                    ++ "," ++ (concat $ intersperse "," (map show rs))
-                                    ++ "," ++ (concat $ intersperse "," (map show t1s))
-                                    ++ "," ++ (concat $ intersperse "," (map show t2s))
-toString n (PrmLk _ k _) rs t1s t2s = "P-," ++ show(n) ++ "," ++ show(k)
-                                    ++ "," ++ (concat $ intersperse "," (map show rs))
-                                    ++ "," ++ (concat $ intersperse "," (map show t1s))
-                                    ++ "," ++ (concat $ intersperse "," (map show t2s))
+--------------------------------------------------------------------------------
+-- NFData Instance Declaration
+--------------------------------------------------------------------------------
 
 instance NFData a => NFData (P.Term a) where
     rnf (P.Constant c) = rnf c
@@ -51,57 +56,31 @@ instance NFData a => NFData (F.Form a) where
     rnf (Form k n terms) = rnf terms
 
 --------------------------------------------------------------------------------
--- Benchmark parameters
+-- Benchmark Functions
 --------------------------------------------------------------------------------
 
-compute_basis :: Int -> FiniteElementSpace -> [IO [BasisFunction]]
-compute_basis i s = replicate i (C.evaluate $ force (basis s))
+bench_evaluate :: Family -> [Vector] -> Int -> Int -> Int -> [Benchmark]
+bench_evaluate f vs n k rmax = [bench (show r) $ nf (evaluate_basis (bs r) (faces t)) vs
+                              | r <- [1..rmax]]
+  where t       = S.referenceSimplex n
+        faces t = take (n `choose` k) (S.subsimplices t k)
+        bs r      = basis (f r k t)
 
-evaluate_basis :: Int
-               -> [BasisFunction]
-               -> [Simplex]
-               -> [Vector]
-               -> [IO [Double]]
-evaluate_basis i bs fs vs =
-  replicate i (do print (sum [applyEval b f v | b <- bs, f <- fs, v <- vs])
-                  C.evaluate $ force [applyEval b f v | b <- bs, f <- fs, v <- vs])
-    where applyEval b f v = evaluate v (D.apply b (S.spanningVectors f))
-          bs' = bs
-          normalize b = sclV (B.Constant (1.0 / sqrt (D.inner b b))) b
+bench_evaluate_n_k :: Family -> Int -> Int -> [Benchmark]
+bench_evaluate_n_k f nmax rmax =
+  concat [[bgroup (show (n, k)) $ bench_evaluate f (vs n) n k rmax
+                                | k <- [0..n]]
+                                | n <- [1..nmax]]
+  where vs n = create_vectors n 10
 
+bench_basis_r :: Family -> Int -> Int -> Int -> [Benchmark]
+bench_basis_r f n k rmax = [bench (show r) $ nf (basis . (f r k)) t | r <- [1..rmax]]
+  where t = S.referenceSimplex n
 
-run_benchmark' :: FiniteElementSpace -> [Simplex] -> [Vector] -> IO (Double,Double)
-run_benchmark' s fs vs = do (t1,bs) <- timeItT $ sequence $ compute_basis 1 s
-                            (t2,_) <- timeItT $ sequence $ evaluate_basis 1 (head bs) fs vs
-                            return (t1 / 1, t2 / 1)
-
-run_benchmark :: Family
-               -> Int
-               -> Int
-               -> Simplex
-               -> [Simplex]
-               -> [Vector]
-               -> IO [Char]
-run_benchmark s rmax k t fs vs = do let n  = S.topologicalDimension t
-                                        rs = [1..rmax]
-                                        ss = [s r k t | r <- rs]
-                                        rb s = run_benchmark' s fs vs
-                                    (t1s, t2s) <- fmap unzip (sequence [rb s | s <- ss])
-                                    return $ toString n (s 0 k t) rs t1s t2s
-
-benchmarks :: Int
-            -> [Family]
-            -> Int
-            -> Int
-            -> IO [Char]
-benchmarks nmax families rmax kmax =
-    fmap unlines $ sequence $ concat cases
-    where cases = [[run_benchmark fam rmax k (ts n) (fs n k) vs
-                        | k <- [0..n]] | fam <- families, n <- [1..nmax]]
-          vs     = create_vectors nmax 10
-          ts n   = S.referenceSimplex n
-          fs n k =  S.subsimplices (S.referenceSimplex n) k
-
+bench_basis_n_k :: Family -> Int -> Int -> [Benchmark]
+bench_basis_n_k f nmax rmax = concat [[bgroup (show (n, k)) $ bench_basis_r f n k rmax
+                                | k <- [0..n]]
+                                | n <- [1..nmax]]
 
 --------------------------------------------------------------------------------
 -- Benchmark main
@@ -109,13 +88,12 @@ benchmarks nmax families rmax kmax =
 
 num_points = 10
 num_runs   = 10
-max_degree = 5
-max_dim    = 3
-families   = [PrLk, PrmLk]
-filename   = "timings_haskell.csv"
 
-main = do results <- benchmarks max_dim families max_degree 3
-          writeFile "timings_FEEC.csv" results
-          putStrLn results
+main = defaultMain [
+  bgroup "PrLk basis"     $ bench_basis_n_k PrLk 3 5
+ ,bgroup "PrLk evaluate"  $ bench_evaluate_n_k PrLk 3 5
+ ,bgroup "PrmLk basis"    $ bench_basis_n_k PrmLk 3 5
+ ,bgroup "PrmLk evaluate" $ bench_evaluate_n_k PrmLk 3 5
+  ]
 
 space = PrmLk 3 0 (S.referenceSimplex 2)
