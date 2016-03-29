@@ -1,24 +1,29 @@
-import FEEC.FiniteElementSpace
+{-# LANGUAGE FlexibleContexts #-}
+module Main where
+
 import FEEC.FiniteElementSpace
 import FEEC.Internal.Spaces
-import FEEC.Internal.Form
 import FEEC.Utility.Print
-import qualified FEEC.Polynomial as P
-import qualified FEEC.Bernstein as B
+import qualified FEEC.Polynomial    as P
+import qualified FEEC.Bernstein     as B
 import qualified FEEC.Internal.Form as F
 import qualified FEEC.PolynomialDifferentialForm as D
-import qualified FEEC.Internal.Vector as V
-import qualified FEEC.Internal.Simplex as S
+import qualified FEEC.Internal.Vector     as V
+import qualified FEEC.Internal.Simplex    as S
 import qualified FEEC.Internal.MultiIndex as MI
 import FEEC.Utility.Combinatorics
 import Criterion
 import Criterion.Main
 
+import System.Environment
+
 import System.TimeIt
 import Data.List
 import Control.DeepSeq
 import qualified Control.Exception.Base as C
-import Debug.Trace
+
+import Criterion.Main
+
 
 type Family = Int -> Int -> Simplex -> FiniteElementSpace
 
@@ -53,7 +58,7 @@ instance NFData a => NFData (B.BernsteinPolynomial v a) where
     rnf (B.Constant c)  = rnf c
 
 instance NFData a => NFData (F.Form a) where
-    rnf (Form k n terms) = rnf terms
+    rnf (F.Form k n terms) = rnf terms
 
 --------------------------------------------------------------------------------
 -- Benchmark Functions
@@ -95,5 +100,4 @@ main = defaultMain [
  ,bgroup "PrmLk basis"    $ bench_basis_n_k PrmLk 3 5
  ,bgroup "PrmLk evaluate" $ bench_evaluate_n_k PrmLk 3 5
   ]
-
-space = PrmLk 3 0 (S.referenceSimplex 2)
+--space = PrmLk 3 0 (S.referenceSimplex 2)
