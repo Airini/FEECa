@@ -22,7 +22,7 @@ module FEEC.Utility.Combinatorics(
   -- ** Indexing
   unrank,
   -- * Lists of degree r
-  sublists,  sumRLists, sumRLists'
+  sublists, kSublists ,  sumRLists, sumRLists'
   ) where
 
 import Data.List (find)
@@ -131,6 +131,16 @@ unrank :: Integral a
        -> a -- the index i
        -> [a]
 unrank k n i = increasingLists k n !! fromIntegral i
+
+rank :: Int -> [Int] -> Int
+rank n ls =  rank' 0 n ls
+
+rank' :: Int -> Int -> [Int] -> Int
+rank' lower upper (l:ls) =  (l - lower) * (upper - l - 1) `choose` (k - 1)
+                            + rank' (l + 1) upper ls
+  where k = length ls + 1
+rank' _ _ [] = 0
+
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -159,6 +169,14 @@ $k$ list. The ordering of the list is preserved.
 sublists :: [a] -- the length k list
          -> [[a]]
 sublists ls = [ take i ls ++ drop (i+1) ls | i <- [0 .. length ls - 1]]
+
+kSublists :: Int -> [a] -> [[a]]
+kSublists k ls@(h:t)
+  | k <= 0         = [[]]
+  | k >= length ls = [ls]
+  | k == 1         = [[l] | l <- ls]
+  | otherwise      = [h : ts | ts <- kSublists (k - 1) t] ++ (kSublists k t)
+kSublists k [] =  [[]]
 
 \end{code}
 

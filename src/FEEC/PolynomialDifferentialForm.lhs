@@ -24,7 +24,7 @@ findSimplex' (B.Bernstein t _) = Just t
 findSimplex' _ = Nothing
 
 apply :: S.Field a => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
-apply omega = F.refine (B.proj t) omega
+apply omega = {-# SCC "apply" #-} F.refine (B.proj t) omega
   where t = fromJust (findSimplex omega)
 
 inner :: S.Field a => DifferentialForm a -> DifferentialForm a -> a

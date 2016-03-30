@@ -691,9 +691,9 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 barycentricCoordinates :: (EuclideanSpace v, r ~ Scalar v)
                        => Simplex v
                        -> [ Polynomial r ]
-barycentricCoordinates s = take (nt + 1) bs
+barycentricCoordinates s = {-# SCC "barycentricCoordinates" #-} take (nt + 1) bs
     where bs  = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
-          mat = M.inv (simplexToMatrix (extendSimplex s))
+          mat = {-# SCC "solveSystem" #-}M.inv (simplexToMatrix (extendSimplex s))
           n   = geometricalDimension s
           nt  = topologicalDimension s
 
@@ -703,7 +703,7 @@ barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v)
                       => Simplex v
                       -> Int
                       -> Polynomial r
-barycentricCoordinate s i = barycentricCoordinates s !! i
+barycentricCoordinate s i =  barycentricCoordinates s !! i
 
 -- Transforms a given simplex into the matrix representing the linear
 -- equation system for the barycentric coordinates.
@@ -747,7 +747,7 @@ vectorToGradient v  = fromDouble' (tail (M.toList v))
 barycentricGradients :: EuclideanSpace v
                      => Simplex v
                      -> [v]
-barycentricGradients t = map vectorToGradient (take (nt+1) (M.toColumns mat))
+barycentricGradients t = {-# SCC "barycentricGradients" #-} map vectorToGradient (take (nt+1) (M.toColumns mat))
     where mat = M.inv (simplexToMatrix (extendSimplex t))
           n = geometricalDimension t
           nt = topologicalDimension t

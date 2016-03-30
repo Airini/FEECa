@@ -1,5 +1,6 @@
 "Benchmarking of finite elements in FEniCS / FIAT"
 
+import numpy as np
 from fenics import *
 from ffc.fiatinterface import create_element
 from numpy import array
@@ -44,6 +45,8 @@ for family in families:
                 # Evaluate all basis functions at N points
                 t0 = time()
                 values = fiat_element.tabulate(0, points)
+                print (values.itervalues().next()).size
+                print (values.itervalues().next()).shape
                 t2.append(time() - t0)
 
             results.append((family, d, k, rs, t1, t2))
@@ -51,8 +54,8 @@ for family in families:
 # Write results to file
 f = open(filename, "w")
 for family, d, k, rs, t1, t2 in results:
-    f.write(",".join(str(x) for x in (family, d, k)) + "\n")
-    f.write(",".join(str(x) for x in rs) + "\n")
-    f.write(",".join(str(x) for x in t1) + "\n")
+    f.write(",".join(str(x) for x in (family, d, k)) + ",")
+    f.write(",".join(str(x) for x in rs) + ",")
+    f.write(",".join(str(x) for x in t1) + ",")
     f.write(",".join(str(x) for x in t2) + "\n")
 f.close()

@@ -229,7 +229,7 @@ derived so they are declared an instance of the \code{Function}.
 \begin{code}
 
 instance ( EuclideanSpace v, r ~ Scalar v) => Function (BernsteinPolynomial v r) v  where
-  evaluate = evaluateBernstein
+  evaluate = {-# SCC "evaluate" #-} evaluateBernstein
   derive   = deriveBernstein
 
 \end{code}
@@ -299,9 +299,10 @@ evaluateBernstein :: ( EuclideanSpace v, r ~ Scalar v)
                      => v
                      -> BernsteinPolynomial v r
                      -> r
-evaluateBernstein v (Bernstein t p) = evaluate vb p
-    where vb = vector $ map (evaluate v) (barycentricCoordinates t)
-evaluateBernstein _ (Constant c)    = c
+evaluateBernstein v (Bernstein t p) = {-# SCC "evaluateBernstein" #-} evaluate vb p
+    where vb = {-#SCC "barycentric" #-} vector $ map (evaluate v) (barycentricCoordinates t)
+evaluateBernstein _ (Constant c)    = {-# SCC "evaluateConstant" #-}c
+
 \end{code}
 
 %------------------------------------------------------------------------------%

@@ -9,7 +9,7 @@ module FEEC.Internal.Form (
   , zeroForm, nullForm, oneForm
 
   -- * Form operations
-  , refine, inner, contract
+  , refine, refine_basis, inner, contract
   ) where
 
 
@@ -20,6 +20,9 @@ import qualified FEEC.Internal.Spaces as S( inner )
 import FEEC.Utility.Discrete
 import FEEC.Utility.Utility (pairM, sumR, sumV, expSign, sign)
 import FEEC.Utility.Print (Pretty(..), printForm)
+import FEEC.Utility.Combinatorics
+import qualified Numeric.LinearAlgebra.HMatrix as M
+import qualified Numeric.LinearAlgebra.Data as M
 
 import Debug.Trace
 
@@ -161,6 +164,16 @@ contract proj omega v
   {- TODO:  optimise
             error handling: proj indexing beyond dimension of v -}
 
+refine_basis :: (Ring r, EuclideanSpace v, Scalar v ~ r)
+             => [v] -> [v] -> [r]
+refine_basis ds vs = map (fromDouble . M.det) submatrices
+  where projections = [[toDouble $ dot d v | v <- vs] | d <- ds]
+        submatrices = map ((M.matrix k) . concat) $ kSublists k projections
+        k           = length vs
+
+substitute_basis :: (Ring r, VectorSpace v, Scalar v ~ r)
+                 => 
+
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
@@ -169,7 +182,7 @@ refine :: (Ring w, VectorSpace w, VectorSpace v, Scalar v ~ Scalar w)
                                       --   for the specific vector space
        -> Form w
        -> [v] -> w
-refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs')
+refine proj eta@(Form k n cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . formify proj) cs')
   where cs' | null cs   = [(addId,[])]
             | otherwise = cs
 -- TODO: capture inconsistency between k and length vs here??
@@ -178,13 +191,12 @@ refine proj eta@(Form k n cs) vs = sumV (map (($ vs) . formify proj) cs')
 -- XXX: for now proj should take care of the error... change later when settled
 
 
--- | Helper function in evaluation: given a 1-form basis, converts a single
---   'Form' term into an actual function on vectors
+-- | Helper function in evaluation: given a 1-form basis, converts a single --   'Form' term into an actual function on vectors
 formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
         => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
 formify _    (s, [])   _  = s
 formify proj (s, i:is) vs
-    | null is   = sclV (proj i (head vs)) s
+    | null is   = {-#SCC "Form.formify" #-}sclV (proj i (head vs)) s
     | otherwise =
         foldl addV addId
               (map (\(w,e) -> sclV
