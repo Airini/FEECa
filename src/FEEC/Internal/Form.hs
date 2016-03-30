@@ -166,7 +166,7 @@ contract proj omega v
 
 refine_basis :: (Ring r, EuclideanSpace v, Scalar v ~ r)
              => [v] -> [v] -> [r]
-refine_basis ds vs = map (fromDouble . M.det) submatrices
+refine_basis ds vs = {-# SCC "Form.refine_basis" #-} map (fromDouble . M.det) submatrices
   where projections = [[toDouble $ dot d v | v <- vs] | d <- ds]
         submatrices = map ((M.matrix k) . concat) $ kSublists k projections
         k           = length vs
@@ -194,7 +194,7 @@ formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
 formify _    (s, [])   _  = s
 formify proj (s, i:is) vs
     | null is   = {-#SCC "Form.formify" #-}sclV (proj i (head vs)) s
-    | otherwise =
+    | otherwise = {-#SCC "Form.formifyR" #-}
         foldl addV addId
               (map (\(w,e) -> sclV
                                 (mul (sign (w,e)) ((proj i . head) (choose w vs)))

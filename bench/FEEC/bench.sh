@@ -1,4 +1,4 @@
 #! /bin/bash
 
 ./bench &> bench.dat
-python2 plot.py
+python2.7 plot.py
