@@ -171,9 +171,6 @@ refine_basis ds vs = map (fromDouble . M.det) submatrices
         submatrices = map ((M.matrix k) . concat) $ kSublists k projections
         k           = length vs
 
-substitute_basis :: (Ring r, VectorSpace v, Scalar v ~ r)
-                 => 
-
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
