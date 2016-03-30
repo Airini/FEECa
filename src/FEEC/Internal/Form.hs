@@ -9,7 +9,7 @@ module FEEC.Internal.Form (
   , zeroForm, nullForm, oneForm
 
   -- * Form operations
-  , refine, refine_basis, inner, contract
+  ,apply, refine, refine_basis, inner, contract
   ) where
 
 
@@ -23,7 +23,6 @@ import FEEC.Utility.Print (Pretty(..), printForm)
 import FEEC.Utility.Combinatorics
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
-
 import Debug.Trace
 
 -- * General form: does not depend on the underlying vector space it works on
@@ -164,12 +163,33 @@ contract proj omega v
   {- TODO:  optimise
             error handling: proj indexing beyond dimension of v -}
 
+-- list_to_index :: Integral a => a -> [a] -> a
+-- list_to_index n (l:ls)
+
+-- list_to_index' :: Integral a => a -> a -> [a] -> a
+-- list_to_index' acc n (l:ls) = list_to_index' ((acc * n) + l) n ls
+-- list_to_index' acc   _ []     = acc
+
+-- make_lookup  :: (Ring r, EuclideanSpace v, Scalar v ~ r)
+--              => Int -> Int -> [v] -> [[v]] -> Array [r]
+-- make_lookup n k ds vvs
+apply :: (EuclideanSpace v, Ring w, VectorSpace w, Scalar v ~ Scalar w)
+      => [v] -> [v] -> Form w -> w
+apply ds vs omega@(Form k n cs) = foldl addV addId (map (apply' k ds vs) cs)
+
+apply' :: (EuclideanSpace v, VectorSpace w, Scalar v ~ Scalar w)
+       => Int -> [v] -> [v] -> (w,[Int]) -> w
+apply' k ds vs (p, cs) = sclV c p
+  where projections    = [toDouble $ dot (ds !! i) v | v <- vs, i <- cs]
+        c              = fromDouble $ M.det $ M.matrix k projections
+
 refine_basis :: (Ring r, EuclideanSpace v, Scalar v ~ r)
-             => [v] -> [v] -> [r]
-refine_basis ds vs = map (fromDouble . M.det) submatrices
-  where projections = [[toDouble $ dot d v | v <- vs] | d <- ds]
-        submatrices = map ((M.matrix k) . concat) $ kSublists k projections
-        k           = length vs
+             => [v] -> [[v]] -> [[r]]
+refine_basis ds vvs = map (map (fromDouble . M.det)) submatrices
+  where projections = [[[toDouble $ dot d v | v <- vs] | d <- ds] | vs <- vvs]
+        matrices    = map (kSublists k) projections
+        submatrices = map (map ((M.matrix k) . concat)) matrices
+        k           = length (head vvs)
 
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it

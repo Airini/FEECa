@@ -9,6 +9,7 @@ import FEEC.Internal.Simplex
 import qualified FEEC.Bernstein             as B
 import qualified FEEC.Internal.Form         as F
 import qualified FEEC.DifferentialForm      as D
+import qualified FEEC.Polynomial            as P
 import qualified FEEC.Internal.Spaces       as S
 import qualified FEEC.Utility.Combinatorics as C
 
@@ -23,9 +24,14 @@ findSimplex' :: BernsteinPolynomial a -> Maybe (Simplex (Vector a))
 findSimplex' (B.Bernstein t _) = Just t
 findSimplex' _ = Nothing
 
+-- apply :: S.Field a => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
+-- apply omega = {-# SCC "apply" #-} F.refine (B.proj t) omega
+--   where t = fromJust (findSimplex omega)
+
 apply :: S.Field a => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
-apply omega = {-# SCC "apply" #-} F.refine (B.proj t) omega
-  where t = fromJust (findSimplex omega)
+apply omega vs = {-# SCC "apply" #-} F.apply ds vs omega
+  where t  = fromJust (findSimplex omega)
+        ds = P.barycentricGradients t
 
 inner :: S.Field a => DifferentialForm a -> DifferentialForm a -> a
 inner omega eta
