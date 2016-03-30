@@ -24,9 +24,9 @@ module FEEC.Internal.Vector(
   ) where
 
 import FEEC.Internal.Spaces
-import qualified FEEC.Internal.MultiIndex as MI
-import FEEC.Utility.Print
-import qualified FEEC.Utility.Utility as U
+import qualified  FEEC.Internal.MultiIndex  as MI
+import            FEEC.Utility.Print        as P
+import qualified  FEEC.Utility.Utility      as U
 
 
 \end{code}
@@ -129,8 +129,8 @@ vector = Vector
 instance Field a => Pretty (Vector a) where
     pPrint v = text "Vector in "
                <> rn (dim v)
-               <> text ":\n"
-               <> printVector 2 (map toDouble (components v))
+               <> text ":"
+               P.$$ printVector 2 (map toDouble (components v))
 
 \end{code}
 
