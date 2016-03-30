@@ -101,10 +101,12 @@ data FEECBenchOptions = FBO
 defaultOpts = FBO 5 3 3 [PrLk, PrmLk] 10 10 "timings_FEEC.csv"
 {-do
   as <- getArgs >>= return . parseArgs
-  let r = max_deg as
-      n = max_dim as-}
+  -}
 
-main = defaultMain
+main = do
+  let r = max_deg defaultOpts
+      n = max_dim defaultOpts
+  defaultMain
     [ bgroup "PrLk basis"     $ bench_basis_n_k     PrLk n r
     , bgroup "PrLk evaluate"  $ bench_evaluate_n_k  PrLk n r
     , bgroup "PrmLk basis"    $ bench_basis_n_k     PrmLk n r
