@@ -9,6 +9,7 @@
 \usepackage{graphicx}
 \usepackage{algorithm}
 \usepackage{algorithmicx}
+\usepackage{tipa}
 \usepackage{algpseudocode}
 \usepackage{anslistings} % <-- should be provided with this template
 
@@ -25,64 +26,36 @@
 \thispagestyle{empty}
 
 % Insert title here:
-\title{Title of abstract for the FEniCS'16 workshop}
+\title{FEECa: Finite Element Exterior Calculus in Haskell}
 
-% Insert authors and afiliations here, speaker in bold: 
-\author{Ola Nordmann, University of Oslo, ola.nordmann@mail.edu, \\
-\textbf{Kari Nordmann}, University of Oslo, kari.nordmann@mail.edu}
+% Insert authors and afiliations here, speaker in bold:
+\author{Irene Lobo Valbuena, Chalmers University of Technology \\
+        \textbf{Simon Pfreundschuh}, University of Oslo, kari.nordmann@mail.edu}
 
 \date{} % please leave date empty
 \maketitle\thispagestyle{empty}
 
 % Insert keywords here
-Keywords: \emph{..., ..., ...}\\
+Keywords: \emph{Finite Element Exterior Calculus, Haskell, Functional Programming,
+  Basis Functions}\\
 
 % Insert text here:
 
-This document is a simple one-page abstract for the book of abstracts
-of FEniCS'16. Accepted abstracts will be collected and published
-freely online.
-The abstract should be in English. You may wish to include figures,
-such as Figure~\ref{fig5}, and a few references, such as \cite{pu} or
-\cite{model}, although they should also fit in the 2 page limit.
-
-\begin{equation}
-  \int_\Omega \nabla u \cdot \nabla v\, dx = \int_\Omega f v\, dx
-\end{equation}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-aliquip ex ea commodo consequat. Duis aute irure dolor in
-reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
-
-Feel free to include some short illustrative python code snippets:
-\begin{python}
-a = inner(grad(u), grad(v))*dx
-L = dot(f, v)*dx
-\end{python}
-
-Or maybe some C++ code if relevant:
-\begin{c++}
-std::shared_ptr<Mesh> mesh = ...;
-\end{c++}
-
-\begin{figure}[h]
-	%uncomment next line to include a graphic file
-	%\centerline{\includegraphics[width=6cm, angle=-90]{fig5.eps}}
-	%and comment out next line
-\centerline{\framebox[6cm]{\rule{0cm}{3.5cm} figure example}}
-\caption{Sample figure}
-\label{fig5}
-\end{figure}
+FEECa (\textipa{["fi:ka]}) is a framework for finite element exterior
+calculus written in Haskell. Starting out as a project to explore the
+possibilities of using a functional programming language to formulate
+abstract mathematical concepts, the project has developed into a
+full-fledged generator of basis form generator and framework for
+computations on differential forms. FEECa supports differential forms
+in arbitrary dimensions and implements monomial as well as Bernstein bases
+for polynomials. Furthermore, the framwork  provides functionality to
+compute bases of finite element spaces based on the geometric composition
+proposed by Arnold et al.\cite{arnold}.
 
 \begin{thebibliography}{00}
 \addcontentsline{toc}{chapter}{References}
-\bibitem{pu} A.A. Milne, \textit{Winnie-the-Pooh}, Methuen, 1926.
-\bibitem{model} S.E. Author, H. Buthor, M. Cuthor: Very important topic, 
-\textit{The Really Good Journal}, 6 (1969), 501-510.
+\bibitem{arnold}Arnold, Douglas N. and Falk, Richard S. and Winther, Ragnar:
+ Geometric decompositions and local bases for spaces of finite element differential forms
 \end{thebibliography}
 
 \end{document}
