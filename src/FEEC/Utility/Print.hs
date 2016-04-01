@@ -2,7 +2,7 @@ module FEEC.Utility.Print (
    Pretty(..)
   , printDouble, printComponent, printVector, printVectorRow
   , printBernstein, printPolynomial, printPolynomial0, printForm
-  , lambda, dlambda, (<>), text, rn, int
+  , lambda, dlambda, (<>), (P.$$), text, rn, int
   ) where
 
 import Text.PrettyPrint

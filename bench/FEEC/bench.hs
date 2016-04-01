@@ -69,35 +69,54 @@ bench_evaluate f vs n k rmax = [bench (show r) $ nf (D.tabulate (bs r) vs) (face
                               | r <- [1..rmax]]
   where t       = S.referenceSimplex n
         faces t = take (n `choose` k) (S.subsimplices t k)
-        bs r      = basis (f r k t)
+        bs r    = basis (f r k t)
 
 bench_evaluate_n_k :: Family -> Int -> Int -> [Benchmark]
-bench_evaluate_n_k f nmax rmax =
-  concat [[bgroup (show (n, k)) $ bench_evaluate f (vs n) n k rmax
-                                | k <- [0..n]]
-                                | n <- [1..nmax]]
+bench_evaluate_n_k f nmax rmax = concat
+    [[ bgroup (show (n, k)) $ bench_evaluate f (vs n) n k rmax
+        | k <- [0..n] ]
+        | n <- [1..nmax] ]
   where vs n = create_vectors n 10
 
 bench_basis_r :: Family -> Int -> Int -> Int -> [Benchmark]
-bench_basis_r f n k rmax = [bench (show r) $ nf (basis . (f r k)) t | r <- [1..rmax]]
+bench_basis_r f n k rmax = [ bench (show r) $ nf (basis . (f r k)) t | r <- [1..rmax] ]
   where t = S.referenceSimplex n
 
 bench_basis_n_k :: Family -> Int -> Int -> [Benchmark]
-bench_basis_n_k f nmax rmax = concat [[bgroup (show (n, k)) $ bench_basis_r f n k rmax
-                                | k <- [0..n]]
-                                | n <- [1..nmax]]
+bench_basis_n_k f nmax rmax = concat
+  [[ bgroup (show (n, k)) $ bench_basis_r f n k rmax
+      | k <- [0..n] ]
+      | n <- [1..nmax] ]
 
 --------------------------------------------------------------------------------
 -- Benchmark main
 --------------------------------------------------------------------------------
 
-num_points = 10
-num_runs   = 10
+data FEECBenchOptions = FBO
+  { max_deg :: Int, max_dim :: Int, max_kar :: Int
+  , families :: [Int -> Int -> Simplex -> FiniteElementSpace]
+  , npoints :: Int, nruns :: Int
+  , filename :: String }
 
-main = defaultMain [
-  bgroup "PrLk basis"     $ bench_basis_n_k PrLk 3 5
- ,bgroup "PrLk evaluate"  $ bench_evaluate_n_k PrLk 3 5
- ,bgroup "PrmLk basis"    $ bench_basis_n_k PrmLk 3 5
- ,bgroup "PrmLk evaluate" $ bench_evaluate_n_k PrmLk 3 5
-  ]
+defaultOpts = FBO 5 3 3 [PrLk, PrmLk] 10 10 "timings_FEEC.csv"
+{-do
+  as <- getArgs >>= return . parseArgs
+  -}
+
+main = do
+  let r = max_deg defaultOpts
+      n = max_dim defaultOpts
+  defaultMain
+    [ bgroup "PrLk basis"     $ bench_basis_n_k     PrLk n r
+    , bgroup "PrLk evaluate"  $ bench_evaluate_n_k  PrLk n r
+    , bgroup "PrmLk basis"    $ bench_basis_n_k     PrmLk n r
+    , bgroup "PrmLk evaluate" $ bench_evaluate_n_k  PrmLk n r
+    ]
+
+parseArgs :: [String] -> FEECBenchOptions
+parseArgs ("-f":x:xs) = (parseArgs xs) { filename = x }
+parseArgs ("-r":x:xs) = (parseArgs xs) { max_deg  = read x }
+parseArgs ("-n":x:xs) = (parseArgs xs) { max_dim  = read x }
+parseArgs []          = defaultOpts
+
 --space = PrmLk 3 0 (S.referenceSimplex 2)
