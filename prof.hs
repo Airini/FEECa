@@ -14,19 +14,12 @@ create_vectors :: Int -> Int -> [Vector]
 create_vectors d n = [V.vector (replicate d ((i + 1) `over` n)) | i <- [0..n-1]]
     where over i n = divide (fromInt i) (fromInt $ (n + 1) * d)
 
-evaluate_basis :: [BasisFunction]
-               -> [Simplex]
-               -> [Vector]
-               -> [Double]
-evaluate_basis bs fs vs = [applyEval b f v | b <- bs, f <- fs, v <- vs]
-  where applyEval b f v = evaluate v (D.apply b (S.spanningVectors f))
-
 t     = S.referenceSimplex 3
 faces = take 3 (S.subsimplices t 2)
-space = PrLk 5 2 t
+space = PrLk 5 0 t
 bs    = basis space
 vs    = create_vectors 3 10
-fs    = S.spanningVectors $ head faces
+fs    = map S.spanningVectors faces
 ds    = P.barycentricGradients t
 
-main = print $ sum $ evaluate_basis bs faces vs
+main = print $ sum $ concat $ D.tabulate bs vs faces

@@ -32,6 +32,7 @@ Apart from implementing polynomials over vectors in $\R{n}$, the
 
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module FEEC.Polynomial (
@@ -51,7 +52,7 @@ module FEEC.Polynomial (
   -- * Barycentric Coordinates
   , barycentricCoordinate, barycentricCoordinates
   , barycentricGradient, barycentricGradients
-  , barycentricGradients', simplexToMatrix
+  , barycentricGradients', simplexToMatrix, euclideanToBarycentric
 
   , simplifyT, simplifyP
   ) where
@@ -69,7 +70,7 @@ import FEEC.Internal.Spaces(VectorSpace(..),
                             fromDouble')
 import qualified FEEC.Internal.Spaces as S(Function(..))
 import FEEC.Internal.Point
-import FEEC.Internal.Vector(Vector, toList)
+import FEEC.Internal.Vector(Vector, vector, toList)
 import qualified FEEC.Internal.Vector as V(pow)
 import FEEC.Utility.Print(Pretty(..), printPolynomial)
 import FEEC.Utility.Utility(pairM, takeIndices)
@@ -682,6 +683,17 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 %------------------------------------------------------------------------------%
 
 \begin{code}
+
+euclideanToBarycentric :: (EuclideanSpace v)
+                       => Simplex v
+                       -> [v]
+                       -> [v]
+euclideanToBarycentric t vs =  map (fromDouble' . M.toList) $ M.toRows $ res
+    where res  = vmat M.<> mat
+          mat  = M.inv (simplexToMatrix (extendSimplex t))
+          vmat = M.matrix (n+1) $ concatMap ((1.0:) . toDouble') vs
+          n    = geometricalDimension t
+          nt   = topologicalDimension t
 
 -- | 1st degree polynomial taking value 1 on vertex n_i of the simplex and
 -- | 0 on all others. Requires the topological dimension of the simplex to be

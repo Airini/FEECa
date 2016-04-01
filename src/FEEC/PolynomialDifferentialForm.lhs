@@ -1,7 +1,9 @@
 \begin{code}
+{-# LANGUAGE GADTs #-}
 
 module FEEC.PolynomialDifferentialForm where
 
+import Control.Applicative
 import Data.Maybe
 import Data.List
 import FEEC.Internal.Vector
@@ -12,6 +14,7 @@ import qualified FEEC.DifferentialForm      as D
 import qualified FEEC.Polynomial            as P
 import qualified FEEC.Internal.Spaces       as S
 import qualified FEEC.Utility.Combinatorics as C
+import qualified FEEC.Internal.Vector       as V
 
 
 type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
@@ -24,14 +27,34 @@ findSimplex' :: BernsteinPolynomial a -> Maybe (Simplex (Vector a))
 findSimplex' (B.Bernstein t _) = Just t
 findSimplex' _ = Nothing
 
--- apply :: S.Field a => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
--- apply omega = {-# SCC "apply" #-} F.refine (B.proj t) omega
---   where t = fromJust (findSimplex omega)
+tabulate :: (S.Field a, S.VectorSpace a, S.Scalar a ~ a)
+         => [DifferentialForm a]
+         -> [Vector a]
+         -> [Simplex (Vector a)]
+         -> [[a]]
+tabulate bs vs fs = [evalSeparately t b vs fs' | b <- bs]
+  where t   = fromJust $ findSimplex $ head bs
+        fs' = map spanningVectors fs
 
 apply :: S.Field a => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
 apply omega vs = {-# SCC "apply" #-} F.apply ds vs omega
   where t  = fromJust (findSimplex omega)
         ds = P.barycentricGradients t
+
+evalSeparately :: (S.Field a, S.VectorSpace a, S.Scalar a ~ a)
+               => Simplex (Vector a)
+               -> DifferentialForm a
+               -> [Vector a]
+               -> [[Vector a]]
+               -> [a]
+evalSeparately t omega vs fs = V.toList $ foldl S.addV zero crossres
+  where bvals = B.tabulateBernstein t vs (fst omegasplit)
+        fvals = [[F.apply ds f eta | f <- fs] | eta <- (snd omegasplit)]
+        crossres = map V.vector $ zipWith (liftA2 S.mul) fvals bvals
+        ds = P.barycentricGradients t
+        omegasplit = F.split omega
+        l    = (length vs) * (length fs)
+        zero = V.vector (replicate l $ S.fromDouble 0.0)
 
 inner :: S.Field a => DifferentialForm a -> DifferentialForm a -> a
 inner omega eta

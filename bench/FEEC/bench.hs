@@ -65,7 +65,7 @@ instance NFData a => NFData (F.Form a) where
 --------------------------------------------------------------------------------
 
 bench_evaluate :: Family -> [Vector] -> Int -> Int -> Int -> [Benchmark]
-bench_evaluate f vs n k rmax = [bench (show r) $ nf (evaluate_basis (bs r) (faces t)) vs
+bench_evaluate f vs n k rmax = [bench (show r) $ nf (D.tabulate (bs r) vs) (faces t)
                               | r <- [1..rmax]]
   where t       = S.referenceSimplex n
         faces t = take (n `choose` k) (S.subsimplices t k)

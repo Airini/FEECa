@@ -41,7 +41,7 @@ import FEEC.Polynomial ( Polynomial, Term, term, terms, expandTerm,
                         barycentricCoordinates, barycentricGradient,
                         barycentricGradients, toPairs)
 import qualified FEEC.Polynomial as P (degree, multiIndices, monomial,
-                                       constant, polynomial)
+                                       constant, polynomial, euclideanToBarycentric)
 
 
 import FEEC.Utility.Combinatorics(choose, factorial)
@@ -302,6 +302,16 @@ evaluateBernstein :: ( EuclideanSpace v, r ~ Scalar v)
 evaluateBernstein v (Bernstein t p) = {-# SCC "evaluateBernstein" #-} evaluate vb p
     where vb = {-#SCC "barycentric" #-} vector $ map (evaluate v) (barycentricCoordinates t)
 evaluateBernstein _ (Constant c)    = {-# SCC "evaluateConstant" #-}c
+
+
+tabulateBernstein :: (EuclideanSpace v, r ~ Scalar v)
+                  => Simplex v -> [v] -> [BernsteinPolynomial v r] -> [[r]]
+tabulateBernstein t vs bs = [tabulateBernstein' ls b | b <- bs]
+  where ls = P.euclideanToBarycentric t vs
+
+tabulateBernstein' :: (EuclideanSpace v, r ~ Scalar v)
+                     => [v] -> BernsteinPolynomial v r -> [r]
+tabulateBernstein' vs (Bernstein _ p) = [evaluate v p | v <- vs]
 
 \end{code}
 

@@ -3,7 +3,7 @@
 
 module FEEC.Internal.Form (
   -- * Generic form types
-  Dim, Form (Form, arity, dimVec, terms)
+  Dim, Form (Form, arity, dimVec, terms), split
 
   -- * Predefined primitive constructors
   , zeroForm, nullForm, oneForm
@@ -41,6 +41,11 @@ data Form f =  -- we lose dependency on the type of vector!
           , terms   :: [(f, Prd)] }   -- ^ List of terms of (coeff,wedge)'s
   deriving (Eq, Show)
 
+
+split :: (Ring v, VectorSpace w, Scalar w ~ v)
+      => Form w -> ([w], [Form v])
+split (Form k n cs)   = unzip $ map split' cs
+  where  split' (a,b) = (a, Form k n [(mulId, b)])
 
 -- terms [(17, [1,2]), (38, [1,3])] = 17*dx1/\dx2 + 38*dx1/\dx3
 
@@ -179,6 +184,7 @@ apply ds vs omega@(Form k n cs) = foldl addV addId (map (apply' k ds vs) cs)
 
 apply' :: (EuclideanSpace v, VectorSpace w, Scalar v ~ Scalar w)
        => Int -> [v] -> [v] -> (w,[Int]) -> w
+apply' k ds vs (p, []) = p
 apply' k ds vs (p, cs) = sclV c p
   where projections    = [toDouble $ dot (ds !! i) v | v <- vs, i <- cs]
         c              = fromDouble $ M.det $ M.matrix k projections
