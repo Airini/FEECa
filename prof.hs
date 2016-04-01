@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 import FEEC.FiniteElementSpace
 import FEEC.Internal.Spaces
 import FEEC.Internal.Form

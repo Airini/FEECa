@@ -220,7 +220,7 @@ formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
 formify _    (s, [])   _  = s
 formify proj (s, i:is) vs
     | null is   = {-#SCC "Form.formify" #-}sclV (proj i (head vs)) s
-    | otherwise =
+    | otherwise = {-#SCC "Form.formifyR" #-}
         foldl addV addId
               (map (\(w,e) -> sclV
                                 (mul (sign (w,e)) ((proj i . head) (choose w vs)))
