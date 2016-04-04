@@ -41,21 +41,31 @@ Keywords: \emph{Finite Element Exterior Calculus, Haskell, Functional Programmin
 
 % Insert text here:
 
-FEECa (\textipa{["fi:ka]}) is a framework for finite element exterior
-calculus written in Haskell. Starting out as a project to explore the
-possibilities of using a functional programming language to formulate
-abstract mathematical concepts, the project has developed into a
-full-fledged generator of basis form generator and framework for
-computations on differential forms. FEECa supports differential forms
-in arbitrary dimensions and implements monomial as well as Bernstein bases
-for polynomials. Furthermore, the framwork  provides functionality to
-compute bases of finite element spaces based on the geometric composition
-proposed by Arnold et al.\cite{arnold}.
+The theory of finite element exterior calculus (FEEC), developed by
+Arnold, Falk and Winther \cite{arnold1}, is a mathematical framework
+for the discretization of partial differential equations (PDEs) that
+allows for a universal treatment of a large number of physical
+problems.  FEECa (\textipa{["fi:ka]}) is a software package written in
+Haskell that implements this mathematical framework. Starting out as a
+project to explore the possibilities of using a functional programming
+language to implement the abstract, mathematical concepts of finite
+element exterior calculus, the project developed into a full-fledged
+basis form generator and framework for computations on differential
+forms. FEECa handles polynomial differential forms in arbitrary
+dimensions and implements monomial as well as Bernstein bases for
+polynomials. The package provides functionality to compute bases of
+the $\mathcal{P}_r\Lambda^k$ and $\mathcal{P}^-_r\Lambda^k$ spaces of
+finite elements based on the geometric composition proposed by Arnold,
+ Falk and Winther in \cite{arnold2}.
 
 \begin{thebibliography}{00}
 \addcontentsline{toc}{chapter}{References}
-\bibitem{arnold} Arnold, Douglas N. and Falk, Richard S. and Winther, Ragnar:
- Geometric decompositions and local bases for spaces of finite element differential forms
+\bibitem{arnold1} Arnold, Douglas N. and Falk, Richard S. and Winther, Ragnar.
+  \textit{Finite element exterior calculus, homological techniques, and applications}.
+  J. Acta Numerica. 2006
+\bibitem{arnold2} Arnold, Douglas N. and Falk, Richard S. and Winther, Ragnar:
+  \textit{Geometric decompositions and local bases for spaces of finite element differential forms}.
+  J. Computer Methods in Applied Mechanics and Engineering. 2009.
 \end{thebibliography}
 
 \end{document}
