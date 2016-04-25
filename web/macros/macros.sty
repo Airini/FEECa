@@ -1,0 +1,35 @@
+% Fix to get inline highlighting with pandoc.
+\newcommand{\code}[1]{\lstinline|#1|}
+\lstset{language=Haskell,basicstyle=\small}
+
+\newcommand{\dt}[1]{`<span class=dt>#1</span>`}
+
+\newcommand{\module}[1]{{\textbf{#1}}}
+
+% Ignore code
+\newcommand{\ignore}[1]{}
+
+% Symbol for euclidean space of dimension n.
+\newcommand{\R}[1]{\mathbb{R}^{#1}}
+
+% Command for package name
+\newcommand{\FEEC}{\textbf{FEEC}}
+
+% Command to typeset vectors
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+
+% Command to typeset simplixes
+\renewcommand{\smp}[1]{\mathcal{#1}}
+
+% Bernstein polynomial.
+\renewcommand{\B}{\boldsymbol{B}}
+
+\newcommand{\b}{\boldsymbol{B}}
+
+\newcommand{\pl}[2]{\mathcal{P}_{#1}\Lambda^{#2}}
+\newcommand{\pml}[2]{\mathcal{P}_{#1}^-\Lambda^{#2}}
+\newcommand{\ps}[2]{\mathcal{P}_{#1}(#2)}
+
+\newcommand{\ch}[2]{ \left ( \begin{array}{c} #1 \\ #2 \end{array} \right ) }
+
+\newcommand{\psf}[4]{\psi^{\vec{#1},\smp{#2},\smp{#3}}_{#4}}
