@@ -1,0 +1,270 @@
+img[alt=logo] { width: 75%;
+                float: center;
+                padding: 25px}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 25pt;
+    color: #000000;
+}
+
+h1 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 30pt !important;
+    font-weight: 600;
+    color: #000000;
+}
+
+h2 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 25pt !important;
+    font-weight: 600;
+    color: #000000;
+}
+
+h3, h4, h5, h6 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 20pt !important;
+    font-weight: 600;
+    color: #000000;
+}
+
+.image-box {
+    height: 80%;
+    width: 100%;
+    object-fit: contain !important;
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+.bottom-image {
+  width:      35%;
+  z-index:   10;
+  position: fixed;
+  bottom:     0px;
+  border: 1px, solid;
+  left: 0px;
+}
+
+.superscript
+{
+    position: relative;
+    vertical-align: super !important;
+    font-size: 80% !important;
+}
+
+div .footnote
+{
+    font-size: smaller;
+    vertical-align: super;
+    line-height: normal;
+    position: fixed;
+    bottom: 120px;
+}
+
+.small {
+    font-size: 1em;
+}
+.smaller {
+    font-size: 90%;
+}
+
+.x4 {
+    font-family: 'Yanone Kaffeesatz';
+    font-size: 1.2em;
+    font-weight: normal;
+    color: #666699;
+}
+
+ol {
+    padding-left: 100px;
+    margin-top: 1em;
+    margin-bottom: 3em;
+}
+
+ul {
+    margin-bottom: 3em;
+}
+
+li {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+.smallcode {
+    background: #f0f0f0;
+    border-radius: 5px;
+    font-family: Ubuntu Mono, sans-serif !important;
+    font-size: 16pt !important;
+    line-height: 150% !important;
+    display: table !important;
+}
+
+code {
+    background: #e7e8e2;
+    border-radius: 5px;
+    font-family: Ubuntu Mono, sans-serif !important;
+    font-size: 11pt;
+    line-height: 150% !important;
+}
+
+
+.remark-code, .remark-inline-code {
+}
+
+.codebox {
+    background: #222222 !important;
+    border-style: solid;
+    border-color: #f0f0f0;
+    border-radius: 5px;
+    border-width: 0px;
+    font-family: Ubuntu Mono, sans-serif !important;
+    font-size: 15pt !important;
+    font-weight: bold;
+    color: #f0f0f0 !important;
+    line-height: 150% !important;
+}
+
+pre .keyword{
+    color: #cccccc !important;
+}
+
+.remark-code {font-size: 0.7em};
+.remark-code-line-highlighted     { background-color: #373832; }     
+.sn {
+    font-family: 'Yanone Kaffeesatz';
+    font-size: 1em;
+    font-weight: bold;
+    color: #3333DD;
+}
+#slideshow .slide .content code {
+    font-size: 0.8em;
+}
+
+#slideshow .slide .content pre code {
+    font-size: 0.9em;
+}
+
+.center {
+    width: 100%;
+    float: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.one-column {
+    width: 100%;
+    float: left;
+}
+/* Two-column layouts */
+.left-column {
+    width: 48%;
+    float: left;
+}
+.right-column {
+    width: 48%;
+    float: right;
+}
+.left-column-65 {
+    width: 64%;
+    float: left;
+}
+.right-column-65 {
+    width: 64%;
+    float: right;
+}
+
+.left-column-55 {
+    width: 54%;
+    float: left;
+}
+.right-column-55 {
+    width: 54%;
+    float: right;
+}
+
+.left-column-45 {
+    width: 44%;
+    float: left;
+}
+.right-column-45 {
+    width: 44%;
+    float: right;
+}
+
+.left-column-35 {
+    width: 34%;
+    float: left;
+}
+.right-column-35 {
+    width: 34%;
+    float: right;
+}
+
+.left-column-40 {
+    width: 39%;
+    float: left;
+}
+.right-column-40 {
+    width: 39%;
+    float: right;
+}
+
+.left-column-30 {
+    width: 29%;
+    float: left;
+}
+
+ul .left-column-30 li:last-child span {
+    color: red;
+}
+
+.right-column-30 {
+    width: 29%;
+    float: right;
+    top: 0px;
+    bottom: 0px;
+    height:100%;
+}
+
+.left-column-20 {
+    width: 19%;
+    float: left;
+}
+.right-column-20 {
+    width: 19%;
+    float: right;
+}
+
+.left-column-5 {
+    width: 4%;
+    float: left;
+}
+.right-column-5 {
+    width: 4%;
+    float: right;
+}
+
+.left-column-60 {
+    width: 59%;
+    float: left;
+}
+.right-column-60 {
+    width: 59%;
+    float: right;
+}
+
+.left-column-70 {
+    width: 69%;
+    float: left;
+}
+
+.right-column-70 {
+    width: 69%;
+    float: right;
+}
+.smallerer {
+    font-size: 80%;
+}
