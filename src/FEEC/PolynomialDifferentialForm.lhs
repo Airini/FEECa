@@ -1,5 +1,10 @@
 \begin{code}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module FEEC.PolynomialDifferentialForm where
 
@@ -8,6 +13,7 @@ import Data.Maybe
 import Data.List
 import FEEC.Internal.Vector
 import FEEC.Internal.Simplex
+import FEEC.Utility.Print
 import qualified FEEC.Bernstein             as B
 import qualified FEEC.Internal.Form         as F
 import qualified FEEC.DifferentialForm      as D
@@ -16,9 +22,13 @@ import qualified FEEC.Internal.Spaces       as S
 import qualified FEEC.Utility.Combinatorics as C
 import qualified FEEC.Internal.Vector       as V
 
-
 type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
-type DifferentialForm a = D.DifferentialForm (BernsteinPolynomial a)
+type DifferentialForm a    = D.DifferentialForm (BernsteinPolynomial a)
+
+instance Show (BernsteinPolynomial Double) where
+  show b = show $ pPrint b
+instance  Show (DifferentialForm Double) where
+  show omega = show $ printForm ("d" ++ lambda) "0" pPrint (F.terms omega)
 
 findSimplex :: DifferentialForm a -> Maybe (Simplex (Vector a))
 findSimplex (F.Form k n cs) = find (const True) $ mapMaybe (findSimplex' . fst) cs

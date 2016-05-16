@@ -85,7 +85,6 @@ type DifferentialForm = D.DifferentialForm Double
 -- | $P_r^-\Lambda^k$ defined over a simplex.
 data FiniteElementSpace = PrLk Int Int Simplex
                         | PrmLk Int Int Simplex
-                        | GenSpace [BasisFunction]
                           deriving( Show )
 
 -- | Type synomym for basis function of finite element spaces that are of type

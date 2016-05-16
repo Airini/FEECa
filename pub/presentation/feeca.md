@@ -22,9 +22,8 @@ class: left
 - **F**inite **E**lement **E**xterior **Ca**lculus in Haskell
 - Implementation of finite element exterior calculus as introduced
   by Arnold, Falk, Winther .superscript[1]
-- Differential form calculator
-- Support for arbitrary dimensions
-- Basis function generator
+- Polynomial differential form calculator
+- Basis form generator
 
 .footnote[.superscript[1]
 Douglas N. Arnold and Richard S. Falk and Ragnar Winther,
@@ -34,9 +33,23 @@ Cambridge University Press (2006)
 
 ---
 
-## Current Status
 
+**Current status:**
+- 27 modules, 3021 lines of code
+- of which 12 modules, 815 lines of code for testing
+
+**Available operations on differential forms:**
+- Arbitrary integrals over simplices
+- wedge product, inner product
+- exterior derivative
+
+**Generation of basis forms:**
+- $\mathcal{P}_r\Lambda^k$, $\mathcal{P}^-_r\Lambda^k$
+
+**Support for arbitrary dimension n of the underlying Euclidean space.**
+---
 background-image: url(./periodic_table_1.png)
+
 
 ---
 
@@ -98,14 +111,28 @@ class: left, top
 ]
 
 
-???
-
-- Functional and high-level language
-- Encourages clear and concise code
-
 --
 
 .right-column-60[
+
+- Functional, high-level programming language
+- Encourages clear and concise programming style
+]
+
+---
+
+.left-column-40[
+## Why Haskell?
+
+- Code close(r) to mathematical notation
+
+]
+
+.right-column-60[
+
+- Functional, high-level programming language
+- Encourages clear and concise programming style
+
 ## Example
 
 Integrate differential forms over faces of a simplex:
@@ -168,6 +195,7 @@ class (Ring (Scalar v)) => VectorSpace v where
 ]
 
 ---
+
 .left-column-40[
 ## Why Haskell?
 - Code close(r) to mathematical notation
@@ -175,11 +203,16 @@ class (Ring (Scalar v)) => VectorSpace v where
 - Good testing support
 ]
 
---
-
 .right-column-60[
 
-**Type classes** can be used to fomulate generic test cases:
+**The QuickCheck Package** .superscript[1]
+- Automated, randomized testing of Haskell functions
+- User specifies properties of functions
+- Quickcheck checks properties for randomly generated
+  arguments
+
+
+**Example: Product Rule**
 
 .smallcode[
 ```haskell
@@ -191,13 +224,25 @@ product_rule v w p q =
   where dw = derive w
 ```
 ]
+
+.footnote[
+.superscript[1] [https://hackage.haskell.org/package/QuickCheck](https://hackage.haskell.org/package/QuickCheck)
 ]
 
---
+]
+
+---
+
+.left-column-40[
+## Why Haskell?
+- Code close(r) to mathematical notation
+- Powerful abstraction mechanisms
+- Good testing support
+]
 
 .right-column-60[
-
-Which can then be easily instantiated for concrete number types
+The generic properties can be instantiated with arbitrary
+number types:
 
 ```haskell
 product_rule_double :: Vector Double
@@ -218,7 +263,6 @@ product_rule_double = product_rule
 
 ---
 
-
 .left-column-40[
 ## Why Haskell?
 - Code close(r) to mathematical notation
@@ -227,25 +271,8 @@ product_rule_double = product_rule
 ]
 
 .right-column-60[
-
-**Type classes** can be used to fomulate generic test cases:
-
-.smallcode[
-```haskell
-product_rule :: (EuclideanSpace v, r ~ Scalar v) =>
-                v -> v -> Polynomial r -> Polynomial r -> Bool
-product_rule v w p q =
-     evaluate v (add (mul p (dw q)) (mul (dw p) q))
-  == evaluate v (dw (mul p q))
-  where dw = derive w
-```
-]
-
-]
-
-.right-column-60[
-
-Which can then be easily instantiated for concrete number types
+The generic properties can be instantiated with arbitrary
+number types:
 
 ```haskell
 product_rule_rational :: Vector Rational
@@ -270,6 +297,7 @@ product_rule_rational = product_rule
   $\mathcal{P}_r^-\Lambda^k(\Delta_n)$ for arbitrary $k$,$n$,$r$
 - Implementation based on the geometric decomposition proposed by
   Arnold, Falk, Winther .superscript[1]
+- No dual basis required
 
 .footnote[
 .superscript[1]
@@ -280,12 +308,9 @@ product_rule_rational = product_rule
 --
 ### Benchmarks
 
+- FEECa vs. FIAT
 - Generation of basis functions for $\mathcal{P}_r \Lambda^k(\Delta_3)$ and
   $\mathcal{P}_r^- \Lambda^k(\Delta_3)$ for $k = 0,\ldots,3$ and $r=0,\ldots,5$
-- Good performance for basis form computation
-
-
-
 
 ---
 
@@ -300,8 +325,27 @@ product_rule_rational = product_rule
 ]
 
 ---
-class: middle, center
-layout: false
 
-# Thank you!
-![logo](./chalmers.jpg)
+## Future Work
+
+- Investigate performance
+- Implementation of remaining exterior calculus operators
+- Cubical elements
+
+## Ideas
+- Integration with FEniCS
+- PDE framework in Haskell
+
+---
+
+## Interested?
+- FEECa on GitHub
+- Great Haskell tutorial: [Learn you a Haskell](http://learnyouahaskell.com/)
+
+## References
+- Douglas N. Arnold and Richard S. Falk and Ragnar Winther,
+*Finite element exterior calculus, homological techniques, and applications*,
+Cambridge University Press (2006)
+- Douglas N Arnold, Richard S. Falk, and Ragnar Winther.
+ *Geometric Decompositions and Local Bases for Spaces of Finite Element Differential Forms*
+# .center[ Thank you!]

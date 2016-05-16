@@ -39,7 +39,7 @@ data Form f =  -- we lose dependency on the type of vector!
     Form  { arity   :: Dim            -- ^ For complete evaluation
           , dimVec  :: Dim            -- ^ Of the underlying vector space
           , terms   :: [(f, Prd)] }   -- ^ List of terms of (coeff,wedge)'s
-  deriving (Eq, Show)
+  deriving (Eq)
 
 
 split :: (Ring v, VectorSpace w, Scalar w ~ v)

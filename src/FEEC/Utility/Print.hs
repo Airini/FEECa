@@ -138,7 +138,6 @@ printForm df _    coeff rest = hsep $ punctuate (text " +") $
                   hsep (intersperse wedgeD (map ((<>) (text df) . printSub) cs)))
       rest
 
-
 -- * Auxiliary prints
 
 baseD :: Doc
