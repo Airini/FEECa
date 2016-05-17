@@ -16,7 +16,7 @@ import           System.FilePath
 --------------------------------------------------------------------------------
 
 feecPath :: String
-feecPath = "src/FEEC/*.lhs"
+feecPath = "src/FEECa/*.lhs"
 
 extensions              = [Ext_latex_macros, Ext_literate_haskell]
 mathExtensions          = [Ext_tex_math_dollars, Ext_tex_math_double_backslash,

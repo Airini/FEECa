@@ -17,7 +17,7 @@ Here, $\vec{\alpha} = (\alpha_0,\ldots,\alpha_{n-1}) \in \mathrm{N}_0^{n}$ is a 
 
 The degree $||\vec{\alpha}||$ of a multi-index is just the sum of its components.
 
-In FEEC, two representations of polynomials in $\R{n}$ are used. The first one, as given by \eqref{eq:mon}, will be referred to as the (standard) monomial basis.
+In FEECa, two representations of polynomials in $\R{n}$ are used. The first one, as given by \eqref{eq:mon}, will be referred to as the (standard) monomial basis.
 %
 The second one uses the barycentric coordinates over a given simplex as basis.
 %
@@ -25,7 +25,7 @@ Polynomials of this type are referred to as Bernstein polynomials.
 %
 \subsection{General Polynomials}
 
-FEEC provides the |Polynomial| data type, that implements polynomials using the
+FEECa provides the |Polynomial| data type, that implements polynomials using the
 standard monomial basis but also provides functionality for the representation
 of general polynomials over an arbitrary monomial basis.
 
@@ -62,7 +62,7 @@ A Bernstein polynomial is then a linear combination of Bernstein monomials.
 %
 Since a Bernstein polynomial is defined over barycentric coordinates, it can only be defined with respect to a given Simplex.
 %
-In FEEC, Bernstein polynomial are represented by the |BernsteinPolynomial| type.
+In FEECa, Bernstein polynomial are represented by the |BernsteinPolynomial| type.
 %
 The |BernsteinPolynomial| type is parametrized by two types, that specify the scalar type and the vector type that is used for the representation of the simplex.
 

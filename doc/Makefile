@@ -6,7 +6,7 @@ LATEXMK := latexmk
 
 DEPS := internal.lhs geometry.lhs polynomials.lhs forms.lhs fespaces.lhs
 
-BASE_DIR := ../src/FEEC
+BASE_DIR := ../src/FEECa
 
 INTERNAL_DIR := $(join $(BASE_DIR), /Internal)
 UTILITY_DIR  := $(join $(BASE_DIR), /Utility)

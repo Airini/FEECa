@@ -8,9 +8,9 @@ The discretization of $\Omega$ is achieved by tesselation using primitive
 geometrical shapes, the so-called finite elements.
 %
 The two types of finite elements used in finite element exterior calculus
-are simplices and cubes, of which up to now only simplices are supported in FEEC.
+are simplices and cubes, of which up to now only simplices are supported in FEECa.
 %
-The representation of these geometrical structures is realized in FEEC using the
+The representation of these geometrical structures is realized in FEECa using the
 |EuclideanSpace| type-class as well as the |Vector| and |Simplex| data types.
 
 \subsection{Vectors}

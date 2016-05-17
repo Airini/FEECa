@@ -1,15 +1,15 @@
 {-# LANGUAGE FlexibleContexts #-}
-import FEEC.FiniteElementSpace
-import FEEC.Internal.Spaces
-import FEEC.Internal.Form
-import FEEC.Utility.Print
-import qualified FEEC.Polynomial as P
-import qualified FEEC.Bernstein as B
-import qualified FEEC.Internal.Form as F
-import qualified FEEC.PolynomialDifferentialForm as D
-import qualified FEEC.Internal.Vector as V
-import qualified FEEC.Internal.Simplex as S
-import qualified FEEC.Internal.MultiIndex as MI
+import FEECa.FiniteElementSpace
+import FEECa.Internal.Spaces
+import FEECa.Internal.Form
+import FEECa.Utility.Print
+import qualified FEECa.Polynomial as P
+import qualified FEECa.Bernstein as B
+import qualified FEECa.Internal.Form as F
+import qualified FEECa.PolynomialDifferentialForm as D
+import qualified FEECa.Internal.Vector as V
+import qualified FEECa.Internal.Simplex as S
+import qualified FEECa.Internal.MultiIndex as MI
 
 create_vectors :: Int -> Int -> [Vector]
 create_vectors d n = [V.vector (replicate d ((i + 1) `over` n)) | i <- [0..n-1]]

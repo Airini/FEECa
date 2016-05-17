@@ -1,17 +1,17 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Main where
 
-import FEEC.FiniteElementSpace
-import FEEC.Internal.Spaces
-import FEEC.Utility.Print
-import qualified FEEC.Polynomial    as P
-import qualified FEEC.Bernstein     as B
-import qualified FEEC.Internal.Form as F
-import qualified FEEC.PolynomialDifferentialForm as D
-import qualified FEEC.Internal.Vector     as V
-import qualified FEEC.Internal.Simplex    as S
-import qualified FEEC.Internal.MultiIndex as MI
-import FEEC.Utility.Combinatorics
+import FEECa.FiniteElementSpace
+import FEECa.Internal.Spaces
+import FEECa.Utility.Print
+import qualified FEECa.Polynomial    as P
+import qualified FEECa.Bernstein     as B
+import qualified FEECa.Internal.Form as F
+import qualified FEECa.PolynomialDifferentialForm as D
+import qualified FEECa.Internal.Vector     as V
+import qualified FEECa.Internal.Simplex    as S
+import qualified FEECa.Internal.MultiIndex as MI
+import FEECa.Utility.Combinatorics
 import Criterion
 import Criterion.Main
 
@@ -92,13 +92,13 @@ bench_basis_n_k f nmax rmax = concat
 -- Benchmark main
 --------------------------------------------------------------------------------
 
-data FEECBenchOptions = FBO
+data FEECaBenchOptions = FBO
   { max_deg :: Int, max_dim :: Int, max_kar :: Int
   , families :: [Int -> Int -> Simplex -> FiniteElementSpace]
   , npoints :: Int, nruns :: Int
   , filename :: String }
 
-defaultOpts = FBO 5 3 3 [PrLk, PrmLk] 10 10 "timings_FEEC.csv"
+defaultOpts = FBO 5 3 3 [PrLk, PrmLk] 10 10 "timings_FEECa.csv"
 {-do
   as <- getArgs >>= return . parseArgs
   -}
@@ -113,7 +113,7 @@ main = do
     , bgroup "PrmLk evaluate" $ bench_evaluate_n_k  PrmLk n r
     ]
 
-parseArgs :: [String] -> FEECBenchOptions
+parseArgs :: [String] -> FEECaBenchOptions
 parseArgs ("-f":x:xs) = (parseArgs xs) { filename = x }
 parseArgs ("-r":x:xs) = (parseArgs xs) { max_deg  = read x }
 parseArgs ("-n":x:xs) = (parseArgs xs) { max_dim  = read x }

@@ -9,7 +9,7 @@ The space $\pml{r}{k}$ is defined as
 \end{align}
 where $\kappa$ is the Koszul operator.
 
-FEEC provides the functions |prLkBasis| and |prmLKBasis| for the computations of bases for the spaces $\pl{r}{k}$ and $\pml{r}{k}$, respectively.
+FEECa provides the functions |prLkBasis| and |prmLKBasis| for the computations of bases for the spaces $\pl{r}{k}$ and $\pml{r}{k}$, respectively.
 %
 In addition to that, the |finiteElementSpace| function can be used to compute specific $\pl{r}{k}$ and $\pml{r}{k}$ spaces.
 

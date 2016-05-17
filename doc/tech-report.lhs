@@ -1,7 +1,7 @@
 % -*- latex -*-
 %----------------------------------------------------------------------------
 % TODO:
-%  Title       :  F.FEEC: Functional Finite Element Exterior Calculus
+%  Title       :  F.FEECa: Functional Finite Element Exterior Calculus
 %  Author(s)   :
 %  Copyright   :
 %  Created     :  2015-06-15
@@ -79,11 +79,11 @@
 %%%TODO: TRtitlepage to be defined
 %if techreport
 \TRtitlepage
-  {F.FEEC: Functional Finite Element Exterior Calculus} % argument 1 <= the title
+  {F.FEECa: Functional Finite Element Exterior Calculus} % argument 1 <= the title
   {Simon Pfreundschuh \\[1em] Irene Lobo Valbuena}      % argument 2 <= authors
   {}                                                    % argument 3 <= report number
 %else
-\title{F.FEEC: Functional Finite Element Exterior Calculus}
+\title{F.FEECa: Functional Finite Element Exterior Calculus}
 
 \authorinfo{Simon Pfreundschuh}
            {Chalmers University of Technology, Sweden}
