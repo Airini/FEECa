@@ -1,22 +1,22 @@
 {-# LANGUAGE TypeFamilies #-}
 
-module FEEC.BernsteinTest where
+module FEECa.BernsteinTest where
 
 import Control.Monad
-import FEEC.Bernstein
-import qualified FEEC.Internal.MultiIndex as MI
-import FEEC.Internal.Simplex
-import FEEC.Internal.Vector
-import FEEC.Internal.Spaces
-import FEEC.Utility.Utility
-import FEEC.PolynomialTest(n)
-import FEEC.Utility.Print
+import FEECa.Bernstein
+import qualified FEECa.Internal.MultiIndex as MI
+import FEECa.Internal.Simplex
+import FEECa.Internal.Vector
+import FEECa.Internal.Spaces
+import FEECa.Utility.Utility
+import FEECa.PolynomialTest(n)
+import FEECa.Utility.Print
 import Properties
 import Test.QuickCheck.Property(Property, (==>), property)
 import qualified Test.QuickCheck as Q
 import qualified Test.QuickCheck.Property as Prop
-import qualified FEEC.Polynomial as P
-import qualified FEEC.PolynomialTest as PT
+import qualified FEECa.Polynomial as P
+import qualified FEECa.PolynomialTest as PT
 
 --------------------------------------------------------------------------------
 -- Random Bernstein Polynomials

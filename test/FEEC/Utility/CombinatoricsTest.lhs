@@ -11,17 +11,17 @@ module to be used with the \code{QuickCheck}\cite{package:qc} module.
 
 {-# LANGUAGE TemplateHaskell #-}
 
-module FEEC.Utility.CombinatoricsTest (
+module FEECa.Utility.CombinatoricsTest (
                           testCombinatorics
                           ) where
 
-import FEEC.Utility.Combinatorics ( increasingLists,
+import FEECa.Utility.Combinatorics ( increasingLists,
                                     increasingLists1,
                                     unrank,
                                     sublists,
                                     sumRLists,
                                     sumRLists' )
-import qualified FEEC.Utility.Combinatorics as C ( choose )
+import qualified FEECa.Utility.Combinatorics as C ( choose )
 import Test.QuickCheck
 import Test.QuickCheck.All
 import Data.List (sort, (\\))
@@ -159,7 +159,7 @@ prop_index (Parameters k n) i =
 
 In order to test the \code{sublists} function, we generate an increasing list
  using a \code{Parameters} instance and compute its sublists. Since this is also
- how this function is used in \code{FEEC}, this should be a reasonable
+ how this function is used in \code{FEECa}, this should be a reasonable
 simplification.
 
 The sublists of length $k-1$ should all have length $k-1$ and preserve the

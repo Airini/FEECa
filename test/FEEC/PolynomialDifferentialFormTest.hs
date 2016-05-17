@@ -1,26 +1,26 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module FEEC.PolynomialDifferentialFormTest where
+module FEECa.PolynomialDifferentialFormTest where
 
 import Control.Applicative
 import Data.Maybe
 import Control.Monad
-import FEEC.BernsteinTest
-import FEEC.Internal.Form
-import FEEC.Internal.Simplex
-import FEEC.Internal.Spaces
-import FEEC.Internal.Vector
-import FEEC.PolynomialDifferentialForm
-import FEEC.PolynomialTest(n)
-import FEEC.Polynomial
-import qualified FEEC.Bernstein                  as B
-import qualified FEEC.Utility.Combinatorics      as C
-import qualified FEEC.PolynomialDifferentialForm as D
-import qualified FEEC.Internal.Spaces            as S
-import FEEC.Utility.Combinatorics
-import FEEC.Utility.Print
-import FEEC.Utility.Utility
+import FEECa.BernsteinTest
+import FEECa.Internal.Form
+import FEECa.Internal.Simplex
+import FEECa.Internal.Spaces
+import FEECa.Internal.Vector
+import FEECa.PolynomialDifferentialForm
+import FEECa.PolynomialTest(n)
+import FEECa.Polynomial
+import qualified FEECa.Bernstein                  as B
+import qualified FEECa.Utility.Combinatorics      as C
+import qualified FEECa.PolynomialDifferentialForm as D
+import qualified FEECa.Internal.Spaces            as S
+import FEECa.Utility.Combinatorics
+import FEECa.Utility.Print
+import FEECa.Utility.Utility
 
 import Test.QuickCheck(Arbitrary, arbitrary, quickCheck, (==>), Property)
 import qualified Test.QuickCheck as Q

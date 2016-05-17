@@ -2,14 +2,14 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module FEEC.Internal.VectorTest (
+module FEECa.Internal.VectorTest (
                                  arbitraryVector
                                 ) where
 
-import FEEC.Internal.Spaces
-import FEEC.Internal.Vector
-import FEEC.Utility.Utility
-import FEEC.Utility.Test
+import FEECa.Internal.Spaces
+import FEECa.Internal.Vector
+import FEECa.Utility.Utility
+import FEECa.Utility.Test
 import Test.QuickCheck (Arbitrary(..), (==>), Gen, Property, quickCheck)
 import qualified Test.QuickCheck as Q(vector)
 

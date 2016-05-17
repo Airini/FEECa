@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module FEEC.Internal.SimplexTest(
+module FEECa.Internal.SimplexTest(
                                  arbitrarySimplex,
                                  arbitrarySubsimplex
                                 ) where
@@ -13,13 +13,13 @@ module FEEC.Internal.SimplexTest(
 import Control.Monad
 import Data.Maybe
 import Data.List
-import FEEC.Internal.Simplex
-import FEEC.Internal.Spaces
-import FEEC.Internal.Vector
-import FEEC.Internal.VectorTest
-import FEEC.Utility.Combinatorics
-import FEEC.Utility.Utility
-import FEEC.Utility.Test
+import FEECa.Internal.Simplex
+import FEECa.Internal.Spaces
+import FEECa.Internal.Vector
+import FEECa.Internal.VectorTest
+import FEECa.Utility.Combinatorics
+import FEECa.Utility.Utility
+import FEECa.Utility.Test
 import System.Random
 import Test.QuickCheck(Arbitrary, arbitrary, quickCheck, (==>), Property)
 import Test.QuickCheck.Gen(Gen, vectorOf)

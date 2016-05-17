@@ -1,9 +1,9 @@
-module FEEC.Utility.Test where
+module FEECa.Utility.Test where
 
-import FEEC.Internal.Vector
-import FEEC.Internal.Simplex
-import FEEC.Internal.Spaces
-import qualified FEEC.Internal.MultiIndex as MI
+import FEECa.Internal.Vector
+import FEECa.Internal.Simplex
+import FEECa.Internal.Spaces
+import qualified FEECa.Internal.MultiIndex as MI
 import qualified Test.QuickCheck as Q
 import Data.List
 import Control.Monad

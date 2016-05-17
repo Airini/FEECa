@@ -1,15 +1,15 @@
-module FEEC.Internal.FormTest where
+module FEECa.Internal.FormTest where
 
 import Test.QuickCheck
 
-import qualified FEEC.Internal.Vector as V
-import FEEC.Internal.VectorTest
-import FEEC.Internal.Vector
-import FEEC.Internal.Form
-import FEEC.Bernstein
-import FEEC.Internal.Spaces
-import FEEC.Utility.Discrete
-import FEEC.Utility.Utility (pairM, sumV)
+import qualified FEECa.Internal.Vector as V
+import FEECa.Internal.VectorTest
+import FEECa.Internal.Vector
+import FEECa.Internal.Form
+import FEECa.Bernstein
+import FEECa.Internal.Spaces
+import FEECa.Utility.Discrete
+import FEECa.Utility.Utility (pairM, sumV)
 import Properties
 
 import Control.Monad (liftM, liftM2)

@@ -1,24 +1,24 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module FEEC.FiniteElementTest where
+module FEECa.FiniteElementTest where
 
 import Control.Monad
-import FEEC.Utility.Print
-import FEEC.FiniteElementSpace
-import FEEC.Internal.SimplexTest
-import FEEC.Internal.Spaces
-import qualified FEEC.Internal.MultiIndex as MI
-import qualified FEEC.Internal.Vector as V
-import FEEC.Internal.Form hiding (inner)
-import FEEC.Utility.Combinatorics
-import FEEC.Utility.Test
-import FEEC.Utility.Utility
-import FEEC.Bernstein
+import FEECa.Utility.Print
+import FEECa.FiniteElementSpace
+import FEECa.Internal.SimplexTest
+import FEECa.Internal.Spaces
+import qualified FEECa.Internal.MultiIndex as MI
+import qualified FEECa.Internal.Vector as V
+import FEECa.Internal.Form hiding (inner)
+import FEECa.Utility.Combinatorics
+import FEECa.Utility.Test
+import FEECa.Utility.Utility
+import FEECa.Bernstein
 import Control.Applicative
-import qualified FEEC.Internal.Simplex           as S
-import qualified FEEC.PolynomialDifferentialForm as D
-import qualified FEEC.Polynomial                 as P
+import qualified FEECa.Internal.Simplex           as S
+import qualified FEECa.PolynomialDifferentialForm as D
+import qualified FEECa.Polynomial                 as P
 import qualified Numeric.LinearAlgebra.HMatrix   as M
 import qualified Test.QuickCheck                 as Q
 import qualified Test.QuickCheck.Property        as Prop

@@ -1,8 +1,8 @@
-module FEEC.Utility.QuadratureTest where
+module FEECa.Utility.QuadratureTest where
 
-import FEEC.Utility.Quadrature
-import FEEC.Utility.Utility
-import FEEC.Utility.Test
+import FEECa.Utility.Quadrature
+import FEECa.Utility.Utility
+import FEECa.Utility.Test
 import Test.QuickCheck
 
 -- | Evaluate Jacobi polynomials at the Gauss quadrature nodes and check

@@ -1,18 +1,18 @@
 {-# LANGUAGE TypeFamilies #-}
-module FEEC.PolynomialTest where
+module FEECa.PolynomialTest where
 
 
 import Properties
-import FEEC.Polynomial
-import FEEC.Internal.Vector
-import FEEC.Internal.Simplex
-import FEEC.Internal.Spaces
-import FEEC.Utility.Utility
-import FEEC.Utility.Combinatorics
-import FEEC.Utility.Test
-import FEEC.Utility.Print
+import FEECa.Polynomial
+import FEECa.Internal.Vector
+import FEECa.Internal.Simplex
+import FEECa.Internal.Spaces
+import FEECa.Utility.Utility
+import FEECa.Utility.Combinatorics
+import FEECa.Utility.Test
+import FEECa.Utility.Print
 import qualified Test.QuickCheck as Q
-import qualified FEEC.Internal.MultiIndex as MI
+import qualified FEECa.Internal.MultiIndex as MI
 import qualified Numeric.LinearAlgebra.HMatrix as M
 
 ------------------------------------------------------------------------------
@@ -156,6 +156,7 @@ prop_barycentric t =
           k           = topologicalDimension t
           oneLists    = (map (map fromInt') (sumRLists (k+1) 1))
 
+t  = (referenceSimplex 3) :: (Simplex (Vector Double))
 bs = barycentricCoordinates t
 vs = vertices t
 l1 = [[evaluate v b | v <- vs] | b <- bs]

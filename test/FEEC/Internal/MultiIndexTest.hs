@@ -1,14 +1,14 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module FEEC.Internal.MultiIndexTest where
+module FEECa.Internal.MultiIndexTest where
 
 import Properties
 import Data.List
-import FEEC.Utility.Combinatorics
-import FEEC.Internal.MultiIndex
+import FEECa.Utility.Combinatorics
+import FEECa.Internal.MultiIndex
 import Test.QuickCheck
-import FEEC.Utility.Test
+import FEECa.Utility.Test
 import Properties
 
 instance Arbitrary MultiIndex where
