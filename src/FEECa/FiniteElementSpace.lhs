@@ -20,7 +20,7 @@ where $\kappa$ is the Koszul operator.
 
 {-# LANGUAGE FlexibleContexts #-}
 
-module FEEC.FiniteElementSpace (
+module FEECa.FiniteElementSpace (
                                 FiniteElementSpace(..),
                                 Name(..),
                                 finiteElementSpace,
@@ -38,19 +38,19 @@ module FEEC.FiniteElementSpace (
 )where
 
 import Data.List
-import FEEC.Bernstein (constant, monomial, multiIndices)
-import qualified FEEC.Bernstein as B (BernsteinPolynomial(..),extend)
-import FEEC.Utility.Combinatorics
-import qualified FEEC.PolynomialDifferentialForm as D
-import FEEC.Utility.Print( printBernstein, printForm, dlambda )
-import qualified FEEC.Utility.Print as P ( Pretty(..) )
-import FEEC.Internal.Form hiding (arity, inner)
-import qualified FEEC.Internal.Form as F(inner)
-import qualified FEEC.Internal.Simplex as S
-import FEEC.Internal.Spaces hiding (inner)
-import qualified FEEC.Internal.Spaces as S(inner)
-import qualified FEEC.Internal.Vector as V
-import qualified FEEC.Internal.MultiIndex as MI
+import FEECa.Bernstein (constant, monomial, multiIndices)
+import qualified FEECa.Bernstein as B (BernsteinPolynomial(..),extend)
+import FEECa.Utility.Combinatorics
+import qualified FEECa.PolynomialDifferentialForm as D
+import FEECa.Utility.Print( printBernstein, printForm, dlambda )
+import qualified FEECa.Utility.Print as P ( Pretty(..) )
+import FEECa.Internal.Form hiding (arity, inner)
+import qualified FEECa.Internal.Form as F(inner)
+import qualified FEECa.Internal.Simplex as S
+import FEECa.Internal.Spaces hiding (inner)
+import qualified FEECa.Internal.Spaces as S(inner)
+import qualified FEECa.Internal.Vector as V
+import qualified FEECa.Internal.MultiIndex as MI
 import qualified Math.Combinatorics.Exact.Binomial as CBin
 import Debug.Trace
 

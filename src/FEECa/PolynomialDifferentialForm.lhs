@@ -6,21 +6,21 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module FEEC.PolynomialDifferentialForm where
+module FEECa.PolynomialDifferentialForm where
 
 import Control.Applicative
 import Data.Maybe
 import Data.List
-import FEEC.Internal.Vector
-import FEEC.Internal.Simplex
-import FEEC.Utility.Print
-import qualified FEEC.Bernstein             as B
-import qualified FEEC.Internal.Form         as F
-import qualified FEEC.DifferentialForm      as D
-import qualified FEEC.Polynomial            as P
-import qualified FEEC.Internal.Spaces       as S
-import qualified FEEC.Utility.Combinatorics as C
-import qualified FEEC.Internal.Vector       as V
+import FEECa.Internal.Vector
+import FEECa.Internal.Simplex
+import FEECa.Utility.Print
+import qualified FEECa.Bernstein             as B
+import qualified FEECa.Internal.Form         as F
+import qualified FEECa.DifferentialForm      as D
+import qualified FEECa.Polynomial            as P
+import qualified FEECa.Internal.Spaces       as S
+import qualified FEECa.Utility.Combinatorics as C
+import qualified FEECa.Internal.Vector       as V
 
 type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
 type DifferentialForm a    = D.DifferentialForm (BernsteinPolynomial a)

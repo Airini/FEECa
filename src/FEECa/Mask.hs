@@ -4,20 +4,20 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module FEEC.Mask where
+module FEECa.Mask where
 
 import Control.Applicative
 
-import FEEC.DifferentialForm
-import FEEC.Internal.Form
-import FEEC.Internal.Spaces hiding(inner)
-import qualified FEEC.Internal.Spaces as S(inner)
-import FEEC.Internal.Vector
-import FEEC.Internal.Simplex
-import FEEC.Polynomial
-import FEEC.Utility.Utility
-import qualified FEEC.Internal.MultiIndex as MI
-import qualified FEEC.Bernstein as B
+import FEECa.DifferentialForm
+import FEECa.Internal.Form
+import FEECa.Internal.Spaces hiding(inner)
+import qualified FEECa.Internal.Spaces as S(inner)
+import FEECa.Internal.Vector
+import FEECa.Internal.Simplex
+import FEECa.Polynomial
+import FEECa.Utility.Utility
+import qualified FEECa.Internal.MultiIndex as MI
+import qualified FEECa.Bernstein as B
 
 type Monop t = t -> t
 type Binop t = t -> t -> t

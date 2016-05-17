@@ -1,11 +1,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module FEEC.FailEgs where
+module FEECa.FailEgs where
 
-import FEEC.Internal.Form
-import FEEC.Internal.Vector
-import FEEC.DifferentialForm
-import FEEC.Internal.Spaces
+import FEECa.Internal.Form
+import FEECa.Internal.Vector
+import FEECa.DifferentialForm
+import FEECa.Internal.Spaces
 
 n01 = 49
 (ar01a, ar01b) = (1,5)

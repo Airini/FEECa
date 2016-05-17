@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module FEEC.DifferentialForm (
+module FEECa.DifferentialForm (
   -- * Differential form type
   DifferentialForm
   
@@ -12,12 +12,12 @@ module FEEC.DifferentialForm (
   ) where
 
 import Control.Applicative (pure)
-import FEEC.Internal.Form
-import FEEC.Internal.Spaces
-import FEEC.Internal.Vector
-import FEEC.Internal.Simplex
-import FEEC.Polynomial
-import FEEC.Utility.Utility (pairM)
+import FEECa.Internal.Form
+import FEECa.Internal.Spaces
+import FEECa.Internal.Vector
+import FEECa.Internal.Simplex
+import FEECa.Polynomial
+import FEECa.Utility.Utility (pairM)
 
 
 -- | Differential forms

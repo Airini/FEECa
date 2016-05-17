@@ -10,7 +10,7 @@ functions for the handling of vectors in $n$-dimensional Euclidean space
 
 {-# LANGUAGE TypeFamilies #-}
 
-module FEEC.Internal.Vector(
+module FEECa.Internal.Vector(
 
   -- * The Vector Type
   Vector(..), Dimensioned(..), vector,
@@ -23,10 +23,10 @@ module FEEC.Internal.Vector(
 
   ) where
 
-import FEEC.Internal.Spaces
-import qualified  FEEC.Internal.MultiIndex  as MI
-import            FEEC.Utility.Print        as P
-import qualified  FEEC.Utility.Utility      as U
+import FEECa.Internal.Spaces
+import qualified  FEECa.Internal.MultiIndex  as MI
+import            FEECa.Utility.Print        as P
+import qualified  FEECa.Utility.Utility      as U
 
 
 \end{code}
@@ -53,7 +53,7 @@ data Vector a = Vector { components :: [a] } deriving (Show)
 
 %------------------------------------------------------------------------------%
 
- To use the \code{Vector a} type in the \code{FEEC} framework, we have to make
+ To use the \code{Vector a} type in the \code{FEECa} framework, we have to make
  it an instance of the \code{VectorSpace} and the \code{EuclideanSpace} classes.
  We instantiate two types \code{Vector Rational} and \code{Vector Double} in
  order to have one type with exact arithmetic using Haskells \code{Rational}

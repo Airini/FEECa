@@ -1,9 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module FEEC.Utility.GramSchmidt where
+module FEECa.Utility.GramSchmidt where
 
-import FEEC.Internal.Spaces
-import FEEC.Internal.Vector
+import FEECa.Internal.Spaces
+import FEECa.Internal.Vector
 
 
 -- | Gram-Schmidt orthogonalization

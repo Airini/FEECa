@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module FEEC.Internal.Form (
+module FEECa.Internal.Form (
   -- * Generic form types
   Dim, Form (Form, arity, dimVec, terms), split
 
@@ -15,12 +15,12 @@ module FEEC.Internal.Form (
 
 import Control.Applicative
 import Data.List (intersect)
-import FEEC.Internal.Spaces hiding( inner )
-import qualified FEEC.Internal.Spaces as S( inner )
-import FEEC.Utility.Discrete
-import FEEC.Utility.Utility (pairM, sumR, sumV, expSign, sign)
-import FEEC.Utility.Print (Pretty(..), printForm)
-import FEEC.Utility.Combinatorics
+import FEECa.Internal.Spaces hiding( inner )
+import qualified FEECa.Internal.Spaces as S( inner )
+import FEECa.Utility.Discrete
+import FEECa.Utility.Utility (pairM, sumR, sumV, expSign, sign)
+import FEECa.Utility.Print (Pretty(..), printForm)
+import FEECa.Utility.Combinatorics
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
 import Debug.Trace

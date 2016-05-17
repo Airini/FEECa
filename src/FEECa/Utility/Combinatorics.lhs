@@ -2,7 +2,7 @@
 \section{Combinatorics}
 
 The \code{Combinatorics} module contains functions for  common combinatorial
-tasks that arise in \code{FEEC}. Those are
+tasks that arise in \code{FEECa}. Those are
 \begin{itemize}
   \item computation of binomial coefficients and factorials,
   \item generation and indexing of increasing lists,
@@ -13,7 +13,7 @@ tasks that arise in \code{FEEC}. Those are
 
 \begin{code}
 
-module FEEC.Utility.Combinatorics(
+module FEECa.Utility.Combinatorics(
   -- * Mathematical Functions
   choose, factorial,
   -- * Increasing Lists

@@ -25,7 +25,7 @@
    TypeFamilies,
    FlexibleInstances #-}
 
-module FEEC.Internal.Simplex(
+module FEECa.Internal.Simplex(
   -- * The Simplex type
   Simplex(..), simplex, simplex', referenceSimplex, face,
 
@@ -45,13 +45,13 @@ module FEEC.Internal.Simplex(
 
 import Data.List
 
-import FEEC.Internal.Spaces
-import FEEC.Internal.Vector
-import FEEC.Utility.Combinatorics
-import FEEC.Utility.GramSchmidt
-import FEEC.Utility.Print
-import FEEC.Utility.Quadrature
-import qualified FEEC.Utility.Utility as U
+import FEECa.Internal.Spaces
+import FEECa.Internal.Vector
+import FEECa.Utility.Combinatorics
+import FEECa.Utility.GramSchmidt
+import FEECa.Utility.Print
+import FEECa.Utility.Quadrature
+import qualified FEECa.Utility.Utility as U
 
 import qualified Numeric.LinearAlgebra.HMatrix as M
 
@@ -501,7 +501,7 @@ integral of $f$ over $\smp{T}$ can then be approximated using
 
  The above formula is implemented by the function \code{integral}. The
  computation of the quadrature weights and nodes is implemented in
- \code{FEEC.Utility.Quadrature}.
+ \code{FEECa.Utility.Quadrature}.
 
 %------------------------------------------------------------------------------%
 

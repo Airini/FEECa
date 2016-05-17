@@ -35,7 +35,7 @@ Apart from implementing polynomials over vectors in $\R{n}$, the
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module FEEC.Polynomial (
+module FEECa.Polynomial (
 
   -- * Polynomial types
   Polynomial(..), Term(..)
@@ -59,21 +59,21 @@ module FEEC.Polynomial (
 
 import Data.Maybe (fromJust)
 import Data.List
-import qualified FEEC.Internal.MultiIndex as MI (MultiIndex, zero, unit, decrease, toList, add, degree, valid)
-import FEEC.Internal.Simplex
-import FEEC.Internal.Spaces(VectorSpace(..),
+import qualified FEECa.Internal.MultiIndex as MI (MultiIndex, zero, unit, decrease, toList, add, degree, valid)
+import FEECa.Internal.Simplex
+import FEECa.Internal.Spaces(VectorSpace(..),
                             Ring(..),
                             Field(..),
                             Dimensioned(..),
                             EuclideanSpace(..),
                             toDouble',
                             fromDouble')
-import qualified FEEC.Internal.Spaces as S(Function(..))
-import FEEC.Internal.Point
-import FEEC.Internal.Vector(Vector, vector, toList)
-import qualified FEEC.Internal.Vector as V(pow)
-import FEEC.Utility.Print(Pretty(..), printPolynomial)
-import FEEC.Utility.Utility(pairM, takeIndices)
+import qualified FEECa.Internal.Spaces as S(Function(..))
+import FEECa.Internal.Point
+import FEECa.Internal.Vector(Vector, vector, toList)
+import qualified FEECa.Internal.Vector as V(pow)
+import FEECa.Utility.Print(Pretty(..), printPolynomial)
+import FEECa.Utility.Utility(pairM, takeIndices)
 import Text.PrettyPrint
 import qualified Numeric.LinearAlgebra.HMatrix as M
 import qualified Numeric.LinearAlgebra.Data as M
@@ -202,7 +202,7 @@ toPairs n p = map (expandTerm n) (terms p)
 \subsubsection{Class Instantiations}
 
 Polynomials over $\R{n}$ form a vector space over $\mathrm R$ and a ring. To
- make their algebraic structure available in \code{FEEC}, we make them instances
+ make their algebraic structure available in \code{FEECa}, we make them instances
  of the \code{Vectorspace} and \code{Ring} classes. The implementation of the
  arithmetic functions on polynomials is given below.
 

@@ -1,16 +1,16 @@
-module FEEC.Demo where
+module FEECa.Demo where
 
 import Control.Applicative
 
-import FEEC.DifferentialForm
-import FEEC.Internal.Form
-import FEEC.Internal.Point
-import FEEC.Internal.Simplex
-import FEEC.Internal.Spaces
-import FEEC.Internal.Vector
-import FEEC.Mask
-import FEEC.Polynomial
-import qualified FEEC.Utility.Print as PP
+import FEECa.DifferentialForm
+import FEECa.Internal.Form
+import FEECa.Internal.Point
+import FEECa.Internal.Simplex
+import FEECa.Internal.Spaces
+import FEECa.Internal.Vector
+import FEECa.Mask
+import FEECa.Polynomial
+import qualified FEECa.Utility.Print as PP
 
 
 -------

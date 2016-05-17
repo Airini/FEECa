@@ -3,11 +3,11 @@
 
 module Properties where
 
-import FEEC.Internal.Form
-import FEEC.Internal.Spaces
-import FEEC.Internal.Vector
-import FEEC.Utility.Utility (expSign)
-import FEEC.Mask
+import FEECa.Internal.Form
+import FEECa.Internal.Spaces
+import FEECa.Internal.Vector
+import FEECa.Utility.Utility (expSign)
+import FEECa.Mask
 import Test.QuickCheck as TQ
 
 

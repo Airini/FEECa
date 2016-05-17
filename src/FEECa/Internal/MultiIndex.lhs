@@ -31,7 +31,7 @@ The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
 
 \begin{code}
 
-module FEEC.Internal.MultiIndex(
+module FEECa.Internal.MultiIndex(
 
   -- * The MultiIndex type
   MultiIndex, toList, valid,
@@ -49,9 +49,9 @@ module FEEC.Internal.MultiIndex(
 
 
 import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)
-import FEEC.Internal.Spaces(Dimensioned(..),Field(..))
-import FEEC.Utility.Combinatorics(sumRLists)
-import qualified FEEC.Utility.Combinatorics as C(choose, factorial)
+import FEECa.Internal.Spaces(Dimensioned(..),Field(..))
+import FEECa.Utility.Combinatorics(sumRLists)
+import qualified FEECa.Utility.Combinatorics as C(choose, factorial)
 
 \end{code}
 
@@ -166,7 +166,7 @@ unit n i = ZipList $ concat [replicate i 0,[1],replicate (n-i-1) 0]
 
  The function \code{degreeR} returns a list of all multi-indices of given
  dimension $n$ and degree $r$. It is basically a wrapper for the
- \code{sumRLists} function provided by the \code{FEEC.Utility.Combinatorics}
+ \code{sumRLists} function provided by the \code{FEECa.Utility.Combinatorics}
  module.
 
 %------------------------------------------------------------------------------%

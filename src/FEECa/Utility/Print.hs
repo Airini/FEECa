@@ -1,4 +1,4 @@
-module FEEC.Utility.Print (
+module FEECa.Utility.Print (
    Pretty(..)
   , printDouble, printComponent, printVector, printVectorRow
   , printBernstein, printPolynomial, printPolynomial0, printForm
@@ -8,8 +8,8 @@ module FEEC.Utility.Print (
 import Text.PrettyPrint
 import qualified Text.PrettyPrint.HughesPJ as P
 import Text.Printf
-import FEEC.Internal.Spaces
-import qualified FEEC.Internal.MultiIndex as MI
+import FEECa.Internal.Spaces
+import qualified FEECa.Internal.MultiIndex as MI
 import Data.List (intersperse)
 
 -- Some symbols

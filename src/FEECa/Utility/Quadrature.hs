@@ -1,4 +1,4 @@
-module FEEC.Utility.Quadrature where
+module FEECa.Utility.Quadrature where
 
 import Math.Combinatorics.Exact.Factorial
 import Numeric.LinearAlgebra.HMatrix

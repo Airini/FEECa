@@ -13,7 +13,7 @@ positions in n-dimensional Euclidean space.
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module FEEC.Internal.Point(
+module FEECa.Internal.Point(
 
              -- * The Point Type
              Point, point,
@@ -27,10 +27,10 @@ module FEEC.Internal.Point(
                           ) where
 
 import Data.List
-import FEEC.Internal.Spaces
-import FEEC.Internal.Vector
-import FEEC.Utility.Print
-import FEEC.Utility.Utility (pairM)
+import FEECa.Internal.Spaces
+import FEECa.Internal.Vector
+import FEECa.Utility.Print
+import FEECa.Utility.Utility (pairM)
 
 \end{code}
 }

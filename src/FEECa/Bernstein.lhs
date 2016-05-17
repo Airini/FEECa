@@ -28,25 +28,25 @@ of homogeneous polynomials over the $k+1$ barycentric coordinates
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module FEEC.Bernstein where
-import qualified FEEC.Internal.MultiIndex as MI
-import FEEC.Internal.Simplex
-import FEEC.Internal.Spaces
-import FEEC.Internal.Vector
+module FEECa.Bernstein where
+import qualified FEECa.Internal.MultiIndex as MI
+import FEECa.Internal.Simplex
+import FEECa.Internal.Spaces
+import FEECa.Internal.Vector
 import Debug.Trace
 
-import FEEC.Polynomial ( Polynomial, Term, term, terms, expandTerm,
+import FEECa.Polynomial ( Polynomial, Term, term, terms, expandTerm,
                         evaluatePolynomial, derivePolynomial, integratePolynomial,
                         multiplyPolynomial,
                         barycentricCoordinates, barycentricGradient,
                         barycentricGradients, toPairs)
-import qualified FEEC.Polynomial as P (degree, multiIndices, monomial,
+import qualified FEECa.Polynomial as P (degree, multiIndices, monomial,
                                        constant, polynomial, euclideanToBarycentric)
 
 
-import FEEC.Utility.Combinatorics(choose, factorial)
-import FEEC.Utility.Print
---import FEEC.Utility.Utility(factorial)
+import FEECa.Utility.Combinatorics(choose, factorial)
+import FEECa.Utility.Print
+--import FEECa.Utility.Utility(factorial)
 
 \end{code}
 
@@ -207,7 +207,7 @@ In addition to that, the Bernstein polynomials over a simplex $\smp{T}$ form an 
 
 This inner product over Bernstein polynomials is used to define the
 inner product on the space of polynomial differential forms over the
-simplex. In \code{FEEC}, the class \code{InnerProductSpace} is used to
+simplex. In \code{FEECa}, the class \code{InnerProductSpace} is used to
 represent inner product spaces.
 
 %------------------------------------------------------------------------------%

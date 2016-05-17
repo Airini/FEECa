@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module FEEC.Internal.Spaces where
+module FEECa.Internal.Spaces where
 
 import Numeric( fromRat )
 
