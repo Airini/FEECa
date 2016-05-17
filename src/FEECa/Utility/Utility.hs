@@ -1,4 +1,4 @@
-module FEEC.Utility.Utility(
+module FEECa.Utility.Utility(
   Dimension(..),
   takeIndices,
   pairM, pairUp,
@@ -8,7 +8,7 @@ module FEEC.Utility.Utility(
   toDouble, fromDouble
 ) where
 
-import FEEC.Internal.Spaces
+import FEECa.Internal.Spaces
 
 takeIndices :: [a] -> [Int] -> [a]
 takeIndices l = map (l !!)
