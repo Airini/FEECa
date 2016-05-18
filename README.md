@@ -6,7 +6,7 @@ Falk and Winther][arnold1], provides for the discretization of partial
 differential equations (PDEs) that allows for a universal treatment of a large
 number of physical problems.
 
-FEECa implements the abstract, mathematical concepts of FEEC and provides a
+[FEECa][docu] implements the abstract, mathematical concepts of FEEC and provides a
 full-fledged basis form generated and framework for computations on differential
 forms. It handles polynomial differential forms in arbitrary dimensions and
 implements monomial as well as Bernstein bases for polynomials. The package
@@ -24,4 +24,5 @@ Douglas N. Arnold, Richard S. Falk, and Ragnar Winther: *Geometric
 decompositions and local bases for spaces of finite element differential forms*.
 J. Computer Methods in Applied Mechanics and Engineering. 2009.
 
+[docu]: http://Airini.github.io/FEECa "Online documentation! (in the make)"
 
