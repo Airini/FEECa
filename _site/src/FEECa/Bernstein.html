@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>FEECa - Bernstein</title>
+        <link rel="stylesheet" type="text/css" href="../../web/css/default.css" />
+    </head>
+    <body>
+
+      <div style="width: 1200px; align: center" , id="container">
+      <div id="menu">
+        <h2 class="nav"> FEECa </h2>
+        <ul class="main" style="list-style: none;">
+        <li><a href="../../">Home</a></li>
+        <li><a href="../../">Examples</a></li>
+        <li> Documentation
+            <ul class="menu">
+            <li class="menu"><label>FEECa</label><ul class="menu"><li class="menu"><a href="../../src/FEECa/Bernstein.html">Bernstein.lhs</a></li><li class="menu"><a href="../../src/FEECa/FiniteElementSpace.html">FiniteElementSpace.lhs</a></li><li class="menu"><label>Internal</label><ul class="menu"><li class="menu"><a href="../../src/FEECa/Internal/MultiIndex.html">MultiIndex.lhs</a></li><li class="menu"><a href="../../src/FEECa/Internal/Point.html">Point.lhs</a></li><li class="menu"><a href="../../src/FEECa/Internal/Simplex.html">Simplex.lhs</a></li><li class="menu"><a href="../../src/FEECa/Internal/Vector.html">Vector.lhs</a></li></ul></li><li class="menu"><a href="../../src/FEECa/Polynomial.html">Polynomial.lhs</a></li><li class="menu"><a href="../../src/FEECa/PolynomialDifferentialForm.html">PolynomialDifferentialForm.lhs</a></li><li class="menu"><label>Utility</label><ul class="menu"><li class="menu"><a href="../../src/FEECa/Utility/Combinatorics.html">Combinatorics.lhs</a></li></ul></li></ul></li>
+            </ul>
+        </li>
+        </ul>
+       </div>
+
+      <div id="main">
+        <div id="content">
+
+            <h1 id="bernstein-polynomials">Bernstein Polynomials</h1>
+<p>A barycentric monomial <span class="math inline">\({\boldsymbol{B}}^r_{{\boldsymbol{\alpha}}}\)</span> of degree <span class="math inline">\(r\)</span> defined over a simplex <span class="math inline">\({\mathcal{T}}=[{\boldsymbol{v_o}},\ldots,{\boldsymbol{v_k}}]\)</span> is a product of the form</p>
+<p><span class="math display">\[\begin{aligned}
+ {\boldsymbol{B}}_{{\boldsymbol{\alpha}}}^r({\boldsymbol{x}}) &amp;= \prod_{i = 0}^k \lambda_i^{\alpha_i}({\boldsymbol{x}})
+ \end{aligned}\]</span></p>
+<p>with <span class="math inline">\(|\alpha| = k\)</span> and the <span class="math inline">\(\lambda_i\)</span> the barycentric coordinates with respect to <span class="math inline">\({\mathcal{{\mathcal{T}}}}\)</span>. The space <span class="math inline">\({\mathcal{P}_{r}({\mathcal{f}})}\)</span> of polynomials of degree at most <span class="math inline">\(r\)</span> in <span class="math inline">\(n\)</span> dimensions defined over a <span class="math inline">\(k\)</span>-dimensional subsimplex <span class="math inline">\({\mathcal{f}}\)</span> of an <span class="math inline">\(n\)</span>-dimensional simplex <span class="math inline">\({\mathcal{T}}\)</span> is isomorphic to the the space of <span class="math inline">\(\mathcal{H}_{r}({\mathbb{R}^{k+1}})\)</span> of homogeneous polynomials over the <span class="math inline">\(k+1\)</span> barycentric coordinates</p>
+<p><span class="math display">\[\begin{aligned}
+  \lambda_{\sigma(0)},\dots,\lambda_{\sigma(k)}.\end{aligned}\]</span></p>
+<p>The barycentric monomials <span class="math inline">\({\boldsymbol{B}}^r_{{\boldsymbol{\alpha}}}\)</span> thus form a basis for the space <span class="math inline">\({\mathcal{P}_{r}({\mathcal{f}})}\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="ot">{-# LANGUAGE TypeFamilies #-}</span>
+<span class="ot">{-# LANGUAGE FlexibleInstances #-}</span>
+<span class="ot">{-# LANGUAGE MultiParamTypeClasses #-}</span>
+
+<span class="kw">module</span> <span class="dt">FEECa.Bernstein</span> <span class="kw">where</span>
+<span class="kw">import qualified</span> <span class="dt">FEECa.Internal.MultiIndex</span> <span class="kw">as</span> <span class="dt">MI</span>
+<span class="kw">import </span><span class="dt">FEECa.Internal.Simplex</span>
+<span class="kw">import </span><span class="dt">FEECa.Internal.Spaces</span>
+<span class="kw">import </span><span class="dt">FEECa.Internal.Vector</span>
+<span class="kw">import </span><span class="dt">Debug.Trace</span>
+
+<span class="kw">import </span><span class="dt">FEECa.Polynomial</span> ( <span class="dt">Polynomial</span>, <span class="dt">Term</span>, term, terms, expandTerm,
+                        evaluatePolynomial, derivePolynomial, integratePolynomial,
+                        multiplyPolynomial,
+                        barycentricCoordinates, barycentricGradient,
+                        barycentricGradients, toPairs)
+<span class="kw">import qualified</span> <span class="dt">FEECa.Polynomial</span> <span class="kw">as</span> <span class="dt">P</span> (degree, multiIndices, monomial,
+                                       constant, polynomial, euclideanToBarycentric)
+
+
+<span class="kw">import </span><span class="dt">FEECa.Utility.Combinatorics</span>(choose, factorial)
+<span class="kw">import </span><span class="dt">FEECa.Utility.Print</span>
+<span class="co">--import FEECa.Utility.Utility(factorial)</span></code></pre></div>
+<h2 id="the-bernsteinpolynomial-type">The <span><code>BernsteinPolynomial</code></span> Type</h2>
+<p>The representation of Bernstein the <span><code>BernsteinPolynomial</code></span> type uses the common polynomial type <span><code>Polynomial</code></span>. In addition to that the Bernstein polynomial type has a field <span><code>simplex</code></span> which holds the Simplex over which the polynomial is defined. In order to be able to create constant polynomials independent of a simplex, the <span><code>BernsteinPolynomial</code></span> type provides an additional constructor for constant Bernstein polynomials.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Bernstein polynomial over a simplex. Represented by a normal polynomial</span>
+<span class="co">-- | internally and uses the generalized functions for evaluation and derivation.</span>
+<span class="kw">data</span> <span class="dt">BernsteinPolynomial</span> v r <span class="fu">=</span> <span class="dt">Bernstein</span> (<span class="dt">Simplex</span> v) (<span class="dt">Polynomial</span> r)
+                             <span class="fu">|</span> <span class="dt">Constant</span> r
+  <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)
+
+<span class="co">-- pretty printing for Bernstein polyonmials</span>
+<span class="kw">instance</span> <span class="dt">Pretty</span> (<span class="dt">BernsteinPolynomial</span> v <span class="dt">Double</span>) <span class="kw">where</span>
+    pPrint (<span class="dt">Bernstein</span> t p) <span class="fu">=</span> printBernstein ts
+        <span class="kw">where</span> ts <span class="fu">=</span> map (expandTerm <span class="dv">0</span>) (terms p)
+    pPrint (<span class="dt">Constant</span> p) <span class="fu">=</span> text (show p)
+
+<span class="co">-- | List multi-indices of the terms in the polynomial.</span>
+<span class="ot">multiIndices ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+             <span class="ot">=&gt;</span> <span class="dt">BernsteinPolynomial</span> v r <span class="ot">-&gt;</span> [<span class="dt">MI.MultiIndex</span>]
+multiIndices (<span class="dt">Bernstein</span> t p) <span class="fu">=</span> P.multiIndices n p
+    <span class="kw">where</span> n <span class="fu">=</span> geometricalDimension t
+
+<span class="ot">degree ::</span> <span class="dt">BernsteinPolynomial</span> v r <span class="ot">-&gt;</span> <span class="dt">Int</span>
+degree (<span class="dt">Bernstein</span> t p) <span class="fu">=</span> P.degree p
+degree (<span class="dt">Constant</span> _) <span class="fu">=</span> <span class="dv">0</span>
+
+<span class="ot">domain ::</span> <span class="dt">BernsteinPolynomial</span> v r <span class="ot">-&gt;</span> <span class="dt">Simplex</span> v
+domain (<span class="dt">Bernstein</span> t _) <span class="fu">=</span> t
+domain _ <span class="fu">=</span> error <span class="st">&quot;Domain: No domain associated with constant Bernstein polynomial.&quot;</span></code></pre></div>
+<h3 id="constructors">Constructors</h3>
+<p>Since not all possible instances of the type <span><code>BernsteinPolynomial</code></span> represent valid Bernstein polynomials, the constructors have to make sure that the constructed polynomials are consistent. To be valid, all multi-indices must have dimension <span class="math inline">\(k+1\)</span>, where <span class="math inline">\(k\)</span> is the toppological dimension of the underlying simplex <span class="math inline">\(T = [{\boldsymbol{v_0}},\ldots,{\boldsymbol{v_k}}]\)</span>. Note that in Bernstein representation the multi-indices representing the polynomial are of dimension <span class="math inline">\(k+1\)</span>, while in the monomial representation they have length <span class="math inline">\(k\)</span>.</p>
+<p>The function <span><code>polynomial</code></span> creates a Bernstein polynomial from a list of coefficient-multi-index pairs. The functions throws an error if the provided arguments are invalid.</p>
+<p>The function <span><code>monomial</code></span> creates a barycentric monomial from a given multi-index and throws an error if dimension of simplex and the multi-index are inconsisten.</p>
+<p>The function <span><code>constant</code></span> creates a constant barycentric monomial and does not require to be passed a simplex argument.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Create a Bernstein polynomial over the given simplex from a list of</span>
+<span class="co">-- | coefficient-multi-index pairs. An error is thrown if the dimension of the</span>
+<span class="co">-- | multi-indices and the simplex are inconsistent.</span>
+<span class="ot">polynomial ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+           <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
+           <span class="ot">-&gt;</span> [(r, <span class="dt">MI.MultiIndex</span>)]
+           <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+polynomial t l
+    <span class="fu">|</span> (n1 <span class="fu">==</span> n2) <span class="fu">&amp;&amp;</span> sameLength <span class="fu">=</span> <span class="dt">Bernstein</span> t (P.polynomial l)
+    <span class="fu">|</span> otherwise <span class="fu">=</span> error <span class="st">&quot;polynomial: Dimensions of Simplex and Polynomials do not match.&quot;</span>
+    <span class="kw">where</span>
+      mis        <span class="fu">=</span> map (((<span class="fu">-</span><span class="dv">1</span>)<span class="fu">+</span>) <span class="fu">.</span> dim <span class="fu">.</span> snd) l
+      n1         <span class="fu">=</span> maximum mis
+      n2         <span class="fu">=</span> topologicalDimension t
+      sameLength <span class="fu">=</span> all (head mis <span class="fu">==</span>) (tail mis)
+
+
+<span class="co">-- | Create a Bernstein monomial over a given simplex from a given</span>
+<span class="co">-- | multi-index.</span>
+<span class="ot">monomial ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+         <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+monomial t mi
+    <span class="fu">|</span> n1 <span class="fu">==</span> n2 <span class="fu">+</span> <span class="dv">1</span> <span class="fu">=</span> <span class="dt">Bernstein</span> t (P.monomial mi)
+    <span class="fu">|</span> otherwise   <span class="fu">=</span> (error <span class="st">&quot;monomial: Dimension of Simplex and Polynomials do not match.&quot;</span>)
+  <span class="kw">where</span> n1 <span class="fu">=</span> dim mi
+        n2 <span class="fu">=</span> topologicalDimension t
+
+<span class="co">-- | Create a constant bernstein monomial.</span>
+<span class="ot">constant ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+         <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
+         <span class="ot">-&gt;</span> r
+         <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+constant t c <span class="fu">=</span> <span class="dt">Bernstein</span> t (P.constant c)
+
+<span class="co">-- | Return a given barycentric coordinate in Bernstein represenation</span>
+<span class="ot">barycentricCoordinate ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+                      <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
+                      <span class="ot">-&gt;</span> <span class="dt">Int</span>
+                      <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+barycentricCoordinate t i <span class="fu">=</span> monomial t (MI.unit (n<span class="fu">+</span><span class="dv">1</span>) i)
+    <span class="kw">where</span> n <span class="fu">=</span> topologicalDimension t</code></pre></div>
+<h3 id="class-instantiations">Class Instantiations</h3>
+<p>The Bernstein polynomials have the same algebraic structure as common polynomials over <span class="math inline">\({\mathbb{R}^{n}}\)</span>. That is they form a ring with respect to addition and multiplication of polynomials and a vector space over <span class="math inline">\(\mathrm R\)</span>. This algebraic structure is implemented by the <span><code>Ring</code></span> and <span><code>VectorSpace</code></span> class, respectively.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Bernstein polynomials as a vector space.</span>
+<span class="kw">instance</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v) <span class="ot">=&gt;</span> <span class="dt">VectorSpace</span> (<span class="dt">BernsteinPolynomial</span> v r) <span class="kw">where</span>
+    <span class="kw">type</span> <span class="dt">Scalar</span> (<span class="dt">BernsteinPolynomial</span> v r) <span class="fu">=</span> r
+    addV <span class="fu">=</span> addBernstein
+    sclV <span class="fu">=</span> scaleBernstein
+
+<span class="co">-- | Bernstein polynomials as a ring.</span>
+<span class="kw">instance</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v) <span class="ot">=&gt;</span> <span class="dt">Ring</span> (<span class="dt">BernsteinPolynomial</span> v r) <span class="kw">where</span>
+    add <span class="fu">=</span> addBernstein
+    addId <span class="fu">=</span> <span class="dt">Constant</span> addId
+    addInv <span class="fu">=</span> scaleBernstein (sub addId mulId)
+
+    mul <span class="fu">=</span> multiplyBernstein
+    mulId <span class="fu">=</span> <span class="dt">Constant</span> mulId
+
+    fromInt <span class="fu">=</span> <span class="dt">Constant</span> <span class="fu">.</span> fromInt</code></pre></div>
+<p>In addition to that, the Bernstein polynomials over a simplex <span class="math inline">\({\mathcal{T}}\)</span> form an inner product space with <span class="math inline">\(L^2\)</span> inner product given by</p>
+<p><span class="math display">\[\begin{aligned}
+      \langle u, v \rangle = \int_{\mathcal{T}} u \cdot v \: d{\boldsymbol{x}}\end{aligned}\]</span></p>
+<p>This inner product over Bernstein polynomials is used to define the inner product on the space of polynomial differential forms over the simplex. In <span><code>FEECa</code></span>, the class <span><code>InnerProductSpace</code></span> is used to represent inner product spaces.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Bernstein polynomials as inner product space.</span>
+<span class="kw">instance</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v) <span class="ot">=&gt;</span>
+    <span class="dt">InnerProductSpace</span> (<span class="dt">BernsteinPolynomial</span> v r) <span class="kw">where</span>
+    inner  <span class="fu">=</span> innerBernstein</code></pre></div>
+<p>Finally, Bernstein polynomials are also functions that can be evaluated and derived so they are declared an instance of the <span><code>Function</code></span>.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="kw">instance</span> ( <span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v) <span class="ot">=&gt;</span> <span class="dt">Function</span> (<span class="dt">BernsteinPolynomial</span> v r) v  <span class="kw">where</span>
+  evaluate <span class="fu">=</span> <span class="ot">{-# SCC &quot;evaluate&quot; #-}</span> evaluateBernstein
+  derive   <span class="fu">=</span> deriveBernstein</code></pre></div>
+<h2 id="arithmetic">Arithmetic</h2>
+<p>Addition, scaling and multiplication of Bernstein polynomials is straight-forward and can be implemented using the functions <span><code>addPolynomial</code></span>, <span><code>scalePolynomial</code></span> and <span><code>multiplyPolynomial</code></span> provided by the <span><code>Polynomial</code></span> module.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Add Bernstein polynomials.</span>
+<span class="ot">addBernstein ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+             <span class="ot">=&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+             <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+             <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+addBernstein (<span class="dt">Bernstein</span> t1 p1) (<span class="dt">Bernstein</span> t2 p2)
+     <span class="fu">|</span> t1 <span class="fu">/=</span> t2 <span class="fu">=</span> error <span class="st">&quot;addBernstein: Inconsistent simplices.&quot;</span>
+     <span class="fu">|</span> otherwise <span class="fu">=</span> <span class="dt">Bernstein</span> t1 (add p1 p2)
+addBernstein (<span class="dt">Constant</span> c)    (<span class="dt">Bernstein</span> t p) <span class="fu">=</span> <span class="dt">Bernstein</span> t (add p (P.constant c))
+addBernstein (<span class="dt">Bernstein</span> t p) (<span class="dt">Constant</span> c)    <span class="fu">=</span> <span class="dt">Bernstein</span> t (add p (P.constant c))
+addBernstein (<span class="dt">Constant</span> c1)   (<span class="dt">Constant</span> c2)   <span class="fu">=</span> <span class="dt">Constant</span> (add c1 c2)
+
+
+<span class="co">-- | Scale Bernstein polynomial.</span>
+<span class="ot">scaleBernstein ::</span> <span class="dt">Ring</span> r
+               <span class="ot">=&gt;</span> r
+               <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+               <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+scaleBernstein c  (<span class="dt">Bernstein</span> t p) <span class="fu">=</span> <span class="dt">Bernstein</span> t (sclV c p)
+scaleBernstein c1 (<span class="dt">Constant</span> c2)   <span class="fu">=</span> <span class="dt">Constant</span> (mul c1 c2)
+
+<span class="co">-- | Multiply two Bernstein polynomials.</span>
+<span class="ot">multiplyBernstein ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+                  <span class="ot">=&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+                  <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+                  <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+multiplyBernstein (<span class="dt">Bernstein</span> t1 p1) (<span class="dt">Bernstein</span> t2 p2)
+     <span class="fu">|</span> t1 <span class="fu">/=</span> t1 <span class="fu">=</span> error <span class="st">&quot;multiplyBernstein: Inconsistent simplices.&quot;</span>
+     <span class="fu">|</span> otherwise <span class="fu">=</span> <span class="dt">Bernstein</span> t1 (mul p1 p2)
+multiplyBernstein (<span class="dt">Constant</span> c)      (<span class="dt">Bernstein</span> t1 p1) <span class="fu">=</span> <span class="dt">Bernstein</span> t1 (sclV c p1)
+multiplyBernstein (<span class="dt">Bernstein</span> t1 p1) (<span class="dt">Constant</span> c)      <span class="fu">=</span> <span class="dt">Bernstein</span> t1 (sclV c p1)
+multiplyBernstein (<span class="dt">Constant</span> c1)     (<span class="dt">Constant</span> c2)     <span class="fu">=</span> <span class="dt">Constant</span> (mul c1 c2)</code></pre></div>
+<h2 id="evaluation">Evaluation</h2>
+<p>Since a Bernstein polynomial is just a polynomial over the barycentric coordinates of a simplex, evaluation of a Bernstein polynomial can be implemented by first evaluating the barycentric coordinates at the given vector and then evaluating the internal polynomial at the resulting vector.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Evaluate Bernstein polynomial by first evaluating the barycentric coordinates</span>
+<span class="co">-- | and then evaluating the internal polynomial at the resulting vector.</span>
+<span class="ot">evaluateBernstein ::</span> ( <span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+                     <span class="ot">=&gt;</span> v
+                     <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+                     <span class="ot">-&gt;</span> r
+evaluateBernstein v (<span class="dt">Bernstein</span> t p) <span class="fu">=</span> <span class="ot">{-# SCC &quot;evaluateBernstein&quot; #-}</span> evaluate vb p
+    <span class="kw">where</span> vb <span class="fu">=</span> <span class="ot">{-#SCC &quot;barycentric&quot; #-}</span> vector <span class="fu">$</span> map (evaluate v) (barycentricCoordinates t)
+evaluateBernstein _ (<span class="dt">Constant</span> c)    <span class="fu">=</span> <span class="ot">{-# SCC &quot;evaluateConstant&quot; #-}</span>c
+
+
+<span class="ot">tabulateBernstein ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+                  <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> [v] <span class="ot">-&gt;</span> [<span class="dt">BernsteinPolynomial</span> v r] <span class="ot">-&gt;</span> [[r]]
+tabulateBernstein t vs bs <span class="fu">=</span> [tabulateBernstein' ls b <span class="fu">|</span> b <span class="ot">&lt;-</span> bs]
+  <span class="kw">where</span> ls <span class="fu">=</span> P.euclideanToBarycentric t vs
+
+<span class="ot">tabulateBernstein' ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+                     <span class="ot">=&gt;</span> [v] <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r <span class="ot">-&gt;</span> [r]
+tabulateBernstein' vs (<span class="dt">Bernstein</span> _ p) <span class="fu">=</span> [evaluate v p <span class="fu">|</span> v <span class="ot">&lt;-</span> vs]</code></pre></div>
+<h2 id="derivation">Derivation</h2>
+<p>The derivative of a Bernstein monomial along a given direction in space is given by</p>
+<p><span class="math display">\[\begin{align}
+  \frac{d}{dx_i}{\boldsymbol{B}}_{{\boldsymbol{\alpha}}}^{r}
+    &amp;= \sum_{j=0}^n \alpha_i \frac{d\lambda_j}{dx_i}{\boldsymbol{B}}_{{\boldsymbol{\alpha^j}}}^{r-1}
+\end{align}\]</span></p>
+<p>where <span class="math inline">\({\boldsymbol{\alpha^j}}\)</span> is the multi-index <span class="math inline">\({\boldsymbol{\alpha}}\)</span> with the exponent at position <span class="math inline">\(j\)</span> decreased by one and <span class="math inline">\(\frac{d\lambda_j}{dx_i}\)</span> is the <span class="math inline">\(i\)</span>th component of the gradient of the <span class="math inline">\(j\)</span>th barycentric coordinate. Note that the factor <span class="math inline">\(\alpha_i\)</span> in the derivation is absorbed into the prefactor <span class="math inline">\(\frac{(r-1)!}{{\boldsymbol{\alpha}}}\)</span> of <span class="math inline">\({\boldsymbol{B}}_{{\boldsymbol{\alpha^j}}}^{r-1}\)</span>.</p>
+<p>The derivation of Bernstein monomials is implemented in <span><code>deriveMonomial</code></span>. The derivation of Bernstein polynomials is then implemented using the general function provided by the <span><span><strong>Polynomial</strong></span></span> module.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Derivative of a Bernstein monomial</span>
+<span class="ot">deriveMonomial ::</span> ( <span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+               <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
+               <span class="ot">-&gt;</span> <span class="dt">MI.MultiIndex</span>
+               <span class="ot">-&gt;</span> [ <span class="dt">Polynomial</span> r ]
+deriveMonomial t mi <span class="fu">=</span> [ sum' [sclV (grads j i) (dp j)  <span class="fu">|</span> j <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>n]] <span class="fu">|</span> i <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>n<span class="fu">-</span><span class="dv">1</span>] ]
+    <span class="kw">where</span> grads j i <span class="fu">=</span> toList (barycentricGradients t <span class="fu">!!</span> j) <span class="fu">!!</span> i
+          dp j <span class="fu">=</span> <span class="kw">if</span> (mi' <span class="fu">!!</span> j) <span class="fu">&gt;</span> <span class="dv">0</span>
+                 <span class="kw">then</span> P.polynomial [MI.derive j mi]
+                 <span class="kw">else</span> P.constant addId
+          sum' <span class="fu">=</span> foldl add addId
+          mi'  <span class="fu">=</span> MI.toList<span class="ot"> mi ::</span> [<span class="dt">Int</span>]
+          n    <span class="fu">=</span> dim mi <span class="fu">-</span> <span class="dv">1</span>
+
+<span class="co">-- | Derive Bernstein polynomial.</span>
+<span class="ot">deriveBernstein ::</span> ( <span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+                <span class="ot">=&gt;</span> v
+                <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+                <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+deriveBernstein v (<span class="dt">Bernstein</span> t p) <span class="fu">=</span> <span class="dt">Bernstein</span> t (derivePolynomial (deriveMonomial t) v p)
+deriveBernstein v (<span class="dt">Constant</span> c)  <span class="fu">=</span> <span class="dt">Constant</span> addId</code></pre></div>
+<h2 id="integration">Integration</h2>
+<p>For the integration of Bernstein polynomials two functions are provided.</p>
+<p>The first one uses the quadrature rule over simplices to compute integrals over arbitrary simplices. This is implemented by the <span><code>integrate</code></span> function.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Numerically integrate the Bernstein polyonomial p over the simplex t using</span>
+<span class="co">-- | a Gauss-Jacobi quadrature rule.</span>
+<span class="ot">integratePolynomial ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+                    <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v                  <span class="co">-- t</span>
+                    <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r    <span class="co">-- b</span>
+                    <span class="ot">-&gt;</span> r
+integratePolynomial t b <span class="fu">=</span> integrateOverSimplex q t (<span class="ot">`evaluate`</span> b)
+    <span class="kw">where</span> q <span class="fu">=</span> div (r <span class="fu">+</span> <span class="dv">2</span>) <span class="dv">2</span>
+          r <span class="fu">=</span> degree b</code></pre></div>
+<p>The second function computes the integral of a Bernstein polynomial over the simplex it is defined over, which is given by <span class="math display">\[\begin{aligned}
+\int_{{\mathcal{T}}}{\boldsymbol{B}}_{{\boldsymbol{\alpha}}}^{r} \: d{\boldsymbol{x}} &amp;= \frac{{\boldsymbol{\alpha}}!}{r!}\frac{|{\mathcal{T}}|}{\left ( \begin{array}{c} k + d \\ k \end{array} \right )}\end{aligned}\]</span></p>
+<p>where <span class="math inline">\(k\)</span> is the topological dimension of the simplex. Since this requires the simplex the polynomial is defined over to be known this function does not work for the <span><code>Constant</code></span> constructor. The <span><code>redefine</code></span> function can be used to add the information about the simplex to the Bernstein polynomial.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Closed-form integration of Bernstein polynomials over the simplex they are</span>
+<span class="co">-- | defined over.</span>
+<span class="ot">integrateBernstein ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+                      <span class="ot">=&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+                      <span class="ot">-&gt;</span> r
+integrateBernstein b<span class="fu">@</span>(<span class="dt">Bernstein</span> t1 p) <span class="fu">=</span> sum' (map f (toPairs k p))
+    <span class="kw">where</span> f (c, mi) <span class="fu">=</span> mul c (divide (mul (factorialMI mi) vol)
+                                    (mul (factorial' (MI.degree mi)) (fac mi)))
+          factorialMI <span class="fu">=</span> fromDouble <span class="fu">.</span> MI.factorial
+          factorial' <span class="fu">=</span> fromDouble <span class="fu">.</span> factorial
+          fac mi <span class="fu">=</span> fromDouble (fromInteger ((k <span class="fu">+</span> MI.degree mi) <span class="ot">`choose`</span> k))
+          k <span class="fu">=</span> topologicalDimension t1
+          sum' <span class="fu">=</span> foldl add addId
+          vol <span class="fu">=</span> volume t1
+integrateBernstein (<span class="dt">Constant</span> c) <span class="fu">=</span> error <span class="st">&quot;intergrateBernstein: No associated simplex for constant. Define over simplex first using redefine.&quot;</span>
+
+<span class="co">-- | Redefined Bernstein polynomial over a different simplex or define simplex</span>
+<span class="co">-- | for constant bernstein polynomial.</span>
+<span class="ot">redefine ::</span> <span class="dt">Ring</span> r
+         <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
+         <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+         <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+redefine t1 (<span class="dt">Bernstein</span> t2 p) <span class="fu">=</span> <span class="dt">Bernstein</span> t1 p
+redefine t (<span class="dt">Constant</span> c)      <span class="fu">=</span> <span class="dt">Bernstein</span> t (P.constant c)
+
+<span class="co">-- | Inner product of Bernstein polynomials defined over a simplex T. If both</span>
+<span class="co">-- | polynomials are constant and have no associated simplex, a simplex with</span>
+<span class="co">-- | volume 1 is assumed.</span>
+<span class="ot">innerBernstein ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+                  <span class="ot">=&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+                  <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+                  <span class="ot">-&gt;</span> r
+innerBernstein (<span class="dt">Constant</span> c1) (<span class="dt">Constant</span> c2) <span class="fu">=</span> mul c1 c2
+innerBernstein b1 b2 <span class="fu">=</span> integrateBernstein (multiplyBernstein b1 b2)</code></pre></div>
+<h2 id="basis-for-differential-forms">Basis for Differential Forms</h2>
+<p>The gradients of the barycentric coordinates</p>
+<p><span class="math display">\[\begin{aligned}
+  d\lambda_i = \left ( \begin{array}{c} \frac{d\lambda_i}{dx_0} \\
+                          \vdots \\
+                      \frac{d\lambda_i}{dx_{n-1}} \end{array} \right )\end{aligned}\]</span></p>
+<p>of a simplex <span class="math inline">\({\mathcal{T}}\)</span> span the space of alternating one-forms in <span class="math inline">\({\mathbb{R}^{n}}\)</span>. The projection along the gradient then amounts to simply forming the dot product with the gradient vector.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Projection fuction for gradients of barycentric coordinates as basis for</span>
+<span class="co">-- | the space of alternating forms.</span>
+<span class="ot">proj ::</span> ( <span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+     <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
+     <span class="ot">-&gt;</span> <span class="dt">Int</span>
+     <span class="ot">-&gt;</span> v
+     <span class="ot">-&gt;</span> r
+proj t i    <span class="fu">=</span> dot u
+    <span class="kw">where</span> u <span class="fu">=</span> barycentricGradient t i</code></pre></div>
+<h2 id="extension-of-bernstein-polynomials">Extension of Bernstein Polynomials</h2>
+<p>The extension of a Bernstein polynomial from a face of a simplex to the simplex is simply the polynomial that results from extending each of the multi-indices representing the polynomial to the simplex. For the extension of multi-indices see [sec:mi_extension].</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Extend a Bernstein polynomial defined on a subsimplex f to the simplex t.</span>
+<span class="ot">extend ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+       <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
+       <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+       <span class="ot">-&gt;</span> <span class="dt">BernsteinPolynomial</span> v r
+extend t (<span class="dt">Bernstein</span> f p) <span class="fu">=</span> polynomial t (extend' (toPairs n' p))
+    <span class="kw">where</span> extend' <span class="fu">=</span> map (\(c, mi) <span class="ot">-&gt;</span> (c, MI.extend n (sigma f) mi))
+          n <span class="fu">=</span> topologicalDimension t
+          n' <span class="fu">=</span> topologicalDimension f
+extend _ c <span class="fu">=</span> c</code></pre></div>
+<div id="refs" class="references">
+
+</div>
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+      </div>
+      </div>
+
+    </body>
+</html>

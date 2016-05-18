@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>FEECa - MultiIndex</title>
+        <link rel="stylesheet" type="text/css" href="../../../web/css/default.css" />
+    </head>
+    <body>
+
+      <div style="width: 1200px; align: center" , id="container">
+      <div id="menu">
+        <h2 class="nav"> FEECa </h2>
+        <ul class="main" style="list-style: none;">
+        <li><a href="../../../">Home</a></li>
+        <li><a href="../../../">Examples</a></li>
+        <li> Documentation
+            <ul class="menu">
+            <li class="menu"><label>FEECa</label><ul class="menu"><li class="menu"><a href="../../../src/FEECa/Bernstein.html">Bernstein.lhs</a></li><li class="menu"><a href="../../../src/FEECa/FiniteElementSpace.html">FiniteElementSpace.lhs</a></li><li class="menu"><label>Internal</label><ul class="menu"><li class="menu"><a href="../../../src/FEECa/Internal/MultiIndex.html">MultiIndex.lhs</a></li><li class="menu"><a href="../../../src/FEECa/Internal/Point.html">Point.lhs</a></li><li class="menu"><a href="../../../src/FEECa/Internal/Simplex.html">Simplex.lhs</a></li><li class="menu"><a href="../../../src/FEECa/Internal/Vector.html">Vector.lhs</a></li></ul></li><li class="menu"><a href="../../../src/FEECa/Polynomial.html">Polynomial.lhs</a></li><li class="menu"><a href="../../../src/FEECa/PolynomialDifferentialForm.html">PolynomialDifferentialForm.lhs</a></li><li class="menu"><label>Utility</label><ul class="menu"><li class="menu"><a href="../../../src/FEECa/Utility/Combinatorics.html">Combinatorics.lhs</a></li></ul></li></ul></li>
+            </ul>
+        </li>
+        </ul>
+       </div>
+
+      <div id="main">
+        <div id="content">
+
+            <h1 id="multi-indices">Multi-Indices</h1>
+<p>The <span><code>MultiIndex</code></span> module provides a data type and functions for handling of multi-indices. A multi-index <span class="math inline">\({\boldsymbol{\alpha}}\)</span> is a tuple</p>
+<p><span class="math display">\[\begin{aligned}
+  {\boldsymbol{\alpha}} &amp;= (\alpha_0,\ldots,\alpha_{n-1}), \quad \alpha_i \in \mathrm{N}_0^+\end{aligned}\]</span></p>
+<p>that generalized the notion of an exponent for vectors in <span class="math inline">\({\mathbb{R}^{n}}\)</span>. The power of a vector <span class="math inline">\({\boldsymbol{x}}^{{\boldsymbol{\alpha}}}\)</span> is defined as</p>
+<p><span class="math display">\[\begin{aligned}
+  {\boldsymbol{x}}^{{\boldsymbol{\alpha}}} &amp;= \prod_{i = 0}^{n-1} x_i^{\alpha_i}\end{aligned}\]</span></p>
+<p>The degree of a multi-index <span class="math inline">\({\boldsymbol{\alpha}}\)</span> is the sum of exponents in the tuple:</p>
+<p><span class="math display">\[\begin{aligned}
+  |{\boldsymbol{\alpha}}| &amp;= \sum_{i=0}^{n-1} \alpha_i\end{aligned}\]</span></p>
+<p>The support <span class="math inline">\(\text{supp} \left \{ {\boldsymbol{\alpha}} \right \}\)</span> of a multi-index <span class="math inline">\({\boldsymbol{\alpha}}\)</span> is defined as the set of indices <span class="math inline">\(i\)</span> for which the exponents <span class="math inline">\(\alpha_i\)</span> are non-zero:</p>
+<p><span class="math display">\[\begin{aligned}
+ \text{supp}\left \{ {\boldsymbol{\alpha}} \right \}  &amp;= \{ i \in [0,n-1] | \alpha_i &gt; 0 \}\end{aligned}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="kw">module</span> <span class="dt">FEECa.Internal.MultiIndex</span>(
+
+  <span class="co">-- * The MultiIndex type</span>
+  <span class="dt">MultiIndex</span>, toList, valid,
+
+  <span class="co">-- ** Constructors</span>
+  multiIndex, zero, unit, degreeR,
+
+  <span class="co">-- * Extension</span>
+  extend,
+
+  <span class="co">-- * Mathematical Operations</span>
+  add, decrease, derive, factorial, choose, choose', degree, range
+
+  ) <span class="kw">where</span>
+
+
+<span class="kw">import </span><span class="dt">Control.Applicative</span>(<span class="dt">Applicative</span>(..), <span class="dt">ZipList</span>(..), liftA, liftA2)
+<span class="kw">import </span><span class="dt">FEECa.Internal.Spaces</span>(<span class="dt">Dimensioned</span>(..),<span class="dt">Field</span>(..))
+<span class="kw">import </span><span class="dt">FEECa.Utility.Combinatorics</span>(sumRLists)
+<span class="kw">import qualified</span> <span class="dt">FEECa.Utility.Combinatorics</span> <span class="kw">as</span> <span class="dt">C</span>(choose, factorial)</code></pre></div>
+<h2 id="the-multiindex-type">The <span><code>MultiIndex</code></span> type</h2>
+<p>The <span><code>MultiIndex</code></span> type is implemented as a type synomnym for <span><code>ZipList Int</code></span> type because this allows the use of the <span><code>Applicative</code></span> class for the implementation of methods on multi-indices.</p>
+<p>The dimension of a multi-index is the dimension of the underlying space, i.e. the number of exponents in the multi-index.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="kw">type</span> <span class="dt">MultiIndex</span> <span class="fu">=</span> <span class="dt">ZipList</span> <span class="dt">Int</span>
+
+<span class="kw">instance</span> <span class="dt">Dimensioned</span> (<span class="dt">ZipList</span> a) <span class="kw">where</span>
+    dim mi <span class="fu">=</span> length (getZipList mi)</code></pre></div>
+<p>The functions <span><code>degree</code></span> and <span><code>range</code></span> compute the degree and range of a given multi-index, as defined above.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Degree of a multi-index, i.e. the sum of all indices</span>
+<span class="ot">degree ::</span> <span class="dt">Integral</span> a <span class="ot">=&gt;</span> <span class="dt">MultiIndex</span> <span class="ot">-&gt;</span> a
+degree <span class="fu">=</span> fromIntegral <span class="fu">.</span> sum <span class="fu">.</span> getZipList
+
+<span class="co">-- | List indices of the multi-index that are non-zero.</span>
+range<span class="ot"> ::</span> <span class="dt">MultiIndex</span> <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
+range <span class="fu">=</span> range' <span class="dv">0</span>
+
+<span class="ot">range' ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">MultiIndex</span> <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
+range' i (<span class="dt">ZipList</span> (l<span class="fu">:</span>ls))
+      <span class="fu">|</span> l <span class="fu">/=</span> <span class="dv">0</span> <span class="fu">=</span> i <span class="fu">:</span> range' (i<span class="fu">+</span><span class="dv">1</span>) (<span class="dt">ZipList</span> ls)
+      <span class="fu">|</span> otherwise <span class="fu">=</span> range' (i<span class="fu">+</span><span class="dv">1</span>) (<span class="dt">ZipList</span> ls)
+range' _ (<span class="dt">ZipList</span> []) <span class="fu">=</span> []</code></pre></div>
+<h3 id="constructors">Constructors</h3>
+<p>The <span><code>MultiIndex</code></span> type provides the <span><code>multiIndex</code></span> constructor which constructs a multi-index from a list of integers <span><code>[Int]</code></span>. The constructor makes sure that all entries of the multi-index are positive and throws a run-time error otherwise.</p>
+<p>The <span><code>toList</code></span> function transforms a given multi-index back to a list <span><code>[a]</code></span> of <span><code>Integer</code></span> class type.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Create a multi-index from a given list of integers.</span>
+<span class="ot">multiIndex ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">MultiIndex</span>
+multiIndex l
+    <span class="fu">|</span> valid mi <span class="fu">=</span> mi
+    <span class="fu">|</span> otherwise <span class="fu">=</span> error <span class="st">&quot;multiIndex: Multi-index is invalid!&quot;</span>
+    <span class="kw">where</span> mi <span class="fu">=</span> <span class="dt">ZipList</span> l
+
+<span class="co">-- | Check whether a given multi-index is valid.</span>
+<span class="ot">valid ::</span> <span class="dt">MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+valid mi <span class="fu">=</span> all (<span class="dv">0</span> <span class="fu">&lt;=</span>) (toList mi)
+
+<span class="co">-- | Transform multi-index into list</span>
+<span class="ot">toList ::</span> <span class="dt">Integral</span> a <span class="ot">=&gt;</span> <span class="dt">MultiIndex</span> <span class="ot">-&gt;</span> [a]
+toList <span class="fu">=</span> map fromIntegral <span class="fu">.</span> getZipList</code></pre></div>
+<p>A common use case is the creation of multi-indices of degree 0 or 1. This is done using the functions <span><code>zero</code></span> and <span><code>one</code></span>, respectively. The function <span><code>zero</code></span> creates a multi-index of given dimension containing only zeros. <span><code>one</code></span> creates a multi-index of given dimension with all elements equal to zero except for the element with index <span class="math inline">\(i\)</span>:</p>
+<p><span class="math display">\[\begin{aligned}
+  (a_0,\ldots,a_{n-1}) \text{ with }
+  \alpha_0,\ldots,\alpha_{i-1},\alpha_{i+1},\ldots,\alpha_{n-1} = 0
+  \text{ and } \alpha_i = 1\end{aligned}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Degree zero multi-index</span>
+<span class="ot">zero ::</span><span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">MultiIndex</span>
+zero n <span class="fu">=</span> <span class="dt">ZipList</span> (replicate n <span class="dv">0</span>)
+
+<span class="co">-- | Degree one multi-index of dimension n with i-th element equal to one and</span>
+<span class="co">-- | all others zero.</span>
+<span class="ot">unit ::</span> <span class="dt">Int</span> <span class="co">-- n</span>
+     <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="co">-- i</span>
+     <span class="ot">-&gt;</span> <span class="dt">MultiIndex</span>
+unit n i <span class="fu">=</span> <span class="dt">ZipList</span> <span class="fu">$</span> concat [replicate i <span class="dv">0</span>,[<span class="dv">1</span>],replicate (n<span class="fu">-</span>i<span class="fu">-</span><span class="dv">1</span>) <span class="dv">0</span>]</code></pre></div>
+<p>The function <span><code>degreeR</code></span> returns a list of all multi-indices of given dimension <span class="math inline">\(n\)</span> and degree <span class="math inline">\(r\)</span>. It is basically a wrapper for the <span><code>sumRLists</code></span> function provided by the <span><code>FEECa.Utility.Combinatorics</code></span> module.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | List of all dimension n (length n + 1) multi-indices of degree r</span>
+<span class="ot">degreeR ::</span> <span class="dt">Integral</span> a <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> [<span class="dt">MultiIndex</span>]
+degreeR n r <span class="fu">=</span> map <span class="dt">ZipList</span> <span class="fu">$</span> sumRLists (fromIntegral n) (fromIntegral r)</code></pre></div>
+<h2 id="sec:mi_extension">Extension of Multi-Indices</h2>
+<p>For the extension of polynomials from a sub-simplex <span class="math inline">\({\mathcal{f}} = [{\boldsymbol{v_{i_0}}},\ldots,{\boldsymbol{v_{i_k}}}]\)</span> to a super-simplex <span class="math inline">\({\mathcal{T}} = [{\boldsymbol{v_{0}}},\ldots,{\boldsymbol{v_{m}}}]\)</span> it is necessary to also extend the multi-indices from <span class="math inline">\({\mathcal{f}}\)</span> to <span class="math inline">\({\mathcal{T}}\)</span>. To this end we assume that the face of dimension <span class="math inline">\(k\)</span> is given by a mapping <span class="math inline">\(\sigma(j) = i_j\)</span> that encodes which vertices of the super-simplex <span class="math inline">\({\mathcal{T}}\)</span> are included in <span class="math inline">\({\mathcal{f}}\)</span>. Note that <span class="math inline">\(m\)</span> is not necessarily the dimension of the underlying Euclidean space <span class="math inline">\({\mathbb{R}^{n}}\)</span>. Each element <span class="math inline">\(\alpha_i\)</span> in a multi-index <span class="math inline">\({\boldsymbol{\alpha}} = (\alpha_0,\ldots,\alpha_k)\)</span> defined over the face <span class="math inline">\({\mathcal{f}}\)</span> represents a power of the barycentric coordinate corresponding to the vertex <span class="math inline">\({\boldsymbol{v_i}}\)</span>. The extended multi-index <span class="math inline">\({\boldsymbol{\alpha'}}\)</span> is then zero in all positions corresponding to vertices of <span class="math inline">\({\mathcal{T}}\)</span> that are not included in <span class="math inline">\({\mathcal{f}}\)</span> and coincides with <span class="math inline">\({\boldsymbol{\alpha}}\)</span> on positions corresponding to the same vertices. The extended multi-index <span class="math inline">\({\boldsymbol{\alpha'}} =
+ ({\alpha'_0,\ldots,\alpha'_m})\)</span> is thus given by</p>
+<p><span class="math display">\[\begin{aligned}
+  \alpha'_j &amp;= \begin{cases}
+    \alpha_i &amp; \text{, if } \sigma(i) = j \\
+    0 &amp; \text{otherwise}
+    \end{cases}\end{aligned}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Extend a multi-index from a face to a simplex.</span>
+<span class="ot">extend ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">MultiIndex</span>
+extend n sigma mi
+    <span class="fu">|</span> length sigma <span class="fu">==</span> dim mi <span class="fu">=</span> multiIndex <span class="fu">$</span> extend' n (<span class="fu">-</span><span class="dv">1</span>) sigma mi'
+    <span class="fu">|</span> otherwise <span class="fu">=</span> error <span class="fu">$</span>(show sigma) <span class="fu">++</span> <span class="st">&quot; \n &quot;</span> <span class="fu">++</span> show mi <span class="fu">++</span> <span class="st">&quot;extend: Dimensions of sigma and multi-index don't agree&quot;</span>
+    <span class="kw">where</span> mi'       <span class="fu">=</span> toList mi
+
+<span class="ot">extend' ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
+extend' n i (s<span class="fu">:</span>ss) (j<span class="fu">:</span>js) <span class="fu">=</span> replicate di <span class="dv">0</span> <span class="fu">++</span> (j <span class="fu">:</span> extend' (n <span class="fu">-</span> di <span class="fu">-</span> <span class="dv">1</span>) s ss js)
+    <span class="kw">where</span> di <span class="fu">=</span> s <span class="fu">-</span> i <span class="fu">-</span> <span class="dv">1</span>  <span class="co">-- Number of zeros to pad.</span>
+extend' n i [] [] <span class="fu">=</span> replicate n <span class="dv">0</span></code></pre></div>
+<h2 id="mathematical-operations">Mathematical Operations</h2>
+<h3 id="addition">Addition</h3>
+<p>Addition on multi-indices is defined in a straight-foward manner as the addition of the each pair of elements separately.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Add two multi-indices</span>
+<span class="ot">add ::</span> (<span class="dt">Integral</span> a) <span class="ot">=&gt;</span> <span class="dt">ZipList</span> a <span class="ot">-&gt;</span> <span class="dt">ZipList</span> a <span class="ot">-&gt;</span> <span class="dt">ZipList</span> a
+add <span class="fu">=</span> liftA2 (<span class="fu">+</span>)</code></pre></div>
+<h3 id="factorial">Factorial</h3>
+<p>The factorial of a multi-index is defined as the product of the factorial of all its elements:</p>
+<p><span class="math display">\[\begin{aligned}
+  {\boldsymbol{\alpha}}! &amp;= \prod_{i=0}^{n-1} \alpha_i!\end{aligned}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Generalized factorial for multi-indices</span>
+<span class="ot">factorial ::</span> (<span class="dt">Num</span> b) <span class="ot">=&gt;</span> <span class="dt">MultiIndex</span> <span class="ot">-&gt;</span> b
+factorial <span class="fu">=</span> product <span class="fu">.</span> map C.factorial <span class="fu">.</span> toList</code></pre></div>
+<h3 id="binomial-coefficient">Binomial Coefficient</h3>
+<p>The binomial coefficient of two multi-index is defined as the product of the element-wise binomial coefficients.</p>
+<p><span class="math display">\[\begin{aligned}
+  {\boldsymbol{\alpha}} \choose {\boldsymbol{\beta}} &amp;= \prod_{i=0}^{n-1} {\alpha_i \choose \beta_i}\end{aligned}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Generalized binomial coefficients for multi-indices as defined in the paper</span>
+<span class="co">-- | by Kirby.</span>
+<span class="ot">choose ::</span> (<span class="dt">Integral</span> a, <span class="dt">Num</span> b) <span class="ot">=&gt;</span> <span class="dt">ZipList</span> a <span class="ot">-&gt;</span> <span class="dt">ZipList</span> a <span class="ot">-&gt;</span> b
+choose a b <span class="fu">=</span> product (getZipList (liftA2 C.choose a b))
+
+<span class="ot">choose' ::</span> (<span class="dt">Integral</span> a, <span class="dt">Fractional</span> b) <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">ZipList</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> b
+choose' a b <span class="fu">=</span> fromIntegral (C.factorial a) <span class="fu">/</span> fromIntegral (factorial b)</code></pre></div>
+<h3 id="derivation">Derivation</h3>
+<p>For the derivation of polynomials, it is required to decrease the element at a given index of a multi-index, this is implemented by the <span><code>decrease</code></span> function.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Decrease element in multi-index</span>
+<span class="ot">decrease ::</span> <span class="dt">Integral</span> a <span class="ot">=&gt;</span>  <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">ZipList</span> a <span class="ot">-&gt;</span> <span class="dt">ZipList</span> a
+decrease i alpha  <span class="fu">=</span> pure f <span class="fu">&lt;*&gt;</span> <span class="dt">ZipList</span> [<span class="dv">0</span><span class="fu">..</span>] <span class="fu">&lt;*&gt;</span> alpha
+    <span class="kw">where</span> f j a <span class="fu">=</span> <span class="kw">if</span> j <span class="fu">==</span> i <span class="kw">then</span> max <span class="dv">0</span> (a<span class="fu">-</span><span class="dv">1</span>) <span class="kw">else</span> a
+
+<span class="co">-- | Decrease element in multi-index</span>
+<span class="ot">derive ::</span> (<span class="dt">Integral</span> a, <span class="dt">Field</span> b) <span class="ot">=&gt;</span>  <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">ZipList</span> a <span class="ot">-&gt;</span> (b, <span class="dt">ZipList</span> a)
+derive i alpha  <span class="fu">=</span> (c, decrease i alpha)
+    <span class="kw">where</span> c <span class="fu">=</span> (fromDouble <span class="fu">.</span> fromIntegral) (getZipList alpha <span class="fu">!!</span> i)</code></pre></div>
+<div id="refs" class="references">
+
+</div>
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+      </div>
+      </div>
+
+    </body>
+</html>

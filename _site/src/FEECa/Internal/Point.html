@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>FEECa - Point</title>
+        <link rel="stylesheet" type="text/css" href="../../../web/css/default.css" />
+    </head>
+    <body>
+
+      <div style="width: 1200px; align: center" , id="container">
+      <div id="menu">
+        <h2 class="nav"> FEECa </h2>
+        <ul class="main" style="list-style: none;">
+        <li><a href="../../../">Home</a></li>
+        <li><a href="../../../">Examples</a></li>
+        <li> Documentation
+            <ul class="menu">
+            <li class="menu"><label>FEECa</label><ul class="menu"><li class="menu"><a href="../../../src/FEECa/Bernstein.html">Bernstein.lhs</a></li><li class="menu"><a href="../../../src/FEECa/FiniteElementSpace.html">FiniteElementSpace.lhs</a></li><li class="menu"><label>Internal</label><ul class="menu"><li class="menu"><a href="../../../src/FEECa/Internal/MultiIndex.html">MultiIndex.lhs</a></li><li class="menu"><a href="../../../src/FEECa/Internal/Point.html">Point.lhs</a></li><li class="menu"><a href="../../../src/FEECa/Internal/Simplex.html">Simplex.lhs</a></li><li class="menu"><a href="../../../src/FEECa/Internal/Vector.html">Vector.lhs</a></li></ul></li><li class="menu"><a href="../../../src/FEECa/Polynomial.html">Polynomial.lhs</a></li><li class="menu"><a href="../../../src/FEECa/PolynomialDifferentialForm.html">PolynomialDifferentialForm.lhs</a></li><li class="menu"><label>Utility</label><ul class="menu"><li class="menu"><a href="../../../src/FEECa/Utility/Combinatorics.html">Combinatorics.lhs</a></li></ul></li></ul></li>
+            </ul>
+        </li>
+        </ul>
+       </div>
+
+      <div id="main">
+        <div id="content">
+
+            <h1 id="points">Points</h1>
+<p>The <span><span><strong>Point</strong></span></span> provides the <span><code>Point</code></span> data type that is used to represent positions in n-dimensional Euclidean space.</p>
+<h2 id="the-point-type">The Point type</h2>
+<p>The <span><code>Point</code></span> data type is build on top of the <span><code>Vector</code></span> data type using a <span><code>Vector</code></span> to represent the coordinates of the given point.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Points in n-dimensional Euclidean space. A point describes a fixed position</span>
+<span class="co">-- | in space and can not be computed with.</span>
+<span class="kw">newtype</span> <span class="dt">Point</span> a <span class="fu">=</span> <span class="dt">Point</span> (<span class="dt">Vector</span> a) <span class="kw">deriving</span> (<span class="dt">Show</span>)
+
+<span class="kw">deriving</span> <span class="kw">instance</span> <span class="dt">Eq</span> (<span class="dt">Point</span> <span class="dt">Double</span>)
+
+<span class="kw">instance</span> <span class="dt">Dimensioned</span> (<span class="dt">Point</span> a) <span class="kw">where</span>
+    dim (<span class="dt">Point</span> v) <span class="fu">=</span> dim v
+
+<span class="kw">instance</span> <span class="dt">Real</span> a <span class="ot">=&gt;</span> <span class="dt">Pretty</span> (<span class="dt">Point</span> a) <span class="kw">where</span>
+    pPrint (<span class="dt">Point</span> v) <span class="fu">=</span> text <span class="st">&quot;Point in &quot;</span>
+                       <span class="fu">&lt;&gt;</span> rn (dim v)
+                       <span class="fu">&lt;&gt;</span> text <span class="st">&quot;:\n&quot;</span>
+                       <span class="fu">&lt;&gt;</span> printVector <span class="dv">2</span> (map (fromRational <span class="fu">.</span> toRational) (components v))
+
+<span class="co">-- | Constructor for the Point data type.</span>
+<span class="ot">point ::</span> [a] <span class="ot">-&gt;</span> <span class="dt">Point</span> a
+point <span class="fu">=</span> <span class="dt">Point</span> <span class="fu">.</span> vector</code></pre></div>
+<h2 id="convenience-functions">Convenience Functions</h2>
+<p>The <span><code>Point</code></span> data type provides convenience functions for the creation of special points in <span class="math inline">\({\mathbb{R}^{n}}\)</span>. The <span><code>zero</code></span> function returns the <span><code>Point</code></span> instance representing the origin in <span class="math inline">\({\mathbb{R}^{n}}\)</span>. <span><code>unit</code></span> returns the point in <span class="math inline">\({\mathbb{R}^{n}}\)</span> that lies at a distance of 1 from the origin on the given axis.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Return the origin in R^n.</span>
+<span class="co">-- zero :: Num a =&gt; Int -&gt; Point a</span>
+<span class="co">-- zero n = Point $ vector (replicate n 0)</span>
+
+<span class="co">-- -- | Point with the ith component 1.0 and all other components 0.0.</span>
+<span class="co">-- unit :: EuclideanSpace v =&gt; Int -&gt; Int -&gt; Point (Scalar v)</span>
+<span class="co">-- unit n i = Point (unitVector n i)</span></code></pre></div>
+<h2 id="conversion-to-and-from-vectors">Conversion to and from Vectors</h2>
+<p>The point data type doesn’t provide any arithmetic functions. In order to perform computations with points it is necessary to convert them to vectors. The vector corresponding to a given point is just the vector pointing from the origin to the given point.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Point corresponding to given position vector.</span>
+<span class="ot">toPoint ::</span> <span class="dt">Vector</span> a <span class="ot">-&gt;</span> <span class="dt">Point</span> a
+toPoint <span class="fu">=</span> <span class="dt">Point</span>
+
+<span class="co">-- | Position vector of given point.</span>
+<span class="ot">fromPoint ::</span> <span class="dt">Point</span> a <span class="ot">-&gt;</span> <span class="dt">Vector</span> a
+fromPoint (<span class="dt">Point</span> v) <span class="fu">=</span> v
+
+<span class="co">-- Instances</span>
+<span class="kw">instance</span> <span class="dt">VectorSpace</span> (<span class="dt">Point</span> <span class="dt">Double</span>) <span class="kw">where</span>
+  <span class="kw">type</span> <span class="dt">Scalar</span> (<span class="dt">Point</span> <span class="dt">Double</span>) <span class="fu">=</span> <span class="dt">Double</span>
+  addV x <span class="fu">=</span> toPoint <span class="fu">.</span> uncurry addV <span class="fu">.</span> pairM fromPoint fromPoint <span class="fu">.</span> (x,)
+  sclV a <span class="fu">=</span> undefined
+
+<span class="kw">instance</span> <span class="dt">EuclideanSpace</span> (<span class="dt">Point</span> <span class="dt">Double</span>) <span class="kw">where</span>
+  dot x    <span class="fu">=</span> uncurry dot <span class="fu">.</span> pairM fromPoint fromPoint <span class="fu">.</span> (x,)
+  fromList <span class="fu">=</span> point
+  toList   <span class="fu">=</span> toList <span class="fu">.</span> fromPoint</code></pre></div>
+<div id="refs" class="references">
+
+</div>
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+      </div>
+      </div>
+
+    </body>
+</html>
