@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>FEECa - Vector</title>
+        <link rel="stylesheet" type="text/css" href="../../../web/css/default.css" />
+    </head>
+    <body>
+
+      <div style="width: 1200px; align: center" , id="container">
+      <div id="menu">
+        <h2 class="nav"> FEECa </h2>
+        <ul class="main" style="list-style: none;">
+        <li><a href="../../../">Home</a></li>
+        <li><a href="../../../">Examples</a></li>
+        <li> Documentation
+            <ul class="menu">
+            <li class="menu"><label>FEECa</label><ul class="menu"><li class="menu"><a href="../../../src/FEECa/Bernstein.html">Bernstein.lhs</a></li><li class="menu"><a href="../../../src/FEECa/FiniteElementSpace.html">FiniteElementSpace.lhs</a></li><li class="menu"><label>Internal</label><ul class="menu"><li class="menu"><a href="../../../src/FEECa/Internal/MultiIndex.html">MultiIndex.lhs</a></li><li class="menu"><a href="../../../src/FEECa/Internal/Point.html">Point.lhs</a></li><li class="menu"><a href="../../../src/FEECa/Internal/Simplex.html">Simplex.lhs</a></li><li class="menu"><a href="../../../src/FEECa/Internal/Vector.html">Vector.lhs</a></li></ul></li><li class="menu"><a href="../../../src/FEECa/Polynomial.html">Polynomial.lhs</a></li><li class="menu"><a href="../../../src/FEECa/PolynomialDifferentialForm.html">PolynomialDifferentialForm.lhs</a></li><li class="menu"><label>Utility</label><ul class="menu"><li class="menu"><a href="../../../src/FEECa/Utility/Combinatorics.html">Combinatorics.lhs</a></li></ul></li></ul></li>
+            </ul>
+        </li>
+        </ul>
+       </div>
+
+      <div id="main">
+        <div id="content">
+
+            <h1 id="vectors">Vectors</h1>
+<p>The <span><code>Vector</code></span> module provides a data type and functions for the handling of vectors in <span class="math inline">\(n\)</span>-dimensional Euclidean space <span class="math inline">\({\mathbb{R}^{n}}\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="ot">{-# LANGUAGE TypeFamilies #-}</span>
+
+<span class="kw">module</span> <span class="dt">FEECa.Internal.Vector</span>(
+
+  <span class="co">-- * The Vector Type</span>
+  <span class="dt">Vector</span>(<span class="fu">..</span>), <span class="dt">Dimensioned</span>(<span class="fu">..</span>), vector,
+
+  <span class="co">-- * Manipulating Vectors</span>
+  toList,
+
+  <span class="co">-- * Mathematical Functions</span>
+  dot, pow
+
+  ) <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">FEECa.Internal.Spaces</span>
+<span class="kw">import qualified</span>  <span class="dt">FEECa.Internal.MultiIndex</span>  <span class="kw">as</span> <span class="dt">MI</span>
+<span class="kw">import            </span><span class="dt">FEECa.Utility.Print</span>        <span class="kw">as</span> <span class="dt">P</span>
+<span class="kw">import qualified</span>  <span class="dt">FEECa.Utility.Utility</span>      <span class="kw">as</span> <span class="dt">U</span></code></pre></div>
+<h2 id="the-vector-type">The <span><code>Vector</code></span> Type</h2>
+<p>Vectors in <span class="math inline">\({\mathbb{R}^{n}}\)</span> are represented using the parametrized type <span><code>Vector a</code></span> where <span><code>a</code></span> is the number type used to represent the scalars. Internally a vector is implemented using a list <span><code>[a]</code></span>. The dimension <span class="math inline">\(n\)</span> is inferred from the length of the list. Since vectors from Euclidean spaces of different dimension are of the same type, it is up to the user not to mix vectors from different spaces, which will lead to runtime errors.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Vectors in n-dimensional euclidean space.</span>
+<span class="kw">data</span> <span class="dt">Vector</span> a <span class="fu">=</span> <span class="dt">Vector</span> {<span class="ot"> components ::</span> [a] } <span class="kw">deriving</span> (<span class="dt">Show</span>)</code></pre></div>
+<p>To use the <span><code>Vector a</code></span> type in the <span><code>FEECa</code></span> framework, we have to make it an instance of the <span><code>VectorSpace</code></span> and the <span><code>EuclideanSpace</code></span> classes. We instantiate two types <span><code>Vector Rational</code></span> and <span><code>Vector Double</code></span> in order to have one type with exact arithmetic using Haskells <span><code>Rational</code></span> type and one using standard floating point arithmetic.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Use numerical equality for floating point arithmetic.</span>
+<span class="co">-- instance Eq (Vector Double) where</span>
+<span class="co">--    v1 == v2 = and (zipWith U.eqNum (components v1) (components v2))</span>
+
+<span class="co">-- | Use exact equality for exact arithmetic.</span>
+<span class="co">--instance Eq (Vector Rational) where</span>
+<span class="co">--    v1 == v2 = and (zipWith (==) (components v1) (components v2))</span>
+
+
+<span class="kw">instance</span> <span class="dt">Eq</span> a <span class="ot">=&gt;</span> <span class="dt">Eq</span> (<span class="dt">Vector</span> a) <span class="kw">where</span>
+    v1 <span class="fu">==</span> v2 <span class="fu">=</span> and (zipWith (<span class="fu">==</span>) (components v1) (components v2))
+
+<span class="co">-- | R^n as a vector space.</span>
+<span class="kw">instance</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">VectorSpace</span> (<span class="dt">Vector</span> a) <span class="kw">where</span>
+  <span class="kw">type</span> <span class="dt">Scalar</span> (<span class="dt">Vector</span> a) <span class="fu">=</span> a
+  addV (<span class="dt">Vector</span> l1) (<span class="dt">Vector</span> l2) <span class="fu">=</span> <span class="dt">Vector</span> <span class="fu">$</span> zipWith add l1 l2
+  sclV c (<span class="dt">Vector</span> l) <span class="fu">=</span> <span class="dt">Vector</span> <span class="fu">$</span> map (mul c) l
+
+<span class="co">-- | R^n as a Euclidean space.</span>
+<span class="kw">instance</span> (<span class="dt">Field</span> a, <span class="dt">Eq</span> a) <span class="ot">=&gt;</span> <span class="dt">EuclideanSpace</span> (<span class="dt">Vector</span> a) <span class="kw">where</span>
+    dot (<span class="dt">Vector</span> l1) (<span class="dt">Vector</span> l2) <span class="fu">=</span> foldl add addId (zipWith mul l1 l2)
+    toList   <span class="fu">=</span> components
+    fromList <span class="fu">=</span> vector
+
+<span class="co">-- | The dimension of vectors.</span>
+<span class="kw">instance</span> <span class="dt">Dimensioned</span> (<span class="dt">Vector</span> a) <span class="kw">where</span>
+    dim (<span class="dt">Vector</span> l) <span class="fu">=</span> length l</code></pre></div>
+<h3 id="constructors">Constructors</h3>
+<p>The <span><code>Vector a</code></span> data type provides the <span><code>vector</code></span> function as a smart constructor for vectors. Even though up to now the constructor does nothing but calling the type constructor, the <span><code>vector</code></span> functions is provided to hide the internal implementation to other modules.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Create vector from list of components.</span>
+<span class="ot">vector ::</span> [a] <span class="ot">-&gt;</span> <span class="dt">Vector</span> a
+vector <span class="fu">=</span> <span class="dt">Vector</span></code></pre></div>
+<h3 id="printing-vectors">Printing Vectors</h3>
+<p>Vectors can be displayed on the command line in two ways. As an instance of <span><code>Show</code></span>, calling <span><code>show</code></span> on a vector will display its type structure. Using <span><code>pPrint</code></span> to render the vector, the vector is redered as a column vector using unicode characters.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Pretty printing for vectors.</span>
+<span class="kw">instance</span> <span class="dt">Field</span> a <span class="ot">=&gt;</span> <span class="dt">Pretty</span> (<span class="dt">Vector</span> a) <span class="kw">where</span>
+    pPrint v <span class="fu">=</span> text <span class="st">&quot;Vector in &quot;</span>
+               <span class="fu">&lt;&gt;</span> rn (dim v)
+               <span class="fu">&lt;&gt;</span> text <span class="st">&quot;:&quot;</span>
+               <span class="fu">P.$$</span> printVector <span class="dv">2</span> (map toDouble (components v))</code></pre></div>
+<div id="refs" class="references">
+
+</div>
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+      </div>
+      </div>
+
+    </body>
+</html>
