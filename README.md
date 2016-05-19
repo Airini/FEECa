@@ -14,7 +14,6 @@ provides functionality to compute bases of the *P_r L^k* and *P-_r L^k* spaces
 of finite element spaces based on the [geometric decomposition proposed by
 Arnold, Falk and Winther][arnold2].
 
-
 [arnold1]: http://dx.doi.org/10.1017/S0962492906210018
 Douglas N. Arnold, Richard S. Falk, and Ragnar Winther: *Finite element exterior
 calculus, homological techniques, and applications*. J. Acta Numerica. 2006
@@ -24,8 +23,8 @@ Douglas N. Arnold, Richard S. Falk, and Ragnar Winther: *Geometric
 decompositions and local bases for spaces of finite element differential forms*.
 J. Computer Methods in Applied Mechanics and Engineering. 2009.
 
-[docu]: http://Airini.github.io/FEECa "Online documentation! (in the make)"
-
+[docu]: http://Airini.github.io/FEECa "Online documentation! (in the making)"
+The [FEECa online documentation][docu] is under construction.
 
 ## The project
 
@@ -43,7 +42,15 @@ information in the package description file: `feeca.cabal`):
 as joint work with:
 - [Anders Logg](http://www.logg.org/anders/): professor in Computational
   Mathematics
-- [Patrik Jansson](http://www.cse.chalmers.se/~patrikj/): professor in Computer
-  Science
+- [Patrik Jansson](https://www.chalmers.se/en/staff/Pages/patrik-jansson.aspx): professor in Computer
+  Science. [github](https://github.com/patrikja)
 - [Mary Sheeran](http://www.cse.chalmers.se/~ms/): professor in Computer
   Science
+
+## Presentation
+
+2016-05-18: The project results are presented by
+[Simon Pfreundscuh](http://easychair.org/smart-program/FEniCS'16/person11.html)
+at the
+[FENICS 2016 workshop](http://fenicsproject.org/featured/2016/fenics16_oslo.html).
+[Programme](http://easychair.org/smart-program/FEniCS'16/2016-05-18.html#talk:23321).
