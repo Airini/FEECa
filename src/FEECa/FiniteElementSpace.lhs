@@ -1,17 +1,21 @@
 \section{Finite Element Spaces}
 
-The \code{FiniteElementSpace} module provides functions for the generation of
-finite element bases over simplices. The implementation is based on the article
- by Arnold, Falk and Winther \cite{ArnoldFalkWinther}.
+The \code{FiniteElementSpace} module provides functions for the
+generation of finite element bases over simplices.
+%
+The implementation is based on the article by Arnold, Falk and Winther
+\cite{ArnoldFalkWinther}.
 
-Bases are provided for the two families of spaces $\pl{r}{k}$ and $\pml{r}{k}$.
- $\pl{r}{k}$ is the space of polynomial differential $k$-forms of degree at most
- $r$. The space $\pml{r}{k}$ is defined as
-
+Bases are provided for the two families of spaces $\pl{r}{k}$ and
+$\pml{r}{k}$.
+%
+$\pl{r}{k}$ is the space of polynomial differential $k$-forms of
+degree at most $r$. The space $\pml{r}{k}$ is defined as
+%
 \begin{align}
 \pml{r}{k} &= \{ \omega \in \pl{r}{k} | \kappa \omega \in \pl{r}{k-1} \}
 \end{align}
-
+%
 where $\kappa$ is the Koszul operator.
 
  %------------------------------------------------------------------------------%
@@ -38,21 +42,23 @@ module FEECa.FiniteElementSpace (
 )where
 
 import Data.List
-import FEECa.Bernstein (constant, monomial, multiIndices)
-import qualified FEECa.Bernstein as B (BernsteinPolynomial(..),extend)
+-- import FEECa.Bernstein (multiIndices)
+import FEECa.Bernstein (constant, monomial)
+import qualified FEECa.Bernstein as B (extend)
 import FEECa.Utility.Combinatorics
 import qualified FEECa.PolynomialDifferentialForm as D
-import FEECa.Utility.Print( printBernstein, printForm, dlambda )
+-- import FEECa.Utility.Print(printBernstein)
+import FEECa.Utility.Print(printForm, dlambda )
 import qualified FEECa.Utility.Print as P ( Pretty(..) )
 import FEECa.Internal.Form hiding (arity, inner)
-import qualified FEECa.Internal.Form as F(inner)
+-- import qualified FEECa.Internal.Form as F(inner)
 import qualified FEECa.Internal.Simplex as S
 import FEECa.Internal.Spaces hiding (inner)
-import qualified FEECa.Internal.Spaces as S(inner)
+-- import qualified FEECa.Internal.Spaces as S(inner)
 import qualified FEECa.Internal.Vector as V
 import qualified FEECa.Internal.MultiIndex as MI
 import qualified Math.Combinatorics.Exact.Binomial as CBin
-import Debug.Trace
+-- import Debug.Trace
 
 -- $intro
 -- This file implements the finite element space $P_r\Lambda^k$ and $P_r^-\Lambda^k$
@@ -355,7 +361,7 @@ prmLkFace t f r k = [ sclV (lambda a) (phi s) | a <- alphas, s <- sigmas, valid 
           setEq d l  = sort d == l
           domain a   = union (MI.range a)
           phi        = whitneyForm t
-          lambda     = monomial t 
+          lambda     = monomial t
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -447,10 +453,11 @@ prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas,
           alphas = MI.degreeR (n + 1)  r
           sigmas alpha = [ sigma | sigma <- increasingLists k n,
                                    range alpha sigma == [0..n],
-                                   zero alpha sigma ]
-          zero alpha sigma = all (0==) (take (minimum' sigma) (MI.toList alpha))
+                                   isZero alpha sigma ]
+          isZero alpha sigma = all (0==) (take (minimum' sigma) (MI.toList alpha))
           minimum' sigma = minimum ([0..n] \\ sigma)
 
+{-
 t = S.referenceSimplex 2
 t2 = S.subsimplex t 2 0
 t1 = S.subsimplex t 1 0
@@ -462,7 +469,7 @@ eta = Form 0 2 [(b,[0])]
 alpha = MI.multiIndex [2,1]
 sigma = [0,1]
 s1 = finiteElementSpace N2f 3 t
-
+-}
 
 \end{code}
 

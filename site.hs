@@ -124,7 +124,7 @@ main = hakyll $ do
                   route idRoute
                   compile $ compressCssCompiler
 
-         match ("src/**.lhs" .&&. hasNoVersion) $ do
+         match ("src/**.lhs" .&&. hasNoVersion) $ do -- Should we include also .hs files?
                   version "menu" $ compile $ do
                     makeItem =<< getRoute' =<< getUnderlying
                   route $ setExtension "html"

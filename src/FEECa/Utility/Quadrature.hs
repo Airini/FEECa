@@ -2,7 +2,7 @@ module FEECa.Utility.Quadrature where
 
 import Math.Combinatorics.Exact.Factorial
 import Numeric.LinearAlgebra.HMatrix
-import Numeric.LinearAlgebra.Data
+-- import Numeric.LinearAlgebra.Data
 
 -- | Type synomnym to represent a quadrature as a list pairs
 -- | of nodes and corresponding weights, the first element being the node
@@ -40,9 +40,10 @@ golubWelsch alpha beta n = extract $ eigSH' (buildMatrix n a b c)
           extract (v, m) = zip (toList v)
                                (square (toList (head (toRows m))))
           square  = map (** 2)
-          normalize l = map ((2 / sum l) *) l
-          alpha' = fromIntegral alpha
-          scale = map ((2.0**(1.0+ alpha') / (1 + alpha')) *)
+          -- TODO: why is scale defined but not used?
+          -- normalize l = map ((2 / sum l) *) l
+          -- alpha' = fromIntegral alpha
+          -- scale = map ((2.0**(1.0+ alpha') / (1 + alpha')) *)
 
 gamma :: Int -> Int -> Double
 gamma a b = fromInteger (2^(a + b + 1) * factorial a * factorial b) /
@@ -63,26 +64,22 @@ buildMatrix n a b c = (n >< n) $ concat [ p1 i ++ [p2 i] ++ p3 i | i <- [1..n] ]
 -- | its recurrence relation.
 orthogonalPolynomial :: Int -> Int -> Int -> Double -> Double
 orthogonalPolynomial n alpha beta x
-    | n == 0 = 1.0
-    | n > 0 = orthogonalPolynomial' n 1 alpha beta x 1.0 0.0
+    | n == 0     = 1.0
+    | n > 0      = orthogonalPolynomial' n 1 alpha beta x 1.0 0.0
+    | otherwise  = error $ "orthogonalPolynomial: n = " ++ show n ++ " < 0"
 
 -- Iterative implementation of the recursion relations for orthogonal polynomials.
 -- See article by Golub and Welsch.
-orthogonalPolynomial' :: Int ->
-                         Int ->
-                         Int ->
-                         Int ->
-                         Double ->
-                         Double ->
-                         Double ->
-                         Double
+orthogonalPolynomial' ::
+  Int -> Int -> Int -> Int ->
+  Double -> Double -> Double -> Double
 orthogonalPolynomial' n i alpha beta x pi1 pi2
-    | n == i = pi
-    | otherwise = orthogonalPolynomial' n (i+1) alpha beta x pi pi1
-    where pi = (a i * x + b i) * pi1 - c i * pi2
-          a = a_jac alpha beta
-          b = b_jac alpha beta
-          c = c_jac alpha beta
+    | n == i     = p_i
+    | otherwise  = orthogonalPolynomial' n (i+1) alpha beta x p_i pi1
+    where  p_i  = (a i * x + b i) * pi1 - c i * pi2
+           a    = a_jac alpha beta
+           b    = b_jac alpha beta
+           c    = c_jac alpha beta
 
 -- a_i coefficient for Jacobi polynomials as defined in the paper by
 -- Golub and Welsch.

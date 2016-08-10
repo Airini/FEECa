@@ -1,20 +1,33 @@
 \section{Simplex}
 
- The \code{Simplex} module implements simplices in n-dimensional Euclidean
- space $\R{n}$. A $k$-simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ in
- $n$-dimensional Euclidean space $\R{n}$ is the convex hull of $k+1$ vertices
- $\vec{v_0},\ldots,\vec{v_k}$ such that the spanning vectors $\vec{v_1}-\vec{v_0}
- ,\ldots,\vec{v_k}-\vec{v_0}$ are linearly independent.
- The \textit{topological dimension} of a simplex is the number $k$ of vectors
- spanning the simplex. The \textit{geometrical dimension} of a simplex is the
- dimension $n$ of the underlying space $\R{n}$. If $k=n$, we speak of a full
- simplex. A subsimplex of a given simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$
- is a simplex $\smp{T'} = [\vec{v_{i_0}},\ldots,\vec{v_{i_{k'}}}]$ such that
- $\{i_0,\ldots,i_{k'}\} \subset \{1,\ldots,k\}$.  Such a subsimplex can be
- conveniently represented using a map $\sigma: \{0,\ldots,k'\} \to
- \{0,\ldots,k\}$ such that $\sigma(j) = i_j$ for all $j=0,\ldots,k'$. For the
- representation to be unique, we require $\sigma$ to be increasing,
- i.e. $\sigma(j+1) > \sigma(j)$ for all $j=1,\ldots,k'-1$.
+The \code{Simplex} module implements simplices in n-dimensional
+Euclidean space $\R{n}$.
+%
+A $k$-simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ in
+$n$-dimensional Euclidean space $\R{n}$ is the convex hull of $k+1$
+vertices $\vec{v_0},\ldots,\vec{v_k}$ such that the spanning vectors
+$\vec{v_1}-\vec{v_0} ,\ldots,\vec{v_k}-\vec{v_0}$ are linearly
+independent.
+%
+The \textit{topological dimension} of a simplex is the number $k$ of
+vectors spanning the simplex.
+%
+The \textit{geometrical dimension} of a simplex is the dimension $n$
+of the underlying space $\R{n}$.
+%
+If $k=n$, we speak of a full simplex.
+%
+A subsimplex of a given simplex
+$\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ is a simplex
+$\smp{T'} = [\vec{v_{i_0}},\ldots,\vec{v_{i_{k'}}}]$ such that
+$\{i_0,\ldots,i_{k'}\} \subset \{1,\ldots,k\}$.
+%
+Such a subsimplex can be conveniently represented using a map
+$\sigma: \{0,\ldots,k'\} \to \{0,\ldots,k\}$ such that
+$\sigma(j) = i_j$ for all $j=0,\ldots,k'$.
+%
+For the representation to be unique, we require $\sigma$ to be
+increasing, i.e.\  $\sigma(j+1) > \sigma(j)$ for all $j=1,\ldots,k'-1$.
 
 %------------------------------------------------------------------------------%
 
@@ -46,7 +59,7 @@ module FEECa.Internal.Simplex(
 import Data.List
 
 import FEECa.Internal.Spaces
-import FEECa.Internal.Vector
+-- import FEECa.Internal.Vector
 import FEECa.Utility.Combinatorics
 import FEECa.Utility.GramSchmidt
 import FEECa.Utility.Print
@@ -90,6 +103,7 @@ data Simplex a =  Simplex { sigma :: [Int],
 -- | underlying vector space.
 geometricalDimension :: Dimensioned a => Simplex a -> Int
 geometricalDimension (Simplex _ (p:ps)) = dim p
+geometricalDimension _                  = error "geometricalDimension: empty list or vertices"
 
 -- | The topological dimension of a n-simplex is the number of vertices minus
 -- | one.
@@ -112,6 +126,7 @@ topologicalDimension (Simplex _ l) = length l - 1
 -- | of vectors
 referenceVertex :: Simplex v -> v
 referenceVertex (Simplex _ (p:ps)) = p
+referenceVertex _                  = error "referenceVertex: there is no vertex in this simplex"
 
 -- | List of the n direction vector pointing from the first point of the
 -- | simplex to the others.
@@ -238,20 +253,17 @@ volume :: EuclideanSpace v
        => Simplex v
        -> Scalar v
 volume t
-    | k == n = volume' t
-    | otherwise = volume (simplex' (zero k) (project bs vs))
-  where k = topologicalDimension t
-        n = geometricalDimension t
+    | k == n     = volume' t
+    | otherwise  = volume (simplex' (zero k) (project bs vs))
+  where k  = topologicalDimension t
+        n  = geometricalDimension t
         vs = spanningVectors t
         bs = gramSchmidt vs
 
 project :: EuclideanSpace v => [v] -> [v] -> [v]
-project bs vs
-    | not (null vs) =  map fromList [[ proj b v | b <- bs] | v <- vs]
-    | otherwise = []
-  where v = head vs
-        proj b v = divide (dot b v) (sqrt' (dot b b))
-        sqrt' = fromDouble . sqrt . toDouble
+project bs vs = map fromList [[ proj b v | b <- bs] | v <- vs]
+  where proj b v  = divide (dot b v) (sqrt' (dot b b))
+        sqrt'     = fromDouble . sqrt . toDouble
 
 volume' :: EuclideanSpace v
         => Simplex v
@@ -320,9 +332,8 @@ subsimplices' t k = concat [ subsimplices t k' | k' <- [k..n] ]
 %------------------------------------------------------------------------------%
 
 \begin{code}
-
 complement :: Simplex v -> Simplex v -> [v]
-complement (Simplex _ l) (Simplex sigma _) = [l !! i | i <- [0..n], notElem i sigma]
+complement (Simplex _ l) (Simplex sigm _) = [l !! i | i <- [0..n], notElem i sigm]
     where n = (length l) - 1
 \end{code}
 
@@ -352,10 +363,7 @@ extendSimplex t@(Simplex _ ps)
         p0 = referenceVertex t
 
 norm :: EuclideanSpace v => v -> v -> Ordering
-norm v1 v2
-    | v12 < v22  = LT
-    | v12 == v22 = EQ
-    | v12 > v22  = GT
+norm v1 v2 = compare v12 v22
   where v12 = toDouble $ dot v1 v1
         v22 = toDouble $ dot v2 v2
 
@@ -415,9 +423,9 @@ barycentricToCartesian :: EuclideanSpace v
                        => Simplex v
                        -> v
                        -> v
-barycentricToCartesian t@(Simplex _ vs) v = foldl sclAdd zero (zip v' vs)
+barycentricToCartesian t@(Simplex _ vs) v = foldl sclAdd zero' (zip v' vs)
   where sclAdd p (c, p0) = addV p (sclV c p0)
-        zero             = zeroV (head vs)
+        zero'            = zeroV (head vs)
         v'               = toList v
 
 \end{code}
@@ -490,9 +498,9 @@ cubicToBarycentric v = fromList (ls ++ [l])
   \int_0^1 dt_i(1-t_i)^\alpha = \sum_{j=0}^q w^\alpha_j f(\xi^\alpha_j)
 \end{align}
 
-where $\alpha=n-i$. The points $\xi^\alpha_j$ are the roots of the Jacobi 
+where $\alpha=n-i$. The points $\xi^\alpha_j$ are the roots of the Jacobi
 polynomial $P_q^{\alpha,0}$ and the w^\alpha_j the corresponding weights, that
-can be computed using the Golub-Welsch algorithm \cite{GolubWelsch}. The 
+can be computed using the Golub-Welsch algorithm \cite{GolubWelsch}. The
 integral of $f$ over $\smp{T}$ can then be approximated using
 
 \begin{align}\label{eq:integral}

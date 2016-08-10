@@ -57,7 +57,7 @@ module FEECa.Polynomial (
   , simplifyT, simplifyP
   ) where
 
-import Data.Maybe (fromJust)
+-- import Data.Maybe (fromJust)
 import Data.List
 import qualified FEECa.Internal.MultiIndex as MI (MultiIndex, zero, unit, decrease, toList, add, degree, valid)
 import FEECa.Internal.Simplex
@@ -69,15 +69,15 @@ import FEECa.Internal.Spaces(VectorSpace(..),
                             toDouble',
                             fromDouble')
 import qualified FEECa.Internal.Spaces as S(Function(..))
-import FEECa.Internal.Point
-import FEECa.Internal.Vector(Vector, vector, toList)
-import qualified FEECa.Internal.Vector as V(pow)
+-- import FEECa.Internal.Point
+-- import FEECa.Internal.Vector(Vector, vector, toList)
+-- import qualified FEECa.Internal.Vector as V(pow)
 import FEECa.Utility.Print(Pretty(..), printPolynomial)
-import FEECa.Utility.Utility(pairM, takeIndices)
-import Text.PrettyPrint
+-- import FEECa.Utility.Utility(pairM, takeIndices)
+-- import Text.PrettyPrint
 import qualified Numeric.LinearAlgebra.HMatrix as M
-import qualified Numeric.LinearAlgebra.Data as M
-import Debug.Trace
+-- import qualified Numeric.LinearAlgebra.Data as M
+-- import Debug.Trace
 
 \end{code}
 
@@ -797,11 +797,13 @@ aggregate = foldr aggStep []
         aggStep (Constant c1) ts                 = Constant c1 : ts
         aggStep (Term fa1 mi) ts = if null matches then insertTerm (Term fa1 mi) ts
                                                    else insertTerm (Term (add fa1 fa2) mi) rest
-          where (matches, rest) = partition (eqMI mi) ts
-                [Term fa2 mi'] = matches
-                eqMI :: MI.MultiIndex -> Term a -> Bool
-                eqMI mi (Constant _)  = False -- all (0==) mi
-                eqMI mi (Term fa mi') = mi == mi'
+          where -- TODO: check this code
+                (matches, rest) = partition (eqMI mi) ts
+                [Term fa2 _mi'] = matches -- TODO: is matches always of length 1?
+
+eqMI :: MI.MultiIndex -> Term a -> Bool
+eqMI mi (Constant _)   =  False -- all (0==) mi
+eqMI mi (Term fa mi')  =  mi == mi'
 
 insertTerm :: Term a -> SimpleTerms a -> SimpleTerms a
 insertTerm t (Constant c : ts) = Constant c : t : ts

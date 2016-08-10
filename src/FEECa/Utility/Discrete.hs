@@ -2,7 +2,7 @@ module FEECa.Utility.Discrete where
 
 --import Data.Type.Natural
 import Data.List ((\\),nub)
-import Debug.Trace
+-- import Debug.Trace
 
 -- Specific operations on naturals
 
@@ -26,13 +26,12 @@ combinations n k = quotient (factorial n) (factorial k * factorial (n - k))
 -- sign (p1, p2) = if (sum [ length (filter (i <) p1) | i <- p2]) `mod` 2 == 0 then mulId else addInv mulId
 
 
--- Picks elements at given indices
+-- Picks elements at given relative indices
 pick :: [Int] -> [a] -> [a]
--- TODO: missing case: error?? eller controlled above
-pick [] xs         = []
-pick (1:is) (x:xs) = x : pick is xs
-pick (i:is) (x:xs) = pick (i-1:is) xs
---pick (i:is) xs | i<0 = error "mep"
+pick []      xs         = []
+pick (1:is)  (x:xs)     = x : pick is xs
+pick (i:is)  (x:xs)     = pick (i-1:is) xs
+pick (i:is)  []         = error $ "pick called with too short list"
 
 -- Returns differences between consecutive elements
 differences :: [Int] -> [Int]

@@ -25,8 +25,8 @@ module FEECa.Utility.Combinatorics(
   sublists, kSublists ,  sumRLists, sumRLists'
   ) where
 
-import Data.List (find)
-import qualified Math.Combinatorics.Exact.Binomial as B
+-- import Data.List (find)
+import qualified Math.Combinatorics.Exact.Binomial  as B
 import qualified Math.Combinatorics.Exact.Factorial as F
 
 \end{code}
@@ -47,7 +47,7 @@ computation of binomial coefficients and the function \code{factorial} for the
 factorial :: (Num a) => Int -> a
 factorial = fromInteger . F.factorial
 
--- | Simple wrapper for 'factorial' that returns Num types.
+-- | Simple wrapper for 'choose'
 choose :: (Integral a, Num b) => a -> a -> b
 choose i j = fromIntegral (B.choose i j)
 

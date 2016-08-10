@@ -13,17 +13,17 @@ module FEECa.Internal.Form (
   ) where
 
 
-import Control.Applicative
+-- import Control.Applicative
 import Data.List (intersect)
 import FEECa.Internal.Spaces hiding( inner )
 import qualified FEECa.Internal.Spaces as S( inner )
 import FEECa.Utility.Discrete
-import FEECa.Utility.Utility (pairM, sumR, sumV, expSign, sign)
+import FEECa.Utility.Utility (pairM, sumV, expSign, sign)
 import FEECa.Utility.Print (Pretty(..), printForm)
 import FEECa.Utility.Combinatorics
 import qualified Numeric.LinearAlgebra.HMatrix as M
-import qualified Numeric.LinearAlgebra.Data as M
-import Debug.Trace
+-- import qualified Numeric.LinearAlgebra.Data as M
+-- import Debug.Trace
 
 -- * General form: does not depend on the underlying vector space it works on
 --   in any way.
@@ -214,7 +214,8 @@ refine proj eta@(Form k n cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . 
 -- XXX: for now proj should take care of the error... change later when settled
 
 
--- | Helper function in evaluation: given a 1-form basis, converts a single --   'Form' term into an actual function on vectors
+-- | Helper function in evaluation: given a 1-form basis, converts a single
+--   'Form' term into an actual function on vectors
 formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
         => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
 formify _    (s, [])   _  = s
@@ -223,10 +224,10 @@ formify proj (s, i:is) vs
     | otherwise = {-#SCC "Form.formifyR" #-}
         foldl addV addId
               (map (\(w,e) -> sclV
-                                (mul (sign (w,e)) ((proj i . head) (choose w vs)))
-                                (formify proj (s,is) (choose e vs)))
+                                (mul (sign (w,e)) ((proj i . head) (pick' w vs)))
+                                (formify proj (s,is) (pick' e vs)))
                    (permutationPairs (length is + 1) 1 (length is)))
-  where choose ns = pick (differences ns)
+  where pick' ns = pick (differences ns)
 
 
 -- We need a basis here
@@ -236,11 +237,11 @@ inner :: (InnerProductSpace w, EuclideanSpace v, Dimensioned v, Scalar w ~ Scala
 inner proj omega eta
     | degNEq omega eta = errForm "inner" BiDegEq -- TODO (??)
     | otherwise = foldl
-          (flip $ \vs -> add (S.inner (apply omega vs) (apply eta vs)))
+          (flip $ \vs -> add (S.inner (app omega vs) (app eta vs)))
           addId
-          (map choose (permutations n (arity omega)))
-  where choose is = pick (differences is) (map (unitVector n) [0..n-1])
-        apply = refine proj
+          (map pick' (permutations n (arity omega)))
+  where pick' is = pick (differences is) (map (unitVector n) [0..n-1])
+        app = refine proj
         n = dimVec omega
 
 
@@ -278,4 +279,3 @@ instance Show FormMust where
   show BiSpaEq  = "act on the same vector space"
   show MoProjBd = "project components of the underlying vector space"
   show MoVecEq  = "act on vectors of the working vectors space"
-

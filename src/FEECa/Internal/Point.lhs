@@ -26,7 +26,7 @@ module FEECa.Internal.Point(
 
                           ) where
 
-import Data.List
+-- import Data.List
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
 import FEECa.Utility.Print

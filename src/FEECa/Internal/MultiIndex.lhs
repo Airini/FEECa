@@ -48,7 +48,8 @@ module FEECa.Internal.MultiIndex(
   ) where
 
 
-import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)
+import Control.Applicative(ZipList(..), liftA2)
+-- import Control.Applicative(Applicative(..), liftA)
 import FEECa.Internal.Spaces(Dimensioned(..),Field(..))
 import FEECa.Utility.Combinatorics(sumRLists)
 import qualified FEECa.Utility.Combinatorics as C(choose, factorial)
@@ -220,10 +221,10 @@ extend n sigma mi
     where mi'       = toList mi
 
 extend' :: Int -> Int -> [Int] -> [Int] -> [Int]
-extend' n i (s:ss) (j:js) = replicate di 0 ++ (j : extend' (n - di - 1) s ss js)
+extend' n i (s:ss)  (j:js)  = replicate di 0 ++ (j : extend' (n - di - 1) s ss js)
     where di = s - i - 1  -- Number of zeros to pad.
-extend' n i [] [] = replicate n 0
-
+extend' n i []      []      = replicate n 0
+extend' _ _ _ _ = error "extend': list argument lengths must match"
 \end{code}
 
 %------------------------------------------------------------------------------%

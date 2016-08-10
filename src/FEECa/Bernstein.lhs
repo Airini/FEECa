@@ -33,11 +33,12 @@ import qualified FEECa.Internal.MultiIndex as MI
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
-import Debug.Trace
+-- import Debug.Trace
 
-import FEECa.Polynomial ( Polynomial, Term, term, terms, expandTerm,
-                        evaluatePolynomial, derivePolynomial, integratePolynomial,
-                        multiplyPolynomial,
+-- import FEECa.Polynomial (Term, term,
+--                         evaluatePolynomial, integratePolynomial, multiplyPolynomial)
+import FEECa.Polynomial (Polynomial, terms, expandTerm,
+                        derivePolynomial,
                         barycentricCoordinates, barycentricGradient,
                         barycentricGradients, toPairs)
 import qualified FEECa.Polynomial as P (degree, multiIndices, monomial,
@@ -83,6 +84,7 @@ multiIndices :: (EuclideanSpace v, r ~ Scalar v)
              => BernsteinPolynomial v r -> [MI.MultiIndex]
 multiIndices (Bernstein t p) = P.multiIndices n p
     where n = geometricalDimension t
+multiIndices (Constant _c) = error "multiIndices: TODO"
 
 degree :: BernsteinPolynomial v r -> Int
 degree (Bernstein t p) = P.degree p
@@ -312,7 +314,7 @@ tabulateBernstein t vs bs = [tabulateBernstein' ls b | b <- bs]
 tabulateBernstein' :: (EuclideanSpace v, r ~ Scalar v)
                      => [v] -> BernsteinPolynomial v r -> [r]
 tabulateBernstein' vs (Bernstein _ p) = [evaluate v p | v <- vs]
-
+tabulateBernstein' _ _ = error $ "tabulateBernstein': TODO"
 \end{code}
 
 %------------------------------------------------------------------------------%

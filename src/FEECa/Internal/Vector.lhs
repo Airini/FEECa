@@ -24,9 +24,9 @@ module FEECa.Internal.Vector(
   ) where
 
 import FEECa.Internal.Spaces
-import qualified  FEECa.Internal.MultiIndex  as MI
+-- import qualified  FEECa.Internal.MultiIndex  as MI
 import            FEECa.Utility.Print        as P
-import qualified  FEECa.Utility.Utility      as U
+-- import qualified  FEECa.Utility.Utility      as U
 
 
 \end{code}
@@ -133,5 +133,3 @@ instance Field a => Pretty (Vector a) where
                P.$$ printVector 2 (map toDouble (components v))
 
 \end{code}
-
-

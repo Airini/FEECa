@@ -6,18 +6,18 @@
 
 module FEECa.Mask where
 
-import Control.Applicative
+-- import Control.Applicative
 
 import FEECa.DifferentialForm
 import FEECa.Internal.Form
 import FEECa.Internal.Spaces hiding(inner)
-import qualified FEECa.Internal.Spaces as S(inner)
+-- import qualified FEECa.Internal.Spaces as S(inner)
 import FEECa.Internal.Vector
 import FEECa.Internal.Simplex
 import FEECa.Polynomial
-import FEECa.Utility.Utility
+-- import FEECa.Utility.Utility
 import qualified FEECa.Internal.MultiIndex as MI
-import qualified FEECa.Bernstein as B
+-- import qualified FEECa.Bernstein as B
 
 type Monop t = t -> t
 type Binop t = t -> t -> t
@@ -51,7 +51,7 @@ tangential n = vector (map (monomial . MI.unit n) [0..n-1])
 (¬) :: Field f => Monop f
 (¬) = mulInv
 
-(÷) :: Field f => Binop f 
+(÷) :: Field f => Binop f
 a ÷ b = a · mulInv b
 
 (†) :: Algebra a => Binop a
@@ -106,7 +106,8 @@ coordinate i n = linearPolynomial (canonCoord i n)
 coordinates :: Ring f => Int -> [PolyRepresentation f]
 coordinates = fmap linearPolynomial . canonCoords
 
-
+-- TODO: used?
+bssIx :: Ring a => Int -> Int -> Vector a
 bssIx n = vector . flip canonCoord n
 
 -- or <|> ?
@@ -114,7 +115,7 @@ bssIx n = vector . flip canonCoord n
 (<>) omega eta = undefined --S.inner omega eta -- inner dxV omega eta
   where n = dimVec omega
 {-
-(⌟) :: (Eq f, Field f) => Form f -> Vector f -> Form f 
+(⌟) :: (Eq f, Field f) => Form f -> Vector f -> Form f
 (⌟) = contract dxV
 -}
 
@@ -122,7 +123,7 @@ bssIx n = vector . flip canonCoord n
      => Form f -> v -> Form f
 (⌟) = contract projection
 
-{-interior :: (Eq f, Field f) => Form f -> Vector f -> Form f 
+{-interior :: (Eq f, Field f) => Form f -> Vector f -> Form f
 interior = (⌟)-}
 
 𝝹 :: Ring f => Form (PolyRepresentation f) -> Form (PolyRepresentation f)
@@ -186,4 +187,3 @@ instance (Field r, EuclideanSpace (Vector r), r ~ Scalar (Vector r))  =>
   inner :: forall r. Polynomial r -> Polynomial r -> r
   inner p1 p2 = integratePolynomial (referenceSimplex 4 :: Simplex (Vector r)) (mul p1 p2)
 -}
-

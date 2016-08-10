@@ -5,7 +5,7 @@ module Properties where
 
 import FEECa.Internal.Form
 import FEECa.Internal.Spaces
-import FEECa.Internal.Vector
+-- import FEECa.Internal.Vector
 import FEECa.Utility.Utility (expSign)
 import FEECa.Mask
 import Test.QuickCheck as TQ
@@ -26,14 +26,14 @@ prop_commutativity render f x y = render (f x y) === render (f y x)
 prop_operator_commutativity :: (b -> b -> Bool)
   -> Monop a -> Monop b -> (a -> b)
   -> a -> Bool
-prop_operator_commutativity eq f1 f2 map a =
-    map (f1 a) `eq` f2 (map a)
+prop_operator_commutativity eq f1 f2 a2b a =
+    a2b (f1 a) `eq` f2 (a2b a)
 
 prop_operator2_commutativity :: (b -> b -> Bool)
   -> Binop a -> Binop b -> (a -> b)
   -> a -> a -> Bool
-prop_operator2_commutativity eq f1 f2 map a1 a2 =
-  map (f1 a1 a2) `eq` f2 (map a1) (map a2)
+prop_operator2_commutativity eq f1 f2 a2b a1 a2 =
+  a2b (f1 a1 a2) `eq` f2 (a2b a1) (a2b a2)
 
 prop_associativity :: (Eq t, Show t) => (f -> t) -> Binop f
   -> f -> f -> f -> Property
@@ -56,14 +56,14 @@ prop_opId render f i = forAll arbitrary $ \x ->
 prop_distributivityA :: (Eq t, Show t) => (g -> t)
   -> Binop f -> Binop g -> (f -> g -> g)
   -> f -> f -> g -> Property
-prop_distributivityA render add1 add2 dot x y u =
-  render (dot (add1 x y) u) === render (add2 (dot x u) (dot y u))
+prop_distributivityA render add1 add2 dt x y u =
+  render (dt (add1 x y) u) === render (add2 (dt x u) (dt y u))
 
 prop_distributivityB :: (Eq t, Show t) => (g -> t)
   -> Binop g -> (f -> g -> g)
   -> f -> g -> g -> Property
-prop_distributivityB render plus dot a u v =
-  render (dot a (plus u v)) === render (plus (dot a u) (dot a v))
+prop_distributivityB render plus dt a u v =
+  render (dt a (plus u v)) === render (plus (dt a u) (dt a v))
 
 
 -- | Ring properties
@@ -128,7 +128,7 @@ propA_wedgeAssoc = prop_associativity id (/\)
 -- TODO: Eq?? would have to implement simplification + "canonising"
 propA_wedgeAssocEvl :: (Ring f, VectorSpace f,
                         Projectable v (Scalar f), Scalar v ~ Scalar f, Show f)
-                    => [v] -> Form f -> Form f -> Form f -> Property 
+                    => [v] -> Form f -> Form f -> Form f -> Property
 propA_wedgeAssocEvl vs = prop_associativity (#vs) (/\)
 
 -- Will turn into check without evaluation if simplification + grouping of
@@ -176,5 +176,3 @@ propA_contractCochain w v = \vs ->
 -- pick (differences rho) basisV
 -- property : rho == sigma ==> wedgeResult %$ picked vs == 1
 --            rho /= sigma ==> wedgeResult %$ picked vs == 0
-
-

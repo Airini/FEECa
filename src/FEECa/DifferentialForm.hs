@@ -3,21 +3,21 @@
 module FEECa.DifferentialForm (
   -- * Differential form type
   DifferentialForm
-  
+
   -- * Mathematical differential form operations
   , df, eval
-  
+
   -- * Projection operations: into scalara and polynomial values respectively
   , dxV
   ) where
 
-import Control.Applicative (pure)
+-- import Control.Applicative (pure)
 import FEECa.Internal.Form
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
-import FEECa.Internal.Simplex
-import FEECa.Polynomial
-import FEECa.Utility.Utility (pairM)
+-- import FEECa.Internal.Simplex
+-- import FEECa.Polynomial
+-- import FEECa.Utility.Utility (pairM)
 
 
 -- | Differential forms
@@ -71,8 +71,7 @@ df basisIx form =
           [1..n]
   where n = dimVec form
 
-b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
+-- b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 
 eval :: (Function h (Vector f)) => DifferentialForm h -> Vector f -> Form f
 eval u = ($u) . fmap . evaluate
-

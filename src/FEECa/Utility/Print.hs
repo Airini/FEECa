@@ -8,14 +8,15 @@ module FEECa.Utility.Print (
 import Text.PrettyPrint
 import qualified Text.PrettyPrint.HughesPJ as P
 import Text.Printf
-import FEECa.Internal.Spaces
+-- import FEECa.Internal.Spaces
 import qualified FEECa.Internal.MultiIndex as MI
 import Data.List (intersperse)
 
 -- Some symbols
-dlambda = "d\x03BB"
-lambda = "\x03BB"
-phi = "\x03D5"
+dlambda, lambda, phi :: String
+dlambda = 'd':lambda
+lambda  = "\x03BB"
+phi     = "\x03D5"
 
 class RenderVector v where
     ncomps :: v -> Int
@@ -128,7 +129,7 @@ printWhitneyForm :: (f -> [Char]) -> [(f,[Int])] -> Doc
 printWhitneyForm p ls = hsep $ punctuate (text " + ") (map printPair ls)
   where
     printPair (a,b) = lparen <> text (p a) <> rparen <+> printPhi b
-    printPhi ls = text phi <> hcat (map printSub ls)
+    printPhi ls' = text phi <> hcat (map printSub ls')
 
 -- OR: unit as f + apply coeff
 printForm :: [Char] -> [Char] -> (f -> Doc) -> [(f,[Int])] -> Doc
@@ -207,5 +208,3 @@ brL = text "\x005b"
 
 brR :: Doc
 brR = text "\x005d"
-
-

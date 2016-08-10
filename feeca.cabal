@@ -80,13 +80,17 @@ library
 
   -- Directories containing source files.
   hs-source-dirs:     src, test, bench
-  
+
   ghc-options:        -fhpc -O2 -threaded -fexcess-precision -optc-ffast-math -optc-O3 -optc-mfpmath=sse
-  -- -Wall -funfolding-use-threshold=16 
-  
+  -- -Wall -funfolding-use-threshold=16
+    -fwarn-tabs
+    -fwarn-unused-imports
+    -fwarn-missing-signatures
+    -fwarn-name-shadowing
+    -fwarn-incomplete-patterns
+
   -- Base language which the package is written in.
   default-language:   Haskell2010
-
 
 --test-suite test-feec
 --  type:               exitcode-stdio-1.0
