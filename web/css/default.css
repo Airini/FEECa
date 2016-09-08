@@ -54,7 +54,6 @@ h3 {
 
 div.sourceCode {
     align: center;
-    border: 2px solid green;
     margin-top: 50px;
     margin-bottom: 50px;
     margin-left: auto;
@@ -62,8 +61,7 @@ div.sourceCode {
     float: center;
 }
 
-pre { border: 2px solid red;
-      margin-left: auto;
+pre { margin-left: auto;
       margin-right: auto;
       width: 80%;
       background: #eee;
@@ -73,7 +71,6 @@ code {
     }
 
 code.sourceCode {
-    border: 2px solid blue;
     background: #eee;
     display: inline-block;
     padding: 2px;

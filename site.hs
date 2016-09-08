@@ -49,7 +49,8 @@ customPandocCompiler =
 --------------------------------------------------------------------------------
 
 compilePandoc :: Item String -> Item String -> IO (Item String)
-compilePandoc macros main = do (_,cmdOut,_) <- readProcessWithExitCode cmd args []
+compilePandoc macros main = do (_,cmdOut,cmdErr) <- readProcessWithExitCode cmd args []
+                               print cmdErr
                                return $ itemSetBody cmdOut main
     where cmd = "pandoc"
           args = ["-f","latex+lhs+inline_code_attributes",
