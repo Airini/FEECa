@@ -1,3 +1,41 @@
+\section{Forms}
+
+In what follows, the term \textit{forms} will be used to denote multi-linear, alternating
+maps from the $k$-product of a vector space $V$ with itself into a vector space $W$. That is
+a $k$-form $\omega$ is a mapping
+\begin{align}
+ \underbrace{V \times \ldots \times V}_{k\text{ times}} \rightarrow W
+\end{align}
+satisfying the following properties:
+\begin{itemize}
+  \item Linearity:
+\begin{align}
+\omega \left(\vec{v}_1,\ldots,\alpha \vec{v}_i + \beta\vec{w},\ldots,\vec{v}_k\right)
+&=  \alpha \omega\left(\vec{v}_1,\ldots,\vec{v}_i,\ldots,\vec{v}_k\right)
+    + \beta \omega\left(\vec{v}_1,\ldots,\vec{w},\ldots,\vec{v}_k\right)
+\end{align}
+\item Alternating:
+\begin{align}
+\omega\left(\vec{v}_1,\ldots,\vec{v}_i,\ldots,\vec{v}_j,\ldots,\vec{v}_k\right)
+&= - \omega \left (\vec{v}_1,\ldots,\vec{v}_j,\ldots,\vec{v}_i,\ldots,\vec{v}_k \right)
+\end{align}
+\end{itemize}
+A general implementation of alternating forms can be obtained by representing a form
+\begin{align}
+\omega: \underbrace{V \times \ldots \times V}_{k\text{ times}} \rightarrow W
+\end{align}
+as a an element $\vec{w}$ of the vector space $W$ scaled by an alternating form mapping
+into the scalars of the vector space $W$.
+\begin{align}
+\omega = \vec{w} \hat{\omega}
+\end{align}
+Here only vector spaces over the reals will be
+considered so that the form $\hat{\vec{w}}$ can be assumed to be an alternating form
+mapping into $\mathrm{R}$.
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 
@@ -25,6 +63,30 @@ import qualified Numeric.LinearAlgebra.HMatrix as M
 -- import qualified Numeric.LinearAlgebra.Data as M
 -- import Debug.Trace
 
+\end{code}
+%------------------------------------------------------------------------------%
+
+\subsection{Representation}
+
+For the representation of forms the existence of a set of coordinate functions
+\begin{align}
+       \lambda_i: V \to \mathbf{R} \text{ for } i = 0,\ldots,n
+\end{align}
+is assumed. Moreover, the directional derivatives of those coordinate functions are
+assumed to span the space of one-forms over $V$ by taking
+\begin{align}
+d\lambda_i(\vec{v}) = \frac{d\lambda_i(x\vec{v})}{dx}
+\end{align}
+
+General one-forms are then represented as linear combinations over
+this spanning set. The basis elements of spaces of higher-arity forms are obtained from
+the wedge products of the 1-form basis elements. In the code, higher-arity basis
+forms are represented by lists of integers \code{[Int]} containing the indices of
+the basis elements in the wedge product.
+
+
+%------------------------------------------------------------------------------%
+\begin{code}
 -- * General form: does not depend on the underlying vector space it works on
 --   in any way.
 
@@ -279,3 +341,4 @@ instance Show FormMust where
   show BiSpaEq  = "act on the same vector space"
   show MoProjBd = "project components of the underlying vector space"
   show MoVecEq  = "act on vectors of the working vectors space"
+\end{code}
