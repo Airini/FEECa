@@ -49,7 +49,6 @@ h3 {
 
 div.sourceCode {
   align: center;
-  border: 2px solid green;
   margin-top: 50px;
   margin-bottom: 50px;
   margin-left: auto;
@@ -58,18 +57,16 @@ div.sourceCode {
 }
 
 pre {
-  border: 2px solid red;
   margin-left: auto;
   margin-right: auto;
   width: 80%;
   background: #eee
 }
 
-code{
+code {
 }
 
 code.sourceCode {
-  border: 2px solid blue;
   background: #eee;
   display: inline-block;
   padding: 2px
@@ -100,7 +97,8 @@ a {
 
 div#menu {
 	text-align: left;
-  padding-left font-family: Arial
+  padding-left
+  font-family: Arial
 }
 
 ul.main {
@@ -124,16 +122,18 @@ li.menu {
   position: relative
 }
 
-li.menu: last-child: : after {
+li.menu:last-child::after {
 	display: none
 }
 
-li.menu: : after {
+li.menu::after {
 	position: absolute;
   left: -15px;
   bottom: -7px;
   content: '';
-  display: block;border-left: 1px solid #ddd;height: 100%
+  display: block;
+  border-left: 1px solid #ddd;
+  height: 100%
 }
 
 li.menu: : before {
