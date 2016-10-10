@@ -44,7 +44,7 @@ computation of binomial coefficients and the function \code{factorial} for the
 
 \begin{code}
 -- | Simple wrapper for 'factorial' that returns Num types.
-factorial :: (Num a) => Int -> a
+factorial :: Num a => Int -> a
 factorial = fromInteger . F.factorial
 
 -- | Simple wrapper for 'choose'
@@ -133,13 +133,13 @@ unrank :: Integral a
 unrank k n i = increasingLists k n !! fromIntegral i
 
 rank :: Int -> [Int] -> Int
-rank n ls =  rank' 0 n ls
+rank = rank' 0
 
 rank' :: Int -> Int -> [Int] -> Int
-rank' lower upper (l:ls) =  (l - lower) * (upper - l - 1) `choose` (k - 1)
+rank' _     _     []      = 0
+rank' lower upper (l:ls)  = (l - lower) * (upper - l - 1) `choose` (k - 1)
                             + rank' (l + 1) upper ls
   where k = length ls + 1
-rank' _ _ [] = 0
 
 \end{code}
 
@@ -171,12 +171,12 @@ sublists :: [a] -- the length k list
 sublists ls = [ take i ls ++ drop (i+1) ls | i <- [0 .. length ls - 1]]
 
 kSublists :: Int -> [a] -> [[a]]
+kSublists _ []     = [[]]
 kSublists k ls@(h:t)
   | k <= 0         = [[]]
   | k >= length ls = [ls]
   | k == 1         = [[l] | l <- ls]
-  | otherwise      = [h : ts | ts <- kSublists (k - 1) t] ++ (kSublists k t)
-kSublists k [] =  [[]]
+  | otherwise      = [h : ts | ts <- kSublists (k - 1) t] ++ kSublists k t
 
 \end{code}
 

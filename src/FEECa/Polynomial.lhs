@@ -104,7 +104,7 @@ Two types are used to represent polynomials. The \code{Term} type represents
 -- | monomial scaled by a scalar.
 data Term a = Constant a
             | Term a MI.MultiIndex
-            deriving (Eq, Show)
+  deriving (Eq, Show)
 
 coefficient :: Term a -> a
 coefficient (Constant a) = a
@@ -130,7 +130,7 @@ type provides the \code{degree} field that holds the degree of the polynomial.
 data Polynomial a =
     Polynomial { degree :: Int,
                  terms  :: [Term a] }
-    deriving (Eq, Show)
+  deriving (Eq, Show)
 
 \end{code}
 
@@ -174,9 +174,9 @@ degrees :: Polynomial a -> [Int]
 degrees (Polynomial _ ts) = degrees' ts
 
 degrees' :: [Term a] -> [Int]
-degrees' (Term _ mi:ls)  = MI.degree mi : degrees' ls
-degrees' (Constant c:ls) = 0 : degrees' ls
-degrees' [] = []
+degrees' []              = []
+degrees' (Term  _ mi:ls) = MI.degree mi : degrees' ls
+degrees' (Constant _:ls) = 0 : degrees' ls
 
 \end{code}
 
@@ -548,17 +548,17 @@ deriveTerm :: (EuclideanSpace v, r ~ Scalar v)
            -> v
            -> Term r
            -> Polynomial r
-deriveTerm dx v (Constant _) = constant addId
+deriveTerm _  _ (Constant _) = constant addId
 deriveTerm dx v (Term c mi)  = sclV c (foldl add addId (zipWith sclV v' (dx mi)))
-    where v' = toList v
+  where v' = toList v
 
 -- | Derivative of a monomial over the standard monomial basis in given space
 -- | direction.
 deriveMonomial :: Ring r => Dx r
 deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
-  where c i = fromInt (MI.toList mi !! i)
+  where c i   = fromInt (MI.toList mi !! i)
         mi' i = MI.decrease i mi
-        n  = dim mi
+        n     = dim mi
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -688,12 +688,11 @@ euclideanToBarycentric :: (EuclideanSpace v)
                        => Simplex v
                        -> [v]
                        -> [v]
-euclideanToBarycentric t vs =  map (fromDouble' . M.toList) $ M.toRows $ res
+euclideanToBarycentric t vs =  map (fromDouble' . M.toList) $ M.toRows res
     where res  = vmat M.<> mat
           mat  = M.inv (simplexToMatrix (extendSimplex t))
           vmat = M.matrix (n+1) $ concatMap ((1.0:) . toDouble') vs
           n    = geometricalDimension t
-          nt   = topologicalDimension t
 
 -- | 1st degree polynomial taking value 1 on vertex n_i of the simplex and
 -- | 0 on all others. Requires the topological dimension of the simplex to be
@@ -706,7 +705,6 @@ barycentricCoordinates :: (EuclideanSpace v, r ~ Scalar v)
 barycentricCoordinates s = {-# SCC "barycentricCoordinates" #-} take (nt + 1) bs
     where bs  = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
           mat = {-# SCC "solveSystem" #-}M.inv (simplexToMatrix (extendSimplex s))
-          n   = geometricalDimension s
           nt  = topologicalDimension s
 
 -- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial
@@ -761,8 +759,7 @@ barycentricGradients :: EuclideanSpace v
                      -> [v]
 barycentricGradients t = {-# SCC "barycentricGradients" #-} map vectorToGradient (take (nt+1) (M.toColumns mat))
     where mat = M.inv (simplexToMatrix (extendSimplex t))
-          n = geometricalDimension t
-          nt = topologicalDimension t
+          nt  = topologicalDimension t
 
 -- | Compute gradients of the barycentric coordinates.
 barycentricGradients' :: EuclideanSpace v
@@ -770,8 +767,6 @@ barycentricGradients' :: EuclideanSpace v
                       -> [v]
 barycentricGradients' t = map (fromDouble' . M.toList) (tail (M.toRows mat))
     where mat = M.inv (simplexToMatrix (extendSimplex t))
-          n = geometricalDimension t
-          nt = topologicalDimension t
 
 -- | Compute gradient of the barycentric coordinate corresponding to edge i
 barycentricGradient :: EuclideanSpace v
@@ -802,14 +797,14 @@ aggregate = foldr aggStep []
                 [Term fa2 _mi'] = matches -- TODO: is matches always of length 1?
 
 eqMI :: MI.MultiIndex -> Term a -> Bool
-eqMI mi (Constant _)   =  False -- all (0==) mi
-eqMI mi (Term fa mi')  =  mi == mi'
+eqMI _  (Constant _)  =  False -- all (0==) mi
+eqMI mi (Term _ mi')  =  mi == mi'
 
 insertTerm :: Term a -> SimpleTerms a -> SimpleTerms a
 insertTerm t (Constant c : ts) = Constant c : t : ts
 insertTerm t ts                = t : ts
 
 simplifyT :: Ring a => Term a -> Term a
-simplifyT (Term fa mi) | fa == addId = Constant addId
-simplifyT t = t
+simplifyT (Term fa _) | fa == addId = Constant addId
+simplifyT t                         = t
 \end{code}

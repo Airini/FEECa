@@ -113,12 +113,12 @@ $\R{n}$.
 
 -- | The degree of the finite element space.
 degree :: FiniteElementSpace -> Int
-degree (PrLk r _ _) = r
+degree (PrLk r _ _)  = r
 degree (PrmLk r _ _) = r
 
 -- | The arity of the finite element space
 arity :: FiniteElementSpace -> Int
-arity (PrLk _ k _) = k
+arity (PrLk _ k _)  = k
 arity (PrmLk _ k _) = k
 
 -- | The dimension of the underlying vector space.
@@ -308,9 +308,9 @@ whitneyForm t sigma = Form k n [ (lambda' i, subsets !! i) | i <- [0..k]]
 -- | Implements the barycentric extension operator defined in eq. (7.1) in
 -- | Arnold, Falk, Winther.
 extend :: Simplex -> Form BernsteinPolynomial -> Form BernsteinPolynomial
-extend t (Form k n' cs) = Form k n (extend' cs)
+extend t (Form k _ cs) = Form k n (extend' cs)
     where extend' = map (\ (x,y) -> (B.extend t x, extendFace n y))
-          n = S.topologicalDimension t
+          n       = S.topologicalDimension t
 
 -- | Extend the face of a subsimplex of a simplex of topological dimension n to the
 -- | the simplex. That is, for a face given as an increasing list of vertices of the
@@ -392,9 +392,9 @@ psi t f alpha sigma  = foldl (/\) unit [psi' t f alpha i | i <- sigma]
 -- TODO: Check form indices.
 psi' :: Simplex -> Simplex -> MI.MultiIndex -> Int -> Form BernsteinPolynomial
 psi' t f alpha i = foldl subV (db i) [ sclV (c j) (db j) | j <- sigma]
-    where db j   = sclV (constant t 1.0) $ oneForm j n
-          c j    = sclV ((alpha' !! i) / r) mulId
-          r      = fromInteger $ MI.degree alpha
+    where db j = sclV (constant t 1.0) $ oneForm j n
+          c _  = sclV ((alpha' !! i) / r) mulId -- TODO: check here!
+          r    = fromInteger $ MI.degree alpha
           alpha' = map fromInteger $ MI.toList alpha
           n      = S.geometricalDimension f
           sigma  = S.sigma f
@@ -447,15 +447,15 @@ prLkFace t f r k = [ sclV (lambda a) (psi'' a s) | a <- alphas, s <- sigmas, val
 -- | a given face of a simplex.
 prLkFace' :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
 prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas,
-                                                   sigma <- sigmas alpha]
-    where n = S.topologicalDimension t
-          b = monomial t
-          alphas = MI.degreeR (n + 1)  r
+                                                 sigma <- sigmas alpha]
+    where n       = S.topologicalDimension t
+          b       = monomial t
+          alphas  = MI.degreeR (n + 1)  r
           sigmas alpha = [ sigma | sigma <- increasingLists k n,
                                    range alpha sigma == [0..n],
                                    isZero alpha sigma ]
           isZero alpha sigma = all (0==) (take (minimum' sigma) (MI.toList alpha))
-          minimum' sigma = minimum ([0..n] \\ sigma)
+          minimum' sigma     = minimum ([0..n] \\ sigma)
 
 {-
 t = S.referenceSimplex 2

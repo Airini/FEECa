@@ -75,9 +75,9 @@ data BernsteinPolynomial v r = Bernstein (Simplex v) (Polynomial r)
 
 -- pretty printing for Bernstein polyonmials
 instance Pretty (BernsteinPolynomial v Double) where
-    pPrint (Bernstein t p) = printBernstein ts
-        where ts = map (expandTerm 0) (terms p)
-    pPrint (Constant p) = text (show p)
+    pPrint (Bernstein _ p)  = printBernstein ts
+      where ts = map (expandTerm 0) (terms p)
+    pPrint (Constant p)     = text (show p)
 
 -- | List multi-indices of the terms in the polynomial.
 multiIndices :: (EuclideanSpace v, r ~ Scalar v)
@@ -87,8 +87,8 @@ multiIndices (Bernstein t p) = P.multiIndices n p
 multiIndices (Constant _c) = error "multiIndices: TODO"
 
 degree :: BernsteinPolynomial v r -> Int
-degree (Bernstein t p) = P.degree p
-degree (Constant _) = 0
+degree (Bernstein _ p) = P.degree p
+degree (Constant _)    = 0
 
 domain :: BernsteinPolynomial v r -> Simplex v
 domain (Bernstein t _) = t
@@ -144,7 +144,7 @@ monomial :: (EuclideanSpace v, r ~ Scalar v)
          => Simplex v -> MI.MultiIndex -> BernsteinPolynomial v r
 monomial t mi
     | n1 == n2 + 1 = Bernstein t (P.monomial mi)
-    | otherwise   = (error "monomial: Dimension of Simplex and Polynomials do not match.")
+    | otherwise    = error "monomial: Dimension of Simplex and Polynomials do not match."
   where n1 = dim mi
         n2 = topologicalDimension t
 
@@ -276,7 +276,7 @@ multiplyBernstein :: (EuclideanSpace v, r ~ Scalar v)
                   -> BernsteinPolynomial v r
                   -> BernsteinPolynomial v r
 multiplyBernstein (Bernstein t1 p1) (Bernstein t2 p2)
-     | t1 /= t1 = error "multiplyBernstein: Inconsistent simplices."
+     | t1 /= t2  = error "multiplyBernstein: Inconsistent simplices."
      | otherwise = Bernstein t1 (mul p1 p2)
 multiplyBernstein (Constant c)      (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
 multiplyBernstein (Bernstein t1 p1) (Constant c)      = Bernstein t1 (sclV c p1)
@@ -314,7 +314,7 @@ tabulateBernstein t vs bs = [tabulateBernstein' ls b | b <- bs]
 tabulateBernstein' :: (EuclideanSpace v, r ~ Scalar v)
                      => [v] -> BernsteinPolynomial v r -> [r]
 tabulateBernstein' vs (Bernstein _ p) = [evaluate v p | v <- vs]
-tabulateBernstein' _ _ = error $ "tabulateBernstein': TODO"
+tabulateBernstein' _  _               = error "tabulateBernstein': TODO"
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -365,7 +365,7 @@ deriveBernstein :: ( EuclideanSpace v, r ~ Scalar v)
                 -> BernsteinPolynomial v r
                 -> BernsteinPolynomial v r
 deriveBernstein v (Bernstein t p) = Bernstein t (derivePolynomial (deriveMonomial t) v p)
-deriveBernstein v (Constant c)  = Constant addId
+deriveBernstein _ (Constant _)    = Constant addId
 \end{code}
 
 
@@ -417,16 +417,16 @@ add the information about the simplex to the Bernstein polynomial.
 integrateBernstein :: (EuclideanSpace v, r ~ Scalar v)
                       => BernsteinPolynomial v r
                       -> r
-integrateBernstein b@(Bernstein t1 p) = sum' (map f (toPairs k p))
-    where f (c, mi) = mul c (divide (mul (factorialMI mi) vol)
+integrateBernstein (Bernstein t1 p) = sum' (map f (toPairs k p))
+  where f (c, mi)   = mul c (divide (mul (factorialMI mi) vol)
                                     (mul (factorial' (MI.degree mi)) (fac mi)))
-          factorialMI = fromDouble . MI.factorial
-          factorial' = fromDouble . factorial
-          fac mi = fromDouble (fromInteger ((k + MI.degree mi) `choose` k))
-          k = topologicalDimension t1
-          sum' = foldl add addId
-          vol = volume t1
-integrateBernstein (Constant c) = error "intergrateBernstein: No associated simplex for constant. Define over simplex first using redefine."
+        factorialMI = fromDouble . MI.factorial
+        factorial'  = fromDouble . factorial
+        fac mi      = fromDouble (fromInteger ((k + MI.degree mi) `choose` k))
+        k     = topologicalDimension t1
+        sum'  = foldl add addId
+        vol   = volume t1
+integrateBernstein (Constant _) = error "intergrateBernstein: No associated simplex for constant. Define over simplex first using redefine."
 
 -- | Redefined Bernstein polynomial over a different simplex or define simplex
 -- | for constant bernstein polynomial.
@@ -434,16 +434,16 @@ redefine :: Ring r
          => Simplex v
          -> BernsteinPolynomial v r
          -> BernsteinPolynomial v r
-redefine t1 (Bernstein t2 p) = Bernstein t1 p
-redefine t (Constant c)      = Bernstein t (P.constant c)
+redefine t1 (Bernstein _ p) = Bernstein t1 p
+redefine t (Constant c)     = Bernstein t (P.constant c)
 
 -- | Inner product of Bernstein polynomials defined over a simplex T. If both
 -- | polynomials are constant and have no associated simplex, a simplex with
 -- | volume 1 is assumed.
 innerBernstein :: (EuclideanSpace v, r ~ Scalar v)
-                  => BernsteinPolynomial v r
-                  -> BernsteinPolynomial v r
-                  -> r
+                => BernsteinPolynomial v r
+                -> BernsteinPolynomial v r
+                -> r
 innerBernstein (Constant c1) (Constant c2) = mul c1 c2
 innerBernstein b1 b2 = integrateBernstein (multiplyBernstein b1 b2)
 
@@ -472,12 +472,9 @@ with the gradient vector.
 -- | Projection fuction for gradients of barycentric coordinates as basis for
 -- | the space of alternating forms.
 proj :: ( EuclideanSpace v, r ~ Scalar v)
-     => Simplex v
-     -> Int
-     -> v
-     -> r
-proj t i    = dot u
-    where u = barycentricGradient t i
+     => Simplex v -> Int -> v -> r
+proj t i  = dot u
+  where u = barycentricGradient t i
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -500,8 +497,8 @@ extend :: (EuclideanSpace v, r ~ Scalar v)
        -> BernsteinPolynomial v r
 extend t (Bernstein f p) = polynomial t (extend' (toPairs n' p))
     where extend' = map (\(c, mi) -> (c, MI.extend n (sigma f) mi))
-          n = topologicalDimension t
-          n' = topologicalDimension f
+          n       = topologicalDimension t
+          n'      = topologicalDimension f
 extend _ c = c
 
 \end{code}

@@ -102,8 +102,8 @@ data Simplex a =  Simplex { sigma :: [Int],
 -- | The geometrical dimension of a simplex is the dimensionality of the
 -- | underlying vector space.
 geometricalDimension :: Dimensioned a => Simplex a -> Int
-geometricalDimension (Simplex _ (p:ps)) = dim p
-geometricalDimension _                  = error "geometricalDimension: empty list or vertices"
+geometricalDimension (Simplex _ (p:_)) = dim p
+geometricalDimension _                 = error "geometricalDimension: empty list or vertices"
 
 -- | The topological dimension of a n-simplex is the number of vertices minus
 -- | one.
@@ -125,14 +125,14 @@ topologicalDimension (Simplex _ l) = length l - 1
 -- | Reference vertex of the simplex, i.e. the first point in the list
 -- | of vectors
 referenceVertex :: Simplex v -> v
-referenceVertex (Simplex _ (p:ps)) = p
-referenceVertex _                  = error "referenceVertex: there is no vertex in this simplex"
+referenceVertex (Simplex _ (p:_)) = p
+referenceVertex _                 = error "referenceVertex: there is no vertex in this simplex"
 
 -- | List of the n direction vector pointing from the first point of the
 -- | simplex to the others.
 spanningVectors :: VectorSpace v => Simplex v -> [v]
 spanningVectors (Simplex _ (v:vs)) = map (`subV` v) vs
-spanningVectors (Simplex _ _) = []
+spanningVectors (Simplex _ _)      = []
 
 \end{code}
 
@@ -176,20 +176,20 @@ instance EuclideanSpace v => Pretty (Simplex v) where
 
 -- | Construct a full simplex from a given list of points in R^n
 simplex :: EuclideanSpace v => [v] -> Simplex v
-simplex l@(p:ps)
-    | dim p == n = Simplex [0..n] l
-    | otherwise = error "simplex: Dimensions don't agree."
+simplex []        = error "simplex: empty list."
+simplex l@(p:_)
+    | dim p == n  = Simplex [0..n] l
+    | otherwise   = error "simplex: Dimensions don't agree."
   where n = length l - 1
-simplex [] = error "simplex: empty list."
 
 -- | Construct a full simplex from a reference vertex and n direction vectors.
 simplex' :: EuclideanSpace v => v -> [v] -> Simplex v
-simplex' p0 l@(v:vs)
-    | all ((n ==) . dim ) l = Simplex [0..n] (p0:l')
-    | otherwise = error "simplex': Dimensions don't agree."
-    where l' = map (addV p0) l
-          n = length l
-simplex' p l = error "simplex': Topological dimension is zero."
+simplex' _  []             = error "simplex': Topological dimension is zero."
+simplex' p0 vs
+    | all ((n==) . dim) vs = Simplex [0..n] (p0:vs')
+    | otherwise            = error "simplex': Dimensions don't agree."
+  where vs' = map (addV p0) vs
+        n   = length vs
 
 \end{code}
 
@@ -218,7 +218,8 @@ referenceSimplex :: EuclideanSpace v => Int -> Simplex v
 referenceSimplex n = Simplex [0..n] (zero n : [unitVector n i | i <- [0..n-1]])
 
 face :: Simplex v -> [Int] -> Simplex v
-face (Simplex sigma1 vs) sigma2 = Simplex [sigma1 !! i | i <- sigma2] [vs !! i | i <-sigma2]
+face (Simplex sigma1 vs) sigma2 = Simplex [sigma1 !! i | i <- sigma2]
+                                          [vs !! i     | i <- sigma2]
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -250,8 +251,7 @@ face (Simplex sigma1 vs) sigma2 = Simplex [sigma1 !! i | i <- sigma2] [vs !! i |
 -- | Computes the k-dimensional volume (Lebesgue measure) of a simplex
 -- | in n dimensions using the Gram Determinant rule.
 volume :: EuclideanSpace v
-       => Simplex v
-       -> Scalar v
+       => Simplex v -> Scalar v
 volume t
     | k == n     = volume' t
     | otherwise  = volume (simplex' (zero k) (project bs vs))
@@ -265,13 +265,10 @@ project bs vs = map fromList [[ proj b v | b <- bs] | v <- vs]
   where proj b v  = divide (dot b v) (sqrt' (dot b b))
         sqrt'     = fromDouble . sqrt . toDouble
 
-volume' :: EuclideanSpace v
-        => Simplex v
-        -> Scalar v
+volume' :: EuclideanSpace v => Simplex v -> Scalar v
 volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
   where n = geometricalDimension t
         w = M.matrix n comps
-        v = referenceVertex t
         comps = concatMap toDouble' (spanningVectors t)
 
 \end{code}
@@ -300,11 +297,11 @@ volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
 -- | i:th k-dimensional subsimplex of given simplex
 subsimplex :: Simplex v -> Int -> Int -> Simplex v
 subsimplex (Simplex _ []) _ _ =
-                error "subsimplex: Encountered Simplex without vertices."
+      error "subsimplex: Encountered Simplex without vertices."
 subsimplex s@(Simplex _ l) k i
-    | k > n = error err_dim
+    | k > n                     = error err_dim
     | i >= (n+1) `choose` (k+1) = error err_ind
-    | otherwise = Simplex indices (map (l !!) indices)
+    | otherwise                 = Simplex indices (map (l !!) indices)
   where n = topologicalDimension s
         indices = unrank (k+1) n i
         err_ind = "subsimplex: Index of subsimplex exceeds (n+1) choose (k+1)."
@@ -314,7 +311,7 @@ subsimplex s@(Simplex _ l) k i
 -- | List subsimplices of given simplex with dimension k.
 subsimplices :: Simplex v -> Int -> [Simplex v]
 subsimplices t@(Simplex _ l) k
-    | k > n = error err_dim
+    | k > n     = error err_dim
     | otherwise = [Simplex i vs | (i, vs) <- zip indices subvertices]
   where n = topologicalDimension t
         indices = map (unrank (k+1) n) [0..(n+1) `choose` (k+1) - 1]
@@ -333,8 +330,8 @@ subsimplices' t k = concat [ subsimplices t k' | k' <- [k..n] ]
 
 \begin{code}
 complement :: Simplex v -> Simplex v -> [v]
-complement (Simplex _ l) (Simplex sigm _) = [l !! i | i <- [0..n], notElem i sigm]
-    where n = (length l) - 1
+complement (Simplex _ l) (Simplex sigm _) = [l !! i | i <- [0..n], i `notElem` sigm]
+    where n = length l - 1
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -351,16 +348,14 @@ For the computation of the barycentric coordinates of a simplex whose
 \begin{code}
 -- | Extend the given simplex to a full simplex so that its geometrical
 -- | dimension is the same as its topological dimension.
-extendSimplex :: (EuclideanSpace v)
-              => Simplex v
-              -> Simplex v
-extendSimplex t@(Simplex _ ps)
-    | n == nt = t
+extendSimplex :: EuclideanSpace v => Simplex v -> Simplex v
+extendSimplex t
+    | n == nt   = t
     | otherwise = simplex' p0 (take n (extendVectors n dirs))
-  where n = geometricalDimension t
-        nt = topologicalDimension t
-        dirs = spanningVectors t
-        p0 = referenceVertex t
+  where n     = geometricalDimension t
+        nt    = topologicalDimension t
+        dirs  = spanningVectors t
+        p0    = referenceVertex t
 
 norm :: EuclideanSpace v => v -> v -> Ordering
 norm v1 v2 = compare v12 v22
@@ -371,10 +366,8 @@ norm v1 v2 = compare v12 v22
 -- | given set of vectors. Due to round off error the resulting list may contain
 -- | more than n vectors, which then have to be removed manually.
 extendVectors :: (EuclideanSpace v , Eq (Scalar v))
-              => Int
-              -> [v]
-              -> [v]
-extendVectors n vs = ( vs ++ (take (n - k) (reverse (sortBy norm vs'))))
+              => Int -> [v] -> [v]
+extendVectors n vs = vs ++ take (n - k) (sortBy (flip norm) vs')
   where vs' = drop k $ gramSchmidt $ vs ++ [unitVector n i | i <- [0..n-1]]
         k   = length vs
 
@@ -420,10 +413,8 @@ extendVectors n vs = ( vs ++ (take (n - k) (reverse (sortBy norm vs'))))
 
 -- | Convert a vector given in barycentric coordinates to euclidean coordinates.
 barycentricToCartesian :: EuclideanSpace v
-                       => Simplex v
-                       -> v
-                       -> v
-barycentricToCartesian t@(Simplex _ vs) v = foldl sclAdd zero' (zip v' vs)
+                       => Simplex v -> v -> v
+barycentricToCartesian (Simplex _ vs) v = foldl sclAdd zero' (zip v' vs)
   where sclAdd p (c, p0) = addV p (sclV c p0)
         zero'            = zeroV (head vs)
         v'               = toList v
@@ -468,8 +459,8 @@ cubicToCartesian t = barycentricToCartesian t . cubicToBarycentric
 -- | Convert vector given in cubic coordinates to barycentric coordinates.
 cubicToBarycentric :: EuclideanSpace v => v -> v
 cubicToBarycentric v = fromList (ls ++ [l])
-  where ts = toList v
-        (l,ls) = mapAccumL f mulId ts
+  where ts      = toList v
+        (l,ls)  = mapAccumL f mulId ts
         f acc t = (mul acc (sub mulId t), mul t acc)
 
 \end{code}
@@ -530,22 +521,17 @@ integrateOverSimplex q t f = mul vol (mul fac (nestedSum q (n-1) [] t f))
 -- Recursion for the computation of the nested sum in the numerical approximation
 -- of the integral of a function over a simplex.
 nestedSum :: (EuclideanSpace v, r ~ Scalar v)
-             => Int
-             -> Int
-             -> [r]
-             -> Simplex v
-             -> (v -> r)
-             -> r
+             => Int -> Int -> [r] -> Simplex v -> (v -> r) -> r
 nestedSum k d ls t f
     | d == 0    = U.sumR [ mul w (f x)
                            | (w, x) <- zip weights' xs ]
     | otherwise = U.sumR [ mul w (nestedSum k (d-1) (x:ls) t f)
                            | (w, x) <- zip weights' nodes' ]
-  where xs = [ cubicToCartesian t (fromList' (xi : ls)) | xi <- nodes' ]
+  where xs        = [ cubicToCartesian t (fromList' (xi : ls)) | xi <- nodes' ]
         fromList' = fromList . reverse
         (nodes, weights) = unzip $ gaussJacobiQuadrature' d 0 k
-        nodes'   = map fromDouble nodes
-        weights' = map fromDouble weights
+        nodes'    = map fromDouble nodes
+        weights'  = map fromDouble weights
 
 instance (EuclideanSpace v, r ~ Scalar v) => FiniteElement (Simplex v) r where
   type Primitive (Simplex v) = v

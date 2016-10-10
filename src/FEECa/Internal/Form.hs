@@ -9,7 +9,7 @@ module FEECa.Internal.Form (
   , zeroForm, nullForm, oneForm
 
   -- * Form operations
-  ,apply, refine, refine_basis, inner, contract
+  ,apply, refine, refineBasis, inner, contract
   ) where
 
 
@@ -31,7 +31,7 @@ import qualified Numeric.LinearAlgebra.HMatrix as M
 type Dim = Int
 type Idx = Int
 type Prd = [Idx] -- a product of projections / indexed 1-forms
-type LinComb f = [(f, Prd)]
+-- type LinComb f = [(f, Prd)]
 
 
 -- | Bilinear, alternating forms over vectorspaces
@@ -63,7 +63,7 @@ instance Functor Form where
 
 
 instance Pretty f => Pretty (Form f) where
-  pPrint (Form k n cs) = printForm "dx" "0" pPrint cs -- show or pPrint...
+  pPrint (Form _ _ cs) = printForm "dx" "0" pPrint cs -- show or pPrint...
   {- show k ++ "-form in " ++ show n ++ " dimensions: " ++
                           show (printForm "dx" "0" show cs)-}
 
@@ -72,7 +72,7 @@ instance Pretty f => Pretty (Form f) where
 --      their normal form - an increasing list
 combineWithBy :: (a -> a -> a) -> (i -> i -> Bool)
               -> [(a, i)] -> [(a, i)] -> [(a,i)]
-combineWithBy f p es1 es2 = foldl ins es1 es2
+combineWithBy f p = foldl ins
   where ins [] x = [x]
         ins (y:ys) x | p (snd x) (snd y) = (fst x `f` fst y, snd y) : ys
                      | otherwise         = y : ins ys x
@@ -180,21 +180,21 @@ contract proj omega v
 -- make_lookup n k ds vvs
 apply :: (EuclideanSpace v, Ring w, VectorSpace w, Scalar v ~ Scalar w)
       => [v] -> [v] -> Form w -> w
-apply ds vs omega@(Form k n cs) = foldl addV addId (map (apply' k ds vs) cs)
+apply ds vs (Form k _ cs) = foldl addV addId (map (apply' k ds vs) cs)
 
 apply' :: (EuclideanSpace v, VectorSpace w, Scalar v ~ Scalar w)
        => Int -> [v] -> [v] -> (w,[Int]) -> w
-apply' k ds vs (p, []) = p
+apply' _ _  _  (p, []) = p
 apply' k ds vs (p, cs) = sclV c p
   where projections    = [toDouble $ dot (ds !! i) v | v <- vs, i <- cs]
         c              = fromDouble $ M.det $ M.matrix k projections
 
-refine_basis :: (Ring r, EuclideanSpace v, Scalar v ~ r)
-             => [v] -> [[v]] -> [[r]]
-refine_basis ds vvs = map (map (fromDouble . M.det)) submatrices
+refineBasis :: (Ring r, EuclideanSpace v, Scalar v ~ r)
+            => [v] -> [[v]] -> [[r]]
+refineBasis ds vvs = map (map (fromDouble . M.det)) submatrices
   where projections = [[[toDouble $ dot d v | v <- vs] | d <- ds] | vs <- vvs]
         matrices    = map (kSublists k) projections
-        submatrices = map (map ((M.matrix k) . concat)) matrices
+        submatrices = map (map (M.matrix k . concat)) matrices
         k           = length (head vvs)
 
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
@@ -205,7 +205,7 @@ refine :: (Ring w, VectorSpace w, VectorSpace v, Scalar v ~ Scalar w)
                                       --   for the specific vector space
        -> Form w
        -> [v] -> w
-refine proj eta@(Form k n cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . formify proj) cs')
+refine proj (Form _ _ cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . formify proj) cs')
   where cs' | null cs   = [(addId,[])]
             | otherwise = cs
 -- TODO: capture inconsistency between k and length vs here??

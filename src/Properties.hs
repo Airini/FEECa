@@ -136,7 +136,7 @@ propA_wedgeAssocEvl vs = prop_associativity (#vs) (/\)
 propA_wedgeAntiComm :: (Ring f, VectorSpace f,
                         Projectable v (Scalar f), Scalar v ~ Scalar f, Show f)
                     => Form f -> Form f -> [v] -> Property
-propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) === (expSign jk (y /\ x # vs))
+propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) === expSign jk (y /\ x # vs)
   where j = arity x
         k = arity y
         jk = j * k
@@ -159,7 +159,7 @@ propA_contractCochain :: (Ring f, VectorSpace f, Dimensioned v,
                           Projectable v f, Projectable v (Scalar v),
                           Scalar v ~ Scalar f, Show f)
                       => Form f -> v -> [v] -> Property
-propA_contractCochain w v = \vs ->
+propA_contractCochain w v vs =
   w ⌟ v ⌟ v # vs === zeroForm (arity w) (dimVec w) # vs
 
 

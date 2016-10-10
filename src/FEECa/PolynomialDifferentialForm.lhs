@@ -31,7 +31,7 @@ instance  Show (DifferentialForm Double) where
   show omega = show $ printForm ("d" ++ lambda) "0" pPrint (F.terms omega)
 
 findSimplex :: DifferentialForm a -> Maybe (Simplex (Vector a))
-findSimplex (F.Form k n cs) = find (const True) $ mapMaybe (findSimplex' . fst) cs
+findSimplex (F.Form _ _ cs) = find (const True) $ mapMaybe (findSimplex' . fst) cs
 
 findSimplex' :: BernsteinPolynomial a -> Maybe (Simplex (Vector a))
 findSimplex' (B.Bernstein t _) = Just t
@@ -58,13 +58,13 @@ evalSeparately :: (S.Field a, S.VectorSpace a, S.Scalar a ~ a)
                -> [[Vector a]]
                -> [a]
 evalSeparately t omega vs fs = V.toList $ foldl S.addV zero crossres
-  where bvals = B.tabulateBernstein t vs (fst omegasplit)
-        fvals = [[F.apply ds f eta | f <- fs] | eta <- (snd omegasplit)]
-        crossres = map V.vector $ zipWith (liftA2 S.mul) fvals bvals
-        ds = P.barycentricGradients t
-        omegasplit = F.split omega
-        l    = (length vs) * (length fs)
-        zero = V.vector (replicate l $ S.fromDouble 0.0)
+  where bvals       = B.tabulateBernstein t vs (fst omegasplit)
+        fvals       = [[F.apply ds f eta | f <- fs] | eta <- snd omegasplit]
+        crossres    = map V.vector $ zipWith (liftA2 S.mul) fvals bvals
+        ds          = P.barycentricGradients t
+        omegasplit  = F.split omega
+        l           = length vs * length fs
+        zero        = V.vector (replicate l $ S.fromDouble 0.0)
 
 inner :: S.Field a => DifferentialForm a -> DifferentialForm a -> a
 inner omega eta
@@ -75,7 +75,7 @@ inner omega eta
 
 integrate :: S.Field a => Simplex (Vector a) -> DifferentialForm a -> a
 integrate t omega = B.integratePolynomial t b'
-  where b' = S.sclV (S.mulInv (S.mul kfac (volume t))) b
-        b  = apply omega (spanningVectors t)
-        kfac  = S.fromInt (C.factorial (topologicalDimension t))
+  where b'   = S.sclV (S.mulInv (S.mul kfac (volume t))) b
+        b    = apply omega (spanningVectors t)
+        kfac = S.fromInt (C.factorial (topologicalDimension t))
 \end{code}

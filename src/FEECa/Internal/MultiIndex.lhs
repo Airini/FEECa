@@ -48,10 +48,10 @@ module FEECa.Internal.MultiIndex(
   ) where
 
 
-import Control.Applicative(ZipList(..), liftA2)
+import Control.Applicative (ZipList(..), liftA2)
 -- import Control.Applicative(Applicative(..), liftA)
-import FEECa.Internal.Spaces(Dimensioned(..),Field(..))
-import FEECa.Utility.Combinatorics(sumRLists)
+import FEECa.Internal.Spaces (Dimensioned(..),Field(..))
+import FEECa.Utility.Combinatorics (sumRLists)
 import qualified FEECa.Utility.Combinatorics as C(choose, factorial)
 
 \end{code}
@@ -73,7 +73,7 @@ the number of exponents in the multi-index.
 type MultiIndex = ZipList Int
 
 instance Dimensioned (ZipList a) where
-    dim mi = length (getZipList mi)
+  dim mi = length (getZipList mi)
 
 \end{code}
 
@@ -121,7 +121,7 @@ multiIndex :: [Int] -> MultiIndex
 multiIndex l
     | valid mi = mi
     | otherwise = error "multiIndex: Multi-index is invalid!"
-    where mi = ZipList l
+  where mi = ZipList l
 
 -- | Check whether a given multi-index is valid.
 valid :: MultiIndex -> Bool
@@ -218,13 +218,13 @@ extend :: Int -> [Int] -> MultiIndex -> MultiIndex
 extend n sigma mi
     | length sigma == dim mi = multiIndex $ extend' n (-1) sigma mi'
     | otherwise = error $(show sigma) ++ " \n " ++ show mi ++ "extend: Dimensions of sigma and multi-index don't agree"
-    where mi'       = toList mi
+  where mi'       = toList mi
 
 extend' :: Int -> Int -> [Int] -> [Int] -> [Int]
+extend' n _ []      []      = replicate n 0
 extend' n i (s:ss)  (j:js)  = replicate di 0 ++ (j : extend' (n - di - 1) s ss js)
-    where di = s - i - 1  -- Number of zeros to pad.
-extend' n i []      []      = replicate n 0
-extend' _ _ _ _ = error "extend': list argument lengths must match"
+  where di = s - i - 1  -- Number of zeros to pad.
+extend' _ _ _       _       = error "extend': list argument lengths must match"
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -262,7 +262,7 @@ its elements:
 \begin{code}
 
 -- | Generalized factorial for multi-indices
-factorial :: (Num b) => MultiIndex -> b
+factorial :: Num b => MultiIndex -> b
 factorial = product . map C.factorial . toList
 
 \end{code}
@@ -286,7 +286,7 @@ element-wise binomial coefficients.
 choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
 choose a b = product (getZipList (liftA2 C.choose a b))
 
-choose' :: (Integral a, Fractional b) => Int -> ZipList Int -> b
+choose' :: Fractional b => Int -> ZipList Int -> b
 choose' a b = fromIntegral (C.factorial a) / fromIntegral (factorial b)
 
 \end{code}
@@ -303,10 +303,10 @@ function.
 -- | Decrease element in multi-index
 decrease :: Integral a =>  Int -> ZipList a -> ZipList a
 decrease i alpha  = pure f <*> ZipList [0..] <*> alpha
-    where f j a = if j == i then max 0 (a-1) else a
+  where f j a = if j == i then max 0 (a-1) else a
 
 -- | Decrease element in multi-index
 derive :: (Integral a, Field b) =>  Int -> ZipList a -> (b, ZipList a)
 derive i alpha  = (c, decrease i alpha)
-    where c = (fromDouble . fromIntegral) (getZipList alpha !! i)
+  where c = (fromDouble . fromIntegral) (getZipList alpha !! i)
 \end{code}

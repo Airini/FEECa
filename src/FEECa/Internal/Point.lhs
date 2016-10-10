@@ -24,7 +24,7 @@ module FEECa.Internal.Point(
              -- * Conversion to and from 'Vector' where
              fromPoint, toPoint
 
-                          ) where
+) where
 
 -- import Data.List
 import FEECa.Internal.Spaces
@@ -47,7 +47,7 @@ The \code{Point} data type is build on top of the \code{Vector} data type using
 \begin{code}
 -- | Points in n-dimensional Euclidean space. A point describes a fixed position
 -- | in space and can not be computed with.
-newtype Point a = Point (Vector a) deriving (Show)
+newtype Point a = Point (Vector a) deriving Show
 
 deriving instance Eq (Point Double)
 
@@ -114,7 +114,7 @@ fromPoint (Point v) = v
 instance VectorSpace (Point Double) where
   type Scalar (Point Double) = Double
   addV x = toPoint . uncurry addV . pairM fromPoint fromPoint . (x,)
-  sclV a = undefined
+  sclV _ = undefined
 
 instance EuclideanSpace (Point Double) where
   dot x    = uncurry dot . pairM fromPoint fromPoint . (x,)

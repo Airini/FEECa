@@ -28,10 +28,10 @@ combinations n k = quotient (factorial n) (factorial k * factorial (n - k))
 
 -- Picks elements at given relative indices
 pick :: [Int] -> [a] -> [a]
-pick []      xs         = []
-pick (1:is)  (x:xs)     = x : pick is xs
-pick (i:is)  (x:xs)     = pick (i-1:is) xs
-pick (i:is)  []         = error $ "pick called with too short list"
+pick []     _      = []
+pick (1:is) (x:xs) = x : pick is xs
+pick (i:is) (_:xs) = pick (i-1:is) xs
+pick (_:_)  []     = error "pick called with too short list"
 
 -- Returns differences between consecutive elements
 differences :: [Int] -> [Int]
@@ -39,7 +39,7 @@ differences = fst . foldl (\(l,acc) x -> (l ++ [x-acc],x)) ([],0)
 
 -- All possible increasing k-permutations of n elements
 permutations :: Int -> Int -> [[Int]]
-permutations n 0 = [[]]
+permutations _ 0 = [[]]
 permutations n 1 = [ [j]  | j <- [1..n]]
 permutations n k = [ j:xs | j <- [1..n], xs <- permutations n (k-1), head xs > j ]
 

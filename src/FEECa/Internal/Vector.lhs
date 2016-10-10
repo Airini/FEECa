@@ -25,7 +25,7 @@ module FEECa.Internal.Vector(
 
 import FEECa.Internal.Spaces
 -- import qualified  FEECa.Internal.MultiIndex  as MI
-import            FEECa.Utility.Print        as P
+import FEECa.Utility.Print        as P
 -- import qualified  FEECa.Utility.Utility      as U
 
 
@@ -47,7 +47,7 @@ import            FEECa.Utility.Print        as P
 \begin{code}
 
 -- | Vectors in n-dimensional euclidean space.
-data Vector a = Vector { components :: [a] } deriving (Show)
+data Vector a = Vector { components :: [a] } deriving Show
 
 \end{code}
 

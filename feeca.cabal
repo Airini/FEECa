@@ -81,7 +81,8 @@ library
   hs-source-dirs:     src, test, bench
 
   ghc-options:        -fhpc -O2 -threaded -fexcess-precision -optc-ffast-math -optc-O3 -optc-mfpmath=sse
-  -- -Wall -funfolding-use-threshold=16
+  -- -Wall
+    -funfolding-use-threshold=16
     -fwarn-tabs
     -fwarn-unused-imports
     -fwarn-missing-signatures

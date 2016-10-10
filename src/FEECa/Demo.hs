@@ -131,7 +131,7 @@ w1_2 = dxs_2' 1 /\ dxs_2' 2
 w2_2 = dxs_2' 2 /\ dxs_2' 1
 
 u, v :: Form (Polynomial Double)
-u = (head $ hs 2) .* w1_2 .+. ((hs 2 !! 3) .* w2_2) .+. (constant 0.5 .* dx1' /\ dx2')
+u = head (hs 2) .* w1_2 .+. ((hs 2 !! 3) .* w2_2) .+. (constant 0.5 .* dx1' /\ dx2')
 v = p .* dxs' 1 .+. (constant 2 · p .* dxs' 2)
 
 -- -- Evaluation of differential forms
@@ -157,7 +157,7 @@ val6 = w1 <> w2 -- summation over the basis
 v5 :: Vector Double
 v5 = vector [1..5]
 u5 :: Form (Polynomial Double)
-u5 = (head $ hs 2) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (constant 0.5 .* dxs' 1 /\ dxs' 2)
+u5 = head (hs 2) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (constant 0.5 .* dxs' 1 /\ dxs' 2)
 val7, val11 :: Form Double
 val7 = w1 ⌟ v5
 val8, val9, val10 :: DifferentialForm (PolyRepresentation Double)

@@ -74,14 +74,14 @@ maxWidth p l = maximum (map numLen l) + p + 1
 
 -- | Pretty print polynomial
 printPolynomial :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
-printPolynomial sym []           = double 0.0
+printPolynomial _   []           = double 0.0
 printPolynomial sym [ (c,mon) ]  = double c <+> printMonomial sym (MI.toList mon)
 printPolynomial sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
     where s = double c <+> printMonomial sym (MI.toList mon)
 
 -- | Pretty print polynomial
 printPolynomial0 :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
-printPolynomial0 sym []           = double 0.0
+printPolynomial0 _   []           = double 0.0
 printPolynomial0 sym [ (c,mon) ]  = double c <+> printMonomial0 sym (MI.toList mon)
 printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
     where s = double c <+> printMonomial0 sym (MI.toList mon)
@@ -158,7 +158,7 @@ printPower i
     | i==9  = text "\x2079"
     | i > 9 = printPower (div i 10)  <> printPower (mod i 10)
     | otherwise = text ""
-    where ld = truncate (logBase 10 (fromIntegral i))
+  -- where ld = truncate (logBase 10 (fromIntegral i))
 
 printSuperscript :: Integral a => a -> Doc
 printSuperscript i
@@ -180,7 +180,7 @@ printSub i
     | i==9  = text "\x2089"
     | i > 9 = printSub (div i 10)  <> printSub (mod i 10)
     | otherwise = text ""
-    where ld = truncate (logBase 10 (fromIntegral i))
+  -- where ld = truncate (logBase 10 (fromIntegral i))
 
 wedgeD :: Doc
 wedgeD = text "\x2227"

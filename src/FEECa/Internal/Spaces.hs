@@ -24,7 +24,7 @@ class Eq v => Ring v where  -- XXX: only Eq v for now
 
   pow     :: Integral a => v -> a -> v
   -- no neg security!
-  pow t 0 = mulId
+  pow _ 0 = mulId
   pow t n = mul t (pow t (n-1))
 
 fromInt' :: Ring a => Int -> a
