@@ -1,13 +1,14 @@
 \section{Bernstein Polynomials}
 
-A barycentric monomial $\b^r_{\vec{\alpha}}$ of degree $r$  defined over a simplex
-$\smp{T}=[\vec{v_o},\ldots,\vec{v_k}]$ is a product of the form
+A barycentric monomial $\b^r_{\vec{\alpha}}$ of degree $r$ defined
+over a simplex $\smp{T}=[\vec{v_o},\ldots,\vec{v_k}]$ is a product of
+the form
 
 \begin{align}
- \b _{\vec{\alpha}}^r(\vec{x}) &= \prod_{i = 0}^k \lambda_i^{\alpha_i}(\vec{x})
- \end{align}
+  \b _{\vec{\alpha}}^r(\vec{x}) &= \prod_{i = 0}^k \lambda_i^{\alpha_i}(\vec{x})
+\end{align}
 
- with $|\alpha| = k$ and the $\lambda_i$ the barycentric coordinates
+with $|\alpha| = k$ and the $\lambda_i$ the barycentric coordinates
 with respect to $\smp{\smp{T}}$.  The space $\ps{r}{\smp{f}}$ of
 polynomials of degree at most $r$ in $n$ dimensions defined over a
 $k$-dimensional subsimplex $\smp{f}$ of an $n$-dimensional simplex
@@ -55,22 +56,20 @@ import FEECa.Utility.Print
 
 \subsection{The \code{BernsteinPolynomial} Type}
 
-The representation of Bernstein the \code{BernsteinPolynomial} type
-uses the common polynomial type \code{Polynomial}. In addition to that
-the Bernstein polynomial type has a field \code{simplex} which holds
-the Simplex over which the polynomial is defined. In order to be able
-to create constant polynomials independent of a simplex, the
-\code{BernsteinPolynomial} type provides an additional constructor for
-constant Bernstein polynomials.
+The \code{BernsteinPolynomial} type uses the \code{Polynomial} type
+(to represent Bernstein polynomials) and also stores the
+\code{Simplex} over which the polynomial is defined.
+%
+The \code{BernsteinPolynomial} type provides an additional constructor
+for constant polynomials which are polymorphic in the simplex.
 
 %------------------------------------------------------------------------------%
 
 \begin{code}
-
 -- | Bernstein polynomial over a simplex. Represented by a normal polynomial
 -- | internally and uses the generalized functions for evaluation and derivation.
-data BernsteinPolynomial v r = Bernstein (Simplex v) (Polynomial r)
-                             | Constant r
+data BernsteinPolynomial v r  = Bernstein (Simplex v) (Polynomial r)
+                              | Constant r
   deriving (Eq, Show)
 
 -- pretty printing for Bernstein polyonmials
