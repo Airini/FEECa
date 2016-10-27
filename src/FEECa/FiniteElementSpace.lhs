@@ -10,7 +10,9 @@ Bases are provided for the two families of spaces $\pl{r}{k}$ and
 $\pml{r}{k}$.
 %
 $\pl{r}{k}$ is the space of polynomial differential $k$-forms of
-degree at most $r$. The space $\pml{r}{k}$ is defined as
+degree at most $r$.
+%
+The space $\pml{r}{k}$ is defined as
 %
 \begin{align}
 \pml{r}{k} &= \{ \omega \in \pl{r}{k} | \kappa \omega \in \pl{r}{k-1} \}
@@ -72,12 +74,17 @@ import qualified Math.Combinatorics.Exact.Binomial as CBin
 
 \subsection{The \code{FiniteElementSpace} Data Type}
 
-For the handling of finite element spaces the \code{FiniteElementSpace} module
-provides the \code{FiniteElementSpace} type which represents a finite element
-space over a simplex. It provides three type constructors. The \code{PrLk} and
-the \code{PrmLk} constructors to represent the spaces $\pl{r}{k}$ and
-$\pml{r}{k}$, respectively and the \code{GenSpace} constructor to represent a
-general space by a set of basis functions.
+The \code{FiniteElementSpace} type represents a
+%
+finite element space over a simplex.
+%
+It provides three type constructors.
+%
+The \code{PrLk} and the \code{PrmLk} constructors to represent the
+spaces $\pl{r}{k}$ and $\pml{r}{k}$, respectively and the
+\code{GenSpace} constructor to represent a general space by a set of
+basis functions.
+%TODO: There is no GenSpace constructor: either fix the text or the code.
 
 %------------------------------------------------------------------------------%
 
@@ -184,8 +191,10 @@ pPrint l  = putStrLn $ "[ " ++ foldl render (pPrintBasisFunction (head l)) (tail
 \subsection{Concrete Spaces}
 
 For the construction of finite element spaces over a given simplex the
-\code{finiteElementSpace} function is provided. It takes the name of one
-of the primary spaces of finite elements as presented in \cite{ArnoldLogg}.
+\code{finiteElementSpace} function is provided.
+%
+It takes the name of one of the primary spaces of finite elements as
+presented in \cite{ArnoldLogg}.
 
 %------------------------------------------------------------------------------%
 
