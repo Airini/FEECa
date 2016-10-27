@@ -15,9 +15,11 @@ $$
 A polynomial in $\R{n}$ is a function that maps a vector $\vec{x}$ to a
  linear combination of powers of $\vec{x}$:
 
+%TODO: give type of \vec{\alpha} and perhaps rename it to avoid confusion (because $A_i : {0..n-1} \to ℕ $)
+$A : I -> ({0..n-1} \to ℕ)$
 $$
 \begin{align}
-  p(\vec{x}) &= \sum_i c_i \vec{x}^{\vec{\alpha}}
+  p(\vec{x}) &= \sum_i c_i \vec{x}^{A_i}
 \end{align}
 $$
 
