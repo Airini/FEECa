@@ -54,3 +54,16 @@ as joint work with:
 at the
 [FENICS 2016 workshop](http://fenicsproject.org/featured/2016/fenics16_oslo.html).
 [Programme](http://easychair.org/smart-program/FEniCS'16/2016-05-18.html#talk:23321).
+
+## Documentation
+
+The FEECa code is written using literate Haskell to combine source code and documentation.
+The executable `doc` uses the [Hakyll](https://jaspervdj.be/hakyll/) framework to compile
+the code into a static web page and can be viewed in [your browser](localhost:8000) after
+executing:
+
+```
+stack build feeca
+stack exec doc rebuild
+stack exec doc preview
+```
