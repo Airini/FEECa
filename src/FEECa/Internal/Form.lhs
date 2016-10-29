@@ -1,7 +1,7 @@
 \section{Forms}
 
 In what follows, the term \textit{forms} will be used to denote multi-linear, alternating
-maps from the $k$-product of a vector space $V$ with itself into a vector space $W$. That is
+maps from the $k$-product of a vector space $V$ with itself into a vector space $W$. Thus,
 a $k$-form $\omega$ is a mapping
 \begin{align}
  \underbrace{V \times \ldots \times V}_{k\text{ times}} \rightarrow W
@@ -20,18 +20,20 @@ satisfying the following properties:
 &= - \omega \left (\vec{v}_1,\ldots,\vec{v}_j,\ldots,\vec{v}_i,\ldots,\vec{v}_k \right)
 \end{align}
 \end{itemize}
+
+The space of $k$-arity forms over $V$ mapping into $W$ is denoted by $\Lambda^k(V; W)$.
 A general implementation of alternating forms can be obtained by representing a form
-\begin{align}
-\omega: \underbrace{V \times \ldots \times V}_{k\text{ times}} \rightarrow W
-\end{align}
-as a an element $\vec{w}$ of the vector space $W$ scaled by an alternating form mapping
-into the scalars of the vector space $W$.
+$\omega: V \times \ldots \times V \rightarrow W$ as a an element $\vec{w}$ of the vector
+space $W$ scaled by an alternating form mapping into the scalars of the vector space $W$:
 \begin{align}
 \omega = \vec{w} \hat{\omega}
 \end{align}
 Here only vector spaces over the reals will be
 considered so that the form $\hat{\vec{w}}$ can be assumed to be an alternating form
-mapping into $\mathrm{R}$.
+mapping into $\mathbb{R}$. Hence the implementation of forms mapping into an arbitary
+vector space $W$ can be implemented almost completely independent of the space $W$ and
+only requires the ability to scale the element $\vec{w}$ with an arbitrary scalar
+$c \in \mathbb{R}$.
 
 %------------------------------------------------------------------------------%
 
@@ -41,28 +43,33 @@ mapping into $\mathrm{R}$.
 
 module FEECa.Internal.Form (
   -- * Generic form types
-  Dim, Form (Form, arity, dimVec, terms), split
+  Form (Form, arity, dimension, terms), split
 
   -- * Predefined primitive constructors
-  , zeroForm, nullForm, oneForm
+--  , zeroForm, nullForm, oneForm
 
   -- * Form operations
-  ,apply, refine, refine_basis, inner, contract
+  ,apply
+
+  -- * Form
+  ,LinearCombination(..), interiorProduct,
+
+  -- * Simplification
+   combine
+
+
   ) where
 
 
--- import Control.Applicative
-import Data.List (intersect)
+import Control.Applicative
+import Data.List (intersect, sort, foldl')
+import qualified Data.Matrix as M
 import FEECa.Internal.Spaces hiding( inner )
 import qualified FEECa.Internal.Spaces as S( inner )
 import FEECa.Utility.Discrete
 import FEECa.Utility.Utility (pairM, sumV, expSign, sign)
 import FEECa.Utility.Print (Pretty(..), printForm)
 import FEECa.Utility.Combinatorics
-import qualified Numeric.LinearAlgebra.HMatrix as M
--- import qualified Numeric.LinearAlgebra.Data as M
--- import Debug.Trace
-
 \end{code}
 %------------------------------------------------------------------------------%
 
@@ -70,9 +77,9 @@ import qualified Numeric.LinearAlgebra.HMatrix as M
 
 For the representation of forms the existence of a set of coordinate functions
 \begin{align}
-       \lambda_i: V \to \mathbf{R} \text{ for } i = 0,\ldots,n
+       \lambda_i: V \to \mathbb{R} \text{ for } i = 1,\ldots,n
 \end{align}
-is assumed. Moreover, the directional derivatives of those coordinate functions are
+is assumed. Moreover, the directional derivatives of these coordinate functions are
 assumed to span the space of one-forms over $V$ by taking
 \begin{align}
 d\lambda_i(\vec{v}) = \frac{d\lambda_i(x\vec{v})}{dx}
@@ -82,26 +89,312 @@ General one-forms are then represented as linear combinations over
 this spanning set. The basis elements of spaces of higher-arity forms are obtained from
 the wedge products of the 1-form basis elements. In the code, higher-arity basis
 forms are represented by lists of integers \code{[Int]} containing the indices of
-the basis elements in the wedge product.
+basis elements in the wedge product.
+
+The \code{Form} data type represents a general $k$-form over an n-dimensional Euclidean
+vector space. Note that we are dealing here with two different vector spaces: The vector
+space $V$ over which the form is defined, i.e. whose elements are the arguments to which
+the form is applied, and the vector space $W$ into which the form maps. The vector space
+$W$ is represented by the type parameter \code{w} of the \code{Form} data type.
+
+%------------------------------------------------------------------------------%
+\begin{code}
+-- | Type alias for the representation of linear combinations.
+type LinearCombination c is = [(c, is)]
+
+-- | A general alternating k-form defined over n-dimensional Euclidean space.
+data Form w =
+    Form  { arity     :: Int
+          , dimension :: Int
+          , terms     :: LinearCombination w [Int]}
+  deriving (Eq, Show)
+\end{code}
+%------------------------------------------------------------------------------%
+\subsubsection{Constructors}
+To construct primitive forms three constructor functions are provided:
+
+ The \code{nullForm} function creates a zero-form from a given element $\vec{w} \in W$.
+The \code{oneForm} function creates a one form
+\begin{align}
+           \omega(\vec{v}) = \frac{d\lambda_i}{d\vec{v}}\vec{w}
+\end{align}
+for a given index $i$ and element $\vec{w} \in W$:
+
+%------------------------------------------------------------------------------%
+\begin{code}
+zeroForm :: VectorSpace w => Int -> w -> Form w
+zeroForm n w = Form 0 n [(w, [])]
+
+oneForm :: VectorSpace w => Int -> w -> Int -> Form w
+oneForm n w i = Form 1 n [(w, [i])]
+\end{code}
+%------------------------------------------------------------------------------%
+\subsection{Evaluation}
+
+As mentioned above, general forms $\omega \in \Lambda^k(V;W)$ can be
+implemented as products of a vector $\vec{w} \in W$ and a form
+$\hat{\omega} \in \Lambda^k(V,\mathbb{R})$. The value of the application
+of a set of vectors $\vec{v}_1,\ldots,\vec{v}_k$ to the basis form
+$dx_{i_1} \wedge \ldots \wedge dx_{i_k}$ can
+be computed as the determinant of the matrix $(\mathbf{A})_{i,j} = d\lambda_i(\vec{v}_j)$:
+
+\begin{align}
+  dx_{i_1} \wedge \ldots \wedge dx_{i_k}(\vec{v}_1,\ldots,\vec{v}_k) &=
+  \text{det}(d\lambda_i(\vec{v}_j))
+\end{align}
+
+The FEECa implementation uses the \code{matrix} package for the computation of
+the determinant. Since this package requires the matrix elements to implement
+the \code{Ord} and \code{Fractional} type classes, the \code{Numeric} type class
+has been introduce to combine the properties required for numerical
+computations.
+
+%------------------------------------------------------------------------------%
+\begin{code}
+-- | Application to a single basis form.
+applyLC' :: (Numeric f, VectorSpace w, f ~ Scalar w)
+       => (Int -> v -> f)
+       -> [v]
+       -> (w, [Int])
+       -> w
+applyLC' d vs (w, is) = sclV (M.detLU $ M.fromList k k $ pure d <*> is <*> vs) w
+  where k = length vs
+
+-- | Extension to linear combinations.
+applyLC :: (Numeric f, VectorSpace w, f ~ Scalar w)
+      => (Int -> v -> f)
+      -> LinearCombination w [Int]
+      -> [v]
+      -> w
+applyLC d ls [] = sumV (map fst ls)
+applyLC d ls vs = sumV (map (applyLC' d vs) ls)
+
+-- | Application to forms.
+apply :: (Numeric f, VectorSpace w, f ~ Scalar w)
+      => (Int -> v -> f)
+      -> Form w
+      -> [v]
+      -> w
+apply d (Form _ _ lc) vs = applyLC d lc vs
+
+\end{code}
+%------------------------------------------------------------------------------%
+\subsection{Arithmetic}
+
+Forms mapping into a vector space $\vec{W}$ form themself a vector space over
+the scalars of the space $\vec{W}$. This structure is made accessible in the
+code by implementing the \code{VectorSpace} type class. Addition of forms is
+implemented by simply concatenating the lists representing the linear combinations.
+Scaling is implemented by scaling all coefficients in the linear combination.
 
 
 %------------------------------------------------------------------------------%
 \begin{code}
--- * General form: does not depend on the underlying vector space it works on
---   in any way.
+addLC :: LinearCombination s v -> LinearCombination s v -> LinearCombination s v
+addLC l1 l2 = l1 ++ l2
 
-type Dim = Int
-type Idx = Int
-type Prd = [Idx] -- a product of projections / indexed 1-forms
-type LinComb f = [(f, Prd)]
+sclLC :: (VectorSpace v, s ~ Scalar v) => s -> LinearCombination v i -> LinearCombination v i
+sclLC c l = fmap (sclV' c) l
+  where sclV' c (a, is) = (sclV c a, is)
+
+-- | Forms over a vector space form themself a vector space.
+instance VectorSpace v => VectorSpace (Form v) where
+  type Scalar (Form v) = Scalar v
+  addV (Form j m lc1) (Form k n lc2) = Form k n (addLC lc1 lc2)
+  sclV c (Form k n lc2) = Form k n (sclLC c lc2)
+\end{code}
+%------------------------------------------------------------------------------%
+\subsubsection{Wedge Product}
+The wedge product of two forms $\omega, \eta$ is defined as
+
+\begin{align}
+  \eta \wedge \omega (\vec{v}_1,\ldots,\vec{v}_{j+k}) = \sum_{\sigma} \quad \text{sign}(\sigma)
+  \omega(v_{\sigma(1)},\ldots,v_{\sigma(j)})\eta(v_{\sigma(j + 1), \ldots, \sigma(j + k)})
+\end{align}
+
+where the sum is over all permutations $\sigma$ of the vectors
+$\vec{v}_1,\ldots,\vec{v}_{j+k}$. The wedge product of two basis
+elements of the spaces $dx_{i_1} \wedge\ldots \wedge dx_{i_j} \in
+\Lambda^j(V;W)$ and $dx_{i_{j+1}} \wedge\ldots \wedge dx_{i_{k+j}} \in
+\Lambda^k(V;W)$ is given by the basis element
+
+\begin{align}
+dx_{i_{1}} \wedge\ldots \wedge dx_{i_{k+j}} \in \Lambda^{j + k}(V;W)
+\end{align}
+
+The wedge product of the general forms can then be obtained by
+extending the above definition by linearity of linear combinations of
+basis forms. The wedge product of two linear combinations of basis
+forms can thus be computed by concatenating the index lists
+representing the basis elements in the linear combination and
+multiplying the corresponding coefficients for all mutual pairs of
+terms from the two linear combinations.
+
+%------------------------------------------------------------------------------%
+\begin{code}
+-- | Symbolic computaiton of the wedge product of two forms
+-- | represented by linear combinations of basis elements.
+wedgeLC :: Ring s
+       => LinearCombination s [Int]
+       -> LinearCombination s [Int]
+       -> LinearCombination s [Int]
+wedgeLC l1 l2 = pure mul' <*> l1 <*> l2
+  where mul' (a1, is1) (a2, is2) = (mul a1 a2, is1 ++ is2)
+
+-- | The wedge product of two forms.
+(/\) :: Ring s => Form s -> Form s -> Form s
+(/\) (Form j m lc1) (Form k n lc2) = Form (j + k) n (wedgeLC lc1 lc2)
+\end{code}
+%------------------------------------------------------------------------------%
+
+\subsubsection{Interior Product}
+
+The interior product maps a  $k$-form $\omega \in \Lambda^k(V; W)$ and a vector $\vec{v} \in V$
+into $\Lambda^{k-1}(V; W)$ via
+\begin{align}
+    \omega \lrcorner \vec{v}_1 (\vec{v}_2,\ldots,\vec{v}_k)
+        &= \omega(\vec{v}_1,\vec{v}_2,\ldots, \vec{v}_k)
+\end{align}
+
+Given a form $\omega \in \Lambda^k(V,W)$ represented by a vector $\vec{w}$ and a form
+$\hat{\omega} \in \Lambda^k(V, \mathbb{R})$ the result of the application of the vectors
+$v_1,\ldots,v_k$ to $\omega$ is given by
+\begin{align}
+  \omega(v_1,\ldots,v_k) &= \vec{w} \: \text{det}(\lambda_i(v_j))
+\end{align}
+  where $\text{det}(\lambda_i(v_j))$ is the determinant of the matrix
+$(\mathbf{A})_{i,j} = \lambda_i(v_j)$. The interior product can thus be computed
+by applying Laplace's formula to the above determinant. This gives:
+
+\begin{align}
+dx_1 \wedge \ldots \wedge dx_k \lrcorner \vec{v} =
+  \sum_{i = 1,\ldots,k} (-1)^{1 + i} \lambda_i(\vec{v})
+  dx_1 \wedge \ldots \wedge dx_{i-1} \wedge dx_{i+1} \wedge \ldots \wedge dx_k
+\end{align}
+
+Again this can be extended to linear combinations of basis forms by the linearity
+of the interior product. For the computation of the interior product the
+coordinate functions $\lambda_i: V \to \mathbb{R}$ are required. Here, they are
+given by a function argument of type \code{Int -> v -> f} and the type \code{f}
+is required to be the scalar type associated to the vector type \code{v}.
+
+%------------------------------------------------------------------------------%
+\begin{code}
+-- | Interior product of a basis form and a vector.
+interiorProductLC' :: (Ring f)
+                 => (Int -> v -> f) -- The projection map
+                 -> [Int]           -- The wedge product indices
+                 -> v               -- The vector to apply
+                 -> [(f, [Int])]
+interiorProductLC' d l v = [(mul s c, i) | (s, c, i) <- zip3 signs cols indices]
+  where cols    = pure d <*> l <*> pure v
+        signs   = alternatingSequence
+        indices = sublists l
+
+-- | Extension of the exterior product on basis forms to linear combination of basis
+-- | forms.
+interiorProductLC :: (VectorSpace v, VectorSpace w, f ~ Scalar w)
+                => (Int -> v -> f)            -- The projection map
+                -> LinearCombination w [Int]
+                -> v
+                -> LinearCombination w [Int]
+interiorProductLC dx l v  = concatMap applyInterior l
+  where applyInterior (f, is) = map (scale f) (interiorProductLC' dx is v)
+        scale c  (a, b)       = (sclV a c, b)
+
+-- | Interior product of forms.
+interiorProduct :: (VectorSpace v, VectorSpace w, f ~ Scalar w)
+                => (Int -> v -> f)            -- The projection map
+                -> Form w
+                -> v
+                -> Form w
+interiorProduct dx (Form k n lc) v = Form (k - 1) n (interiorProductLC dx lc v)
+
+alternatingSequence :: Ring f => [f]
+alternatingSequence = mulId : map addInv alternatingSequence
+\end{code}
+%------------------------------------------------------------------------------%
+
+\subsection{Inner Product}
+
+If an inner product is defined on the space $W$, an inner product can be defined
+on the space of forms $\Lambda^k(V;W)$ using
+
+\begin{align}
+  \langle \omega, \eta \rangle & =
+\sum_\sigma \eta(\vec{v}_{\sigma(1)},\ldots,\vec{v}_{\sigma(k)}) \cdot
+\eta(\vec{v}_{\sigma(1)},\ldots,\vec{v}_{\sigma(k)})
+\end{align}
+
+where the sum is over increasing k-sequences $\sigma: \{1,\ldots,k\} \to \{1,\ldots,n\}$
+and $\cdot$ is used to denote the inner product on $W$.
+
+%------------------------------------------------------------------------------%
+\begin{code}
+innerProduct :: (EuclideanSpace v, InnerProductSpace w, Scalar w ~ r, Numeric r)
+             => (Int -> v -> r) -- The projection map
+             -> Form w
+             -> Form w
+             -> r
+innerProduct d omega eta = sum' [S.inner (omega' vs) (eta' vs) | vs <- kSublists k bs]
+  where k      = arity omega
+        n      = dimension omega
+        omega' = apply d omega
+        eta'   = apply d eta
+        bs     = orthonormalBasis (dimension omega)
+        sum'   = foldl' add addId
+\end{code}
+%------------------------------------------------------------------------------%
+
+\subsection{Simplification}
+While not strictly necessary for the correctness of the code, simplifying forms
+will greatly improve the readability of the output and might also yield
+performance benefits. Note that the reprsentation of basis form by indices
+$i_1, \ldots, i_k$ is ambiguous in the sense that basis elements whose indices
+are related by a permutation a linearly dependent. To resolve this ambiguity
+we define a form to be in normal form when the indices $i_1,\ldots, i_k$ are
+in ascending order. Operations such as the interior product or the wedge
+product of forms may yield basis forms that are not in normal form. To properly
+simplify these forms the \code{normalForm} method transforms a linear combination
+of basis forms into normal form by computing the number of inversions of the index list
+(c.f. \cite{wikiInv}) and scaling the basis element accordingly.
+
+For the simplification of forms, terms involving identical basis elements are
+combined by adding there coefficients. This of course requires the coefficients
+to provide a ring structure.
+
+%------------------------------------------------------------------------------%
+\begin{code}
+-- | Convert basis element to normal form.
+normalForm' :: Ring f => (f, [Int]) -> (f, [Int])
+normalForm' (c, is) = if ((parity is) == 0) then (c, sort is) else (addInv c, sort is)
+
+-- | Convert complete linear combination to normal form.
+normalForm :: Ring f => LinearCombination f [Int] -> LinearCombination f [Int]
+normalForm cs = map normalForm' cs
+
+-- | Combine terms in the linear combination with identical index lists by adding
+-- | their coefficients.
+combineLC' :: Ring f => [(f, [Int])] -> [(f, [Int])]
+combineLC' []             = []
+combineLC' ((f, is) : ls) = (foldl add f (map fst ls'), is) : combineLC' ls''
+  where ls'  = filter ((is ==) . snd) ls
+        ls'' = filter ((is /=) . snd) ls
+
+-- | Convert terms in linear combination to normal form and combine them.
+combineLC :: Ring f => LinearCombination f [Int] -> LinearCombination f [Int]
+combineLC cs = combineLC' $ map normalForm' cs
+
+-- | Combine terms in the linear combination representing the form.
+combine :: Ring f => Form f -> Form f
+combine (Form k n lc) = Form k n $ combineLC $ normalForm lc
+
+\end{code}
+%------------------------------------------------------------------------------%
 
 
--- | Bilinear, alternating forms over vectorspaces
-data Form f =  -- we lose dependency on the type of vector!
-    Form  { arity   :: Dim            -- ^ For complete evaluation
-          , dimVec  :: Dim            -- ^ Of the underlying vector space
-          , terms   :: [(f, Prd)] }   -- ^ List of terms of (coeff,wedge)'s
-  deriving (Eq)
+%------------------------------------------------------------------------------%
+\begin{code}
 
 
 split :: (Ring v, VectorSpace w, Scalar w ~ v)
@@ -110,18 +403,6 @@ split (Form k n cs)   = unzip $ map split' cs
   where  split' (a,b) = (a, Form k n [(mulId, b)])
 
 -- terms [(17, [1,2]), (38, [1,3])] = 17*dx1/\dx2 + 38*dx1/\dx3
-
--- | Invariant for terms of a defined form: all terms have the same arity
---   ie: each is the result of the exterior product of the same number of 1-forms
-termsInv :: [(f, Prd)] -> Bool
-termsInv []          = True
-termsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
-
--- NB: because of ((,) t) 's functorial nature, maybe it could make sense to
---   rearrange our terms so as to have them be (inds,coeff) like they used to be?
--- XXX: change so as to inspect result (in case f zeroes out a coeff?)
-instance Functor Form where
-  fmap f (Form k n cs) = Form k n (map (pairM f id) cs)
 
 
 instance Pretty f => Pretty (Form f) where
@@ -155,7 +436,7 @@ combineWithBy f p es1 es2 = foldl ins es1 es2
 omega +++ eta
     | degNEq omega eta = errForm "(+++)" BiDegEq
     | spaNEq omega eta = errForm "(+++)" BiSpaEq
-    | otherwise = Form (arity eta) (dimVec eta)
+    | otherwise = Form (arity eta) (dimension eta)
                        (step (terms omega) (terms eta))
   where step [] ys = ys
         step xs [] = xs
@@ -166,145 +447,40 @@ omega +++ eta
           | snd x < snd y  = x : step xs (y:ys)
           | otherwise      = y : step (x:xs) ys
 
--- | Scaling of forms
-(***) :: Ring f => f -> Form f -> Form f
-(***) a | a == addId = \(Form k n _) -> zeroForm k n
-        | otherwise  = fmap (mul a)
 
 -- | (Exterior) Product of forms
 (//\\) :: Ring f => Form f -> Form f -> Form f
 omega //\\ eta
     | spaNEq omega eta = errForm "(//\\\\)" BiSpaEq
-    | otherwise = Form (arity omega + arity eta) (dimVec eta)
+    | otherwise = Form (arity omega + arity eta) (dimension eta)
                        (concatMap (\d -> map (`combine` d) (dxs d)) (terms eta))
   where dxs     (_,ys) = filter (null . intersect ys . snd) (terms omega)
         combine (a,xs) = pairM (mul a) (xs++)
 
--- | Forms over a 'Ring' form a 'VectorSpace'.
-instance Ring f => VectorSpace (Form f) where
-  type Scalar (Form f) = f
-  addV = (+++)
-  sclV = (***)
 
--- | For 'Form's defined over a 'Ring' we associate an 'Algebra': the exterior
--- algebra.
--- This instance is valid this way since we do not have a restrictive typing
--- for forms and hence addition is blind to arity *type-wise* - however,
--- runtime errors will take place if invalid addition is attempted.
-instance Ring f => Algebra (Form f) where
-  addA = addV
-  (/\) = (//\\)
-  sclA = sclV
 
--- | Basic abstract 1-form
-oneForm :: Ring f => Dim -> Dim -> Form f
-oneForm i n | i < 0 || i > n = errForm "oneForm" MoProjBd
-            | otherwise       = Form 1 n [ (mulId,[i]) ]
+-- -- | Basic abstract 1-form
+-- oneForm :: Ring f => Int -> Int -> Form f
+-- oneForm i n | i < 0 || i > n = errForm "oneForm" MoProjBd
+--             | otherwise       = Form 1 n [ (mulId,[i]) ]
 
 
 -- TODO: shall we have something special for these? no need to state dimension
 -- n since they will be constantly zero anyway
 
--- | The (normalised) == 0 form
-zeroForm :: Dim -> Dim -> Form f
-zeroForm k n = Form k n []
-
--- | The k-arity == 0 form
-nullForm :: Dim -> f -> Form f
-nullForm n f = Form 0 n [(f, [])]
-
-
--- Necesitamos una función de pinchado
---  y así pinchar las consecutivas componentes
--- If the function was actually a field, this part would be simplified
-contract :: (Ring f, VectorSpace v, Dimensioned v)
-         => (Idx -> v -> f) -> Form f -> v -> Form f
-contract proj omega v
-    | vecNEq omega v = errForm "contract" MoVecEq
-    | otherwise      = Form (max 0 (arity omega - 1)) (dimVec omega) $
-        concatMap (\c -> map (pinchado c) [1..arity omega])
-                  (terms omega)
-  where pinchado (f,[]) _ = (f, []) -- error ??
-        pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
-                              (expSign i $ mul f (proj j v), ds1 ++ ds2)
-  {- TODO:  optimise
-            error handling: proj indexing beyond dimension of v -}
-
--- list_to_index :: Integral a => a -> [a] -> a
--- list_to_index n (l:ls)
-
--- list_to_index' :: Integral a => a -> a -> [a] -> a
--- list_to_index' acc n (l:ls) = list_to_index' ((acc * n) + l) n ls
--- list_to_index' acc   _ []     = acc
-
--- make_lookup  :: (Ring r, EuclideanSpace v, Scalar v ~ r)
---              => Int -> Int -> [v] -> [[v]] -> Array [r]
--- make_lookup n k ds vvs
-apply :: (EuclideanSpace v, Ring w, VectorSpace w, Scalar v ~ Scalar w)
-      => [v] -> [v] -> Form w -> w
-apply ds vs omega@(Form k n cs) = foldl addV addId (map (apply' k ds vs) cs)
-
-apply' :: (EuclideanSpace v, VectorSpace w, Scalar v ~ Scalar w)
-       => Int -> [v] -> [v] -> (w,[Int]) -> w
-apply' k ds vs (p, []) = p
-apply' k ds vs (p, cs) = sclV c p
-  where projections    = [toDouble $ dot (ds !! i) v | v <- vs, i <- cs]
-        c              = fromDouble $ M.det $ M.matrix k projections
-
-refine_basis :: (Ring r, EuclideanSpace v, Scalar v ~ r)
-             => [v] -> [[v]] -> [[r]]
-refine_basis ds vvs = map (map (fromDouble . M.det)) submatrices
-  where projections = [[[toDouble $ dot d v | v <- vs] | d <- ds] | vs <- vvs]
-        matrices    = map (kSublists k) projections
-        submatrices = map (map ((M.matrix k) . concat)) matrices
-        k           = length (head vvs)
-
--- | Run function for 'Form's: given (an appropriate number of) vector arguments
---   and a 1-form basis (given as a basis-element indexing function 'proj'), it
---   evaluates the form on those arguments
-refine :: (Ring w, VectorSpace w, VectorSpace v, Scalar v ~ Scalar w)
-       => (Idx -> v -> Scalar w)      -- ^ The definition for the projection function
-                                      --   for the specific vector space
-       -> Form w
-       -> [v] -> w
-refine proj eta@(Form k n cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . formify proj) cs')
-  where cs' | null cs   = [(addId,[])]
-            | otherwise = cs
--- TODO: capture inconsistency between k and length vs here??
--- ALSO: 0-forms... not evaluating correctly now! Cfr: formify does not accept
---    empty cs
--- XXX: for now proj should take care of the error... change later when settled
-
-
--- | Helper function in evaluation: given a 1-form basis, converts a single
---   'Form' term into an actual function on vectors
-formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
-        => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
-formify _    (s, [])   _  = s
-formify proj (s, i:is) vs
-    | null is   = {-#SCC "Form.formify" #-}sclV (proj i (head vs)) s
-    | otherwise = {-#SCC "Form.formifyR" #-}
-        foldl addV addId
-              (map (\(w,e) -> sclV
-                                (mul (sign (w,e)) ((proj i . head) (pick' w vs)))
-                                (formify proj (s,is) (pick' e vs)))
-                   (permutationPairs (length is + 1) 1 (length is)))
-  where pick' ns = pick (differences ns)
-
-
--- We need a basis here
-inner :: (InnerProductSpace w, EuclideanSpace v, Dimensioned v, Scalar w ~ Scalar v)
-      => (Idx -> v -> Scalar w)  -- ^ Projection function in the specific vector space
-      -> Form w -> Form w -> Scalar w
-inner proj omega eta
-    | degNEq omega eta = errForm "inner" BiDegEq -- TODO (??)
-    | otherwise = foldl
-          (flip $ \vs -> add (S.inner (app omega vs) (app eta vs)))
-          addId
-          (map pick' (permutations n (arity omega)))
-  where pick' is = pick (differences is) (map (unitVector n) [0..n-1])
-        app = refine proj
-        n = dimVec omega
+-- -- We need a basis here
+-- inner :: (InnerProductSpace w, EuclideanSpace v, Dimensioned v, Scalar w ~ Scalar v)
+--       => (Idx -> v -> Scalar w)  -- ^ Projection function in the specific vector space
+--       -> Form w -> Form w -> Scalar w
+-- inner proj omega eta
+--     | degNEq omega eta = errForm "inner" BiDegEq -- TODO (??)
+--     | otherwise = foldl
+--           (flip $ \vs -> add (S.inner (app omega vs) (app eta vs)))
+--           addId
+--           (map pick' (permutations n (arity omega)))
+--   where pick' is = pick (differences is) (map (unitVector n) [0..n-1])
+--         app = refine proj
+--         n = dimension omega
 
 
 -- * Helper functions
@@ -315,16 +491,16 @@ degNEq omega eta = arity omega /= arity eta
 
 -- | Checks combined arity bound
 degNBd :: Form f -> Form f -> Bool
-degNBd  omega eta = (arity omega + arity eta) <= dimVec omega
+degNBd  omega eta = (arity omega + arity eta) <= dimension omega
 
 -- | Checks compatible underlying vector space dimensions between forms
 spaNEq :: Form f -> Form f -> Bool
-spaNEq omega eta = dimVec omega /= dimVec eta
+spaNEq omega eta = dimension omega /= dimension eta
 
 -- | Checks compatible underlying vector space dimensions between a form and a
 -- 'Dimensioned' type value
 vecNEq :: Dimensioned v => Form f -> v -> Bool
-vecNEq omega v = dimVec omega /= dim v
+vecNEq omega v = dimension omega /= dim v
 
 errForm :: String -> FormMust -> t
 errForm callee obligation = error $ "Form." ++ callee ++
@@ -342,3 +518,8 @@ instance Show FormMust where
   show MoProjBd = "project components of the underlying vector space"
   show MoVecEq  = "act on vectors of the working vectors space"
 \end{code}
+
+\section{Bibliography}
+
+\bibliographystyle{plain}
+\bibliography{doc/Bibliography}

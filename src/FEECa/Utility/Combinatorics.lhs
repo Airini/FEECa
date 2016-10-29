@@ -22,7 +22,9 @@ module FEECa.Utility.Combinatorics(
   -- ** Indexing
   unrank,
   -- * Lists of degree r
-  sublists, kSublists ,  sumRLists, sumRLists'
+  sublists, kSublists ,  sumRLists, sumRLists',
+  -- * Permutations
+  parity
   ) where
 
 -- import Data.List (find)
@@ -217,6 +219,12 @@ sumRLists' :: Integral a
            -> a -- r
            -> [[a]]
 sumRLists' n r = concat [ sumRLists n r' | r' <- [0..r]]
+
+-- | Compute the parity of a permutation.
+parity :: [Int] -> Int
+parity ls = mod (length [1 | (x,i) <- zip ls [0..],
+                             (y,j) <- zip ls [0..],
+                             x > y, i < j]) 2
 
 \end{code}
 

@@ -1,3 +1,0 @@
-\section{Gram-Schmidt Orthogonalization}
-
-

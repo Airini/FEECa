@@ -7,6 +7,8 @@
 module FEECa.Internal.Spaces where
 
 import Numeric( fromRat )
+import Data.List(foldl')
+
 
 -- | Class of types spaces forms and finite element spaces will be based upon.
 -- Mathematically these should be fields, but inversion is not required in our
@@ -54,6 +56,8 @@ class Ring f => Field f where
     fromDouble :: Double -> f
     toDouble   :: f -> Double
 
+class (Fractional a, Ord a, VectorSpace a, Ring a, Scalar a ~ a) => Numeric a
+
 -- | Derived division operation from 'Field' class functions.
 divide :: Field f => f -> f -> f
 divide a b = mul a (mulInv b)
@@ -75,8 +79,9 @@ instance Field Double where
 
 instance VectorSpace Double where
   type Scalar Double = Double
-  addV = (+)
-  sclV = (*)
+  addV    = (+)
+  sclV    = (*)
+  zeroV _ = 0.0
 
 instance Ring Rational where
   add = (+)
@@ -99,15 +104,12 @@ class (Ring (Scalar v)) => VectorSpace v where --(Scalar v)) => VectorSpace v wh
   type Scalar v :: *      -- Coefficient ring
   addV  :: v -> v -> v
   sclV  :: Scalar v -> v -> v -- Scalar v -> v -> v
+  zeroV :: Int -> v
   
   -- | Derived vector subtraction from 'VectorSpace' class functions.
   subV :: v -> v -> v
   subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
 
--- | Zero vector
--- XXX: NB: we could add it as a member of the class?? for more "peculiar" types
-zeroV :: VectorSpace v => v -> v
-zeroV = sclV addId
 
 -- Example instance of lists as a 'VectorSpace' class type.
 {- removed for now: shall we only have _data_ types instantiated as VectorSpace?
@@ -121,6 +123,8 @@ instance (Ring a, Eq [a]) => VectorSpace [a] where
 
   sclV _ [] = []
   sclV a (v:vs) = mul a v : sclV a vs
+
+  zeroV n = replicate n addId
 
 -- | Definition of the mathematical 'Algebra' taking our defined 'VectorSpace'
 -- class hence being defined over 'Ring's.
@@ -192,6 +196,9 @@ unitVector n i
     | (n  > 0) && (i >= 0) && (i < n) = fromList $ concat l
     | otherwise = error "unitVector: invalid dimensions!"
   where l = [replicate i addId, [mulId], replicate (n-i-1) addId]
+
+orthonormalBasis :: EuclideanSpace v => Int -> [v]
+orthonormalBasis n = [unitVector n i | i <- [1..n]]
 
 -- | General translation to 'EuclideanSpace' vectors from a common
 -- representation: lists of 'Double'.

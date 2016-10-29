@@ -18,7 +18,7 @@ main = do
   quickCheck (prop_dot :: Double -> Vector Double -> Vector Double -> Vector Double -> Bool)
 
 --------------------------------------------------------------------------------
--- Generate random 4-dimensional vectors as a radom list of doubles.
+-- Generate 4-dimensional vectors as a random lists of doubles.
 --------------------------------------------------------------------------------
 n = 4
 
@@ -29,6 +29,7 @@ instance EuclideanSpace (Vector r) => Arbitrary (Vector r) where
 -- The dimension of the vector should be the length of the list passed to the
 -- constructor.
 --------------------------------------------------------------------------------
+
 prop_dim :: [Double] -> Bool
 prop_dim l = dim v == length l
     where v = vector l
@@ -40,7 +41,6 @@ prop_dim l = dim v == length l
 prop_toList :: [Double] -> Bool
 prop_toList l = toList v == l
     where v = vector l
-
 
 --------------------------------------------------------------------------------
 -- The dot product must satisfy the properties of an inner product defined

@@ -62,14 +62,14 @@ eg1 = evaluate (vector [-0.1,10,0]) expression
 --      OR: add zero-th vector to 'VectorSpace' class?
 -- Remark: reduced generality for our R^n types
 
--- Generalised to any appropriate form (polynomial differential forms being but
--- a case)
-df :: (Function h v, Algebra (Form h)) => (Int -> v) -> Form h -> Form h
-df basisIx form =
-    foldr (addA . (\i -> fmap (derive (basisIx i)) (oneForm i n /\ form)))
-          (zeroForm (1 + arity form) n)
-          [1..n]
-  where n = dimVec form
+-- -- Generalised to any appropriate form (polynomial differential forms being but
+-- -- a case)
+-- df :: (Function h v, Algebra (Form h)) => (Int -> v) -> Form h -> Form h
+-- df basisIx form =
+--     foldr (addA . (\i -> fmap (derive (basisIx i)) (oneForm i n /\ form)))
+--           (zeroForm (1 + arity form) n)
+--           [1..n]
+--   where n = dimVec form
 
 -- b1 i = replicate (i-1) addId ++ mulId:replicate (3-i) addId
 
