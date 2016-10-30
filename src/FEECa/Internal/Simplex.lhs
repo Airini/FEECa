@@ -490,7 +490,7 @@ cubicToBarycentric v = fromList (ls ++ [l])
 \end{align}
 
 where $\alpha=n-i$. The points $\xi^\alpha_j$ are the roots of the Jacobi
-polynomial $P_q^{\alpha,0}$ and the w^\alpha_j the corresponding weights, that
+polynomial $P_q^{\alpha,0}$ and the $w^\alpha_j$ the corresponding weights, that
 can be computed using the Golub-Welsch algorithm \cite{GolubWelsch}. The
 integral of $f$ over $\smp{T}$ can then be approximated using
 

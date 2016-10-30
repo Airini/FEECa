@@ -4,3 +4,7 @@ dist/
 .DS_Store
 *.hi
 *.o
+.hpc
+.stack-work
+_cache
+_site

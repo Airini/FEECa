@@ -1,9 +1,11 @@
 \section{Polynomials}
 
-The \code{Polynomial} module provides data types and functions for polynomials
-over $\R{n}$. Given a vector $\vec{x} \in \R{n}$, the power of $\vec{x}$ with
- respect to a multi-index $\vec{\alpha} = (\alpha_0,\ldots,\alpha_{n-1})$
- is given by
+The \module{Polynomial} module provides data types and functions for
+polynomials over $\R{n}$.
+%
+Given a vector $\vec{x} \in \R{n}$, the power of $\vec{x}$ with
+respect to a multi-index $\vec{\alpha} =
+(\alpha_0,\ldots,\alpha_{n-1})$ is given by
 
 $$
 \begin{align}
@@ -15,8 +17,8 @@ $$
 A polynomial in $\R{n}$ is a function that maps a vector $\vec{x}$ to a
  linear combination of powers of $\vec{x}$:
 
-%TODO: give type of \vec{\alpha} and perhaps rename it to avoid confusion (because $A_i : {0..n-1} \to ℕ $)
-$A : I -> ({0..n-1} \to ℕ)$
+%TODO: give type of \vec{\alpha} and perhaps rename it to avoid confusion (because $A_i : \{0 \ldots n-1\} \to ℕ $)
+$A : I \to (\{0 \ldots n-1\} \to ℕ)$
 $$
 \begin{align}
   p(\vec{x}) &= \sum_i c_i \vec{x}^{A_i}
@@ -24,9 +26,9 @@ $$
 $$
 
 Apart from implementing polynomials over vectors in $\R{n}$, the
- \module{Polynomial} module also provides abstract functions for polynomials
- that use different bases, such as the Bernstein polynomials implemented in the
- \code{Bernstein} module.
+\module{Polynomial} module also provides abstract functions for
+polynomials that use different bases, such as the Bernstein
+polynomials implemented in the \module{Bernstein} module.
 
 %------------------------------------------------------------------------------%
 

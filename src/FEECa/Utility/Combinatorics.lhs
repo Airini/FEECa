@@ -35,10 +35,10 @@ import qualified Math.Combinatorics.Exact.Factorial as F
 
 \subsection{Mathematical Functions}
 
-The \code{Combinatorics} module re-exports the function \code{choose} for the
-computation of binomial coefficients and the function \code{factorial} for the
- computation of factorials from the \textbf{exact-combinatorics}
- \cite{WrenGayleRomano} package.
+The \code{Combinatorics} module re-exports the function \code{choose}
+for the computation of binomial coefficients and the function
+\code{factorial} for the computation of factorials from the
+\textbf{exact-combinatorics} \cite{package:ec} package.
 
 %------------------------------------------------------------------------------%
 

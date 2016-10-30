@@ -3,8 +3,7 @@
 The \code{FiniteElementSpace} module provides functions for the
 generation of finite element bases over simplices.
 %
-The implementation is based on the article by Arnold, Falk and Winther
-\cite{ArnoldFalkWinther}.
+The implementation is based on the article by \citet{ArnoldFalkWinther}.
 
 Bases are provided for the two families of spaces $\pl{r}{k}$ and
 $\pml{r}{k}$.
@@ -15,7 +14,7 @@ degree at most $r$.
 The space $\pml{r}{k}$ is defined as
 %
 \begin{align}
-\pml{r}{k} &= \{ \omega \in \pl{r}{k} | \kappa \omega \in \pl{r}{k-1} \}
+\pml{r}{k} &= \{ \omega \in \pl{r}{k} ~|~ \kappa \omega \in \pl{r}{k-1} \}
 \end{align}
 %
 where $\kappa$ is the Koszul operator.
@@ -27,21 +26,21 @@ where $\kappa$ is the Koszul operator.
 {-# LANGUAGE FlexibleContexts #-}
 
 module FEECa.FiniteElementSpace (
-                                FiniteElementSpace(..),
-                                Name(..),
-                                finiteElementSpace,
-                                BasisFunction,
-                                Simplex,
-                                Vector,
-                                basis,
-                                vspaceDim,
-                                whitneyForm,
-                                prmLkBasis,
-                                          prmLkFace,
-                                                   psi'
+    FiniteElementSpace(..),
+    Name(..),
+    finiteElementSpace,
+    BasisFunction,
+    Simplex,
+    Vector,
+    basis,
+    vspaceDim,
+    whitneyForm,
+    prmLkBasis,
+    prmLkFace,
+    psi'
  -- * Introduction
  -- $intro
-)where
+    ) where
 
 import Data.List
 -- import FEECa.Bernstein (multiIndices)

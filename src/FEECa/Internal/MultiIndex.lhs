@@ -26,7 +26,7 @@ The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
  $\alpha_i$ are non-zero:
 
 \begin{align}
- \text{supp}\left \{ \vec{\alpha} \right \}  &= \{ i \in [0,n-1] | \alpha_i > 0 \}
+ \text{supp}\left \{ \vec{\alpha} \right \}  &= \{ i \in [0,n-1] ~|~ \alpha_i > 0 \}
 \end{align}
 
 \begin{code}
@@ -135,11 +135,16 @@ toList = map fromIntegral . getZipList
 
 %------------------------------------------------------------------------------%
 
-A common use case is the creation of multi-indices of degree 0 or 1. This is
-done using the functions \code{zero} and \code{one}, respectively. The function
- \code{zero} creates a multi-index of given dimension containing only zeros.
-\code{one} creates a multi-index of given dimension with all elements equal to
-zero except for the element with index $i$:
+A common use case is the creation of multi-indices of degree 0 or 1.
+%
+This is done using the functions \code{zero} and \code{unit},
+respectively.
+%
+The function \code{zero} creates a multi-index of given dimension
+containing only zeros, while
+%
+\code{unit} creates a multi-index of given dimension with all elements
+equal to zero except for the element with index $i$:
 
 \begin{align}
   (a_0,\ldots,a_{n-1}) \text{ with }
@@ -165,10 +170,11 @@ unit n i = ZipList $ concat [replicate i 0,[1],replicate (n-i-1) 0]
 \end{code}
 %------------------------------------------------------------------------------%
 
- The function \code{degreeR} returns a list of all multi-indices of given
- dimension $n$ and degree $r$. It is basically a wrapper for the
- \code{sumRLists} function provided by the \code{FEECa.Utility.Combinatorics}
- module.
+The function \code{degreeR} returns a list of all multi-indices of
+given dimension $n$ and degree $r$.
+%
+It is basically a wrapper for the \code{sumRLists} function provided
+by the \code{FEECa.Utility.Combinatorics} module.
 
 %------------------------------------------------------------------------------%
 
@@ -185,21 +191,30 @@ degreeR n r = map ZipList $ sumRLists (fromIntegral n) (fromIntegral r)
 \subsection{Extension of Multi-Indices}
 \label{sec:mi_extension}
 
- For the extension of polynomials from a sub-simplex
- $\smp{f} = [\vec{v_{i_0}},\ldots,\vec{v_{i_k}}]$ to a super-simplex
- $\smp{T} = [\vec{v_{0}},\ldots,\vec{v_{m}}]$  it is necessary to also
- extend the multi-indices from $\smp{f}$ to $\smp{T}$. To this end we assume
- that the face of dimension $k$ is given by a mapping $\sigma(j) = i_j$ that
- encodes which vertices of the super-simplex $\smp{T}$ are included in $\smp{f}$.
- Note that $m$ is not necessarily the dimension of the underlying Euclidean
- space $\R{n}$. Each element $\alpha_i$ in a multi-index
- $\vec{\alpha} = (\alpha_0,\ldots,\alpha_k)$ defined over the face $\smp{f}$
- represents a power of the barycentric coordinate corresponding to the vertex
- $\vec{v_i}$. The extended multi-index $\vec{\alpha'}$ is then zero in all
- positions corresponding to vertices of $\smp{T}$ that are not included
- in $\smp{f}$ and coincides with $\vec{\alpha}$ on positions corresponding
- to the same vertices. The extended multi-index $\vec{\alpha'} =
- ({\alpha'_0,\ldots,\alpha'_m})$ is thus given by
+For the extension of polynomials from a sub-simplex $\smp{f} =
+[\vec{v_{i_0}},\ldots,\vec{v_{i_k}}]$ to a super-simplex $\smp{T} =
+[\vec{v_{0}},\ldots,\vec{v_{m}}]$ it is necessary to also extend the
+multi-indices from $\smp{f}$ to $\smp{T}$.
+%
+To this end we assume that the face of dimension $k$ is given by a
+mapping $\sigma(j) = i_j$ that encodes which vertices of the
+super-simplex $\smp{T}$ are included in $\smp{f}$.
+%
+Note that $m$ is not necessarily the dimension of the underlying
+Euclidean space $\R{n}$.
+%
+Each element $\alpha_i$ in a multi-index $\vec{\alpha} =
+(\alpha_0,\ldots,\alpha_k)$ defined over the face $\smp{f}$ represents
+a power of the barycentric coordinate corresponding to the vertex
+$\vec{v_i}$.
+%
+The extended multi-index $\vec{\alpha'}$ is then zero in all positions
+corresponding to vertices of $\smp{T}$ that are not included in
+$\smp{f}$ and coincides with $\vec{\alpha}$ on positions corresponding
+to the same vertices.
+%
+The extended multi-index $\vec{\alpha'} =
+({\alpha'_0,\ldots,\alpha'_m})$ is thus given by
 
 \begin{align}
   \alpha'_j &= \begin{cases}
@@ -233,8 +248,8 @@ extend' _ _ _       _       = error "extend': list argument lengths must match"
 
 
 \subsubsection{Addition}
-Addition on multi-indices is defined in a straight-foward manner as the addition
-of the each pair of elements separately.
+Addition on multi-indices is defined in a straight-foward manner as
+the addition of the each pair of elements separately.
 
 %------------------------------------------------------------------------------%
 
@@ -250,8 +265,8 @@ add = liftA2 (+)
 
 \subsubsection{Factorial}
 
-The factorial of a multi-index is defined as the product of the factorial of all
-its elements:
+The factorial of a multi-index is defined as the product of the
+factorial of all its elements:
 
 \begin{align}
   \vec{\alpha}! &= \prod_{i=0}^{n-1} \alpha_i!
@@ -271,8 +286,8 @@ factorial = product . map C.factorial . toList
 
 \subsubsection{Binomial Coefficient}
 
-The binomial coefficient of two multi-index is defined as the product of the
-element-wise binomial coefficients.
+The binomial coefficient of two multi-index is defined as the product
+of the element-wise binomial coefficients.
 
 \begin{align}
   \vec{\alpha} \choose \vec{\beta} &= \prod_{i=0}^{n-1} {\alpha_i \choose \beta_i}
@@ -295,9 +310,9 @@ choose' a b = fromIntegral (C.factorial a) / fromIntegral (factorial b)
 
 \subsubsection{Derivation}
 
-For the derivation of polynomials, it is required to decrease the element at a
-given index of a multi-index, this is implemented by the \code{decrease}
-function.
+For the derivation of polynomials, it is required to decrease the
+element at a given index of a multi-index, this is implemented by the
+\code{decrease} function.
 
 \begin{code}
 -- | Decrease element in multi-index
