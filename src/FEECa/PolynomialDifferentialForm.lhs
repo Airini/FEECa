@@ -46,8 +46,9 @@ tabulate bs vs fs = [evalSeparately t b vs fs' | b <- bs]
   where t   = fromJust $ findSimplex $ head bs
         fs' = map spanningVectors fs
 
+-- TODO: update to new apply!
 apply :: S.Field a => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
-apply omega vs = {-# SCC "apply" #-} F.apply ds vs omega
+apply omega vs = undefined -- {-# SCC "apply" #-} F.apply ds vs omega
   where t  = fromJust (findSimplex omega)
         ds = P.barycentricGradients t
 
@@ -59,16 +60,16 @@ evalSeparately :: (S.Field a, S.VectorSpace a, S.Scalar a ~ a)
                -> [a]
 evalSeparately t omega vs fs = V.toList $ foldl S.addV zero crossres
   where bvals = B.tabulateBernstein t vs (fst omegasplit)
-        fvals = [[F.apply ds f eta | f <- fs] | eta <- (snd omegasplit)]
+        fvals = [[{-F.apply ds f eta-} undefined | f <- fs] | eta <- (snd omegasplit)]
         crossres = map V.vector $ zipWith (liftA2 S.mul) fvals bvals
         ds = P.barycentricGradients t
         omegasplit = F.split omega
         l    = (length vs) * (length fs)
         zero = V.vector (replicate l $ S.fromDouble 0.0)
 
-inner :: S.Field a => DifferentialForm a -> DifferentialForm a -> a
+inner :: (S.Field a, S.Numeric a) => DifferentialForm a -> DifferentialForm a -> a
 inner omega eta
-    | not (null t) = F.inner (B.proj (head t)) omega eta
+    | not (null t) = F.innerProduct (B.proj (head t)) omega eta
     | otherwise =
         error "Inner: Need associated simplex to compute inner product."
   where t = mapMaybe findSimplex [omega, eta]

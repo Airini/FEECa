@@ -46,16 +46,16 @@ module FEECa.Internal.Form (
   Form (Form, arity, dimension, terms), split
 
   -- * Predefined primitive constructors
---  , zeroForm, nullForm, oneForm
+  , zeroForm, oneForm
 
   -- * Form operations
-  ,apply
+  , apply
 
   -- * Form
-  ,LinearCombination(..), interiorProduct,
+  , LinearCombination(..), interiorProduct, innerProduct
 
   -- * Simplification
-   combine
+  , combine
 
 
   ) where
@@ -113,7 +113,7 @@ data Form w =
 \subsubsection{Constructors}
 To construct primitive forms three constructor functions are provided:
 
- The \code{nullForm} function creates a zero-form from a given element $\vec{w} \in W$.
+ The \code{zeroForm} function creates a zero-form from a given element $\vec{w} \in W$.
 The \code{oneForm} function creates a one form
 \begin{align}
            \omega(\vec{v}) = \frac{d\lambda_i}{d\vec{v}}\vec{w}
@@ -403,6 +403,12 @@ split (Form k n cs)   = unzip $ map split' cs
   where  split' (a,b) = (a, Form k n [(mulId, b)])
 
 -- terms [(17, [1,2]), (38, [1,3])] = 17*dx1/\dx2 + 38*dx1/\dx3
+
+--- NB: because of ((,) t) 's functorial nature, maybe it could make sense to
+---   rearrange our terms so as to have them be (inds,coeff) like they used to be?
+--- XXX: change so as to inspect result (in case f zeroes out a coeff?)
+instance Functor Form where
+  fmap f (Form k n cs) = Form k n (map (pairM f id) cs)
 
 
 instance Pretty f => Pretty (Form f) where

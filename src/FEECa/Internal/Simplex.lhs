@@ -419,13 +419,13 @@ extendVectors n vs = ( vs ++ (take (n - k) (reverse (sortBy norm vs'))))
 \begin{code}
 
 -- | Convert a vector given in barycentric coordinates to euclidean coordinates.
-barycentricToCartesian :: EuclideanSpace v
+barycentricToCartesian :: (Dimensioned v, EuclideanSpace v)
                        => Simplex v
                        -> v
                        -> v
 barycentricToCartesian t@(Simplex _ vs) v = foldl sclAdd zero' (zip v' vs)
   where sclAdd p (c, p0) = addV p (sclV c p0)
-        zero'            = zeroV (head vs)
+        zero'            = zeroV (dim $ head vs)  --(head vs)
         v'               = toList v
 
 \end{code}

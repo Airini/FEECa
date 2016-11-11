@@ -103,7 +103,7 @@ instance Field Rational where
 class (Ring (Scalar v)) => VectorSpace v where --(Scalar v)) => VectorSpace v where -- Module over a Ring
   type Scalar v :: *      -- Coefficient ring
   addV  :: v -> v -> v
-  sclV  :: Scalar v -> v -> v -- Scalar v -> v -> v
+  sclV  :: Scalar v -> v -> v
   zeroV :: Int -> v
   
   -- | Derived vector subtraction from 'VectorSpace' class functions.

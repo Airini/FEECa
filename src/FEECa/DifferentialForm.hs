@@ -5,7 +5,7 @@ module FEECa.DifferentialForm (
   DifferentialForm
 
   -- * Mathematical differential form operations
-  , df, eval
+  , eval
 
   -- * Projection operations: into scalara and polynomial values respectively
   , dxV

@@ -48,7 +48,7 @@ module FEECa.Internal.MultiIndex(
   ) where
 
 
-import Control.Applicative(Applicative(..), ZipList(..), liftA, liftA2)
+import Control.Applicative(ZipList(..), liftA2)
 import FEECa.Internal.Spaces(Dimensioned(..),Field(..))
 import FEECa.Utility.Combinatorics(sumRLists)
 import qualified FEECa.Utility.Combinatorics as C(choose, factorial)

@@ -386,7 +386,7 @@ Define $\psf{\alpha}{f}{g}{\sigma}$
 -- | spaces as given in equations (8.1) and (8.2) in Arnold, Falk, Winther.
 psi :: Simplex -> Simplex -> MI.MultiIndex -> [Int] -> Form BernsteinPolynomial
 psi t f alpha sigma  = foldl (/\) unit [psi' t f alpha i | i <- sigma]
-    where unit = nullForm n mulId
+    where unit = zeroForm n mulId
           n = dim alpha - 1
 
 -- TODO: Check form indices.

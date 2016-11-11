@@ -75,7 +75,7 @@ library
   -- Other library packages from which modules are imported.
   build-depends:      base >=4.7 && <4.9, exact-combinatorics >=0.2,
                       QuickCheck >=2.7, random >=1.0, hmatrix >=0.16,
-                      pretty >= 1.1.1
+                      pretty >= 1.1.1, matrix >= 0.3.5
   -- , deepseq, timeit, criterion
 
   -- Directories containing source files.
