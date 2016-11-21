@@ -102,7 +102,7 @@ prop_proj t = and [vector [applyOmega i j | j <- [0..n-1]] == dlambda i | i <- [
 -- | on p. 44 in Arnold, Falk, Winther.
 prop_volume_form :: Simplex (Vector Double) -> Vector Double -> Property
 prop_volume_form t v = volume t > 0 ==> evaluate v b `eqNum` 1.0
-    where b = apply omega vs
+    where b = D.apply omega vs
           vs = spanningVectors t
           omega = Form n n [(B.redefine t mulId, [1..n])]
           n = topologicalDimension t
@@ -138,10 +138,10 @@ prop_inner c omega@(Form k n cs) eta =
     && ((D.inner omega eta' `eqNum` D.inner eta' omega &&
          D.inner (sclV cc omega) eta `eqNum` mul c (D.inner omega eta))
          || omega2 `eqNum` 0.0 || eta2 `eqNum` 0.0)
-    where b    = apply omega (spanningVectors t)
+    where b    = D.apply omega (spanningVectors t)
           eta' = redefine (fromJust (findSimplex omega)) eta
           t    = fromJust (findSimplex omega)
           origin = zero n :: Vector Double
           omega2 = D.inner omega omega
           eta2   = D.inner eta eta
-          cc = B.constant c
+          cc = B.Constant c -- TODO: ugly - change once constructors are in oder

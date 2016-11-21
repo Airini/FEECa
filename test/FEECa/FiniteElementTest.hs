@@ -115,7 +115,8 @@ prop_basis s = length bs > 0 Q.==>
 
 linearIndependent ::  VectorSpace v => (v -> v -> Double) -> [v] -> Bool
 linearIndependent f bs = (M.rank mat) == (length bs)
-    where es = M.eigenvaluesSH mat
+    where es = M.eigenvaluesSH' mat
+          -- TODO: changed eigenvaluesSH to eigenvaluesSH' for loading; check!
           mat = M.matrix n $ [ f omega eta | omega <- bs, eta <- bs ]
           n = length bs
 

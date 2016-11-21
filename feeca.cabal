@@ -92,12 +92,14 @@ library
   -- Base language which the package is written in.
   default-language:   Haskell2010
 
---test-suite test-feec
---  type:               exitcode-stdio-1.0
---  hs-source-dirs:     test
---  main-is:            FEECa.PolynomialDifferentialFormTest.hs
---  build-depends:      base, feeca, QuickCheck
---  default-language:   Haskell2010
+test-suite test-feec
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     test, src
+  main-is:            TestDummy.hs
+  build-depends:      base >=4.7 && <4.9, exact-combinatorics >=0.2,
+                      QuickCheck >=2.7, random >=1.0, hmatrix >=0.16,
+                      pretty >= 1.1.1, feeca
+ default-language:   Haskell2010
 
 benchmark bench
   type:               exitcode-stdio-1.0

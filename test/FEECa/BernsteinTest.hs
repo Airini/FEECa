@@ -16,7 +16,7 @@ import Test.QuickCheck.Property(Property, (==>), property)
 import qualified Test.QuickCheck as Q
 import qualified Test.QuickCheck.Property as Prop
 import qualified FEECa.Polynomial as P
-import qualified FEECa.PolynomialTest as PT
+import qualified FEECa.PolynomialTest as PT (n, arbitraryPolynomial, prop_arithmetic)
 
 --------------------------------------------------------------------------------
 -- Random Bernstein Polynomials
@@ -33,8 +33,11 @@ arbitrarySimplex n =  t `Q.suchThat` ((addId /=) . volume)
                            vs = Q.vectorOf (n+1) (arbitraryVector n)
 
 -- | Generate random simplex of dimesion n = 8.
+{- XXX: a second instance (vs the one in PT) and moreover not used in this
+        module? (arbitrarySimplex used directly)
 instance (EuclideanSpace v, Q.Arbitrary v) => Q.Arbitrary (Simplex v) where
-    arbitrary = arbitrarySimplex n `Q.suchThat` (addId /=) . volume
+    arbitrary = arbitrarySimplex n `Q.suchThat` ((addId /=) . volume)
+-}
 
 -- | Generate random Bernstein polynomial in n dimensions.
 instance (EuclideanSpace v, r ~ Scalar v, Q.Arbitrary r, Q.Arbitrary v)

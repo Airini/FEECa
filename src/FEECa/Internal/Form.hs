@@ -19,7 +19,7 @@ import FEECa.Internal.Spaces hiding( inner )
 import qualified FEECa.Internal.Spaces as S( inner )
 import FEECa.Utility.Discrete
 import FEECa.Utility.Utility (pairM, sumV, expSign, sign)
-import FEECa.Utility.Print (Pretty(..), printForm)
+import qualified FEECa.Utility.Print as P (Pretty(..), printForm, text)
 import FEECa.Utility.Combinatorics
 import qualified Numeric.LinearAlgebra.HMatrix as M
 -- import qualified Numeric.LinearAlgebra.Data as M
@@ -61,13 +61,13 @@ termsInv ((_,xs):ys) = all (\(_,xs') -> length xs == length xs') ys
 instance Functor Form where
   fmap f (Form k n cs) = Form k n (map (pairM f id) cs)
 
+instance Show f => Show (Form f) where
+  show (Form k n cs) = show k ++ "-form in " ++ show n ++ " dimensions: " ++
+                        show (P.printForm "dx" "0" (P.text . show) cs)
 
-instance Pretty f => Pretty (Form f) where
-  pPrint (Form _ _ cs) = printForm "dx" "0" pPrint cs -- show or pPrint...
-  {- show k ++ "-form in " ++ show n ++ " dimensions: " ++
-                          show (printForm "dx" "0" show cs)-}
-
-
+instance P.Pretty f => P.Pretty (Form f) where
+  pPrint (Form _ _ cs) = P.printForm "dx" "0" P.pPrint cs -- show or pPrint...
+  
 -- NB: will be (i -> i -> Ordering) once we normalise all products to be in
 --      their normal form - an increasing list
 combineWithBy :: (a -> a -> a) -> (i -> i -> Bool)
