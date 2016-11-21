@@ -31,16 +31,7 @@ import Data.List (sort, (\\))
 
 %------------------------------------------------------------------------------%
 
-To test all properties in the module use \code{test_combinatorics}.
-
-%------------------------------------------------------------------------------%
-
-\begin{code}
-
-return []
-testCombinatorics = $quickCheckAll
-
-\end{code}
+To test all properties in the module use \code{testCombinatorics}.
 
 %------------------------------------------------------------------------------%
 
@@ -255,5 +246,15 @@ prop_sum_r'_positive (SmallInt n) (SmallInt r) = all (all (0<=)) l
 \end{code}
 
 
-main = quickCheck prop_ordered
+-- main = quickCheck prop_ordered
+
+%------------------------------------------------------------------------------%
+
+\begin{code}
+
+return []
+testCombinatorics = $quickCheckAll
+
+\end{code}
+
 

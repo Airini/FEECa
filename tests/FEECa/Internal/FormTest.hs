@@ -22,8 +22,10 @@ import Debug.Trace
 -- * Instantiated testable properties 
 
 -- | Tests batch of properties
-main maxDim = do mapM_ quickCheck (checkList maxDim)
-                 quickCheck prop_antiComm
+main maxDim = do
+  putStrLn ("Testing alternating forms of vector space dimension up to " ++ show maxDim)
+  mapM_ quickCheck (checkList maxDim)
+  quickCheck (label "Anticommutativity" $ prop_antiComm maxDim)
 
 
 -- | Tests for algebraic operations involving no evaluation/refining of
@@ -63,8 +65,8 @@ calls max argFs prop n = p (mod (abs n) max + 1)
 
 -- | Anticommutativity property
 -- TODO: update to new property (propA_wedgeAntiComm)
-prop_antiComm :: Int -> Property
-prop_antiComm n = p (2 + abs n `mod` 9)   -- manually limited vectorspace dimension
+prop_antiComm :: Int -> Int -> Property
+prop_antiComm max n = p (2 + abs n `mod` max)   -- manually limited vectorspace dimension
   where
     c   = nIntNumG :: Int -> Gen Double
     p n = forAll (elements (arityPairs n)) $ \(k,j) ->

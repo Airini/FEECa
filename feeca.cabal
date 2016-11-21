@@ -78,7 +78,7 @@ library
   -- , deepseq, timeit, criterion
 
   -- Directories containing source files.
-  hs-source-dirs:     src, test, bench
+  hs-source-dirs:     src, tests, bench
 
   ghc-options:        -fhpc -O2 -threaded -fexcess-precision -optc-ffast-math -optc-O3 -optc-mfpmath=sse
   -- -Wall
@@ -94,7 +94,7 @@ library
 
 test-suite test-feec
   type:               exitcode-stdio-1.0
-  hs-source-dirs:     test, src
+  hs-source-dirs:     tests, src
   main-is:            TestDummy.hs
   build-depends:      base >=4.7 && <4.9, exact-combinatorics >=0.2,
                       QuickCheck >=2.7, random >=1.0, hmatrix >=0.16,
