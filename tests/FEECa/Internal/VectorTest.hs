@@ -3,7 +3,8 @@
 {-# LANGUAGE TypeFamilies #-}
 
 module FEECa.Internal.VectorTest (
-                                 arbitraryVector
+                                   main
+                                 , arbitraryVector
                                 ) where
 
 import FEECa.Internal.Spaces

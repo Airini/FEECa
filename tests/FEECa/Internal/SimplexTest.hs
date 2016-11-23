@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -6,13 +7,15 @@
 
 module FEECa.Internal.SimplexTest(
                                  arbitrarySimplex,
-                                 arbitrarySubsimplex
+                                 arbitrarySubsimplex,
+                                 testSimplex
                                 ) where
 
 
 import Control.Monad
 import Data.Maybe
 import Data.List
+
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
@@ -21,7 +24,7 @@ import FEECa.Utility.Combinatorics
 import FEECa.Utility.Utility
 import FEECa.Utility.Test
 import System.Random
-import Test.QuickCheck(Arbitrary, arbitrary, quickCheck, (==>), Property)
+import Test.QuickCheck(Arbitrary, arbitrary, quickCheck, (==>), Property, quickCheckAll)
 import Test.QuickCheck.Gen(Gen, vectorOf)
 import qualified Test.QuickCheck as Q
 import qualified Test.QuickCheck.Gen as Q
@@ -54,17 +57,23 @@ instance (EuclideanSpace v, Arbitrary v) => Arbitrary (SubsimplexTest v) where
 
 -- | A subsimplex should contain only vertices contained in the supersimplex,
 -- | and the length should be its topological dimension + 1.
-prop_subsimplex :: Eq v => SubsimplexTest v -> Bool
-prop_subsimplex (SubsimplexTest s@(Simplex _ l) k i) =
-    (length subl == k+1) && all (`elem` l) subl
+prop_subsimplex :: SubsimplexTest (Vector Double) -> Bool
+prop_subsimplex = pSubsimplex
+
+pSubsimplex :: Eq v => SubsimplexTest v -> Bool
+pSubsimplex (SubsimplexTest s@(Simplex _ l) k i) =
+      (length subl == k+1) && all (`elem` l) subl
     where n         = topologicalDimension s
           subs      = subsimplex s k i
           subl      = vertices subs
 
 -- | subsimplices should return (n+1) choose (k+1) subsimplices and the i:th
 -- | subsimplex should be the same as subsimplex k i
-prop_subsimplices :: Eq v => SubsimplexTest v -> Bool
-prop_subsimplices (SubsimplexTest s@(Simplex _ l) k _) =
+prop_subsimplices :: SubsimplexTest (Vector Double) -> Bool
+prop_subsimplices = pSubsimplices
+
+pSubsimplices :: Eq v => SubsimplexTest v -> Bool
+pSubsimplices (SubsimplexTest s@(Simplex _ l) k _) =
     (length subs == m) && all ithSubsimplexVertices [0..m-1]
     where n    = topologicalDimension s
           m    = (n+1) `choose` (k+1)
@@ -74,20 +83,26 @@ prop_subsimplices (SubsimplexTest s@(Simplex _ l) k _) =
 
 -- | The extension of a subsimplex should have full dimensionality and non-zero
 -- | volume.
-prop_extend_subsimplex :: ( Show v, EuclideanSpace v) => SubsimplexTest v -> Bool
-prop_extend_subsimplex (SubsimplexTest s@(Simplex _ l) k i) =
+prop_extend_subsimplex :: SubsimplexTest (Vector Double) -> Bool
+prop_extend_subsimplex = pExtendSubsimplex
+
+pExtendSubsimplex :: ( Show v, EuclideanSpace v) => SubsimplexTest v -> Bool
+pExtendSubsimplex (SubsimplexTest s@(Simplex _ l) k i) =
     (volume t' /= addId) && (topologicalDimension t' == geometricalDimension t')
         where t' = extendSimplex (subsimplex s k i)
 
 
 -- | The simplex obtained from subsimplex should be the same
-prop_face :: EuclideanSpace v => SubsimplexTest v -> Bool
-prop_face (SubsimplexTest t k i) =
-    subs == face t (sigma subs)
-        where subs = subsimplex t k i
+prop_face :: SubsimplexTest (Vector Double) -> Bool
+prop_face = pFace
 
-prop_face_vector_double :: SubsimplexTest (Vector Double) -> Bool
-prop_face_vector_double = prop_face
+pFace :: EuclideanSpace v => SubsimplexTest v -> Bool
+pFace (SubsimplexTest t k i) = subs == face t (sigma subs)
+    where subs = subsimplex t k i
+
+{-prop_face_vector_double :: SubsimplexTest (Vector Double) -> Bool
+-- prop_face_vector_double = prop_face
+-}
 
 --------------------------------------------------------------------------------
 -- Integration
@@ -100,8 +115,11 @@ instance (EuclideanSpace v, r ~ Scalar v) => Function (Constant r) v where
     derive v h = Constant (fromDouble 0.0)
     evaluate v (Constant c) = c
 
-prop_vol_integral :: EuclideanSpace v => Simplex v -> Bool
-prop_vol_integral t = eqNum (volume t) (integrate 2 t (Constant (fromDouble 1.0)))
+prop_vol_integral :: Simplex (Vector Double) -> Bool
+prop_vol_integral = pVolIntegral
+
+pVolIntegral :: EuclideanSpace v => Simplex v -> Bool
+pVolIntegral t = eqNum (volume t) (integrate 2 t (Constant (fromDouble 1.0)))
      where n = topologicalDimension t
 
 --------------------------------------------------------------------------------
@@ -124,24 +142,38 @@ instance (EuclideanSpace v, r ~ Scalar v) => Arbitrary (Cubic v r) where
 -- | Check that the transformation of a point in the n-dimensional unit cube is
 -- | a valid point in barycentric coordinates, i.e. that all components are
 -- |  positive and sum to one and that there are n + 1 components.
-prop_cubicToBarycentric :: (EuclideanSpace v, r ~ Scalar v)
-                           => Cubic v r -> Bool
-prop_cubicToBarycentric (Cubic v) = prop_barycentric_range v' && prop_barycentric_sum v' && (dim v' == dim v + 1)
+prop_cubicToBarycentric :: Cubic (Vector Double) Double -> Bool
+prop_cubicToBarycentric = pCubicToBarycentric
+
+pCubicToBarycentric :: (EuclideanSpace v, r ~ Scalar v)
+                    => Cubic v r -> Bool
+pCubicToBarycentric (Cubic v) = pBarycentricRange v' && pBarycentricSum v' && (dim v' == dim v + 1)
         where v' = cubicToBarycentric v
 
-prop_barycentric_range :: EuclideanSpace v => v -> Bool
-prop_barycentric_range v = all (0 <=) cs && all (1 >=) cs
-    where cs = toDouble' v
+--prop_barycentric_range :: Vector Double -> Bool
+--prop_barycentric_range = pBarycentricRange
 
-prop_barycentric_sum :: EuclideanSpace v => v -> Bool
-prop_barycentric_sum v = eqNum (sum ( toDouble' v )) 1.0
+pBarycentricRange :: EuclideanSpace v => v -> Bool
+pBarycentricRange v = all (0 <=) cs && all (1 >=) cs
+    where cs = toDouble' v
+-- TODO: correct cubicToBarycentric or generator
+--    (breaks with negative coordinates)
+
+--prop_barycentric_sum :: Vector Double -> Bool
+--prop_barycentric_sum = pBarycentricSum
+
+pBarycentricSum :: EuclideanSpace v => v -> Bool
+pBarycentricSum v = eqNum (sum ( toDouble' v )) 1.0
 
 -- | Check that the unit vectors in barycentric coordinates reproduce the vertices
 -- | of the simplex when transformed to cartesian coordinates.
-prop_barycentricToCartesian :: EuclideanSpace v
+prop_barycentricToCartesian :: Simplex (Vector Double) -> Bool
+prop_barycentricToCartesian = pBarycentricToCartesian
+
+pBarycentricToCartesian :: EuclideanSpace v
                             => Simplex v
                             -> Bool
-prop_barycentricToCartesian t =
+pBarycentricToCartesian t =
     map (barycentricToCartesian t) vs == vertices t
         where n = geometricalDimension t
               vs = [unitVector (n+1) i | i <- [0..n]]
@@ -151,6 +183,12 @@ prop_barycentricToCartesian t =
 --main = do quickCheck (prop_subsimplex :: SubsimplexTest v -> Bool)
 --          quickCheck (prop_subsimplices :: SubsimplexTest v -> Bool)
 --          quickCheck prop_vol_integral
+
+return []
+testSimplex = $quickCheckAll
+
+
+
 
 type VectorD = Vector Double
 type SimplexD = Simplex (Vector Double)
@@ -164,5 +202,4 @@ vs = spanningVectors t1
 main = quickCheck (prop_extend_subsimplex :: SubsimplexTest VectorD -> Bool)
 
 t3 = Simplex {sigma = [0,1,2,3,4], vertices = [Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]}]}
-
 

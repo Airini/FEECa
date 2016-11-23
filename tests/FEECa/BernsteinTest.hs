@@ -1,20 +1,18 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module FEECa.BernsteinTest where
 
 import Control.Monad
 import FEECa.Bernstein
-import qualified FEECa.Internal.MultiIndex as MI
 import FEECa.Internal.Simplex
 import FEECa.Internal.Vector
 import FEECa.Internal.Spaces
-import FEECa.Utility.Utility
-import FEECa.PolynomialTest(n)
-import FEECa.Utility.Print
+import FEECa.Utility.Utility (eqNum)
 import Properties
-import Test.QuickCheck.Property(Property, (==>), property)
-import qualified Test.QuickCheck as Q
-import qualified Test.QuickCheck.Property as Prop
+import Test.QuickCheck.Property ((==>), property)
+import Test.QuickCheck.All (quickCheckAll)
+import qualified Test.QuickCheck  as Q
 import qualified FEECa.Polynomial as P
 import qualified FEECa.PolynomialTest as PT (n, arbitraryPolynomial, prop_arithmetic)
 
@@ -66,7 +64,7 @@ prop_arithmetic :: BernsteinPolynomial (Vector Double) Double
                 -> BernsteinPolynomial (Vector Double) Double
                 -> Vector Double
                 -> Double
-                -> Property
+                -> Q.Property
 prop_arithmetic b1@(Bernstein t1 p1) (Bernstein t2 p2) v c
     = volume t1 > 0 ==> PT.prop_arithmetic eqNum b1 b2' v c
     where b2' = Bernstein t1 p2
@@ -79,8 +77,9 @@ prop_arithmetic b1 b2 v c = property $ PT.prop_arithmetic eqNum b1 b2 v c
 -- Integration of Bernstein Polynomials
 --------------------------------------------------------------------------------
 
+main = Q.quickCheck prop_integration
 -- Test closed-form integration against general numeric integration.
-prop_integration :: Bernstein -> Property
+prop_integration :: Bernstein -> Q.Property
 prop_integration b@(Bernstein t p)
     | r > 0     = volume t > 0 ==> eqNum (integrate r t b) (integrateBernstein b)
     | otherwise = property True
@@ -88,16 +87,17 @@ prop_integration b@(Bernstein t p)
 prop_integration _ = property True
 
 -- Linearity
-prop_integration_linear :: Double -> Bernstein -> Bernstein -> Property
+prop_integration_linear :: Double -> Bernstein -> Bernstein -> Q.Property
 prop_integration_linear c b1@(Bernstein t1 _) b2 =
     volume t1 > 0 ==>
-           prop_linearity eqNum integrateBernstein c b1 b2'
+      (prop_linearity eqNum integrateBernstein c b1 b2')
     where b2' = redefine t1 b2
 prop_integration_linear c b1 b2@(Bernstein t1 _) =
     volume t1 > 0 ==>
-           prop_linearity eqNum integrateBernstein c b1' b2
+      (prop_linearity eqNum integrateBernstein c b1' b2)
     where b1' = redefine t1 b1
 prop_integration_linear c b1 b2 = property True
+-- TODO: Just True?? This should check remaining cases!! (constant?)
 
 --------------------------------------------------------------------------------
 -- Derivation of Bernstein Polynomials
@@ -111,10 +111,10 @@ prop_derivation_linear :: Vector Double
                        -> Bernstein
                        -> Bool
 prop_derivation_linear v1 v2 c b1@(Bernstein t1 _) b2 =
-    prop_linearity eqNum (evaluate v1 . derive v2) c b1 b2'
+    (prop_linearity eqNum (evaluate v1 . derive v2) c b1 b2')
   where b2' = redefine t1 b2
 prop_derivation_linear v1 v2 c b1 b2 =
-    prop_linearity eqNum (evaluate v2 . derive v2) c b1 b2
+    (prop_linearity eqNum (evaluate v2 . derive v2) c b1 b2)
 
 
 -- Product rule
@@ -137,4 +137,12 @@ prop_derivation_product v1 v2 b1 b2 =
               db2 = derive v2 b2
 
 type Bernstein = BernsteinPolynomial (Vector Double) Double
+
+
+--------------------------------------------------------------------------------
+
+return []
+testBernstein = $quickCheckAll
+
+--------------------------------------------------------------------------------
 
