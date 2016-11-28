@@ -14,7 +14,7 @@ import Test.QuickCheck.Property ((==>), property)
 import Test.QuickCheck.All (quickCheckAll)
 import qualified Test.QuickCheck  as Q
 import qualified FEECa.Polynomial as P
-import qualified FEECa.PolynomialTest as PT (n, arbitraryPolynomial, prop_arithmetic)
+import qualified FEECa.PolynomialTest as PT (n, arbitraryPolynomial, propArithmetic)
 
 --------------------------------------------------------------------------------
 -- Random Bernstein Polynomials
@@ -66,11 +66,11 @@ prop_arithmetic :: BernsteinPolynomial (Vector Double) Double
                 -> Double
                 -> Q.Property
 prop_arithmetic b1@(Bernstein t1 p1) (Bernstein t2 p2) v c
-    = volume t1 > 0 ==> PT.prop_arithmetic eqNum b1 b2' v c
+    = volume t1 > 0 ==> PT.propArithmetic eqNum b1 b2' v c
     where b2' = Bernstein t1 p2
 prop_arithmetic b1@(Bernstein t1 p1) b2 v c
-    = volume t1 > 0 ==> PT.prop_arithmetic eqNum b1 b2 v c
-prop_arithmetic b1 b2 v c = property $ PT.prop_arithmetic eqNum b1 b2 v c
+    = volume t1 > 0 ==> PT.propArithmetic eqNum b1 b2 v c
+prop_arithmetic b1 b2 v c = property $ PT.propArithmetic eqNum b1 b2 v c
 
 
 --------------------------------------------------------------------------------
@@ -89,13 +89,11 @@ prop_integration _ = property True
 -- Linearity
 prop_integration_linear :: Double -> Bernstein -> Bernstein -> Q.Property
 prop_integration_linear c b1@(Bernstein t1 _) b2 =
-    volume t1 > 0 ==>
-      (prop_linearity eqNum integrateBernstein c b1 b2')
-    where b2' = redefine t1 b2
+    volume t1 > 0 ==> prop_linearity eqNum integrateBernstein c b1 b2'
+  where b2' = redefine t1 b2
 prop_integration_linear c b1 b2@(Bernstein t1 _) =
-    volume t1 > 0 ==>
-      (prop_linearity eqNum integrateBernstein c b1' b2)
-    where b1' = redefine t1 b1
+    volume t1 > 0 ==> prop_linearity eqNum integrateBernstein c b1' b2
+  where b1' = redefine t1 b1
 prop_integration_linear c b1 b2 = property True
 -- TODO: Just True?? This should check remaining cases!! (constant?)
 

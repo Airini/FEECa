@@ -78,7 +78,7 @@ instance Q.Arbitrary PsiTest where
                    t <- arbitrarySimplex n
                    f <- Q.elements $ S.subsimplices t k
                    r <- Q.choose (0,10)
-                   mi <- fmap (MI.extend n (S.sigma f)) $ arbitraryMI (k+1) r
+                   mi <- MI.extend n (S.sigma f) <$> arbitraryMI (k+1) r
                    v <- arbitraryVector n
                    return (PsiTest t f mi v)
 
@@ -94,8 +94,8 @@ convexCombination :: Simplex -> MI.MultiIndex -> Vector
 convexCombination t mi = foldl addV zero (zipWith sclV mi' vs)
     where vs   = S.vertices t
           zero = zeroV (head vs)
-          mi'  = map  (flip (/) r . fromInteger) $ mi''
-          mi'' = [(MI.toList mi) !! s | s <- (S.sigma t)]
+          mi'  = map  (flip (/) r . fromInteger) mi''
+          mi'' = [MI.toList mi !! s | s <- S.sigma t]
           r    = fromInteger $ MI.degree mi
 
 projectionAxes :: Simplex -> Simplex -> MI.MultiIndex -> [Vector]
@@ -104,7 +104,7 @@ projectionAxes t f mi = map (subV xmi) (S.complement t f)
 
 prop_basis :: FiniteElementSpace -> Q.Property
 prop_basis s = length bs > 0 Q.==>
-               (length bs) == (dim s) && linearIndependent D.inner bs'
+               length bs == dim s && linearIndependent D.inner bs'
     where bs = basis s
           bs' = map (\ x -> fmap (sclV (mulInv (sqrt (D.inner x x)))) x) bs
           n = vspaceDim s
@@ -114,10 +114,10 @@ prop_basis s = length bs > 0 Q.==>
 --------------------------------------------------------------------------------
 
 linearIndependent ::  VectorSpace v => (v -> v -> Double) -> [v] -> Bool
-linearIndependent f bs = (M.rank mat) == (length bs)
+linearIndependent f bs = M.rank mat == length bs
     where es = M.eigenvaluesSH' mat
           -- TODO: changed eigenvaluesSH to eigenvaluesSH' for loading; check!
-          mat = M.matrix n $ [ f omega eta | omega <- bs, eta <- bs ]
+          mat = M.matrix n [ f omega eta | omega <- bs, eta <- bs ]
           n = length bs
 
 

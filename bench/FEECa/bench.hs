@@ -12,8 +12,6 @@ import qualified FEECa.Internal.Vector     as V
 import qualified FEECa.Internal.Simplex    as S
 import qualified FEECa.Internal.MultiIndex as MI
 import FEECa.Utility.Combinatorics
-import Criterion
-import Criterion.Main
 
 import System.Environment
 
@@ -22,6 +20,7 @@ import Data.List
 import Control.DeepSeq
 import qualified Control.Exception.Base as C
 
+import Criterion
 import Criterion.Main
 
 
@@ -48,7 +47,7 @@ evaluate_basis bs fs vs = [applyEval b f v | b <- bs, f <- fs, v <- vs]
 
 instance NFData a => NFData (P.Term a) where
     rnf (P.Constant c) = rnf c
-    rnf (P.Term a mi)  = rnf a `seq` rnf ((MI.toList mi) :: [Int])
+    rnf (P.Term a mi)  = rnf a `seq` rnf (MI.toList mi :: [Int])
 
 instance NFData a => NFData (P.Polynomial a) where
     rnf (P.Polynomial t ts) = rnf ts
@@ -79,7 +78,7 @@ bench_evaluate_n_k f nmax rmax = concat
   where vs n = create_vectors n 10
 
 bench_basis_r :: Family -> Int -> Int -> Int -> [Benchmark]
-bench_basis_r f n k rmax = [ bench (show r) $ nf (basis . (f r k)) t | r <- [1..rmax] ]
+bench_basis_r f n k rmax = [ bench (show r) $ nf (basis . f r k) t | r <- [1..rmax] ]
   where t = S.referenceSimplex n
 
 bench_basis_n_k :: Family -> Int -> Int -> [Benchmark]

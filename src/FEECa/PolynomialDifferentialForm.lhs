@@ -25,10 +25,12 @@ import qualified FEECa.Internal.Vector       as V
 type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
 type DifferentialForm a    = D.DifferentialForm (BernsteinPolynomial a)
 
+{-
 instance Show (BernsteinPolynomial Double) where
   show b = show $ pPrint b
 instance  Show (DifferentialForm Double) where
   show omega = show $ printForm ("d" ++ lambda) "0" pPrint (F.terms omega)
+-}
 
 findSimplex :: DifferentialForm a -> Maybe (Simplex (Vector a))
 findSimplex (F.Form _ _ cs) = find (const True) $ mapMaybe (findSimplex' . fst) cs

@@ -8,7 +8,7 @@ import qualified FEECa.Internal.VectorTest      as V
 import qualified FEECa.Utility.CombinatoricsTest  as C
 -- import FEECa.Utility.GramSchmidtTest
 import qualified FEECa.Utility.QuadratureTest     as Q
-import qualified FEECa.Utility.Test               as U
+-- import qualified FEECa.Utility.Test               as U
 
 import qualified FEECa.BernsteinTest      as B
 import qualified FEECa.FiniteElementTest  as FE
@@ -29,6 +29,9 @@ main = do
   MI.testMI
   S.testSimplex
   V.main -- TODO: specify types so as to have all properties!
+  Q.testQuadrature
+  P.testPolynomial
+  DF.testDifferentialForm
   putStrLn "TODO: appropriate tests + testing configuration (?)"
   exitFailure
 

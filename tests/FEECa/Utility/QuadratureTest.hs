@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module FEECa.Utility.QuadratureTest where
 
 import FEECa.Utility.Quadrature
@@ -18,4 +20,8 @@ prop_jacobi_zeros (SmallInt n) (SmallInt alpha) =
 prop_sum_1 :: Int -> Property
 prop_sum_1 n = (n > 0) ==> eqNum 1.0 (sum weights)
     where weights = map snd (gaussJacobiQuadrature 0 0 n)
+
+
+return []
+testQuadrature = $quickCheckAll
 

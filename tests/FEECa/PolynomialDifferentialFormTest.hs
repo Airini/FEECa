@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -22,7 +23,7 @@ import FEECa.Utility.Combinatorics
 import FEECa.Utility.Print
 import FEECa.Utility.Utility
 
-import Test.QuickCheck(Arbitrary, arbitrary, quickCheck, (==>), Property)
+import Test.QuickCheck(Arbitrary, arbitrary, quickCheck, (==>), Property, quickCheckAll)
 import qualified Test.QuickCheck as Q
 import qualified Test.QuickCheck.Gen as Q
 
@@ -81,7 +82,7 @@ prop_proj t = and [vector [applyOmega i j | j <- [0..n-1]] == dlambda i | i <- [
     where dlambda        = barycentricGradient t
           applyOmega i j = refine (B.proj t) (omega i) [S.unitVector n j]
           omega i        = Form 1 n [(1.0,[i])]
-          n              = geometricalDimension t
+          n              = topologicalDimension t -- geometricalDimension t
 
 -- prop_alt_inner :: Double
 --                -> Form Double
@@ -136,12 +137,17 @@ prop_inner :: Double
 prop_inner c omega@(Form k n cs) eta =
     (D.inner omega omega > 0 || S.inner b b `eqNum` 0.0)
     && ((D.inner omega eta' `eqNum` D.inner eta' omega &&
-         D.inner (sclV cc omega) eta `eqNum` mul c (D.inner omega eta))
+         D.inner (sclV cc omega) eta' `eqNum` mul c (D.inner omega eta'))
          || omega2 `eqNum` 0.0 || eta2 `eqNum` 0.0)
     where b    = D.apply omega (spanningVectors t)
-          eta' = redefine (fromJust (findSimplex omega)) eta
+          eta' = redefine t eta
           t    = fromJust (findSimplex omega)
           origin = zero n :: Vector Double
           omega2 = D.inner omega omega
-          eta2   = D.inner eta eta
-          cc = B.Constant c -- TODO: ugly - change once constructors are in oder
+          eta2   = D.inner eta eta  -- XXX: or with eta' ?
+          cc = B.Constant c -- TODO: ugly - change once constructors are in order
+
+
+return []
+testDifferentialForm = $quickCheckAll
+

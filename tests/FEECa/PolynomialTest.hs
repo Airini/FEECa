@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 module FEECa.PolynomialTest where
 
@@ -11,6 +12,7 @@ import FEECa.Utility.Utility
 import FEECa.Utility.Combinatorics
 import FEECa.Utility.Test
 import FEECa.Utility.Print
+import Test.QuickCheck (quickCheckAll)
 import qualified Test.QuickCheck as Q
 import qualified FEECa.Internal.MultiIndex as MI
 import qualified Numeric.LinearAlgebra.HMatrix as M
@@ -57,7 +59,7 @@ instance Field f => Q.Arbitrary (Vector f) where
 -- multiplication of polynomials must commute with the evaluate operator.
 ------------------------------------------------------------------------------
 
-prop_arithmetic :: (EuclideanSpace v, Function f v, VectorSpace f, Ring f,
+propArithmetic :: (EuclideanSpace v, Function f v, VectorSpace f, Ring f,
                     r ~ Scalar v, r ~ Scalar f)
                 => (r -> r -> Bool)
                 -> f
@@ -65,11 +67,11 @@ prop_arithmetic :: (EuclideanSpace v, Function f v, VectorSpace f, Ring f,
                 -> v
                 -> r
                 -> Bool
-prop_arithmetic eq f1 f2 v c =
-    prop_operator2_commutativity eq addV add (evaluate v) f1 f2
+propArithmetic eq f1 f2 v c =
+    (prop_operator2_commutativity eq addV add (evaluate v) f1 f2
     && prop_operator2_commutativity eq mul mul (evaluate v) f1 f2
     && prop_operator2_commutativity eq sub sub (evaluate v) f1 f2
-    && prop_operator_commutativity eq (sclV c) (mul c) (evaluate v) f1
+    && prop_operator_commutativity eq (sclV c) (mul c) (evaluate v) f1)
 
 ------------------------------------------------------------------------------
 -- Concrete arithmetic properties for polynomials defined over rationals.
@@ -80,36 +82,43 @@ prop_arithmetic_rf :: Polynomial Rational
                    -> Vector Rational
                    -> Rational
                    -> Bool
-prop_arithmetic_rf = prop_arithmetic (==)
+prop_arithmetic_rf = propArithmetic (==)
 
 --------------------------------------------------------------------------------
 -- Derivation of Polynomials
 --------------------------------------------------------------------------------
 
 -- Linearity
-prop_derivation_linear :: (EuclideanSpace v, Function f v, VectorSpace f,
-                          r ~ (Scalar v), r ~ (Scalar f))
+propDerivation_linear :: (EuclideanSpace v, Function f v, VectorSpace f,
+                          r ~ Scalar v, r ~ Scalar f)
                        => v
                        -> v
                        -> r
                        -> f
                        -> f
                        -> Bool
-prop_derivation_linear v1 v2 =
-    prop_linearity (==) (evaluate v2 . derive v2)
+propDerivation_linear v1 v2 = prop_linearity (==) (evaluate v2 . derive v2)
 
 -- Product rule
-prop_derivation_product :: (EuclideanSpace v, Function f v, Ring f)
+propDerivationProduct :: (EuclideanSpace v, Function f v, Ring f)
                         => v
                         -> v
                         -> f
                         -> f
                         -> Bool
-prop_derivation_product v1 v2 p1 p2 =
+propDerivationProduct v1 v2 p1 p2 =
     evaluate v1 (add (mul dp1 p2) (mul dp2 p1))
     == evaluate v1 (derive v2 (mul p1 p2))
         where dp1 = derive v2 p1
               dp2 = derive v2 p2
+
+prop_derivation_product ::
+                           Vector Rational
+                        -> Vector Rational
+                        -> Polynomial Rational
+                        -> Polynomial Rational
+                        -> Bool
+prop_derivation_product = propDerivationProduct
 
 -- Test for polynomials using exact arithmetic.
 prop_arithmetic_rational :: Polynomial Rational
@@ -117,7 +126,7 @@ prop_arithmetic_rational :: Polynomial Rational
                          -> Vector Rational
                          -> Rational
                          -> Bool
-prop_arithmetic_rational = prop_arithmetic (==)
+prop_arithmetic_rational = propArithmetic (==)
 
 prop_derivation_linear_rational :: Vector Rational
                                 -> Vector Rational
@@ -125,7 +134,7 @@ prop_derivation_linear_rational :: Vector Rational
                                 -> Polynomial Rational
                                 -> Polynomial Rational
                                 -> Bool
-prop_derivation_linear_rational = prop_derivation_linear
+prop_derivation_linear_rational = propDerivation_linear
 
 prop_derivation_product_rational :: Vector Rational
                                  -> Vector Rational
@@ -133,7 +142,7 @@ prop_derivation_product_rational :: Vector Rational
                                  -> Polynomial Rational
                                  -> Polynomial Rational
                                  -> Bool
-prop_derivation_product_rational = prop_derivation_linear
+prop_derivation_product_rational = propDerivation_linear
 
 --------------------------------------------------------------------------------
 -- Barycentric Coordinates
@@ -154,9 +163,13 @@ prop_barycentric t =
           bs          = barycentricCoordinates t
           vs          = vertices t
           k           = topologicalDimension t
-          oneLists    = (map (map fromInt') (sumRLists (k+1) 1))
+          oneLists    = map (map fromInt') (sumRLists (k+1) 1)
 
-t  = (referenceSimplex 3) :: (Simplex (Vector Double))
+
+return []
+testPolynomial = $quickCheckAll
+
+t  = referenceSimplex 3 :: (Simplex (Vector Double))
 bs = barycentricCoordinates t
 vs = vertices t
 l1 = [[evaluate v b | v <- vs] | b <- bs]
