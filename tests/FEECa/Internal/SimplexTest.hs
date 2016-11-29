@@ -122,6 +122,12 @@ pVolIntegral :: EuclideanSpace v => Simplex v -> Bool
 pVolIntegral t = eqNum (volume t) (integrate 2 t (Constant (fromDouble 1.0)))
      where n = topologicalDimension t
 
+-- TODO: perhaps add check that simPos is satisfied (if that is an invariant)
+simPos :: Simplex (Vector Double) -> Bool
+simPos s = volume s >= 0
+
+
+
 --------------------------------------------------------------------------------
 -- Coordinates
 --------------------------------------------------------------------------------
@@ -202,4 +208,3 @@ vs = spanningVectors t1
 main = quickCheck (prop_extend_subsimplex :: SubsimplexTest VectorD -> Bool)
 
 t3 = Simplex {sigma = [0,1,2,3,4], vertices = [Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]}]}
-

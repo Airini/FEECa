@@ -87,6 +87,9 @@ prop_integration b@(Bernstein t p)
 prop_integration _ = property True
 
 -- Linearity
+-- TODO: change the generator to first generate one simplex, then two Bernstein on that simplex
+-- prop_integration_linear c b1 b2  =  consistent b1 b2 ==>
+
 prop_integration_linear :: Double -> Bernstein -> Bernstein -> Q.Property
 prop_integration_linear c b1@(Bernstein t1 _) b2 =
     volume t1 > 0 ==> prop_linearity eqNum integrateBernstein c b1 b2'
@@ -94,8 +97,9 @@ prop_integration_linear c b1@(Bernstein t1 _) b2 =
 prop_integration_linear c b1 b2@(Bernstein t1 _) =
     volume t1 > 0 ==> prop_linearity eqNum integrateBernstein c b1' b2
   where b1' = redefine t1 b1
-prop_integration_linear c b1 b2 = property True
+prop_integration_linear c b1@(Constant _) b2@(Constant _) = property True
 -- TODO: Just True?? This should check remaining cases!! (constant?)
+prop_integration_linear c b1 b2 = property False -- this should not happen
 
 --------------------------------------------------------------------------------
 -- Derivation of Bernstein Polynomials
@@ -143,4 +147,3 @@ return []
 testBernstein = $quickCheckAll
 
 --------------------------------------------------------------------------------
-
