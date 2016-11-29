@@ -1,10 +1,9 @@
-resolver: lts-6.10
-
+flags:
+  hakyll:
+    checkexternal: false
+extra-package-dbs: []
 packages:
 - '.'
-
-extra-deps: []
-
-flags: {}
-
-extra-package-dbs: []
+extra-deps:
+- hakyll-4.9.1.0
+resolver: lts-7.9
