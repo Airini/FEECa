@@ -67,7 +67,7 @@ prop_symmetric f a1 a2 = f a1 a2 == f a2 a1
 prop_linear :: (EuclideanSpace v, r ~ Scalar v)
                => (v -> v -> r) -> r -> v -> v -> v -> Bool
 prop_linear f c u v w = eqNum (mul c (f u v)) (f (sclV c v) u)
-                            && eqNum (f (addV u v) w) (add (f u w)  (f v w))
+                      && eqNum (f (addV u v) w) (add (f u w)  (f v w))
 
 --------------------------------------------------------------------------------
 -- Positive-definiteness
@@ -76,4 +76,4 @@ prop_linear f c u v w = eqNum (mul c (f u v)) (f (sclV c v) u)
 prop_pos_def :: (EuclideanSpace v, Ord r, r ~ Scalar v)
                 => (v -> v -> r) -> v -> Bool
 prop_pos_def f u = f u u >= addId
-                   && (f u u /= addId || u == zeroV u)
+                  && (f u u /= addId || u == zeroV u)

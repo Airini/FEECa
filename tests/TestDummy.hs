@@ -28,10 +28,11 @@ main = do
   B.testBernstein
   MI.testMI
   S.testSimplex
-  V.main -- TODO: specify types so as to have all properties!
+  V.main
   Q.testQuadrature
   P.testPolynomial
   DF.testDifferentialForm
+  FE.testFiniteElement
   putStrLn "TODO: appropriate tests + testing configuration (?)"
   exitFailure
 

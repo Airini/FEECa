@@ -43,23 +43,18 @@ module FEECa.FiniteElementSpace (
     ) where
 
 import Data.List
--- import FEECa.Bernstein (multiIndices)
 import FEECa.Bernstein (constant, monomial)
 import qualified FEECa.Bernstein as B (extend)
 import FEECa.Utility.Combinatorics
 import qualified FEECa.PolynomialDifferentialForm as D
--- import FEECa.Utility.Print(printBernstein)
 import FEECa.Utility.Print(printForm, dlambda )
 import qualified FEECa.Utility.Print as P ( Pretty(..) )
 import FEECa.Internal.Form hiding (arity, inner)
--- import qualified FEECa.Internal.Form as F(inner)
 import qualified FEECa.Internal.Simplex as S
 import FEECa.Internal.Spaces hiding (inner)
--- import qualified FEECa.Internal.Spaces as S(inner)
 import qualified FEECa.Internal.Vector as V
 import qualified FEECa.Internal.MultiIndex as MI
 import qualified Math.Combinatorics.Exact.Binomial as CBin
--- import Debug.Trace
 
 -- $intro
 -- This file implements the finite element space $P_r\Lambda^k$ and $P_r^-\Lambda^k$

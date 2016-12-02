@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 
@@ -20,6 +21,7 @@ import qualified FEECa.Internal.Simplex           as S
 import qualified FEECa.PolynomialDifferentialForm as D
 import qualified FEECa.Polynomial                 as P
 import qualified Numeric.LinearAlgebra.HMatrix   as M
+import Test.QuickCheck (quickCheckAll)
 import qualified Test.QuickCheck                 as Q
 import qualified Test.QuickCheck.Property        as Prop
 import Debug.Trace
@@ -122,3 +124,8 @@ linearIndependent f bs = M.rank mat == length bs
 
 
 space = PrmLk 3 0 (S.referenceSimplex 3)
+
+
+return []
+testFiniteElement = $quickCheckAll
+

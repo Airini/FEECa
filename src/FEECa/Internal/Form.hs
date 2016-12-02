@@ -42,7 +42,7 @@ data Form f =  -- we lose dependency on the type of vector!
   deriving (Eq)
 
 
-split :: (Ring v, VectorSpace w, Scalar w ~ v)
+split :: (VectorSpace w, Scalar w ~ v)
       => Form w -> ([w], [Form v])
 split (Form k n cs)   = unzip $ map split' cs
   where  split' (a,b) = (a, Form k n [(mulId, b)])
@@ -189,7 +189,7 @@ apply' k ds vs (p, cs) = sclV c p
   where projections    = [toDouble $ dot (ds !! i) v | v <- vs, i <- cs]
         c              = fromDouble $ M.det $ M.matrix k projections
 
-refineBasis :: (Ring r, EuclideanSpace v, Scalar v ~ r)
+refineBasis :: (EuclideanSpace v, Scalar v ~ r)
             => [v] -> [[v]] -> [[r]]
 refineBasis ds vvs = map (map (fromDouble . M.det)) submatrices
   where projections = [[[toDouble $ dot d v | v <- vs] | d <- ds] | vs <- vvs]
@@ -231,7 +231,7 @@ formify proj (s, i:is) vs
 
 
 -- We need a basis here
-inner :: (InnerProductSpace w, EuclideanSpace v, Dimensioned v, Scalar w ~ Scalar v)
+inner :: (InnerProductSpace w, EuclideanSpace v, Scalar w ~ Scalar v)
       => (Idx -> v -> Scalar w)  -- ^ Projection function in the specific vector space
       -> Form w -> Form w -> Scalar w
 inner proj omega eta

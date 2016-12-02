@@ -18,9 +18,9 @@ dlambda = 'd':lambda
 lambda  = "\x03BB"
 phi     = "\x03D5"
 
-class RenderVector v where
-    ncomps :: v -> Int
-    components :: v -> [Double]
+-- class RenderVector v where
+--    ncomps :: v -> Int
+--    components :: v -> [Double]
 
 -- | Pretty class prtotype.
 class Pretty p where

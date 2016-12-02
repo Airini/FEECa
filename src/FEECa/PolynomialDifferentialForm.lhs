@@ -13,7 +13,6 @@ import Data.Maybe
 import Data.List
 import FEECa.Internal.Vector
 import FEECa.Internal.Simplex
-import FEECa.Utility.Print
 import qualified FEECa.Bernstein             as B
 import qualified FEECa.Internal.Form         as F
 import qualified FEECa.DifferentialForm      as D
