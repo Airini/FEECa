@@ -1,25 +1,29 @@
 \begin{code}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE FlexibleInstances #-}
+
+{-# LANGUAGE GADTs                #-}
+{-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts     #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings    #-}
+
 
 module FEECa.PolynomialDifferentialForm where
 
 import Control.Applicative
 import Data.Maybe
 import Data.List
-import FEECa.Internal.Vector
-import FEECa.Internal.Simplex
-import qualified FEECa.Bernstein             as B
-import qualified FEECa.Internal.Form         as F
-import qualified FEECa.DifferentialForm      as D
-import qualified FEECa.Polynomial            as P
-import qualified FEECa.Internal.Spaces       as S
-import qualified FEECa.Utility.Combinatorics as C
-import qualified FEECa.Internal.Vector       as V
+
+import            FEECa.Internal.Vector
+import            FEECa.Internal.Simplex
+import qualified  FEECa.Bernstein             as B
+import qualified  FEECa.Internal.Form         as F
+import qualified  FEECa.DifferentialForm      as D
+import qualified  FEECa.Polynomial            as P
+import qualified  FEECa.Internal.Spaces       as S
+import qualified  FEECa.Utility.Combinatorics as C
+import qualified  FEECa.Internal.Vector       as V
+
 
 type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
 type DifferentialForm a    = D.DifferentialForm (BernsteinPolynomial a)

@@ -34,15 +34,15 @@ polynomials implemented in the \module{Bernstein} module.
 
 \begin{code}
 
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
 
 module FEECa.Polynomial (
 
   -- * Polynomial types
-  Polynomial(..), Term(..)
+    Polynomial (..), Term (..)
 
   -- ** Constructors
   , polynomial, constant, linearPolynomial, term
@@ -59,29 +59,25 @@ module FEECa.Polynomial (
   , barycentricGradients', simplexToMatrix, euclideanToBarycentric
 
   , simplifyT, simplifyP
+
   ) where
 
--- import Data.Maybe (fromJust)
-import Data.List
-import qualified FEECa.Internal.MultiIndex as MI (MultiIndex, zero, unit, decrease, toList, add, degree, valid)
-import FEECa.Internal.Simplex
-import FEECa.Internal.Spaces(VectorSpace(..),
-                            Ring(..),
-                            Field(..),
-                            Dimensioned(..),
-                            EuclideanSpace(..),
-                            toDouble',
-                            fromDouble')
-import qualified FEECa.Internal.Spaces as S(Function(..))
--- import FEECa.Internal.Point
--- import FEECa.Internal.Vector(Vector, vector, toList)
--- import qualified FEECa.Internal.Vector as V(pow)
-import FEECa.Utility.Print(Pretty(..), printPolynomial)
--- import FEECa.Utility.Utility(pairM, takeIndices)
--- import Text.PrettyPrint
-import qualified Numeric.LinearAlgebra.HMatrix as M
--- import qualified Numeric.LinearAlgebra.Data as M
--- import Debug.Trace
+
+import            Data.List
+import qualified  Numeric.LinearAlgebra.HMatrix as M
+
+import            FEECa.Utility.Print (Pretty (..), printPolynomial)
+import qualified  FEECa.Internal.MultiIndex as MI (
+                      MultiIndex, zero, unit, decrease,
+                      toList, add, degree, valid)
+import            FEECa.Internal.Simplex
+
+import            FEECa.Internal.Spaces           (
+                      Ring (..), Field (..), Dimensioned (..),
+                      VectorSpace (..), EuclideanSpace (..),
+                      toDouble', fromDouble')
+import qualified  FEECa.Internal.Spaces     as S  (Function (..))
+
 
 \end{code}
 

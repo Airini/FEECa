@@ -30,30 +30,29 @@ space $\ps{r}{\smp{f}}$.
 
 \begin{code}
 
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
 
 module FEECa.Bernstein where
-import qualified FEECa.Internal.MultiIndex as MI
-import FEECa.Internal.Simplex
-import FEECa.Internal.Spaces
-import FEECa.Internal.Vector
--- import Debug.Trace
 
--- import FEECa.Polynomial (Term, term,
---                         evaluatePolynomial, integratePolynomial, multiplyPolynomial)
-import FEECa.Polynomial (Polynomial, terms, expandTerm,
-                        derivePolynomial,
-                        barycentricCoordinates, barycentricGradient,
-                        barycentricGradients, toPairs)
-import qualified FEECa.Polynomial as P (degree, multiIndices, monomial,
-                                       constant, polynomial, euclideanToBarycentric)
+import qualified  FEECa.Internal.MultiIndex   as MI
+import            FEECa.Internal.Simplex
+import            FEECa.Internal.Spaces
+import            FEECa.Internal.Vector
 
+import            FEECa.Polynomial        (
+                      Polynomial, terms, expandTerm,
+                      derivePolynomial,
+                      barycentricCoordinates, barycentricGradient,
+                      barycentricGradients, toPairs)
+import qualified  FEECa.Polynomial   as P (
+                      degree, multiIndices, monomial,
+                      constant, polynomial, euclideanToBarycentric)
 
-import FEECa.Utility.Combinatorics(choose, factorial)
-import FEECa.Utility.Print
---import FEECa.Utility.Utility(factorial)
+import            FEECa.Utility.Combinatorics (choose, factorial)
+import            FEECa.Utility.Print
+import            FEECa.Utility.Utility       (sumR, pairM)
 
 \end{code}
 
@@ -232,7 +231,7 @@ product spaces.
 \begin{code}
 -- | Bernstein polynomials as inner product space.
 instance (EuclideanSpace v, r ~ Scalar v) =>
-    InnerProductSpace (BernsteinPolynomial v r) where
+  InnerProductSpace (BernsteinPolynomial v r) where
     inner  = innerBernstein
 \end{code}
 
@@ -245,9 +244,10 @@ derived so they are declared an instance of the class \code{Function}.
 
 \begin{code}
 
-instance ( EuclideanSpace v, r ~ Scalar v) => Function (BernsteinPolynomial v r) v where
-  evaluate = {-# SCC "evaluate" #-} evaluateBernstein
-  derive   = deriveBernstein
+instance (EuclideanSpace v, r ~ Scalar v) =>
+  Function (BernsteinPolynomial v r) v where
+    evaluate = {-# SCC "evaluate" #-} evaluateBernstein
+    derive   = deriveBernstein
 
 \end{code}
 
@@ -368,12 +368,11 @@ deriveMonomial :: ( EuclideanSpace v, r ~ Scalar v)
                => Simplex v
                -> MI.MultiIndex
                -> [ Polynomial r ]
-deriveMonomial t mi = [ sum' [sclV (grads j i) (dp j)  | j <- [0..n]] | i <- [0..n-1] ]
+deriveMonomial t mi = [ sumR [sclV (grads j i) (dp j)  | j <- [0..n]] | i <- [0..n-1] ]
     where grads j i = toList (barycentricGradients t !! j) !! i
           dp j = if (mi' !! j) > 0
                  then P.polynomial [MI.derive j mi]
                  else P.constant addId
-          sum' = foldl add addId
           mi'  = MI.toList mi :: [Int]
           n    = dim mi - 1
 
@@ -441,14 +440,13 @@ simplex to the Bernstein polynomial.
 integrateBernstein :: (EuclideanSpace v, r ~ Scalar v)
                       => BernsteinPolynomial v r
                       -> r
-integrateBernstein (Bernstein t1 p) = sum' (map f (toPairs k p))
+integrateBernstein (Bernstein t1 p) = sumR (map f (toPairs k p))
   where f (c, mi)   = mul c (divide (mul (factorialMI mi) vol)
                                     (mul (factorial' (MI.degree mi)) (fac mi)))
         factorialMI = fromDouble . MI.factorial
         factorial'  = fromDouble . factorial
         fac mi      = fromDouble (fromInteger ((k + MI.degree mi) `choose` k))
         k     = topologicalDimension t1
-        sum'  = foldl add addId
         vol   = volume t1
 integrateBernstein (Constant _) = error "intergrateBernstein: No associated simplex for constant. Define over simplex first using redefine."
 
@@ -522,7 +520,7 @@ extend :: (EuclideanSpace v, r ~ Scalar v)
        -> BernsteinPolynomial v r
        -> BernsteinPolynomial v r
 extend t (Bernstein f p) = polynomial t (extend' (toPairs n' p))
-    where  extend'  = map (\(c, mi) -> (c, MI.extend n (sigma f) mi))
+    where  extend'  = map (pairM id (MI.extend n (sigma f)))
            n        = topologicalDimension t
            n'       = topologicalDimension f
 extend _ c = c

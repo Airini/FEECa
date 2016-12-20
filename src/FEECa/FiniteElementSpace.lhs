@@ -42,19 +42,24 @@ module FEECa.FiniteElementSpace (
  -- $intro
     ) where
 
-import Data.List
-import FEECa.Bernstein (constant, monomial)
-import qualified FEECa.Bernstein as B (extend)
-import FEECa.Utility.Combinatorics
-import qualified FEECa.PolynomialDifferentialForm as D
-import FEECa.Utility.Print(printForm, dlambda )
-import qualified FEECa.Utility.Print as P ( Pretty(..) )
-import FEECa.Internal.Form hiding (arity, inner)
-import qualified FEECa.Internal.Simplex as S
-import FEECa.Internal.Spaces hiding (inner)
-import qualified FEECa.Internal.Vector as V
-import qualified FEECa.Internal.MultiIndex as MI
-import qualified Math.Combinatorics.Exact.Binomial as CBin
+import            Data.List
+import qualified  Math.Combinatorics.Exact.Binomial as CBin
+
+import            FEECa.Utility.Combinatorics     (increasingLists, sublists)
+import            FEECa.Utility.Print             (printForm, dlambda)
+import qualified  FEECa.Utility.Print       as P  (Pretty(..))
+import            FEECa.Utility.Utility           (pairM)
+
+import            FEECa.Internal.Form   hiding    (arity, inner)
+import qualified  FEECa.Internal.MultiIndex as MI
+import qualified  FEECa.Internal.Simplex    as S
+import            FEECa.Internal.Spaces hiding    (inner)
+import qualified  FEECa.Internal.Vector     as V
+
+import            FEECa.Bernstein                 (constant, monomial)
+import qualified  FEECa.Bernstein           as B  (extend)
+import qualified  FEECa.PolynomialDifferentialForm as D
+
 
 -- $intro
 -- This file implements the finite element space $P_r\Lambda^k$ and $P_r^-\Lambda^k$
@@ -83,10 +88,10 @@ basis functions.
 %------------------------------------------------------------------------------%
 
 \begin{code}
-type Vector = V.Vector Double
-type Simplex = S.Simplex Vector
-type BernsteinPolynomial = D.BernsteinPolynomial Double
-type DifferentialForm = D.DifferentialForm Double
+type Vector               = V.Vector Double
+type Simplex              = S.Simplex Vector
+type BernsteinPolynomial  = D.BernsteinPolynomial Double
+type DifferentialForm     = D.DifferentialForm Double
 
 -- | Data type for the two families of finite element spaces $P_r\Lambda^k$ and
 -- | $P_r^-\Lambda^k$ defined over a simplex.
@@ -124,7 +129,7 @@ arity (PrmLk _ k _) = k
 
 -- | The dimension of the underlying vector space.
 vspaceDim :: FiniteElementSpace -> Int
-vspaceDim (PrLk _ _ t) = S.geometricalDimension t
+vspaceDim (PrLk _ _ t)  = S.geometricalDimension t
 vspaceDim (PrmLk _ _ t) = S.geometricalDimension t
 
 \end{code}
@@ -312,7 +317,7 @@ whitneyForm t sigma = Form k n [ (lambda' i, subsets !! i) | i <- [0..k]]
 -- | Arnold, Falk, Winther.
 extend :: Simplex -> Form BernsteinPolynomial -> Form BernsteinPolynomial
 extend t (Form k _ cs) = Form k n (extend' cs)
-    where extend' = map (\ (x,y) -> (B.extend t x, extendFace n y))
+    where extend' = map (pairM (B.extend t) (extendFace n))
           n       = S.topologicalDimension t
 
 -- | Extend the face of a subsimplex of a simplex of topological dimension n to the
