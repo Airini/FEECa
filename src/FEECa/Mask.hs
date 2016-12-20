@@ -1,8 +1,9 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE ScopedTypeVariables    #-}
+
 
 module FEECa.Mask where
 
@@ -10,14 +11,12 @@ module FEECa.Mask where
 
 import FEECa.DifferentialForm
 import FEECa.Internal.Form
-import FEECa.Internal.Spaces hiding(inner)
--- import qualified FEECa.Internal.Spaces as S(inner)
+import FEECa.Internal.Spaces hiding (inner)
 import FEECa.Internal.Vector
 import FEECa.Internal.Simplex
 import FEECa.Polynomial
--- import FEECa.Utility.Utility
 import qualified FEECa.Internal.MultiIndex as MI
--- import qualified FEECa.Bernstein as B
+
 
 type Monop t = t -> t
 type Binop t = t -> t -> t
@@ -79,7 +78,7 @@ dxVF i (Vector v) = v !! (i-1)
     => Form f -> [v] -> f
 (#) = refine projection
 -- TODO: unify
--- complete (##) :: (Ringh, VectorSpace v) => Form h -> [v] -> h
+-- complete (##) :: (Ring h, VectorSpace v) => Form h -> [v] -> h
 --d' :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
 --d' = df'
 
@@ -106,7 +105,7 @@ coordinate i n = linearPolynomial (canonCoord i n)
 coordinates :: Ring f => Int -> [PolyRepresentation f]
 coordinates = fmap linearPolynomial . canonCoords
 
--- TODO: used?
+-- TODO: used? or just for testing code?
 bssIx :: Ring a => Int -> Int -> Vector a
 bssIx n = vector . flip canonCoord n
 

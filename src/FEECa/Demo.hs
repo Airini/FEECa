@@ -10,7 +10,6 @@ import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
 import FEECa.Mask
 import FEECa.Polynomial
--- import qualified FEECa.Utility.Print as PP
 
 
 -------

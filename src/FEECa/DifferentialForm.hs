@@ -1,23 +1,22 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module FEECa.DifferentialForm (
+
   -- * Differential form type
-  DifferentialForm
+    DifferentialForm
 
   -- * Mathematical differential form operations
   , df, eval
 
   -- * Projection operations: into scalara and polynomial values respectively
   , dxV
+
   ) where
 
 -- import Control.Applicative (pure)
 import FEECa.Internal.Form
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
--- import FEECa.Internal.Simplex
--- import FEECa.Polynomial
--- import FEECa.Utility.Utility (pairM)
 
 
 -- | Differential forms
