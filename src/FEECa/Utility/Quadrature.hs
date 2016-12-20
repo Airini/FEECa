@@ -3,6 +3,7 @@ module FEECa.Utility.Quadrature where
 import Math.Combinatorics.Exact.Factorial
 import Numeric.LinearAlgebra.HMatrix
 -- import Numeric.LinearAlgebra.Data
+import FEECa.Utility.Utility (pairM)
 
 -- | Type synomnym to represent a quadrature as a list pairs
 -- | of nodes and corresponding weights, the first element being the node
@@ -22,9 +23,9 @@ gaussJacobiQuadrature = golubWelsch
 -- | and beta = b shifted and scaled to the interval [0,1].
 gaussJacobiQuadrature' :: Int -> Int -> Int -> Quadrature
 gaussJacobiQuadrature' alpha beta n = transform (gaussJacobiQuadrature alpha beta n)
-    where transform = map (\(x,y) -> ( scale1 x, scale2 y))
+    where transform = map (pairM scale1 id)
           scale1 x = 0.5 + x/2
-          scale2 y = y
+          -- scale2 y = y
 
 -- | Compute the Gauss-Legendre quadrature of degree n.
 gaussLegendreQuadrature :: Int -> Quadrature
@@ -55,9 +56,9 @@ buildMatrix n a b c = (n >< n) $ concat [ p1 i ++ [p2 i] ++ p3 i | i <- [1..n] ]
     where p1 i = replicate (i - 2) 0 ++ f1 i
           p2 i = - (b i / a i)
           p3 i = f2 i ++ replicate (n - i - 1) 0
-          beta i = sqrt (c (i + 1) / (a i* a (i+1)))
           f1 i = [ beta (i-1) | i > 1 ]
           f2 i = [ beta  i    | i < n ]
+          beta i = sqrt (c (i + 1) / (a i * a (i+1)))
 
 
 -- | Evaluate an orthogonal Polynomial using the coefficient functions describing
@@ -104,7 +105,7 @@ b_jac alpha beta i
 c_jac :: Int -> Int -> Coeff Double
 c_jac alpha beta i
     | (2*i + alpha + beta) <= 2 = 0
-    | otherwise = 2 * (i' + a' - 1) * (i' + b' - 1) * (2 * i' + a' + b') /
+    | otherwise = 2 * (i' + a' - 1) * (i' + b' - 1) * (2*i' + a' + b') /
                   den_jac alpha beta i
   where a' = fromIntegral alpha
         b' = fromIntegral beta
@@ -114,7 +115,7 @@ c_jac alpha beta i
 -- for the Jacobi integrals.
 den_jac :: Int -> Int -> Int -> Double
 den_jac alpha beta i =
-    fromIntegral (2 * i * (i + alpha + beta) * (2 * i + alpha + beta - 2))
+    fromIntegral (2*i * (i + alpha + beta) * (2*i + alpha + beta - 2))
 
 -- | Evaluate Jacobi Polynomial.
 jacobiP :: Int -> Int -> Int -> Double -> Double

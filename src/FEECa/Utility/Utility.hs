@@ -1,12 +1,12 @@
 module FEECa.Utility.Utility(
-  Dimension(..),
-  takeIndices,
-  pairM, pairUp,
-  sumR, sumV,
-  expSign, sign,
-  eqNum,
-  toDouble, fromDouble
-) where
+    Dimension (..)
+  , takeIndices
+  , pairM, pairUp
+  , sumR, sumV
+  , expSign, sign
+  , eqNum
+  , toDouble, fromDouble
+  ) where
 
 import FEECa.Internal.Spaces
 
@@ -41,15 +41,15 @@ sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
 -- | Summation over vector spaces
 sumV :: VectorSpace v => [v] -> v
 sumV (v:vs) = foldl addV v vs
-sumV _ = error "sumV: Need at least one vector to sum! \n"
+sumV _      = error "sumV: Need at least one vector to sum!\n"
 
 -- | Numerical equality accounting for round-off errors
 eqNum :: Field a => a -> a -> Bool
 eqNum a b
-    | (a' /= 0.0) && (b' /= 0.0) = toDouble (abs ((a' - b') / max a' b')) < 2e-10
-    | otherwise = max (abs a') (abs b') < 2e-10
-    where a' = toDouble a
-          b' = toDouble b
+    | (a' /= 0.0) && (b' /= 0.0)  = toDouble (abs ((a' - b') / max a' b')) < 2e-10
+    | otherwise                   = max (abs a') (abs b') < 2e-10
+  where a' = toDouble a
+        b' = toDouble b
 
 -- | Data type for dimension. Used to generate reasonably small dimensions to
 -- | use in testing.

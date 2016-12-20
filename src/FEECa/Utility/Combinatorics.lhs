@@ -13,19 +13,23 @@ tasks that arise in \code{FEECa}. Those are
 
 \begin{code}
 
-module FEECa.Utility.Combinatorics(
+module FEECa.Utility.Combinatorics (
+
   -- * Mathematical Functions
-  choose, factorial,
+    choose, factorial
+
   -- * Increasing Lists
   -- ** Generation
-  increasingLists,  increasingLists1,
+  , increasingLists,  increasingLists1
   -- ** Indexing
-  unrank,
+  , unrank
+
   -- * Lists of degree r
-  sublists, kSublists ,  sumRLists, sumRLists'
+  , sublists, kSublists ,  sumRLists, sumRLists'
+
   ) where
 
--- import Data.List (find)
+
 import qualified Math.Combinatorics.Exact.Binomial  as B
 import qualified Math.Combinatorics.Exact.Factorial as F
 
@@ -106,8 +110,8 @@ increasingLists' :: Integral a
                  -> a -- x0
                  -> [[a]]
 increasingLists' k n x0
-    | k < 1 = [[]]
-    | k == 1 = [[x] | x <- [x0 .. n]]
+    | k < 1     = [[]]
+    | k == 1    = [[x] | x <- [x0 .. n]]
     | otherwise = [ x : xs | x <- [x0 .. (n - k) + 1],
                              xs <- increasingLists' (k - 1) n (x + 1)]
 \end{code}
@@ -206,9 +210,9 @@ sumRLists :: Integral a
           -> a -- r
           -> [[a]]
 sumRLists n r
-    | r == 0 = [replicate (fromIntegral n) 0]
-    | n == 1 = [[r]]
-    | n < 1 = []
+    | r == 0    = [replicate (fromIntegral n) 0]
+    | n == 1    = [[r]]
+    | n < 1     = []
     | otherwise = concat [[ls ++ [l] | ls <- sumRLists (n-1) (r-l)] | l <- [0..r]]
 
 -- | All length n lists of integers whose sum to r or less.

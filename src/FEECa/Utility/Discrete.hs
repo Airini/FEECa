@@ -2,7 +2,7 @@ module FEECa.Utility.Discrete where
 
 --import Data.Type.Natural
 import Data.List ((\\),nub)
--- import Debug.Trace
+
 
 -- Specific operations on naturals
 

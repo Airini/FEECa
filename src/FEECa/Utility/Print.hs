@@ -1,16 +1,16 @@
 module FEECa.Utility.Print (
-   Pretty(..)
+    Pretty (..)
   , printDouble, printComponent, printVector, printVectorRow
   , printBernstein, printPolynomial, printPolynomial0, printForm
   , lambda, dlambda, (<>), (P.$$), text, rn, int
   ) where
 
-import Text.PrettyPrint
-import qualified Text.PrettyPrint.HughesPJ as P
-import Text.Printf
--- import FEECa.Internal.Spaces
-import qualified FEECa.Internal.MultiIndex as MI
-import Data.List (intersperse)
+import            Text.PrettyPrint
+import qualified  Text.PrettyPrint.HughesPJ as P
+import            Text.Printf
+import qualified  FEECa.Internal.MultiIndex as MI
+import            Data.List (intersperse)
+
 
 -- Some symbols
 dlambda, lambda, phi :: String

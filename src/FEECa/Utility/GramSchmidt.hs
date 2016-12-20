@@ -3,7 +3,6 @@
 module FEECa.Utility.GramSchmidt where
 
 import FEECa.Internal.Spaces
--- import FEECa.Internal.Vector
 
 
 -- | Gram-Schmidt orthogonalization
