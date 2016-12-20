@@ -57,16 +57,15 @@ module FEECa.Internal.Simplex(
   ) where
 
 import Data.List
+import qualified  Numeric.LinearAlgebra.HMatrix as M
 
 import FEECa.Internal.Spaces
--- import FEECa.Internal.Vector
 import FEECa.Utility.Combinatorics
 import FEECa.Utility.GramSchmidt
 import FEECa.Utility.Print
 import FEECa.Utility.Quadrature
-import qualified FEECa.Utility.Utility as U
+import qualified  FEECa.Utility.Utility         as U
 
-import qualified Numeric.LinearAlgebra.HMatrix as M
 
 \end{code}
 
@@ -513,7 +512,7 @@ integrateOverSimplex :: (EuclideanSpace v, r ~ Scalar v, Eq r)
                      -> Simplex v       -- t
                      -> (v -> r)        -- f
                      -> r
-integrateOverSimplex q t f = mul vol (mul fac (nestedSum q (n-1) [] t f))
+integrateOverSimplex q t f = mul vol (mul fac (nestedSum q t f (n-1) []))
   where n   = topologicalDimension t
         fac = fromDouble 1.0 -- (fromDouble . fromInteger) (factorial n)
         vol = volume t
@@ -521,17 +520,28 @@ integrateOverSimplex q t f = mul vol (mul fac (nestedSum q (n-1) [] t f))
 -- Recursion for the computation of the nested sum in the numerical approximation
 -- of the integral of a function over a simplex.
 nestedSum :: (EuclideanSpace v, r ~ Scalar v)
-             => Int -> Int -> [r] -> Simplex v -> (v -> r) -> r
-nestedSum k d ls t f
-    | d == 0    = U.sumR [ mul w (f x)
-                           | (w, x) <- zip weights' xs ]
-    | otherwise = U.sumR [ mul w (nestedSum k (d-1) (x:ls) t f)
-                           | (w, x) <- zip weights' nodes' ]
-  where xs        = [ cubicToCartesian t (fromList' (xi : ls)) | xi <- nodes' ]
+             => Int -> Simplex v -> (v -> r) -> Int -> [r] -> r
+nestedSum k t f d ls
+    | d == 0    = U.sumR [ mul w fx
+                            | (xi,a) <- quad,
+                              let w   = fromDouble a,
+                              let fx  = xNode (f.nodeCoord) xi ]
+                        -- [ mul w (f x)
+                        --    | (w, x) <- zip weights' xs ]
+    | otherwise = U.sumR $ map (uncurry mul . U.pairM (xNode (nestedSum k t f (d-1))) fromDouble) quad
+                        -- [ mul w (nestedSum k (d-1) (x:ls) t f)
+                        --    | (w, x) <- zip weights' nodes' ]
+  where nodeCoord = cubicToCartesian t . fromList'
+        -- xs        = [ (cubicToCartesian t (fromList' (xi : ls)) , w) | (xi, w) <- quad ]
         fromList' = fromList . reverse
-        (nodes, weights) = unzip $ gaussJacobiQuadrature' d 0 k
-        nodes'    = map fromDouble nodes
-        weights'  = map fromDouble weights
+        -- TODO: remove list reversal above via a local declaration + accum param
+        --      + generalise according to the commong ground found above (via xNode)
+        -- wMul      = mul . fromDouble
+        xNode h   = h . (:ls) . fromDouble
+        quad      = gaussJacobiQuadrature' d 0 k
+        -- (nodes, weights) = unzip $ gaussJacobiQuadrature' d 0 k
+        -- nodes     = map (fromDouble.fst) quad
+        -- weights   = map (fromDouble.snd) quad
 
 instance (EuclideanSpace v, r ~ Scalar v) => FiniteElement (Simplex v) r where
   type Primitive (Simplex v) = v
