@@ -13,20 +13,19 @@ functions for the handling of vectors in $n$-dimensional Euclidean space
 module FEECa.Internal.Vector(
 
   -- * The Vector Type
-  Vector(..), Dimensioned(..), vector,
+    Vector(..), Dimensioned(..), vector
 
   -- * Manipulating Vectors
-  toList,
+  , toList
 
   -- * Mathematical Functions
-  dot, pow
+  , dot, pow
 
   ) where
 
+
 import FEECa.Internal.Spaces
--- import qualified  FEECa.Internal.MultiIndex  as MI
-import FEECa.Utility.Print        as P
--- import qualified  FEECa.Utility.Utility      as U
+import FEECa.Utility.Print    as P
 
 
 \end{code}
@@ -83,13 +82,13 @@ instance Ring a => VectorSpace (Vector a) where
 
 -- | R^n as a Euclidean space.
 instance (Field a, Eq a) => EuclideanSpace (Vector a) where
-    dot (Vector l1) (Vector l2) = foldl add addId (zipWith mul l1 l2)
-    toList   = components
-    fromList = vector
+  dot (Vector l1) (Vector l2) = foldl add addId (zipWith mul l1 l2)
+  toList   = components
+  fromList = vector
 
 -- | The dimension of vectors.
 instance Dimensioned (Vector a) where
-    dim (Vector l) = length l
+  dim (Vector l) = length l
 
 \end{code}
 
@@ -127,9 +126,9 @@ vector = Vector
 
 -- | Pretty printing for vectors.
 instance Field a => Pretty (Vector a) where
-    pPrint v = text "Vector in "
-               <> rn (dim v)
-               <> text ":"
-               P.$$ printVector 2 (map toDouble (components v))
+  pPrint v = text "Vector in "
+              <> rn (dim v)
+              <> text ":"
+              P.$$ printVector 2 (map toDouble (components v))
 
 \end{code}

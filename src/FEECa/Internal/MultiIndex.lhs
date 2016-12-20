@@ -32,30 +32,30 @@ The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
 \begin{code}
 
 {-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances    #-}
 
 module FEECa.Internal.MultiIndex(
 
   -- * The MultiIndex type
-  MultiIndex, toList, valid,
+    MultiIndex, toList, valid
 
   -- ** Constructors
-  multiIndex, zero, unit, degreeR,
+  , multiIndex, zero, unit, degreeR
 
   -- * Extension
-  extend,
+  , extend
 
   -- * Mathematical Operations
-  add, decrease, derive, factorial, choose, choose', degree, range
+  , add, decrease, derive, factorial, choose, choose', degree, range
 
   ) where
 
 
-import Control.Applicative (ZipList(..), liftA2)
--- import Control.Applicative(Applicative(..), liftA)
-import FEECa.Internal.Spaces (Dimensioned(..),Field(..))
-import FEECa.Utility.Combinatorics (sumRLists)
-import qualified FEECa.Utility.Combinatorics as C(choose, factorial)
+import            Control.Applicative               (ZipList(..), liftA2)
+
+import            FEECa.Utility.Combinatorics       (sumRLists)
+import qualified  FEECa.Utility.Combinatorics as C  (choose, factorial)
+import            FEECa.Internal.Spaces             (Dimensioned(..), Field(..))
 
 \end{code}
 
@@ -99,8 +99,8 @@ range = range' 0
 
 range' :: Int -> MultiIndex -> [Int]
 range' i (ZipList (l:ls))
-      | l /= 0 = i : range' (i+1) (ZipList ls)
-      | otherwise = range' (i+1) (ZipList ls)
+      | l /= 0    = i : range' (i+1) (ZipList ls)
+      | otherwise =     range' (i+1) (ZipList ls)
 range' _ (ZipList []) = []
 
 \end{code}
@@ -122,7 +122,7 @@ range' _ (ZipList []) = []
 -- | Create a multi-index from a given list of integers.
 multiIndex :: [Int] -> MultiIndex
 multiIndex l
-    | valid mi = mi
+    | valid mi  = mi
     | otherwise = error "multiIndex: Multi-index is invalid!"
   where mi = ZipList l
 

@@ -9,24 +9,23 @@ positions in n-dimensional Euclidean space.
 \begin{code}
 
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TupleSections      #-}
+{-# LANGUAGE FlexibleInstances  #-}
+{-# LANGUAGE TypeFamilies       #-}
 
-module FEECa.Internal.Point(
+module FEECa.Internal.Point (
 
-             -- * The Point Type
-             Point, point,
+  -- * The Point Type
+    Point, point
 
-             -- * Convenience functions
-             --unit,
+  -- * Convenience functions
+  --, unit
 
-             -- * Conversion to and from 'Vector' where
-             fromPoint, toPoint
+  -- * Conversion to and from 'Vector' where
+  , fromPoint, toPoint
 
-) where
+  ) where
 
--- import Data.List
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
 import FEECa.Utility.Print

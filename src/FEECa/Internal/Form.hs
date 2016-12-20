@@ -2,28 +2,32 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module FEECa.Internal.Form (
+
   -- * Generic form types
-  Dim, Form (Form, arity, dimVec, terms), split
+    Dim, Form (Form, arity, dimVec, terms), split
 
   -- * Predefined primitive constructors
   , zeroForm, nullForm, oneForm
 
   -- * Form operations
-  ,apply, refine, refineBasis, inner, contract
+  , apply, refine, refineBasis, inner, contract
+  
   ) where
 
 
 -- import Control.Applicative
-import Data.List (intersect)
-import FEECa.Internal.Spaces hiding( inner )
-import qualified FEECa.Internal.Spaces as S( inner )
-import FEECa.Utility.Discrete
-import FEECa.Utility.Utility (pairM, sumV, expSign, sign)
-import qualified FEECa.Utility.Print as P (Pretty(..), printForm, text)
-import FEECa.Utility.Combinatorics
-import qualified Numeric.LinearAlgebra.HMatrix as M
+import            Data.List (intersect)
+import qualified  Numeric.LinearAlgebra.HMatrix as M
 -- import qualified Numeric.LinearAlgebra.Data as M
--- import Debug.Trace
+
+import            FEECa.Utility.Combinatorics
+import            FEECa.Utility.Discrete
+import qualified  FEECa.Utility.Print           as P  (Pretty(..), printForm, text)
+import            FEECa.Utility.Utility               (pairM, sumV, expSign, sign)
+
+import            FEECa.Internal.Spaces     hiding    (inner)
+import qualified  FEECa.Internal.Spaces         as S  (inner)
+
 
 -- * General form: does not depend on the underlying vector space it works on
 --   in any way.

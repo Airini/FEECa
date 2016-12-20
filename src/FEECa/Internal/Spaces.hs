@@ -1,12 +1,13 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE UndecidableInstances   #-}
 
 module FEECa.Internal.Spaces where
 
-import Numeric( fromRat )
+import Numeric (fromRat)
+
 
 -- | Class of types spaces forms and finite element spaces will be based upon.
 -- Mathematically these should be fields, but inversion is not required in our
@@ -60,13 +61,13 @@ divide a b = mul a (mulInv b)
 
 -- Example instances for the floating 'Double' and for the 'Rational' types.
 instance Ring Double where
-  add = (+)
-  addId = 0
-  addInv = (0-)
-  mul = (*)
-  mulId = 1
+  add     = (+)
+  addId   = 0
+  addInv  = (0-)
+  mul     = (*)
+  mulId   = 1
   fromInt = fromIntegral
-  pow = (^^)
+  pow     = (^^)
 
 instance Field Double where
   mulInv     = (1/)
@@ -79,18 +80,18 @@ instance VectorSpace Double where
   sclV = (*)
 
 instance Ring Rational where
-  add = (+)
-  addId = 0
-  addInv = (0-)
-  mul = (*)
-  mulId = 1
+  add     = (+)
+  addId   = 0
+  addInv  = (0-)
+  mul     = (*)
+  mulId   = 1
   fromInt = fromIntegral
-  pow = (^)
+  pow     = (^)
 
 instance Field Rational where
-  mulInv = (1/)
-  fromDouble = realToFrac
-  toDouble = fromRat
+  mulInv      = (1/)
+  fromDouble  = realToFrac
+  toDouble    = fromRat
 
 -- | Definition of vector spaces via a class 'VectorSpace' differing from the
 -- mathematical definition in the object it is defined over: 'Ring' scalars
@@ -115,11 +116,11 @@ zeroV = sclV addId
 instance (Ring a, Eq [a]) => VectorSpace [a] where
   type Scalar [a] = a
 
-  addV [] [] = []
-  addV (v:vs) (w:ws) = add v w : addV vs ws
-  addV _ _ = error "addV: Lists do not have equal length"
+  addV []     []      = []
+  addV (v:vs) (w:ws)  = add v w : addV vs ws
+  addV _      _       = error "addV: Lists do not have equal length"
 
-  sclV _ [] = []
+  sclV _ []     = []
   sclV a (v:vs) = mul a v : sclV a vs
 
 -- | Definition of the mathematical 'Algebra' taking our defined 'VectorSpace'
@@ -142,9 +143,9 @@ class Dimensioned t where
 -- products giving rise to metrics.
 class (Eq v, Dimensioned v, VectorSpace v, Eq (Scalar v), Field (Scalar v))
     => EuclideanSpace v where
-  dot      :: v   -> v -> Scalar v
+  dot      :: v -> v -> Scalar v
   fromList :: [Scalar v] -> v
-  toList   :: v   -> [Scalar v]
+  toList   :: v -> [Scalar v]
 -- XXX: add basis??
 
 -- | Inner product space to define the generalised inner product on differential
@@ -163,7 +164,7 @@ class (VectorSpace v) => Function f v where
 
   -- | 'Function' application:
   -- > f $$ v ≈ f $ v
-  ($$)  :: f -> v -> Scalar v
+  ($$) :: f -> v -> Scalar v
   ($$) = flip evaluate
 
 -- | 'FiniteElement' class defined over a geometrical type with an associated
@@ -171,7 +172,9 @@ class (VectorSpace v) => Function f v where
 -- values of the second parameter type of the class. Types of the class shall
 -- provide an evaluation, quadrature-based method.
 class FiniteElement t r where
-  type Primitive t :: *
+  type Primitive t :: *   -- Q t ~= Primitive t -> r
+  -- TODO: also, implicit constraint from integrate:
+  --    VectorSpace (Primitive t)
   quadrature :: Int -> t -> (Primitive t -> r) -> r
 
   -- | Generalised integration expressed in terms of a quadrature method (with
@@ -191,7 +194,7 @@ unitVector :: EuclideanSpace v => Int -> Int -> v
 unitVector n i
     | (n  > 0) && (i >= 0) && (i < n) = fromList $ concat l
     | otherwise = error "unitVector: invalid dimensions!"
-  where l = [replicate i addId, [mulId], replicate (n-i-1) addId]
+  where l = [ replicate i addId, [mulId], replicate (n-i-1) addId ]
 
 -- | General translation to 'EuclideanSpace' vectors from a common
 -- representation: lists of 'Double'.
