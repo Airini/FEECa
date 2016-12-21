@@ -1,0 +1,175 @@
+2016-12-20: Got all but one test to pass:
+
+  (I added the "--docker" flag because I got into some build problem
+  with digest-0.0.1.2 otherwise)
+
+The only failing case is this:
+=== prop_cubicToBarycentric from tests/FEECa/Internal/SimplexTest.hs:151 ===
+*** Failed! Falsifiable (after 2 tests):
+Cubic (Vector {components = [0.8796556663818055,-0.48131672486024124,0.3811584471524596,0.5781921623059687,-0.911411888157053,0.2923572848428808]})
+
+(prop_inner from tests/FEECa/PolynomialDifferentialFormTest.hs:133 sometimes fails. Probably rounding error.)
+
+Full test log below.
+
+patrikj@etyd:~/src/ext/FEECa$ stack --docker test
+feeca-1.0.0.0: test (suite: test-feec)
+
+=== prop_increasing from tests/FEECa/Utility/CombinatoricsTest.lhs:78 ===
++++ OK, passed 100 tests.
+
+=== prop_number from tests/FEECa/Utility/CombinatoricsTest.lhs:97 ===
++++ OK, passed 100 tests.
+
+=== prop_number1 from tests/FEECa/Utility/CombinatoricsTest.lhs:103 ===
++++ OK, passed 100 tests.
+
+=== prop_ordered from tests/FEECa/Utility/CombinatoricsTest.lhs:118 ===
++++ OK, passed 100 tests.
+
+=== prop_ordered1 from tests/FEECa/Utility/CombinatoricsTest.lhs:123 ===
++++ OK, passed 100 tests.
+
+=== prop_index from tests/FEECa/Utility/CombinatoricsTest.lhs:142 ===
++++ OK, passed 100 tests.
+
+=== prop_sublists_number from tests/FEECa/Utility/CombinatoricsTest.lhs:164 ===
++++ OK, passed 100 tests.
+
+=== prop_sublists_order from tests/FEECa/Utility/CombinatoricsTest.lhs:170 ===
++++ OK, passed 100 tests.
+
+=== prop_sublists_length from tests/FEECa/Utility/CombinatoricsTest.lhs:176 ===
++++ OK, passed 100 tests.
+
+=== prop_sum_r from tests/FEECa/Utility/CombinatoricsTest.lhs:213 ===
++++ OK, passed 100 tests.
+
+=== prop_sum_r_length from tests/FEECa/Utility/CombinatoricsTest.lhs:217 ===
++++ OK, passed 100 tests.
+
+=== prop_sum_r_positive from tests/FEECa/Utility/CombinatoricsTest.lhs:222 ===
++++ OK, passed 100 tests.
+
+=== prop_sum_r' from tests/FEECa/Utility/CombinatoricsTest.lhs:231 ===
++++ OK, passed 100 tests.
+
+=== prop_sum_r'_length from tests/FEECa/Utility/CombinatoricsTest.lhs:236 ===
++++ OK, passed 100 tests.
+
+=== prop_sum_r'_positive from tests/FEECa/Utility/CombinatoricsTest.lhs:242 ===
++++ OK, passed 100 tests.
+
+Testing alternating forms of vector space dimension up to 4
++++ OK, passed 100 tests.
++++ OK, passed 100 tests.
++++ OK, passed 100 tests.
++++ OK, passed 100 tests.
++++ OK, passed 100 tests.
++++ OK, passed 100 tests.
++++ OK, passed 100 tests (100% Anticommutativity).
+=== prop_arithmetic from tests/FEECa/BernsteinTest.hs:63 ===
++++ OK, passed 100 tests.
+
+=== prop_integration from tests/FEECa/BernsteinTest.hs:82 ===
++++ OK, passed 100 tests.
+
+=== prop_integration_linear from tests/FEECa/BernsteinTest.hs:93 ===
++++ OK, passed 100 tests.
+
+=== prop_derivation_linear from tests/FEECa/BernsteinTest.hs:109 ===
++++ OK, passed 100 tests.
+
+=== prop_derivation_product from tests/FEECa/BernsteinTest.hs:124 ===
++++ OK, passed 100 tests.
+
+=== prop_zero from tests/FEECa/Internal/MultiIndexTest.hs:27 ===
++++ OK, passed 100 tests.
+
+=== prop_unit from tests/FEECa/Internal/MultiIndexTest.hs:30 ===
++++ OK, passed 100 tests.
+
+=== prop_degreeR from tests/FEECa/Internal/MultiIndexTest.hs:34 ===
++++ OK, passed 100 tests.
+
+=== prop_extend from tests/FEECa/Internal/MultiIndexTest.hs:38 ===
++++ OK, passed 100 tests.
+
+=== prop_add from tests/FEECa/Internal/MultiIndexTest.hs:46 ===
++++ OK, passed 100 tests.
+
+=== prop_subsimplex from tests/FEECa/Internal/SimplexTest.hs:60 ===
++++ OK, passed 100 tests.
+
+=== prop_subsimplices from tests/FEECa/Internal/SimplexTest.hs:72 ===
++++ OK, passed 100 tests.
+
+=== prop_extend_subsimplex from tests/FEECa/Internal/SimplexTest.hs:86 ===
++++ OK, passed 100 tests.
+
+=== prop_face from tests/FEECa/Internal/SimplexTest.hs:96 ===
++++ OK, passed 100 tests.
+
+=== prop_vol_integral from tests/FEECa/Internal/SimplexTest.hs:118 ===
++++ OK, passed 100 tests.
+
+=== prop_cubicToBarycentric from tests/FEECa/Internal/SimplexTest.hs:151 ===
+*** Failed! Falsifiable (after 2 tests):
+Cubic (Vector {components = [0.8796556663818055,-0.48131672486024124,0.3811584471524596,0.5781921623059687,-0.911411888157053,0.2923572848428808]})
+
+=== prop_barycentricToCartesian from tests/FEECa/Internal/SimplexTest.hs:176 ===
++++ OK, passed 100 tests.
+
++++ OK, passed 100 tests.
++++ OK, passed 100 tests.
++++ OK, passed 100 tests.
+=== prop_jacobi_zeros from tests/FEECa/Utility/QuadratureTest.hs:14 ===
++++ OK, passed 100 tests.
+
+=== prop_sum_1 from tests/FEECa/Utility/QuadratureTest.hs:20 ===
++++ OK, passed 100 tests.
+
+=== prop_arithmetic_rf from tests/FEECa/PolynomialTest.hs:80 ===
++++ OK, passed 100 tests.
+
+=== prop_derivation_product from tests/FEECa/PolynomialTest.hs:115 ===
++++ OK, passed 100 tests.
+
+=== prop_arithmetic_rational from tests/FEECa/PolynomialTest.hs:124 ===
++++ OK, passed 100 tests.
+
+=== prop_derivation_linear_rational from tests/FEECa/PolynomialTest.hs:131 ===
++++ OK, passed 100 tests.
+
+=== prop_derivation_product_rational from tests/FEECa/PolynomialTest.hs:139 ===
++++ OK, passed 100 tests.
+
+=== prop_barycentric from tests/FEECa/PolynomialTest.hs:159 ===
++++ OK, passed 100 tests.
+
+=== prop_proj from tests/FEECa/PolynomialDifferentialFormTest.hs:80 ===
++++ OK, passed 100 tests.
+
+=== prop_volume_form from tests/FEECa/PolynomialDifferentialFormTest.hs:104 ===
++++ OK, passed 100 tests.
+
+=== prop_integral from tests/FEECa/PolynomialDifferentialFormTest.hs:116 ===
++++ OK, passed 100 tests.
+
+=== prop_inner from tests/FEECa/PolynomialDifferentialFormTest.hs:133 ===
++++ OK, passed 100 tests.
+
+=== prop_whitney_integral from tests/FEECa/FiniteElementTest.hs:67 ===
++++ OK, passed 100 tests.
+
+=== prop_psi from tests/FEECa/FiniteElementTest.hs:87 ===
++++ OK, passed 100 tests.
+
+=== prop_basis from tests/FEECa/FiniteElementTest.hs:107 ===
++++ OK, passed 100 tests.
+
+TODO: appropriate tests + testing configuration (?)
+
+Test suite failure for package feeca-1.0.0.0
+    test-feec:  exited with: ExitFailure 1
+Logs printed to console
