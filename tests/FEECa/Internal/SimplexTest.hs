@@ -138,12 +138,13 @@ newtype Cubic v r = Cubic v deriving (Show, Eq)
 -- | Randomly pick a dimension n and a point from the n-dimensional unit
 -- | cube.
 instance (EuclideanSpace v, r ~ Scalar v) => Arbitrary (Cubic v r) where
-    arbitrary = do n <- Q.choose (1,10)
-                   cs <- Q.vector n
-                   let transf l = zipWith sub l (map (fromInt . truncate') l)
-                   return (Cubic (fromDouble' (transf cs)))
-        where truncate' :: Double -> Integer
-              truncate' = truncate
+    arbitrary = do
+            n  <- Q.choose (1,10)
+            cs <- Q.vectorOf n (fmap abs arbitrary)
+            let transf x = sub x ((fromInt . restrict) x)
+            return (Cubic (fromDouble' (map transf cs)))
+        where restrict :: Double -> Integer
+              restrict = truncate
 
 -- | Check that the transformation of a point in the n-dimensional unit cube is
 -- | a valid point in barycentric coordinates, i.e. that all components are
@@ -153,8 +154,9 @@ prop_cubicToBarycentric = pCubicToBarycentric
 
 pCubicToBarycentric :: (EuclideanSpace v, r ~ Scalar v)
                     => Cubic v r -> Bool
-pCubicToBarycentric (Cubic v) = pBarycentricRange v' && pBarycentricSum v' && (dim v' == dim v + 1)
-        where v' = cubicToBarycentric v
+pCubicToBarycentric (Cubic v) =
+        pBarycentricRange v' && pBarycentricSum v' && (dim v' == dim v + 1)
+    where v' = cubicToBarycentric v
 
 --prop_barycentric_range :: Vector Double -> Bool
 --prop_barycentric_range = pBarycentricRange
@@ -162,27 +164,24 @@ pCubicToBarycentric (Cubic v) = pBarycentricRange v' && pBarycentricSum v' && (d
 pBarycentricRange :: EuclideanSpace v => v -> Bool
 pBarycentricRange v = all (0 <=) cs && all (1 >=) cs
     where cs = toDouble' v
--- TODO: correct cubicToBarycentric or generator
---    (breaks with negative coordinates)
+-- XXX: changed Cubic generator (meant to be the standard unit cube)
 
 --prop_barycentric_sum :: Vector Double -> Bool
 --prop_barycentric_sum = pBarycentricSum
 
 pBarycentricSum :: EuclideanSpace v => v -> Bool
-pBarycentricSum v = eqNum (sum ( toDouble' v )) 1.0
+pBarycentricSum v = eqNum (sum (toDouble' v)) 1.0
 
 -- | Check that the unit vectors in barycentric coordinates reproduce the vertices
 -- | of the simplex when transformed to cartesian coordinates.
 prop_barycentricToCartesian :: Simplex (Vector Double) -> Bool
 prop_barycentricToCartesian = pBarycentricToCartesian
 
-pBarycentricToCartesian :: EuclideanSpace v
-                            => Simplex v
-                            -> Bool
+pBarycentricToCartesian :: EuclideanSpace v => Simplex v -> Bool
 pBarycentricToCartesian t =
-    map (barycentricToCartesian t) vs == vertices t
-        where n = geometricalDimension t
-              vs = [unitVector (n+1) i | i <- [0..n]]
+        map (barycentricToCartesian t) vs == vertices t
+    where n = geometricalDimension t
+          vs = [unitVector (n+1) i | i <- [0..n]]
 
 -- TODO: Add testing for barycentric coordinates of subsimplices.
 
@@ -195,7 +194,7 @@ testSimplex = $quickCheckAll
 
 
 
-
+{-
 type VectorD = Vector Double
 type SimplexD = Simplex (Vector Double)
 
@@ -208,3 +207,5 @@ vs = spanningVectors t1
 main = quickCheck (prop_extend_subsimplex :: SubsimplexTest VectorD -> Bool)
 
 t3 = Simplex {sigma = [0,1,2,3,4], vertices = [Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]}]}
+-}
+
