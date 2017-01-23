@@ -15,7 +15,7 @@ import qualified FEECa.FiniteElementTest  as FE
 import qualified FEECa.PolynomialTest     as P
 import qualified FEECa.PolynomialDifferentialFormTest as DF
 
-import System.Exit (exitFailure)
+import System.Exit (exitSuccess, exitFailure)
 
 nmax :: Int
 nmax = 4
