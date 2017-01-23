@@ -116,8 +116,8 @@ executable prof
   default-language:   Haskell2010
   build-depends:      base >=4.7 && <4.10, feeca
 
-executable doc
-  main-is: site.hs
-  default-language: Haskell2010
-  build-depends: base >= 4.8, pandoc, pandoc-citeproc, blaze-html, hakyll,
-                 process, containers, filepath
+-- executable doc
+--   main-is: site.hs
+--   default-language: Haskell2010
+--   build-depends: base >= 4.8, pandoc, pandoc-citeproc, blaze-html, hakyll,
+--                  process, containers, filepath
