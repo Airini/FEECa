@@ -7,7 +7,7 @@
 
 module FEECa.Mask where
 
--- import Control.Applicative
+import Control.Applicative ()
 
 import FEECa.DifferentialForm
 import FEECa.Internal.Form
