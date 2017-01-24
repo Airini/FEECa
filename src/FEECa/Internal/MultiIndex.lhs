@@ -51,7 +51,7 @@ module FEECa.Internal.MultiIndex(
   ) where
 
 
-import            Control.Applicative               (ZipList(..), liftA2)
+import            Control.Applicative               (ZipList(..), liftA2, pure, <*>)
 
 import            FEECa.Utility.Combinatorics       (sumRLists)
 import qualified  FEECa.Utility.Combinatorics as C  (choose, factorial)
