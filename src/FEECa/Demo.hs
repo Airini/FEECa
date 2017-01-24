@@ -1,6 +1,6 @@
 module FEECa.Demo where
 
--- import Control.Applicative
+-- import Control.Applicative ()
 
 import FEECa.DifferentialForm (DifferentialForm)
 import FEECa.Internal.Form (Form, Dim)

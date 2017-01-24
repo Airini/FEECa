@@ -7,7 +7,7 @@
 
 module FEECa.Mask where
 
-import Control.Applicative ()
+-- import Control.Applicative ()
 
 import FEECa.DifferentialForm
 import FEECa.Internal.Form
@@ -176,9 +176,11 @@ instance Functor Term where
 instance Functor Polynomial where
   fmap f (Polynomial n ts) = Polynomial n (fmap (fmap f) ts)
 
+{-
 instance Applicative Polynomial where
   pure = constant
   (<*>) = undefined
+-}
 
 {-
 instance (Field r, EuclideanSpace (Vector r), r ~ Scalar (Vector r))  =>

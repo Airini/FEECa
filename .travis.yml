@@ -17,7 +17,9 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libblas-dev liblapack-dev
 
-install: cabal install --enable-tests --dependencies-only
+install:
+  - cabal install cabal-install
+  - cabal install --enable-tests --dependencies-only
 
 script:
   - cabal configure --enable-tests && cabal build test-feec && cabal test
