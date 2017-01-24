@@ -160,7 +160,7 @@ u5 = head (hs 2) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (constant 0.5 .* dxs' 1 /\ 
 val7, val11 :: Form Double
 val7 = w1 ⌟ v5
 val8, val9, val10 :: DifferentialForm (PolyRepresentation Double)
-val8 = u5 & fmap pure v5
-val9 = w1' & fmap pure v5
-val10 = v & fmap pure v5
+val8 = u5 & fmap constant v5
+val9 = w1' & fmap constant v5
+val10 = v & fmap constant v5
 val11 = w4 ⌟ v2

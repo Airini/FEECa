@@ -4,7 +4,7 @@ language: Haskell
 ghc:
 #  - 8.0
   - 7.8
-  - 7.6
+  - 7.6  # conflicting base version for the two lower ones!
   - 7.4
 
 # travis says available ghc's are:
