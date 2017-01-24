@@ -259,13 +259,12 @@ volume t
         vs = spanningVectors t
         bs = gramSchmidt vs
 
+--
 project :: EuclideanSpace v => [v] -> [v] -> [v]
 project bs vs = map fromList [[ proj b v | b <- bs] | v <- vs]
-  where proj b v  = divide (dot b v) (sqrt' (dot b b))
-        sqrt'     = fromDouble . sqrt . toDouble
 
 volume' :: EuclideanSpace v => Simplex v -> Scalar v
-volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
+volume' t = undefined -- fromDouble $  abs (M.det w) / fromInteger (factorial n)
   where n = geometricalDimension t
         w = M.matrix n comps
         comps = concatMap toDouble' (spanningVectors t)
@@ -512,10 +511,11 @@ integrateOverSimplex :: (EuclideanSpace v, r ~ Scalar v, Eq r)
                      -> Simplex v       -- t
                      -> (v -> r)        -- f
                      -> r
-integrateOverSimplex q t f = mul vol (mul fac (nestedSum q t f (n-1) []))
+integrateOverSimplex q t f = mul vol (nestedSum q t f (n-1) [])
   where n   = topologicalDimension t
-        fac = fromDouble 1.0 -- (fromDouble . fromInteger) (factorial n)
         vol = volume t
+
+fromDouble = undefined
 
 -- Recursion for the computation of the nested sum in the numerical approximation
 -- of the integral of a function over a simplex.

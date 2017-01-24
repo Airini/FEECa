@@ -52,7 +52,7 @@ sub a b = add a (addInv b)
 -- | Completion of the 'Ring' class to that of a 'Field'
 class Ring f => Field f where
     mulInv     :: f -> f
-    fromDouble :: Double -> f
+--    fromDouble :: Double -> f
     toDouble   :: f -> Double
 
 -- | Derived division operation from 'Field' class functions.
@@ -71,7 +71,7 @@ instance Ring Double where
 
 instance Field Double where
   mulInv     = (1/)
-  fromDouble = id
+--  fromDouble = id
   toDouble   = id
 
 instance VectorSpace Double where
@@ -90,7 +90,7 @@ instance Ring Rational where
 
 instance Field Rational where
   mulInv      = (1/)
-  fromDouble  = realToFrac
+--  fromDouble  = realToFrac
   toDouble    = fromRat
 
 -- | Definition of vector spaces via a class 'VectorSpace' differing from the
@@ -100,7 +100,7 @@ class (Ring (Scalar v)) => VectorSpace v where --(Scalar v)) => VectorSpace v wh
   type Scalar v :: *      -- Coefficient ring
   addV  :: v -> v -> v
   sclV  :: Scalar v -> v -> v -- Scalar v -> v -> v
-  
+
   -- | Derived vector subtraction from 'VectorSpace' class functions.
   subV :: v -> v -> v
   subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
@@ -146,6 +146,14 @@ class (Eq v, Dimensioned v, VectorSpace v, Eq (Scalar v), Field (Scalar v))
   dot      :: v -> v -> Scalar v
   fromList :: [Scalar v] -> v
   toList   :: v -> [Scalar v]
+  proj     :: v -> v -> v
+
+  proj = projDefault
+-- projDefault :: (EuclideanSpace v, Sqrt a, a ~ Scalar v) => v -> v -> v
+projDefault b v  = undefined -- divide (dot b v) (sqrt (dot b b))
+
+class Floating a => Sqrt a -- TODO: Maybe make it a separate class later
+
 -- XXX: add basis??
 
 -- | Inner product space to define the generalised inner product on differential
@@ -198,11 +206,10 @@ unitVector n i
 
 -- | General translation to 'EuclideanSpace' vectors from a common
 -- representation: lists of 'Double'.
-fromDouble' :: EuclideanSpace v => [Double] -> v
-fromDouble' = fromList . map fromDouble
+-- fromDouble' :: EuclideanSpace v => [Double] -> v
+-- fromDouble' = fromList . map fromDouble
 
 -- | General translation from 'EuclideanSpace' vectors to a common
 -- representation: lists of 'Double'.
 toDouble' :: EuclideanSpace v => v -> [Double]
 toDouble' = map toDouble . toList
-

@@ -5,7 +5,7 @@ module FEECa.Utility.Utility(
   , sumR, sumV
   , expSign, sign
   , eqNum
-  , toDouble, fromDouble
+  , toDouble
   ) where
 
 import FEECa.Internal.Spaces
