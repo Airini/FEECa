@@ -1,9 +1,14 @@
+sudo: required
 language: Haskell
 
 ghc:
   - 8.0
   - 7.10
   - 7.8
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libblas-dev liblapack-dev
 
 install: cabal install --enable-tests --dependencies-only
 
