@@ -1,11 +1,11 @@
 sudo: required
 language: Haskell
 
-ghc:
+#ghc:
 #  - 8.0
-  - 7.8
-  - 7.6  # conflicting base version for the two lower ones!
-  - 7.4
+#  - 7.8
+#  - 7.6  # conflicting base version for the two lower ones!
+#  - 7.4
 
 # travis says available ghc's are:
 # - 7.0.4
@@ -13,14 +13,52 @@ ghc:
 # - 7.6.3
 # - 7.8.4
 
+matrix:
+  include:
+#    - env: CABALVER=1.18 GHCVER=7.8.1
+#      compiler: ": #GHC 7.8.1"
+#      addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.1], sources: [hvr-ghc]}}
+#    - env: CABALVER=1.18 GHCVER=7.8.2
+#      compiler: ": #GHC 7.8.2"
+#      addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.2], sources: [hvr-ghc]}}
+#    - env: CABALVER=1.18 GHCVER=7.8.3
+#      compiler: ": #GHC 7.8.3"
+#      addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.3], sources: [hvr-ghc]}}
+    - env: CABALVER=1.18 GHCVER=7.8.4
+      compiler: ": #GHC 7.8.4"
+      addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.4], sources: [hvr-ghc]}}
+#    - env: CABALVER=1.22 GHCVER=7.10.1
+#      compiler: ": #GHC 7.10.1"
+#      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.1], sources: [hvr-ghc]}}
+    - env: CABALVER=1.22 GHCVER=7.10.2
+      compiler: ": #GHC 7.10.2"
+      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.2], sources: [hvr-ghc]}}
+#    - env: CABALVER=1.22 GHCVER=7.10.3
+#      compiler: ": #GHC 7.10.3"
+#      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
+    - env: CABALVER=1.24 GHCVER=8.0.1
+      compiler: ": #GHC 8.0.1"
+      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.1], sources: [hvr-ghc]}}
+#    - env: CABALVER=1.24 GHCVER=8.0.2
+#      compiler: ": #GHC 8.0.2"
+#      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
+
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libblas-dev liblapack-dev
+  - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH
 
 install:
-  - cabal install cabal-install
-  - cabal install --enable-tests --dependencies-only
+  - cabal --version
+  - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
+  - travis_retry cabal update -v
+#  - cabal install cabal-install
+  - cabal install --enable-tests --enable-benchmarks --dependencies-only
 
 script:
-  - cabal configure --enable-tests && cabal build test-feec && cabal test
+  - cabal configure --enable-tests --enable-benchmarks -v2
+  - cabal build test-feec
+  - cabal test
+  - cabal check
+  - cabal sdist
 
