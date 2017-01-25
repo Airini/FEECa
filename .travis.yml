@@ -40,10 +40,10 @@ install:
   - cabal --version
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - travis_retry cabal update -v
-  - if [[ "$GHCVER" != 7.6.* ]];
-    then
-      cabal install cabal-install;
-    fi
+#  - if [[ "$GHCVER" != 7.6.* ]];
+#    then
+#      cabal install cabal-install;
+#    fi
   - cabal install --enable-tests --enable-benchmarks --only-dependencies
 
 script:

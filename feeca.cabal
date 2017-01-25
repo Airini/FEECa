@@ -115,13 +115,13 @@ executable prof
   main-is: prof.hs
   ghc-options:        -fprof-auto-calls -O2 -fhpc -threaded -fexcess-precision -optc-O3 -optc-ffast-math -optc-mfpmath=sse -funfolding-use-threshold=16 "-with-rtsopts=-N -pa -s -h -i0.1"
   default-language:   Haskell2010
-  build-depends:      base >=4 && <5, feeca
+  build-depends:      base >=4.7 && <5, feeca
 
 executable doc
   main-is: site.hs
   default-language: Haskell2010
   if impl (ghc < 7.10.0)
-    build-depends: base >=4 && <4.8, hakyll <4.8
+    build-depends: base >=4.7 && <4.8, hakyll >= 4.7.5 && <4.8
   else
     build-depends: base >=4.8 && <5, hakyll
   build-depends: pandoc, pandoc-citeproc, blaze-html, process, containers, filepath
