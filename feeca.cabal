@@ -119,7 +119,7 @@ benchmark bench
     build-depends:    base >=4 && <4.7
   else
     build-depends:    base >=4.7 && <5
-  build-depends:      base >=4.7 && <5, feeca,
+  build-depends:      feeca,
                       criterion, timeit ==1.0.0.0, deepseq
   default-language:   Haskell2010
 
@@ -127,7 +127,7 @@ executable prof
   main-is: prof.hs
   ghc-options:        -fprof-auto-calls -O2 -fhpc -threaded -fexcess-precision -optc-O3 -optc-ffast-math -optc-mfpmath=sse -funfolding-use-threshold=16 "-with-rtsopts=-N -pa -s -h -i0.1"
   default-language:   Haskell2010
-  build-depends:      base >=4.7 && <5, feeca
+  build-depends:      base >=4 && <5, feeca
 
 executable doc
   main-is: site.hs
