@@ -51,7 +51,7 @@ install:
   - travis_retry cabal update -v
   - if [[ "$GHCVER" != 7.6.* ]];
     then
-      cabal install cabal-install
+      cabal install cabal-install;
     fi
 #  - cabal install --enable-tests --enable-benchmarks --dependencies-only
 
