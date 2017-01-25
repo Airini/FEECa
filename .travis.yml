@@ -4,13 +4,13 @@ language: ghc
 matrix:
   include:
     - env: CABALVER=1.16 GHCVER=7.6.1
-      compiler: ": #GHC 7.6.1"
+      compiler: "GHC 7.6.1"
       addons: {apt: {packages: [cabal-install-1.16,ghc-7.6.1], sources: [hvr-ghc]}}
     - env: CABALVER=1.16 GHCVER=7.6.2
-      compiler: ": #GHC 7.6.2"
+      compiler: "GHC 7.6.2"
       addons: {apt: {packages: [cabal-install-1.16,ghc-7.6.2], sources: [hvr-ghc]}}
     - env: CABALVER=1.16 GHCVER=7.6.3
-      compiler: ": #GHC 7.6.3"
+      compiler: "GHC 7.6.3"
       addons: {apt: {packages: [cabal-install-1.16,ghc-7.6.3], sources: [hvr-ghc]}}
     - env: CABALVER=1.18 GHCVER=7.8.1
       compiler: "GHC 7.8.1"
@@ -49,13 +49,17 @@ install:
   - cabal --version
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - travis_retry cabal update -v
-  - cabal install cabal-install
-  - cabal install --enable-tests --enable-benchmarks --dependencies-only
+  - if [[ "$GHCVER" != 7.6.* ]];
+    then
+      cabal install cabal-install
+    fi
+#  - cabal install --enable-tests --enable-benchmarks --dependencies-only
 
 script:
-  - cabal configure --enable-tests --enable-benchmarks -v2
-  - cabal build test-feec
-  - cabal test
+   - echo Testing
+#  - cabal configure --enable-tests --enable-benchmarks -v2
+#  - cabal build test-feec
+#  - cabal test
 #  - cabal check
-  - cabal sdist
+#  - cabal sdist
 
