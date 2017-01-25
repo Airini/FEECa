@@ -53,10 +53,10 @@ install:
     then
       cabal install cabal-install;
     fi
-  - cabal install --enable-tests --enable-benchmarks --only-dependencies
+  - cabal install --enable-tests --only-dependencies
 
 script:
-  - cabal configure --enable-tests --enable-benchmarks -v2
+  - cabal configure --enable-tests -v2
 #  - cabal build test-feec
 #  - cabal test
 #  - cabal check
