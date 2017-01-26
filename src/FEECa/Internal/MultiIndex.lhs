@@ -32,7 +32,9 @@ The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
 \begin{code}
 
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE CPP #-}
 
 module FEECa.Internal.MultiIndex(
 
@@ -74,6 +76,11 @@ the number of exponents in the multi-index.
 \begin{code}
 
 type MultiIndex = ZipList Int
+
+#if MIN_VERSION_base(4,7,0)
+#else
+deriving instance Show MultiIndex
+#endif
 
 instance Dimensioned MultiIndex where
   dim mi = length (getZipList mi)
