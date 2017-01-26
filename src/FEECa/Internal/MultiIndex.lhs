@@ -80,6 +80,7 @@ type MultiIndex = ZipList Int
 #if MIN_VERSION_base(4,7,0)
 #else
 deriving instance Show MultiIndex
+deriving instance Eq   MultiIndex
 #endif
 
 instance Dimensioned MultiIndex where
