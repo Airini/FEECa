@@ -57,7 +57,7 @@ install:
 
 script:
   - cabal configure --enable-tests -v2
-  - cabal build test-feec
+  - cabal build
   - cabal test
 #  - cabal check
   - cabal sdist
