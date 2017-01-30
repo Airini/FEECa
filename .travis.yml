@@ -12,6 +12,33 @@ matrix:
     - env: CABALVER=1.16 GHCVER=7.6.3
       compiler: "GHC 7.6.3"
       addons: {apt: {packages: [cabal-install-1.16,ghc-7.6.3], sources: [hvr-ghc]}}
+    - env: CABALVER=1.18 GHCVER=7.8.1
+      compiler: "GHC 7.8.1"
+      addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.1], sources: [hvr-ghc]}}
+    - env: CABALVER=1.18 GHCVER=7.8.2
+      compiler: "GHC 7.8.2"
+      addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.2], sources: [hvr-ghc]}}
+    - env: CABALVER=1.18 GHCVER=7.8.3
+      compiler: "GHC 7.8.3"
+      addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.3], sources: [hvr-ghc]}}
+    - env: CABALVER=1.18 GHCVER=7.8.4
+      compiler: "GHC 7.8.4"
+      addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.4], sources: [hvr-ghc]}}
+    - env: CABALVER=1.22 GHCVER=7.10.1
+      compiler: "GHC 7.10.1"
+      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.1], sources: [hvr-ghc]}}
+    - env: CABALVER=1.22 GHCVER=7.10.2
+      compiler: "GHC 7.10.2"
+      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.2], sources: [hvr-ghc]}}
+    - env: CABALVER=1.22 GHCVER=7.10.3
+      compiler: "GHC 7.10.3"
+      addons: {apt: {packages: [cabal-install-1.22,ghc-7.10.3], sources: [hvr-ghc]}}
+    - env: CABALVER=1.24 GHCVER=8.0.1
+      compiler: "GHC 8.0.1"
+      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.1], sources: [hvr-ghc]}}
+    - env: CABALVER=1.24 GHCVER=8.0.2
+      compiler: "GHC 8.0.2"
+      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
 
 before_install:
   - travis_retry sudo apt-get clean
@@ -24,17 +51,19 @@ install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - cabal clean
   - travis_retry cabal update -v
-#  - if [[ "$GHCVER" != 7.6.* ]];
-#    then
-#      cabal install cabal-install;
-#    fi
-  - travis_retry cabal install Cabal-1.18.0
+  - if [[ "$GHCVER" == 7.6.* ]];
+    #then
+    #  travis_retry cabal install cabal-install;
+    #else
+      travis_retry cabal install Cabal-1.18.0
+    fi
+  - cabal --version
   - travis_retry cabal install --enable-tests --enable-benchmarks --only-dependencies --reorder-goals -v
 
 script:
-  - travis_retry cabal configure --enable-tests --enable-benchmarks -v
+  - cabal configure --enable-tests --enable-benchmarks -v
   - cabal build
   - cabal test
 #  - cabal check
-#  - cabal sdist
+  - cabal sdist
 
