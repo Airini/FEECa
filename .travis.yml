@@ -28,7 +28,7 @@ install:
 #    then
 #      cabal install cabal-install;
 #    fi
-  - travis_retry cabal install Cabal-1.18
+  - travis_retry cabal install Cabal-1.18.0
   - travis_retry cabal install --enable-tests --enable-benchmarks --only-dependencies --reorder-goals -v
 
 script:
