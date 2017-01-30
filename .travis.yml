@@ -51,10 +51,10 @@ install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - cabal clean
   - travis_retry cabal update -v
-  - if [[ "$GHCVER" == 7.6.* ]];
+  - if [[ "$GHCVER" == 7.6.* ]]
     then
-      cabal install Cabal-1.18.0 ;
-    if
+      cabal install Cabal-1.18.0
+    fi
   - cabal --version
   - travis_retry cabal install --enable-tests --enable-benchmarks --only-dependencies --reorder-goals -v
 
