@@ -53,7 +53,7 @@ install:
   - travis_retry cabal update -v
   - if [[ "$GHCVER" == 7.6.* ]];
       travis_retry cabal install Cabal-1.18.0;
-    fi
+    if
   - cabal --version
   - travis_retry cabal install --enable-tests --enable-benchmarks --only-dependencies --reorder-goals -v
 
