@@ -3,15 +3,15 @@ language: ghc
 
 matrix:
   include:
-    - env: CABALVER=1.18 GHCVER=7.6.1
+    - env: CABALVER=1.16 GHCVER=7.6.1
       compiler: "GHC 7.6.1"
-      addons: {apt: {packages: [cabal-install-1.18,ghc-7.6.1], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-1.16,ghc-7.6.1], sources: [hvr-ghc]}}
     - env: CABALVER=1.16 GHCVER=7.6.2
       compiler: "GHC 7.6.2"
       addons: {apt: {packages: [cabal-install-1.16,ghc-7.6.2], sources: [hvr-ghc]}}
-    - env: CABALVER=1.18 GHCVER=7.6.3
+    - env: CABALVER=1.16 GHCVER=7.6.3
       compiler: "GHC 7.6.3"
-      addons: {apt: {packages: [cabal-install-1.18,ghc-7.6.3], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-1.16,ghc-7.6.3], sources: [hvr-ghc]}}
 
 before_install:
   - travis_retry sudo apt-get clean
@@ -22,20 +22,19 @@ before_install:
 install:
   - cabal --version
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
-# - cabal --http-transport=wget 
-  - travis_retry cabal clean
+  - cabal clean
   - travis_retry cabal update -v
 #  - if [[ "$GHCVER" != 7.6.* ]];
 #    then
 #      cabal install cabal-install;
 #    fi
-  - travis_retry cabal install Cabal
+  - travis_retry cabal install Cabal-1.18
   - travis_retry cabal install --enable-tests --enable-benchmarks --only-dependencies --reorder-goals -v
 
 script:
   - travis_retry cabal configure --enable-tests --enable-benchmarks -v
   - cabal build
-#  - cabal test
+  - cabal test
 #  - cabal check
 #  - cabal sdist
 
