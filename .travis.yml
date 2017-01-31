@@ -59,11 +59,9 @@ install:
   - travis_retry cabal install --enable-tests --enable-benchmarks --only-dependencies --reorder-goals -v
 
 script:
-  - cabal configure --enable-tests -v
+  - cabal configure --enable-tests --enable-benchmarks -v
   - cabal build
   - cabal test
-  - cabal configure --enable-benchmarks --enable-profiling
-  - cabal bench
 #  - cabal check
   - cabal sdist
 
