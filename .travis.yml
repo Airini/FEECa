@@ -56,12 +56,14 @@ install:
       cabal install "Cabal-1.18.0";
     fi
   - cabal --version
-  - travis_retry cabal install --enable-tests --enable-benchmarks --only-dependencies --reorder-goals -v
+  - travis_retry cabal install --enable-tests --enable-benchmarks --only-dependencies -v
 
 script:
-  - cabal configure --enable-tests --enable-benchmarks -v
+  - cabal configure --enable-tests -v
   - cabal build
   - cabal test
+  - cabal configure --enable-benchmarks --enable-profiling
+  - cabal bench
 #  - cabal check
   - cabal sdist
 
