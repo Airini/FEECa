@@ -257,7 +257,12 @@ volume t
   where k  = topologicalDimension t
         n  = geometricalDimension t
         vs = spanningVectors t
-        bs = gramSchmidt vs
+        bs = map (fromList . map fromDouble) $ M.toLists tt -- gramSchmidt vs
+        t' = M.matrix n (concatMap toDouble' vs)
+        tt = M.orthSVD (Right k) t' (M.leftSV t')
+        zs = (map (fromList . map fromDouble) . M.toLists . snd) $ M.rightSV t'
+        _ = project vs zs
+        _ = project bs vs
 
 project :: EuclideanSpace v => [v] -> [v] -> [v]
 project bs vs = map fromList [[ proj b v | b <- bs] | v <- vs]

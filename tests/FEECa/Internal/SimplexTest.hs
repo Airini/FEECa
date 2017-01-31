@@ -120,7 +120,7 @@ prop_vol_integral = pVolIntegral
 
 pVolIntegral :: EuclideanSpace v => Simplex v -> Bool
 pVolIntegral t = eqNum (volume t) (integrate 2 t (Constant (fromDouble 1.0)))
-     where n = topologicalDimension t
+     where n = topologicalDimension t  -- XXX: 2, 1, n??
 
 -- TODO: perhaps add check that simPos is satisfied (if that is an invariant)
 simPos :: Simplex (Vector Double) -> Bool

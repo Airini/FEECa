@@ -158,7 +158,7 @@ class (Ring v, VectorSpace v) => InnerProductSpace v where
 -- differentiated in any arbitrary direction in it (that is, wrt to an arbitrary
 -- vector) and evaluated to 'Scalar' values the 'VectorSpace' is defined over
 -- TODO: update so that it requires more? ==> Euclidean Space
-class (VectorSpace v) => Function f v where
+class VectorSpace v => Function f v where
   derive    :: v -> f -> f
   evaluate  :: v -> f -> Scalar v
 

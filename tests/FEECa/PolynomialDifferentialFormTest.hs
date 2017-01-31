@@ -59,7 +59,9 @@ arbitraryForm k n = do cs <- arbitraryConstituents k n
                        return $ Form k n cs
 
 instance (Field a, Q.Arbitrary a) => Q.Arbitrary (DifferentialForm a) where
-    arbitrary = arbitraryForm n n -- k <- ((flip mod) n) `liftM` arbitrary
+    arbitrary = do
+      k <- (`mod` n) `liftM` arbitrary
+      arbitraryForm (k+1) n -- k <- ((flip mod) n) `liftM` arbitrary
 
 arbitraryAltForm :: (Q.Arbitrary a, Field a)
                  => Int
