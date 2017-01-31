@@ -256,12 +256,19 @@ volume t
     | otherwise  = volume (simplex' (zero k) (project bs vs))
   where k  = topologicalDimension t
         n  = geometricalDimension t
-        vs = spanningVectors t
-        bs = gramSchmidt vs
+        vs = spanningVectors t -- length vs == k, but the vectors have n components
+        bs = gramSchmidt vs    -- length bs == k, same for these vectors
 
---
+-- Express the vectors vs in the basis bs.
+--   where  k = length bs
+--          n = "length of the vectors in bs" = "length of the vectors in vs"
+--          k' = length of vs
+--          dimension of the output vectors is k
+--          length of output is k
 project :: EuclideanSpace v => [v] -> [v] -> [v]
-project bs vs = map fromList [[ proj b v | b <- bs] | v <- vs]
+project bs vs = undefined
+  -- map fromList [ [ proj' b v | b <- bs]
+  --              | v <- vs]
 
 volume' :: EuclideanSpace v => Simplex v -> Scalar v
 volume' t = undefined -- fromDouble $  abs (M.det w) / fromInteger (factorial n)
@@ -269,6 +276,12 @@ volume' t = undefined -- fromDouble $  abs (M.det w) / fromInteger (factorial n)
         w = M.matrix n comps
         comps = concatMap toDouble' (spanningVectors t)
 
+-- TODO {-# RULES "volume'/Double" volume' = volumeD' #-}
+volumeD' :: (EuclideanSpace v, Scalar v ~ Double) => Simplex v -> Scalar v
+volumeD' t = abs (M.det w) / fromInteger (factorial n)
+  where n = geometricalDimension t
+        w = M.matrix n comps
+        comps = concatMap toDouble' (spanningVectors t)
 \end{code}
 
 %------------------------------------------------------------------------------%

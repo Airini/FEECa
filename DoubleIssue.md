@@ -15,3 +15,21 @@ the numerics behind integration of polynomials and other computations
 of the like. Even though most practical uses of the library might
 involve ℝn, it would be preferable to keep the classes neat and
 general.
+
+----------------
+
+For two vectors `a` and `b` - to project `a` onto `b` compute the
+scalar `s`
+
+```
+      dot a b
+s =   -------
+      dot b b
+```
+
+and scale `b` with that.
+
+Then no `sqrt` is needed (for projection - it may still be needed
+elsewhere).
+
+TODO: fix name clash between Spaces.EuclideanSpace and Bernstein

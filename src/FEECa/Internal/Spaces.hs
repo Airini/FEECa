@@ -149,10 +149,15 @@ class (Eq v, Dimensioned v, VectorSpace v, Eq (Scalar v), Field (Scalar v))
   proj     :: v -> v -> v
 
   proj = projDefault
--- projDefault :: (EuclideanSpace v, Sqrt a, a ~ Scalar v) => v -> v -> v
-projDefault b v  = undefined -- divide (dot b v) (sqrt (dot b b))
 
-class Floating a => Sqrt a -- TODO: Maybe make it a separate class later
+-- project b onto v
+projDefault :: (EuclideanSpace v, a ~ Scalar v) => v -> v -> v
+projDefault b v  = sclV s v
+  where s = divide (dot b v) (dot v v)
+
+class Floating a => Sqrt a -- TODO: Maybe make Sqrt a separate class
+                           -- later without Floating (or remove Sqrt
+                           -- if not needed)
 
 -- XXX: add basis??
 

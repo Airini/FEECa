@@ -81,11 +81,14 @@ instance Ring a => VectorSpace (Vector a) where
   sclV c (Vector l) = Vector $ map (mul c) l
 
 -- | R^n as a Euclidean space.
-instance (Field a, Eq a, Sqrt a) => EuclideanSpace (Vector a) where
+instance (Field a, Eq a) => EuclideanSpace (Vector a) where
   dot      = dotVector
   toList   = components
   fromList = vector
   proj     = projVector
+
+projVector :: (Field a) => Vector a -> Vector a -> Vector a
+projVector = projDefault
 
 dotVector :: Ring a => Vector a -> Vector a -> a
 dotVector (Vector l1) (Vector l2) = foldl add addId (zipWith mul l1 l2)
