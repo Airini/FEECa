@@ -3,19 +3,22 @@
 module FEECa.PolynomialTest where
 
 
-import Properties
-import FEECa.Polynomial
+import Control.Monad    ( liftM, liftM2 )
+
 import FEECa.Internal.Vector
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
+import FEECa.Polynomial
+
 import FEECa.Utility.Utility
 import FEECa.Utility.Combinatorics
-import FEECa.Utility.Test
 import FEECa.Utility.Print
-import Test.QuickCheck (quickCheckAll)
+
+import Properties
+import FEECa.Utility.Test
 import qualified Test.QuickCheck as Q
-import qualified FEECa.Internal.MultiIndex as MI
-import qualified Numeric.LinearAlgebra.HMatrix as M
+import Test.QuickCheck  ( quickCheckAll )
+
 
 ------------------------------------------------------------------------------
 -- Dimension of the space to be tested. Must be greater than zero.
@@ -31,27 +34,28 @@ n = 2
 -- are chosen randomly.
 ------------------------------------------------------------------------------
 
-instance (Ring r, Q.Arbitrary r) => Q.Arbitrary (Polynomial r)
-    where arbitrary = Q.oneof [arbitraryPolynomial n, arbitraryConstant]
+instance (Ring r, Q.Arbitrary r) => Q.Arbitrary (Polynomial r) where
+  arbitrary = Q.frequency [(4,arbitraryPolynomial n), (1,arbitraryConstant)]
 
 arbitraryPolynomial :: (Ring r, Q.Arbitrary r) => Int -> Q.Gen (Polynomial r)
-arbitraryPolynomial  n = do r <- Q.choose (0,10)
-                            mis <- Q.listOf1 (arbitraryMI n r)
-                            cs <- Q.listOf1 Q.arbitrary
-                            return $ polynomial (zip (take 10 cs) (take 10 mis))
+arbitraryPolynomial n = do
+  r <- Q.choose (0,10)
+  s <- Q.choose (0,15)
+  let mis = Q.vectorOf s (arbitraryMI n r)
+      cs  = Q.vectorOf s Q.arbitrary
+  liftM polynomial (liftM2 zip cs mis)
 
 arbitraryConstant :: (Ring r, Q.Arbitrary r) => Q.Gen (Polynomial r)
-arbitraryConstant = do c <- Q.arbitrary
-                       return $ constant c
+arbitraryConstant = liftM constant Q.arbitrary
+
 
 ------------------------------------------------------------------------------
 -- Generate random vectors of dimension n, so that they can be used to evaluate
 -- the randomly generated polynomials.
 ------------------------------------------------------------------------------
 
-instance Field f => Q.Arbitrary (Vector f) where
-    arbitrary = do l <- Q.vector n
-                   return $ vector (map fromDouble l)
+instance (Field f, Q.Arbitrary f) => Q.Arbitrary (Vector f) where
+  arbitrary = liftM vector (Q.vector n)
 
 
 ------------------------------------------------------------------------------
@@ -62,25 +66,21 @@ instance Field f => Q.Arbitrary (Vector f) where
 propArithmetic :: (EuclideanSpace v, Function f v, VectorSpace f, Ring f,
                     r ~ Scalar v, r ~ Scalar f)
                 => (r -> r -> Bool)
-                -> f
-                -> f
-                -> v
-                -> r
+                -> f -> f -> v -> r
                 -> Bool
-propArithmetic eq f1 f2 v c =
-    (prop_operator2_commutativity eq addV add (evaluate v) f1 f2
-    && prop_operator2_commutativity eq mul mul (evaluate v) f1 f2
-    && prop_operator2_commutativity eq sub sub (evaluate v) f1 f2
-    && prop_operator_commutativity eq (sclV c) (mul c) (evaluate v) f1)
+propArithmetic eq x y v c =
+     homomorphicEv addV add && homomorphicEv mul mul && homomorphicEv sub sub
+    && prop_operator_commutativity eq (sclV c) (mul c) atV x
+  where homomorphicEv o1 o2 = prop_homomorphism eq o1 o2 atV x y
+        atV                 = evaluate v
+
 
 ------------------------------------------------------------------------------
 -- Concrete arithmetic properties for polynomials defined over rationals.
 ------------------------------------------------------------------------------
 
-prop_arithmetic_rf :: Polynomial Rational
-                   -> Polynomial Rational
-                   -> Vector Rational
-                   -> Rational
+prop_arithmetic_rf :: Polynomial Rational -> Polynomial Rational
+                   -> Vector Rational -> Rational
                    -> Bool
 prop_arithmetic_rf = propArithmetic (==)
 
@@ -91,58 +91,38 @@ prop_arithmetic_rf = propArithmetic (==)
 -- Linearity
 propDerivation_linear :: (EuclideanSpace v, Function f v, VectorSpace f,
                           r ~ Scalar v, r ~ Scalar f)
-                       => v
-                       -> v
-                       -> r
-                       -> f
-                       -> f
-                       -> Bool
+                       => v -> v -> r -> f -> f -> Bool
 propDerivation_linear v1 v2 = prop_linearity (==) (evaluate v2 . derive v2)
 
 -- Product rule
 propDerivationProduct :: (EuclideanSpace v, Function f v, Ring f)
-                        => v
-                        -> v
-                        -> f
-                        -> f
-                        -> Bool
-propDerivationProduct v1 v2 p1 p2 =
-    evaluate v1 (add (mul dp1 p2) (mul dp2 p1))
-    == evaluate v1 (derive v2 (mul p1 p2))
-        where dp1 = derive v2 p1
-              dp2 = derive v2 p2
+                        => v -> v -> f -> f -> Bool
+propDerivationProduct v1 v2 f g =
+    ev (add (mul g (d f)) (mul f (d g))) == (ev . d) (mul f g)
+  where ev = evaluate v1
+        d  = derive v2
 
-prop_derivation_product ::
-                           Vector Rational
-                        -> Vector Rational
-                        -> Polynomial Rational
-                        -> Polynomial Rational
+prop_derivation_product :: Vector Rational -> Vector Rational
+                        -> Polynomial Rational -> Polynomial Rational
                         -> Bool
 prop_derivation_product = propDerivationProduct
 
 -- Test for polynomials using exact arithmetic.
-prop_arithmetic_rational :: Polynomial Rational
-                         -> Polynomial Rational
-                         -> Vector Rational
-                         -> Rational
+prop_arithmetic_rational :: Polynomial Rational -> Polynomial Rational
+                         -> Vector Rational -> Rational
                          -> Bool
 prop_arithmetic_rational = propArithmetic (==)
 
-prop_derivation_linear_rational :: Vector Rational
-                                -> Vector Rational
-                                -> Rational
-                                -> Polynomial Rational
-                                -> Polynomial Rational
+prop_derivation_linear_rational :: Vector Rational -> Vector Rational -> Rational
+                                -> Polynomial Rational -> Polynomial Rational
                                 -> Bool
 prop_derivation_linear_rational = propDerivation_linear
 
-prop_derivation_product_rational :: Vector Rational
-                                 -> Vector Rational
-                                 -> Rational
-                                 -> Polynomial Rational
-                                 -> Polynomial Rational
+prop_derivation_product_rational :: Vector Rational -> Vector Rational -> Rational
+                                 -> Polynomial Rational -> Polynomial Rational
                                  -> Bool
 prop_derivation_product_rational = propDerivation_linear
+
 
 --------------------------------------------------------------------------------
 -- Barycentric Coordinates
@@ -150,20 +130,20 @@ prop_derivation_product_rational = propDerivation_linear
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
 instance (EuclideanSpace v, Q.Arbitrary v) => Q.Arbitrary (Simplex v) where
-    arbitrary = do n <- Q.choose (1, 3)
-                   k <- Q.choose (1, n)
-                   arbitrarySubsimplex k n
+  arbitrary = do n <- Q.choose (1, 3)
+                 k <- Q.choose (1, n)
+                 arbitrarySubsimplex k n
 
 -- TODO: Fails for n > 3 apparently due to numerical instability. To investigate
 -- further.
 prop_barycentric :: Simplex (Vector Double) -> Bool
 prop_barycentric t =
     allEq [[evaluate v b | v <- vs] | b <- bs] oneLists
-    where allEq l1 l2 = and $ zipWith (\l3 l4 -> (and (zipWith eqNum l3 l4))) l1 l2
-          bs          = barycentricCoordinates t
-          vs          = vertices t
-          k           = topologicalDimension t
-          oneLists    = map (map fromInt') (sumRLists (k+1) 1)
+  where allEq l1 l2 = and $ zipWith (\l3 l4 -> (and (zipWith eqNum l3 l4))) l1 l2
+        bs          = barycentricCoordinates t
+        vs          = vertices t
+        k           = topologicalDimension t
+        oneLists    = map (map fromInt') (sumRLists (k+1) 1)
 
 
 return []
