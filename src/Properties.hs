@@ -26,14 +26,14 @@ prop_commutativity render f x y = render (f x y) === render (f y x)
 prop_operator_commutativity :: (b -> b -> Bool)
   -> Monop a -> Monop b -> (a -> b)
   -> a -> Bool
-prop_operator_commutativity eq f1 f2 a2b a =
-    a2b (f1 a) `eq` f2 (a2b a)
+prop_operator_commutativity eq o1 o2 h x =
+    h (o1 x) `eq` o2 (h x)
 
-prop_operator2_commutativity :: (b -> b -> Bool)
+prop_homomorphism :: (b -> b -> Bool)
   -> Binop a -> Binop b -> (a -> b)
   -> a -> a -> Bool
-prop_operator2_commutativity eq f1 f2 a2b a1 a2 =
-  a2b (f1 a1 a2) `eq` f2 (a2b a1) (a2b a2)
+prop_homomorphism eq o1 o2 h x y =
+  h (o1 x y) `eq` o2 (h x) (h y)
 
 prop_associativity :: (Eq t, Show t) => (f -> t) -> Binop f
   -> f -> f -> f -> Property

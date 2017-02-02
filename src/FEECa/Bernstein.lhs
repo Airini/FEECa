@@ -138,15 +138,11 @@ polynomial :: (EuclideanSpace v, r ~ Scalar v)
            -> [(r, MI.MultiIndex)]
            -> BernsteinPolynomial v r
 polynomial t l
-    | (n1 == n2) && sameLength = Bernstein t (P.polynomial l)
-    | otherwise = error "polynomial: Dimensions of Simplex and Polynomials do not match."
-    where
-      mis        = map (((-1)+) . dim . snd) l
-      -- TODO: unnecessary to subtract for all plus using 'maximum' is redundant
-      -- given the 'sameLength' check
-      n1         = maximum mis
-      n2         = topologicalDimension t
-      sameLength = all (head mis ==) (tail mis)
+    | n1 == n2 + 1 && termsOk = Bernstein t (P.polynomial l)
+    | otherwise               = error "polynomial: Dimensions of Simplex and Polynomials do not match."
+  where n1      = (dim . snd . head) l
+        n2      = topologicalDimension t
+        termsOk = all (\(_,mi) -> n1 == dim mi) (tail l)
 
 
 -- | Create a Bernstein monomial over a given simplex and multi-index.
@@ -160,18 +156,14 @@ monomial t mi
 
 -- | Create a constant bernstein monomial.
 constant :: (EuclideanSpace v, r ~ Scalar v)
-         => Simplex v
-         -> r
-         -> BernsteinPolynomial v r
-constant t c = Bernstein t (P.constant c)
+         => Simplex v -> r -> BernsteinPolynomial v r
+constant t = Bernstein t . P.constant
 
 -- | Return a given barycentric coordinate in Bernstein representation.
 barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v)
-                      => Simplex v
-                      -> Int
-                      -> BernsteinPolynomial v r
-barycentricCoordinate t i = monomial t (MI.unit (n+1) i)
-    where n = topologicalDimension t
+                      => Simplex v -> Int -> BernsteinPolynomial v r
+barycentricCoordinate t = monomial t . MI.unit (n+1)
+  where n = topologicalDimension t
 
 \end{code}
 
@@ -270,8 +262,8 @@ addBernstein :: (EuclideanSpace v, r ~ Scalar v)
              -> BernsteinPolynomial v r
              -> BernsteinPolynomial v r
 addBernstein (Bernstein t1 p1) (Bernstein t2 p2)
-     | t1 /= t2  = error "addBernstein: Inconsistent simplices."
-     | otherwise = Bernstein t1 (add p1 p2)
+  | t1 /= t2  = error "addBernstein: Inconsistent simplices."
+  | otherwise = Bernstein t1 (add p1 p2)
 addBernstein (Constant c)    (Bernstein t p) = Bernstein t (add p (P.constant c))
 addBernstein (Bernstein t p) (Constant c)    = Bernstein t (add p (P.constant c))
 addBernstein (Constant c1)   (Constant c2)   = Constant (add c1 c2)
@@ -291,8 +283,8 @@ multiplyBernstein :: (EuclideanSpace v, r ~ Scalar v)
                   -> BernsteinPolynomial v r
                   -> BernsteinPolynomial v r
 multiplyBernstein (Bernstein t1 p1) (Bernstein t2 p2)
-     | t1 /= t2  = error "multiplyBernstein: Inconsistent simplices."
-     | otherwise = Bernstein t1 (mul p1 p2)
+  | t1 /= t2  = error "multiplyBernstein: Inconsistent simplices."
+  | otherwise = Bernstein t1 (mul p1 p2)
 multiplyBernstein (Constant c)      (Bernstein t1 p1) = Bernstein t1 (sclV c p1)
 multiplyBernstein (Bernstein t1 p1) (Constant c)      = Bernstein t1 (sclV c p1)
 multiplyBernstein (Constant c1)     (Constant c2)     = Constant (mul c1 c2)
@@ -318,8 +310,8 @@ evaluateBernstein :: ( EuclideanSpace v, r ~ Scalar v)
                      -> BernsteinPolynomial v r
                      -> r
 evaluateBernstein v (Bernstein t p) = {-# SCC "evaluateBernstein" #-} evaluate vb p
-    where vb = {-#SCC "barycentric" #-} vector $ map (evaluate v) (barycentricCoordinates t)
-evaluateBernstein _ (Constant c)    = {-# SCC "evaluateConstant" #-}c
+  where vb = {-#SCC "barycentric" #-} vector $ map (evaluate v) (barycentricCoordinates t)
+evaluateBernstein _ (Constant c)    = {-# SCC "evaluateConstant" #-} c
 
 
 tabulateBernstein :: (EuclideanSpace v, r ~ Scalar v)
@@ -453,9 +445,7 @@ integrateBernstein (Constant _) = error "intergrateBernstein: No associated simp
 -- | Redefined Bernstein polynomial over a different simplex or define simplex
 -- | for constant bernstein polynomial.
 redefine :: Ring r
-         => Simplex v
-         -> BernsteinPolynomial v r
-         -> BernsteinPolynomial v r
+         => Simplex v -> BernsteinPolynomial v r -> BernsteinPolynomial v r
 redefine t1 (Bernstein _ p) = Bernstein t1 p
 redefine t  (Constant c)    = Bernstein t (P.constant c)
 
