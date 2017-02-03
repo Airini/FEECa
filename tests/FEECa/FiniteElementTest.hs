@@ -5,7 +5,7 @@
 module FEECa.FiniteElementTest where
 
 
-import Control.Monad  ( liftM )
+import Control.Monad    ( liftM )
 
 import FEECa.Internal.Form hiding ( inner )
 import FEECa.Internal.Spaces
@@ -26,7 +26,7 @@ import FEECa.Utility.Test
 import FEECa.Internal.SimplexTest
 
 import qualified Test.QuickCheck                 as Q
-import Test.QuickCheck (quickCheckAll, (==>))
+import Test.QuickCheck  ( quickCheckAll, (==>) )
 
 import qualified Numeric.LinearAlgebra.HMatrix    as M
 
