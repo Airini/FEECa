@@ -20,12 +20,12 @@ module FEECa.Utility.Combinatorics (
 
   -- * Increasing Lists
   -- ** Generation
-  , increasingLists,  increasingLists1
+  , increasingLists, increasingLists1
   -- ** Indexing
   , unrank
 
   -- * Lists of degree r
-  , sublists, kSublists ,  sumRLists, sumRLists'
+  , sublists, kSublists, sumRLists, sumRLists'
 
   ) where
 

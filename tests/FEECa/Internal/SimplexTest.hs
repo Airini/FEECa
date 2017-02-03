@@ -5,11 +5,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module FEECa.Internal.SimplexTest(
-                                 arbitrarySimplex,
-                                 arbitrarySubsimplex,
-                                 testSimplex
-                                ) where
+module FEECa.Internal.SimplexTest (
+    arbitrarySimplex, arbitrarySubsimplex, testSimplex
+) where
 
 
 import Control.Monad
@@ -20,16 +18,18 @@ import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
 import FEECa.Internal.VectorTest
+
 import FEECa.Utility.Combinatorics
 import FEECa.Utility.Utility
 import FEECa.Utility.Test
-import System.Random
-import Test.QuickCheck(Arbitrary, arbitrary, quickCheck, (==>), Property, quickCheckAll)
-import Test.QuickCheck.Gen(Gen, vectorOf)
-import qualified Test.QuickCheck as Q
-import qualified Test.QuickCheck.Gen as Q
 
-data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int deriving (Show)
+import Test.QuickCheck  ( Arbitrary, arbitrary, (==>), Property,
+                          Gen, vectorOf, quickCheckAll)
+import qualified Test.QuickCheck as Q
+
+
+data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int
+  deriving (Show)
 
 --------------------------------------------------------------------------------
 -- Random Simplices
@@ -37,8 +37,8 @@ data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int deriving (Show)
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
 instance (EuclideanSpace v, Arbitrary v) => Arbitrary (Simplex v) where
-    arbitrary = do n <- Q.choose (1, 6)
-                   arbitrarySimplex n
+  arbitrary = Q.choose (1,6) >>= arbitrarySimplex
+
 
 --------------------------------------------------------------------------------
 -- Subsimplices
@@ -48,11 +48,12 @@ instance (EuclideanSpace v, Arbitrary v) => Arbitrary (Simplex v) where
 -- | simplex of arbitrary dimension and integers k and i such that i is a valid
 -- | index of a subsimplex of dimension k.
 instance (EuclideanSpace v, Arbitrary v) => Arbitrary (SubsimplexTest v) where
-    arbitrary = do t <- arbitrary
-                   let n = topologicalDimension t
-                   k <- Q.choose (0,n)
-                   i <- Q.choose (0,max ((n+1) `choose` (k+1)-1) 0)
-                   return (SubsimplexTest t k i)
+  arbitrary = do
+    t <- arbitrary
+    let n = topologicalDimension t
+    k <- Q.choose (0, n)
+    i <- Q.choose (0, max ((n+1) `choose` (k+1)-1) 0)
+    return (SubsimplexTest t k i)
 
 
 -- | A subsimplex should contain only vertices contained in the supersimplex,
@@ -62,10 +63,10 @@ prop_subsimplex = pSubsimplex
 
 pSubsimplex :: Eq v => SubsimplexTest v -> Bool
 pSubsimplex (SubsimplexTest s@(Simplex _ l) k i) =
-      (length subl == k+1) && all (`elem` l) subl
-    where n         = topologicalDimension s
-          subs      = subsimplex s k i
-          subl      = vertices subs
+    length subl == k+1 && all (`elem` l) subl
+  where n     = topologicalDimension s
+        subs  = subsimplex s k i
+        subl  = vertices subs
 
 -- | subsimplices should return (n+1) choose (k+1) subsimplices and the i:th
 -- | subsimplex should be the same as subsimplex k i
@@ -74,12 +75,11 @@ prop_subsimplices = pSubsimplices
 
 pSubsimplices :: Eq v => SubsimplexTest v -> Bool
 pSubsimplices (SubsimplexTest s@(Simplex _ l) k _) =
-    (length subs == m) && all ithSubsimplexVertices [0..m-1]
-    where n    = topologicalDimension s
-          m    = (n+1) `choose` (k+1)
-          subs = subsimplices s k
-          ithSubsimplexVertices i =
-              vertices (subs!!i) ==  vertices (subsimplex s k i)
+    length subs == m && all ithSubsxVerts [0..m-1]
+  where n    = topologicalDimension s
+        m    = (n+1) `choose` (k+1)
+        subs = subsimplices s k
+        ithSubsxVerts i = vertices (subs!!i) == vertices (subsimplex s k i)
 
 -- | The extension of a subsimplex should have full dimensionality and non-zero
 -- | volume.
@@ -88,8 +88,8 @@ prop_extend_subsimplex = pExtendSubsimplex
 
 pExtendSubsimplex :: ( Show v, EuclideanSpace v) => SubsimplexTest v -> Bool
 pExtendSubsimplex (SubsimplexTest s@(Simplex _ l) k i) =
-    (volume t' /= addId) && (topologicalDimension t' == geometricalDimension t')
-        where t' = extendSimplex (subsimplex s k i)
+    volume t /= addId && topologicalDimension t == geometricalDimension t
+  where t = extendSimplex (subsimplex s k i)
 
 
 -- | The simplex obtained from subsimplex should be the same
@@ -98,7 +98,7 @@ prop_face = pFace
 
 pFace :: EuclideanSpace v => SubsimplexTest v -> Bool
 pFace (SubsimplexTest t k i) = subs == face t (sigma subs)
-    where subs = subsimplex t k i
+  where subs = subsimplex t k i
 
 {-prop_face_vector_double :: SubsimplexTest (Vector Double) -> Bool
 -- prop_face_vector_double = prop_face
@@ -112,15 +112,15 @@ pFace (SubsimplexTest t k i) = subs == face t (sigma subs)
 data Constant a = Constant a
 
 instance (EuclideanSpace v, r ~ Scalar v) => Function (Constant r) v where
-    derive v h = Constant (fromDouble 0.0)
-    evaluate v (Constant c) = c
+  derive v h = Constant (fromDouble 0.0)
+  evaluate v (Constant c) = c
 
 prop_vol_integral :: Simplex (Vector Double) -> Bool
 prop_vol_integral = pVolIntegral
 
 pVolIntegral :: EuclideanSpace v => Simplex v -> Bool
 pVolIntegral t = eqNum (volume t) (integrate 2 t (Constant (fromDouble 1.0)))
-     where n = topologicalDimension t
+  where n = topologicalDimension t  -- XXX: 2, 1, n??
 
 -- TODO: perhaps add check that simPos is satisfied (if that is an invariant)
 simPos :: Simplex (Vector Double) -> Bool
@@ -138,13 +138,12 @@ newtype Cubic v r = Cubic v deriving (Show, Eq)
 -- | Randomly pick a dimension n and a point from the n-dimensional unit
 -- | cube.
 instance (EuclideanSpace v, r ~ Scalar v) => Arbitrary (Cubic v r) where
-    arbitrary = do
-            n  <- Q.choose (1,10)
-            cs <- Q.vectorOf n (fmap abs arbitrary)
-            let transf x = sub x ((fromInt . restrict) x)
-            return (Cubic (fromDouble' (map transf cs)))
-        where restrict :: Double -> Integer
-              restrict = truncate
+  arbitrary = do
+      let intBelow   = truncate :: Double -> Integer
+          restrict x = sub x ((fromInt . intBelow) x)
+      n  <- Q.choose (1,10)
+      liftM (Cubic . fromDouble') $
+        Q.vectorOf n $ liftM (restrict . abs) arbitrary
 
 -- | Check that the transformation of a point in the n-dimensional unit cube is
 -- | a valid point in barycentric coordinates, i.e. that all components are

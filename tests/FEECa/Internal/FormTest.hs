@@ -1,20 +1,21 @@
 module FEECa.Internal.FormTest where
 
-import Test.QuickCheck
+import Control.Monad  ( liftM, liftM2 )
+import Data.List      ( nub, deleteBy )
 
 import qualified FEECa.Internal.Vector as V
-import FEECa.Internal.VectorTest
-import FEECa.Internal.Vector
 import FEECa.Internal.Form
-import FEECa.Bernstein
 import FEECa.Internal.Spaces
-import FEECa.Utility.Discrete
-import FEECa.Utility.Utility (pairM, sumV)
-import Properties
+import FEECa.Bernstein
 
-import Control.Monad (liftM, liftM2)
-import Data.List (nub, deleteBy)
-import Debug.Trace
+import FEECa.Utility.Discrete
+import FEECa.Utility.Utility ( pairM, sumV )
+
+import FEECa.Internal.VectorTest
+
+import Properties
+import Test.QuickCheck
+
 
 -- TODO: inner + interior product properties
 
@@ -23,7 +24,8 @@ import Debug.Trace
 
 -- | Tests batch of properties
 main maxDim = do
-  putStrLn ("Testing alternating forms of vector space dimension up to " ++ show maxDim)
+  putStrLn $ 
+    "Testing alternating forms of vector space dimension up to " ++ show maxDim
   mapM_ quickCheck (checkList maxDim)
   quickCheck (label "Anticommutativity" $ prop_antiComm maxDim)
 
@@ -79,32 +81,29 @@ prop_antiComm max n = p (2 + abs n `mod` max)   -- manually limited vectorspace 
 -- * Generating functions and examples
 
 -- | "Integer" coefficients generator
-intNumG :: Num f => Gen f
-intNumG = liftM (fromInteger . getNonZero) (arbitrary :: Gen (NonZero Integer))
+intNumG :: Field f => Gen f
+intNumG = liftM (fromInt . getNonZero) (arbitrary :: Gen (NonZero Integer))
 
-nIntNumG :: Num f => Int -> Gen f
+nIntNumG :: Field f => Int -> Gen f
 nIntNumG = const intNumG
 
-nkIntNumG :: Num f => Int -> Int -> Gen f
+nkIntNumG :: Field f => Int -> Int -> Gen f
 nkIntNumG = const nIntNumG
 
-prop_genf n k s = forAll (kform n' k' (nIntNumG :: Int -> Gen Double) s) $ \w ->
-    prop_invar w
+prop_genf n k s = forAll (kform n' k' (nIntNumG :: Int -> Gen Double) s) $
+                    \w -> prop_invar w
   where n' = (1+) $ n `mod` 5
         k' = 1 + (k `mod` n')
 
-prop_invar (Form _ _ ts) = nub iss == iss &&
-                         all ((/= addId) . fst) ts
+prop_invar (Form _ _ ts) = nub iss == iss && all ((/= addId) . fst) ts
   where iss = map snd ts
 
 prop_anti :: Int -> Property
 prop_anti n = p (2 + abs n `mod` 9)
-  where
-    c   = nIntNumG :: Int -> Gen Double
-    p n = forAll (elements (arityPairs n)) $ \(k,j) ->
-          forAll (pairOf (sized $ kform n k c) (sized $ kform n j c)) $ \(w1, w2) ->
-            prop_invar (w1 /\ w2) &&
-            prop_invar (w2 /\ w1)
+  where c   = nIntNumG :: Int -> Gen Double
+        p n = forAll (elements (arityPairs n)) $ \(k,j) ->
+              forAll (pairOf (sized $ kform n k c) (sized $ kform n j c)) $
+                \(w1, w2) -> prop_invar (w1 /\ w2) && prop_invar (w2 /\ w1)
 
 
 -- | Form generator
@@ -126,12 +125,12 @@ kform n k coeffg terms = do
 -- dependent on order of function application when it comes to floating points
 -- OR: small values (overflows and sizing in testing... otherwise size number of terms)
 --    Also somewhat dependent on possibility of simplifying forms
-nVecGen :: Num f => Int -> Gen (V.Vector f)
+nVecGen :: Field f => Int -> Gen (V.Vector f)
 nVecGen n = liftM V.vector $ -- map (fromIntegral . round)) $
               vectorOf n intNumG--(liftM fromInteger (choose (-11,11::Integer))) -- liftM fromIntegral (arbitrary :: Gen Int)) -- :: Gen Double)
 
 
-knTupGen :: Num f => Int -> Int -> Gen [V.Vector f]
+knTupGen :: Field f => Int -> Int -> Gen [V.Vector f]
 knTupGen k n = vectorOf k (nVecGen n)
 
 
@@ -140,7 +139,7 @@ dd :: Double
 omm = Form 1 2 [(1.0,[1])]
 umm = Form 1 2 [(1.0,[1])]
 uo = omm /\ umm
-dd = refine dxV uo [Vector [-3,7], Vector [5,-2]]
+dd = refine dxV uo [V.Vector [-3,7], V.Vector [5,-2]]
 
 
 -- | Our basic projection for 'Vector f': usual 1-form basis == external
@@ -162,6 +161,7 @@ threshold = 1e-10
 (=~) :: Double -> Double -> Bool
 x =~ y = abs (x-y) < threshold
 
+
 -- # Wikipedia
 machEsp :: RealFrac a => a
 machEsp = until p (/2) 1
@@ -174,5 +174,4 @@ exeEsp = do
      putStrLn ("  Double: " ++ show (machEsp :: Double))
 -- # end Wikipedia
 ---
-
 
