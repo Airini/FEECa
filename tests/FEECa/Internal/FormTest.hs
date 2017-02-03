@@ -24,7 +24,7 @@ import Test.QuickCheck
 
 -- | Tests batch of properties
 main maxDim = do
-  putStrLn $ 
+  putStrLn $
     "Testing alternating forms of vector space dimension up to " ++ show maxDim
   mapM_ quickCheck (checkList maxDim)
   quickCheck (label "Anticommutativity" $ prop_antiComm maxDim)

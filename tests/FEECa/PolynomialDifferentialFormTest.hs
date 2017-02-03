@@ -24,10 +24,10 @@ import FEECa.Utility.Print
 import FEECa.Utility.Utility
 
 import FEECa.BernsteinTest
-import qualified FEECa.PolynomialTest as PT (n)
+import qualified FEECa.PolynomialTest as PT ( n )
 
 import qualified Test.QuickCheck      as Q
-import Test.QuickCheck (arbitrary, (==>), Property, quickCheckAll)
+import Test.QuickCheck  ( arbitrary, (==>), Property, quickCheckAll )
 
 
 --------------------------------------------------------------------------------

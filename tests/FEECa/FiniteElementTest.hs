@@ -5,7 +5,7 @@
 module FEECa.FiniteElementTest where
 
 
-import Control.Monad  ( liftM )
+import Control.Monad    ( liftM )
 
 import FEECa.Internal.Form hiding ( inner )
 import FEECa.Internal.Spaces
@@ -26,7 +26,7 @@ import FEECa.Utility.Test
 import FEECa.Internal.SimplexTest
 
 import qualified Test.QuickCheck                 as Q
-import Test.QuickCheck (quickCheckAll, (==>))
+import Test.QuickCheck  ( quickCheckAll, (==>) )
 
 import qualified Numeric.LinearAlgebra.HMatrix    as M
 
@@ -90,7 +90,7 @@ instance Q.Arbitrary PsiTest where
     t <- arbitrarySimplex n
     f <- Q.elements $ S.subsimplices t k
     r <- Q.choose (0,10)
-    mi <- MI.extend n (S.sigma f) <$> arbitraryMI (k+1) r
+    mi <- liftM (MI.extend n (S.sigma f)) (arbitraryMI (k+1) r)
     liftM (PsiTest t f mi) (arbitraryVector n)
 
 prop_psi :: PsiTest -> Q.Property

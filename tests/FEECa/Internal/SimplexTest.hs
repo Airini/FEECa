@@ -24,7 +24,7 @@ import FEECa.Utility.Utility
 import FEECa.Utility.Test
 
 import Test.QuickCheck  ( Arbitrary, arbitrary, (==>), Property,
-                          Gen, vectorOf, quickCheckAll)
+                          Gen, vectorOf, quickCheckAll )
 import qualified Test.QuickCheck as Q
 
 
