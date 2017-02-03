@@ -90,7 +90,7 @@ instance Q.Arbitrary PsiTest where
     t <- arbitrarySimplex n
     f <- Q.elements $ S.subsimplices t k
     r <- Q.choose (0,10)
-    mi <- MI.extend n (S.sigma f) <$> arbitraryMI (k+1) r
+    mi <- liftM (MI.extend n (S.sigma f)) (arbitraryMI (k+1) r)
     liftM (PsiTest t f mi) (arbitraryVector n)
 
 prop_psi :: PsiTest -> Q.Property
