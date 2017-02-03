@@ -1,4 +1,4 @@
-# FEECa: Finite Element Exterior Calculus in Haskell
+# FEECa: Finite Element Exterior Calculus in Haskell [![Build Status](https://travis-ci.org/Airini/FEECa.svg?branch=master)](https://travis-ci.org/Airini/FEECa)
 
 [FEECa (\['fi:ka\])](https://en.wikipedia.org/wiki/Fika_(Sweden)) is a library
 implementing the mathematical framework that [the theory of finite element
