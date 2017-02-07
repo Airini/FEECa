@@ -26,6 +26,70 @@ J. Computer Methods in Applied Mechanics and Engineering. 2009.
 [docu]: http://Airini.github.io/FEECa "Online documentation! (in the making)"
 The [FEECa online documentation][docu] is under construction.
 
+
+## Installation
+
+To build and use FEECa, the Haskell compiler [GHC][ghc] and [Cabal][cabal]
+should be installed in your system. You may also use [Stack][stack] but it is
+not necessary. The package and dependencies are tested for GHC 7.6 upwards and
+will not build with any older version of the compiler (which is not advisable
+to be using ;) ). Cabal 1.16 and upwards will work, though the cabal libraries
+some of FEECa's need to see actually need to be version 1.18 or above.
+
+If you are new to Haskell or the building environment described, we recommend
+you install the [Haskell Platform][hplatform] which provides GHC and Cabal.
+
+If you happen to be working with GHC 7.6 and Cabal 1.16, and do not want to
+update these, you might need to:
+
+```
+cabal install Cabal-1.18.0
+```
+
+LAPACK and BLAS should also be installed. If not so, and you are on a linux
+machine, use `apt-get` (the snippet below will install developer versions of
+both):
+
+```
+sudo apt-get -qq update
+sudo apt-get install -y libblas-dev liblapack-dev
+```
+
+For other systems, we recommend you search for the best way of getting these
+libraries. On OS X, you may install them via Homebrew or Macports.
+
+When these dependencies are ready, FEECa may be built and installed as a Cabal
+package using `cabal` (or stack):
+
+```
+cabal install --only-dependencies
+cabal configure
+cabal install
+```
+
+The first instruction will install all dependencies (alone); the parameter
+`--reorder-goals` might become necessary for some versions of Cabal. If you do
+not install them first, `cabal` will display the missing dependencies and
+instructions to install them.
+
+
+If you wish to run the test-suite:
+```
+cabal configure --enable-tests
+cabal build
+cabal test
+```
+
+
+[ghc]:  https://www.haskell.org/ghc/
+
+[cabal]: https://www.haskell.org/cabal/
+
+[stack]: https://docs.haskellstack.org/en/stable/README/
+
+[hplatform]: https://www.haskell.org/platform/
+
+
 ## The project
 
 The project (Functional FEEC, initially) has been funded by the Information &
