@@ -113,6 +113,7 @@ zeroV = sclV addId
 -- Example instance of lists as a 'VectorSpace' class type.
 {- removed for now: shall we only have _data_ types instantiated as VectorSpace?
 (cfr: tt) ==> likely to bring this instance back, just testing-}
+--- XXX: maybe it's better ot have Module for Ring, VectorSpace for Field
 instance (Ring a, Eq [a]) => VectorSpace [a] where
   type Scalar [a] = a
 
