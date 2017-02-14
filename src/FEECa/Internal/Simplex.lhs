@@ -66,6 +66,7 @@ import FEECa.Utility.Print
 import FEECa.Utility.Quadrature
 import qualified  FEECa.Utility.Utility         as U
 
+import FEECa.Internal.Vector
 
 \end{code}
 

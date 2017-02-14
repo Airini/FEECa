@@ -29,6 +29,8 @@ The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
  \text{supp}\left \{ \vec{\alpha} \right \}  &= \{ i \in [0,n-1] ~|~ \alpha_i > 0 \}
 \end{align}
 
+(Implemented below as |range|.)
+
 \begin{code}
 
 {-# LANGUAGE TypeSynonymInstances #-}
