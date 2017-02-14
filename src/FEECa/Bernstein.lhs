@@ -10,7 +10,9 @@ simplex $\smp{T}=[\vec{v_o},\ldots,\vec{v_k}]$ is a product of the form
 
 with $\alpha : {\mathbb{N}_0}^k \to \mathbb{N}$,
 $|\alpha| = \Sigma\, \alpha = r$ and the $\lambda_i$ the barycentric
-coordinates with respect to $\smp{T}$.  The space $\ps{r}{\smp{f}}$ of
+coordinates with respect to $\smp{T}$.
+
+The space $\ps{r}{\smp{f}}$ of
 polynomials of degree at most $r$ in $n$ dimensions defined over a
 $k$-dimensional subsimplex $\smp{f}$ of an $n$-dimensional simplex $\smp{T}$ is
 isomorphic to the space of $\mathcal{H}_{r}(\R{k+1})$ of homogeneous
