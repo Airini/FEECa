@@ -3,15 +3,15 @@ language: ghc
 
 matrix:
   include:
-    - env: CABALVER=1.16 GHCVER=7.6.1
+    - env: CABALVER=1.18 GHCVER=7.6.1
       compiler: "GHC 7.6.1"
-      addons: {apt: {packages: [cabal-install-1.16,ghc-7.6.1], sources: [hvr-ghc]}}
-    - env: CABALVER=1.16 GHCVER=7.6.2
+      addons: {apt: {packages: [cabal-install-1.18,ghc-7.6.1], sources: [hvr-ghc]}}
+    - env: CABALVER=1.18 GHCVER=7.6.2
       compiler: "GHC 7.6.2"
-      addons: {apt: {packages: [cabal-install-1.16,ghc-7.6.2], sources: [hvr-ghc]}}
-    - env: CABALVER=1.16 GHCVER=7.6.3
+      addons: {apt: {packages: [cabal-install-1.18,ghc-7.6.2], sources: [hvr-ghc]}}
+    - env: CABALVER=1.18 GHCVER=7.6.3
       compiler: "GHC 7.6.3"
-      addons: {apt: {packages: [cabal-install-1.16,ghc-7.6.3], sources: [hvr-ghc]}}
+      addons: {apt: {packages: [cabal-install-1.18,ghc-7.6.3], sources: [hvr-ghc]}}
     - env: CABALVER=1.18 GHCVER=7.8.1
       compiler: "GHC 7.8.1"
       addons: {apt: {packages: [cabal-install-1.18,ghc-7.8.1], sources: [hvr-ghc]}}
@@ -51,11 +51,11 @@ install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - cabal clean
   - travis_retry cabal update -v
-  - if [[ "$GHCVER" = 7.6.* ]];
-    then
-      cabal install "Cabal-1.18.0";
-    fi
-  - cabal --version
+#  - if [[ "$GHCVER" = 7.6.* ]];
+#    then
+#      cabal install "Cabal-1.18.0";
+#    fi
+#  - cabal --version
   - travis_retry cabal install --enable-tests --enable-benchmarks --only-dependencies --reorder-goals -v
 
 script:
