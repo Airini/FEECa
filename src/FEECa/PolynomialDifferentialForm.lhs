@@ -39,8 +39,8 @@ findSimplex :: DifferentialForm a -> Maybe (Simplex (Vector a))
 findSimplex (F.Form _ _ cs) = find (const True) $ mapMaybe (findSimplex' . fst) cs
 
 findSimplex' :: BernsteinPolynomial a -> Maybe (Simplex (Vector a))
-findSimplex' (B.Bernstein t _) = Just t
-findSimplex' _ = Nothing
+findSimplex' (B.Bernstein t _)  = Just t
+findSimplex' _                  = Nothing
 
 tabulate :: (S.Field a, S.VectorSpace a, S.Scalar a ~ a)
          => [DifferentialForm a]
