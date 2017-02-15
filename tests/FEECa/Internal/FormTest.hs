@@ -15,7 +15,7 @@ import FEECa.Internal.VectorTest
 
 import Properties
 import Test.QuickCheck
-
+import Test.QuickCheck.Test ( isSuccess )
 
 -- TODO: inner + interior product properties
 
@@ -23,12 +23,12 @@ import Test.QuickCheck
 -- * Instantiated testable properties 
 
 -- | Tests batch of properties
-main maxDim = do
+testForm maxDim = do
   putStrLn $
     "Testing alternating forms of vector space dimension up to " ++ show maxDim
-  mapM_ quickCheck (checkList maxDim)
-  quickCheck (label "Anticommutativity" $ prop_antiComm maxDim)
-
+  ps <- mapM quickCheckResult (checkList maxDim)
+  ap <- quickCheckResult (label "Anticommutativity" $ prop_antiComm maxDim)
+  return $ all isSuccess (ap : ps)
 
 -- | Tests for algebraic operations involving no evaluation/refining of
 --   forms and for forms in the same vector space

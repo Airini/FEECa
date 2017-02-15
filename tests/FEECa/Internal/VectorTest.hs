@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeFamilies #-}
 
 module FEECa.Internal.VectorTest (
-    main, arbitraryVector
+    testVector, arbitraryVector
 ) where
 
 import FEECa.Internal.Spaces
@@ -12,13 +12,15 @@ import FEECa.Utility.Utility
 import FEECa.Utility.Test
 
 import Properties       ( prop_commutativity )
-import Test.QuickCheck  ( Arbitrary(..), (==>), Gen, Property, quickCheck )
+import Test.QuickCheck  ( Arbitrary(..), (==>), Gen, Property, quickCheckResult )
+import Test.QuickCheck.Test           ( isSuccess )
 import qualified Test.QuickCheck as Q ( vector )
 
-main = do
-  mapM_ quickCheck [ prop_dim, prop_toList ]
-  quickCheck
-    (prop_dot :: Double -> Vector Double -> Vector Double -> Vector Double -> Bool)
+testVector = do
+  ps <- mapM quickCheckResult [ prop_dim, prop_toList ]
+  dp <- quickCheckResult
+        (prop_dot :: Double -> Vector Double -> Vector Double -> Vector Double -> Bool)
+  return $ all isSuccess (dp : ps)
 
 
 --------------------------------------------------------------------------------
