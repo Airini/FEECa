@@ -11,7 +11,7 @@ module FEECa.Mask where
 
 import FEECa.DifferentialForm
 import FEECa.Internal.Form
-import FEECa.Internal.Spaces hiding (inner)
+import FEECa.Internal.Spaces hiding ( inner )
 import FEECa.Internal.Vector
 import FEECa.Internal.Simplex
 import FEECa.Polynomial

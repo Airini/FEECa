@@ -66,17 +66,18 @@ module FEECa.Polynomial (
 import            Data.List
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
-import            FEECa.Utility.Print (Pretty (..), printPolynomial)
+import            FEECa.Utility.Print   ( Pretty (..), printPolynomial )
+import            FEECa.Utility.Utility ( zipWithWhen )
+
 import qualified  FEECa.Internal.MultiIndex as MI (
                       MultiIndex, zero, unit, decrease,
-                      toList, add, degree, valid)
+                      toList, add, degree, valid )
 import            FEECa.Internal.Simplex
-
 import            FEECa.Internal.Spaces           (
                       Ring (..), Field (..), Dimensioned (..),
                       VectorSpace (..), EuclideanSpace (..),
-                      toDouble', fromDouble')
-import qualified  FEECa.Internal.Spaces     as S  (Function (..))
+                      toDouble', fromDouble' )
+import qualified  FEECa.Internal.Spaces     as S  ( Function (..) )
 
 
 \end{code}
@@ -333,9 +334,11 @@ In addition to that a constructor for homogeneous, linear polynomials
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list
 -- | equals the coefficient of the ith variable of the returned polynomial.
-linearPolynomial :: [a] -> Polynomial a
-linearPolynomial l = Polynomial 1 $ zipWith Term l [MI.unit n i | i <- [0..n - 1]]
+linearPolynomial :: Ring a => [a] -> Polynomial a
+linearPolynomial l = Polynomial 1 $ zipWithWhen Term (flip (const (/= addId)))
+                                                l [MI.unit n i | i <- [0..n - 1]]
   where n  = length l
+-- TODO: check so as to have a smarter constructor
 
 \end{code}
 
@@ -359,9 +362,9 @@ Since polynomials are represented as a sum of terms addition of polynomials can
 -- | Add two polynomials.
 addPolynomial :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
 addPolynomial (Polynomial r1 ts1) (Polynomial r2 ts2)
-    | ts /= [] = Polynomial (max r1 r2) ts
+    | ts /= []  = Polynomial (max r1 r2) ts
     | otherwise = Polynomial 0 [Constant addId]
-  where ts = removeZeros (ts1 ++ ts2)
+  where ts = aggregate (ts1 ++ ts2)
 
 removeZeros :: Ring a => [Term a] -> [Term a]
 removeZeros ts = [ t | t <- ts, coefficient t /= addId ]
@@ -400,7 +403,7 @@ multiplyTerm _ (Constant c1) (Term c2 mi)  = Term (mul c1 c2) mi
 multiplyTerm _ (Constant c1) (Constant c2) = Constant (mul c1 c2)
 
 -- | Multiplication of two monomials.
-multiplyMonomial :: (Ring a) => MI.MultiIndex -> MI.MultiIndex -> Term a
+multiplyMonomial :: Ring a => MI.MultiIndex -> MI.MultiIndex -> Term a
 multiplyMonomial mi1 mi2
   | dim mi1 == dim mi2  = Term mulId (MI.add mi1 mi2)
   | otherwise = error "multiplyMonomial: Polynomial dimensions don't agree."
@@ -411,7 +414,7 @@ multiplyPolynomial :: Ring a
                    => (MI.MultiIndex -> MI.MultiIndex -> Term a)
                    -> Polynomial a -> Polynomial a -> Polynomial a
 multiplyPolynomial f (Polynomial r1 ts1) (Polynomial r2 ts2) =
-  Polynomial (r1 + r2) [multiplyTerm f t1 t2 | t1 <- ts1, t2 <- ts2]
+  Polynomial (r1 + r2) $ aggregate [multiplyTerm f t1 t2 | t1 <- ts1, t2 <- ts2]
 \end{code}
 
 %------------------------------------------------------------------------------%

@@ -2,7 +2,7 @@ module FEECa.Utility.Print (
     Pretty (..)
   , printDouble, printComponent, printVector, printVectorRow
   , printBernstein, printPolynomial, printPolynomial0, printForm
-  , lambda, dlambda, (<>), (P.$$), (P.$+$), text, rn, int
+  , lambda, dlambda, (<>), (<+>), (P.$$), (P.$+$), text, rn, int
   ) where
 
 import            Text.PrettyPrint
@@ -24,13 +24,17 @@ phi     = "\x03D5"
 
 -- | Pretty class prtotype.
 class Pretty p where
-    pPrint :: p -> Doc
+  pPrint :: p -> Doc
 
 -- | Pretty printing for lists of Pretty instances.
-instance (Pretty a) => Pretty [a] where
-    pPrint [] = text "Empty List"
-    pPrint l = text "[ "  P.$$  foldl1 addline (map pPrint l)  P.<+>  text "]"
-        where addline x y = (x <> comma) P.$+$ y
+instance Pretty a => Pretty [a] where
+  pPrint [] = text "Empty List"
+  pPrint l = text "[ "  P.$$  foldl1 addline (map pPrint l)  P.<+>  text "]"
+    where addline x y = (x <> comma) P.$+$ y
+
+-- | Instance for 'Double'
+instance Pretty Double where
+  pPrint = double
 
 -- | Render the symbol for Euclidean space of dimension n.
 rn :: Int -> Doc
@@ -46,33 +50,34 @@ printDouble w p f = text $ printf "%*.*f" w p f
 
 printComponent :: Int -> Int -> Int -> Int -> Double -> Doc
 printComponent w p n i f
-    | i == 0 = brNW <> printDouble w p f <> brNE
-    | i == n-1=  brSW <> printDouble w p f <> brSE
-    | otherwise=  brW <> printDouble w p f <> brE
+  | i == 0 = brNW <> printDouble w p f <> brNE
+  | i == n-1=  brSW <> printDouble w p f <> brSE
+  | otherwise=  brW <> printDouble w p f <> brE
 
 -- | Print vector using precision p for the components
 printVector :: Int -> [Double] -> Doc
 printVector p cs
     | n <= 1= space <> text (show cs)
     | otherwise = nest 1 $ vcat (zipWith (printComponent maxw p n) [0..n-1] cs)
-    where n = length cs
-          maxw = maxWidth p cs
+  where n    = length cs
+        maxw = maxWidth p cs
 
 printVectorRow :: Int -> [[Double]] -> Doc
-printVectorRow p ls = vcat $ map hsep [[printComponent (ws!!j) p n i ((ls!!j)!!i)
-                                        | j <- [0..m-1]]
-                                        | i <- [0..n-1]]
-    where ws = map (maxWidth p) ls
-          m = length ls
-          n = minimum (map length ls)
+printVectorRow p ls = vcat $
+    map hsep [ [ printComponent (ws!!j) p n i ((ls!!j)!!i)
+                  | j <- [0..m-1] ]
+                  | i <- [0..n-1] ]
+  where ws = map (maxWidth p) ls
+        m  = length ls
+        n  = minimum (map length ls)
 
 -- | Compute maximum width w required to print components of the vector
 -- | at given precision p.
 maxWidth :: Int -> [Double] -> Int
 maxWidth p l = maximum (map numLen l) + p + 1
-    where numLen n
-              | n < 0.0   = truncate (logBase 10 n) + 2
-              | otherwise = truncate (logBase 10 n) + 1
+  where numLen n
+          | n < 0.0   = truncate (logBase 10 n) + 2
+          | otherwise = truncate (logBase 10 n) + 1
 
 
 -- | Pretty print polynomial
@@ -80,23 +85,23 @@ printPolynomial :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
 printPolynomial _   []           = double 0.0
 printPolynomial sym [ (c,mon) ]  = double c <+> printMonomial sym (MI.toList mon)
 printPolynomial sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
-    where s = double c <+> printMonomial sym (MI.toList mon)
+  where s = double c <+> printMonomial sym (MI.toList mon)
 
 -- | Pretty print polynomial
 printPolynomial0 :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
 printPolynomial0 _   []           = double 0.0
 printPolynomial0 sym [ (c,mon) ]  = double c <+> printMonomial0 sym (MI.toList mon)
 printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
-    where s = double c <+> printMonomial0 sym (MI.toList mon)
+  where s = double c <+> printMonomial0 sym (MI.toList mon)
 
 -- | Pretty print polynomial
 printBernstein :: [(Double,MI.MultiIndex)] -> Doc
 printBernstein []           = double 0.0
 printBernstein [(c,mon)]  = double c <+> printMonomial0 lambda (MI.toList mon)
 printBernstein ((c,mon):ls) = if c == 0
-                              then printPolynomial lambda ls
-                              else s <+> text "+" <+> printPolynomial lambda ls
-    where s = double c <+> printMonomial0 lambda (MI.toList mon)
+                                then printPolynomial lambda ls
+                                else s <+> text "+" <+> printPolynomial lambda ls
+  where s = double c <+> printMonomial0 lambda (MI.toList mon)
 
 
 -- | Pretty print constant

@@ -16,17 +16,18 @@ module FEECa.Internal.Form (
 
 
 -- import Control.Applicative
-import            Data.List (intersect)
+import            Data.List ( intersect )
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 -- import qualified Numeric.LinearAlgebra.Data as M
 
 import            FEECa.Utility.Combinatorics
 import            FEECa.Utility.Discrete
-import qualified  FEECa.Utility.Print           as P  (Pretty(..), printForm, text)
-import            FEECa.Utility.Utility               (pairM, sumV, expSign, sign)
+import qualified  FEECa.Utility.Print           as P  ( Pretty(..), printForm,
+                                                        text, (<>), (<+>), int )
+import            FEECa.Utility.Utility               ( pairM, sumV, expSign, sign )
 
-import            FEECa.Internal.Spaces     hiding    (inner)
-import qualified  FEECa.Internal.Spaces         as S  (inner)
+import            FEECa.Internal.Spaces     hiding    ( inner )
+import qualified  FEECa.Internal.Spaces         as S  ( inner )
 
 
 -- * General form: does not depend on the underlying vector space it works on
@@ -46,8 +47,7 @@ data Form f =  -- we lose dependency on the type of vector!
   deriving (Eq)
 
 
-split :: (VectorSpace w, Scalar w ~ v)
-      => Form w -> ([w], [Form v])
+split :: (VectorSpace w, Scalar w ~ v) => Form w -> ([w], [Form v])
 split (Form k n cs)   = unzip $ map split' cs
   where  split' (a,b) = (a, Form k n [(mulId, b)])
 
@@ -67,11 +67,13 @@ instance Functor Form where
 
 instance Show f => Show (Form f) where
   show (Form k n cs) = show k ++ "-form in " ++ show n ++ " dimensions: " ++
-                        show (P.printForm "dx" "0" (P.text . show) cs)
+                        show cs
 
 instance P.Pretty f => P.Pretty (Form f) where
-  pPrint (Form _ _ cs) = P.printForm "dx" "0" P.pPrint cs -- show or pPrint...
-  
+  pPrint (Form k n cs) =
+    P.int k P.<> P.text "-form in" P.<+> P.int n P.<+> P.text "dimensions:"
+    P.<+> P.printForm "dx" "0" P.pPrint cs
+
 -- NB: will be (i -> i -> Ordering) once we normalise all products to be in
 --      their normal form - an increasing list
 combineWithBy :: (a -> a -> a) -> (i -> i -> Bool)
@@ -140,7 +142,7 @@ instance Ring f => Algebra (Form f) where
 
 -- | Basic abstract 1-form
 oneForm :: Ring f => Dim -> Dim -> Form f
-oneForm i n | i < 0 || i > n = errForm "oneForm" MoProjBd
+oneForm i n | i < 0 || i > n  = errForm "oneForm" MoProjBd
             | otherwise       = Form 1 n [ (mulId,[i]) ]
 
 
@@ -163,10 +165,13 @@ contract :: (Ring f, VectorSpace v, Dimensioned v)
          => (Idx -> v -> f) -> Form f -> v -> Form f
 contract proj omega v
     | vecNEq omega v = errForm "contract" MoVecEq
-    | otherwise      = Form (max 0 (arity omega - 1)) (dimVec omega) $
-        concatMap (\c -> map (pinchado c) [1..arity omega])
-                  (terms omega)
-  where pinchado (f,[]) _ = (f, []) -- error ??
+    | otherwise      = foldl (+++) (zeroForm k n) $
+        map (\c -> Form k n $ map (pinchado c) [1..arity omega])
+            (terms omega)
+        {- concatMap (\c -> map (pinchado c) [1..arity omega]) -}
+  where k = max 0 (arity omega - 1)
+        n = dimVec omega
+        pinchado (f,[]) _ = (f, []) -- error ??
         pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
                               (expSign i $ mul f (proj j v), ds1 ++ ds2)
   {- TODO:  optimise

@@ -1,7 +1,7 @@
 module FEECa.Utility.Utility(
     Dimension (..)
   , takeIndices
-  , pairM, pairUp
+  , pairM, pairUp, zipWithWhen
   , sumR, sumV
   , expSign, sign
   , eqNum
@@ -20,6 +20,13 @@ pairM f h (x,y) = (f x, h y)
 -- | Create a pair from two arguments
 pairUp :: a -> b -> (a,b)
 pairUp x y = (x,y)
+
+-- | 'zipWith' pairs from parallel lists which fulfill some property.
+zipWithWhen :: (a -> b -> c) -> (a -> b -> Bool) -> [a] -> [b] -> [c]
+zipWithWhen _ _ []    _       = []
+zipWithWhen _ _ _     []      = []
+zipWithWhen f p (a:as) (b:bs) | p a b     = f a b : zipWithWhen f p as bs
+                              | otherwise = zipWithWhen f p as bs
 
 -- | Equivalent to 'sum' for 'Ring' types
 sumR :: Ring a => [a] -> a

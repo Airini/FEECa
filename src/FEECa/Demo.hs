@@ -2,8 +2,8 @@ module FEECa.Demo where
 
 -- import Control.Applicative ()
 
-import FEECa.DifferentialForm (DifferentialForm)
-import FEECa.Internal.Form (Form, Dim)
+import FEECa.DifferentialForm ( DifferentialForm )
+import FEECa.Internal.Form    ( Form, Dim )
 import FEECa.Internal.Point
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
@@ -11,7 +11,7 @@ import FEECa.Internal.Vector
 import FEECa.Mask
 import FEECa.Polynomial
 
-import FEECa.Utility.Print hiding ((<>))
+import FEECa.Utility.Print hiding ( (<>) )
 
 -------
 
