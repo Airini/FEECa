@@ -11,6 +11,7 @@ import FEECa.Internal.Vector
 import FEECa.Mask
 import FEECa.Polynomial
 
+import FEECa.Utility.Print hiding ((<>))
 
 -------
 

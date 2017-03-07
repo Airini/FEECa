@@ -149,8 +149,8 @@ using unicode.
 \begin{code}
 instance EuclideanSpace v => Pretty (Simplex v) where
   pPrint t@(Simplex _ l) = int m <> text "-Simplex in "
-                            <> rn n <> text ":\n"
-                            <> printVectorRow 2 cs
+                            <> rn n $+$ -- <> text ":\n"
+                            printVectorRow 2 cs
     where cs = map toDouble' l
           n  = geometricalDimension t
           m  = topologicalDimension t

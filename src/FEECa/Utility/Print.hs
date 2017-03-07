@@ -2,7 +2,7 @@ module FEECa.Utility.Print (
     Pretty (..)
   , printDouble, printComponent, printVector, printVectorRow
   , printBernstein, printPolynomial, printPolynomial0, printForm
-  , lambda, dlambda, (<>), (P.$$), text, rn, int
+  , lambda, dlambda, (<>), (P.$$), (P.$+$), text, rn, int
   ) where
 
 import            Text.PrettyPrint
@@ -40,6 +40,9 @@ rn n = text "\x211D" <> printSuperscript n
 -- | width w and precision.
 printDouble :: Int -> Int -> Double -> Doc
 printDouble w p f = text $ printf "%*.*f" w p f
+-- TODO: caputre 1's, 0's, (-) here?
+
+-- TODO: p is precision for float?
 
 printComponent :: Int -> Int -> Int -> Int -> Double -> Doc
 printComponent w p n i f
