@@ -26,6 +26,9 @@ phi     = "\x03D5"
 class Pretty p where
   pPrint :: p -> Doc
 
+instance Pretty Integer where
+  pPrint = text . show
+
 -- | Pretty printing for lists of Pretty instances.
 instance Pretty a => Pretty [a] where
   pPrint [] = text "Empty List"

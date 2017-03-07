@@ -69,6 +69,15 @@ instance Ring Double where
   fromInt = fromIntegral
   pow     = (^^)
 
+instance Ring Integer where
+  add     = (+)
+  addId   = 0
+  addInv  = negate
+  mul     = (*)
+  mulId   = 1
+  fromInt = fromIntegral
+  pow     = (^)
+
 instance Field Double where
   mulInv     = (1/)
   fromDouble = id
@@ -100,7 +109,7 @@ class (Ring (Scalar v)) => VectorSpace v where --(Scalar v)) => VectorSpace v wh
   type Scalar v :: *      -- Coefficient ring
   addV  :: v -> v -> v
   sclV  :: Scalar v -> v -> v -- Scalar v -> v -> v
-  
+
   -- | Derived vector subtraction from 'VectorSpace' class functions.
   subV :: v -> v -> v
   subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
@@ -206,4 +215,3 @@ fromDouble' = fromList . map fromDouble
 -- representation: lists of 'Double'.
 toDouble' :: EuclideanSpace v => v -> [Double]
 toDouble' = map toDouble . toList
-
