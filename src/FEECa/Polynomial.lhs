@@ -249,7 +249,7 @@ instance Pretty (Polynomial Double) where
 -- | Expand term to (Double, MI.MultiIndex)-form suitable for printing.
 expandTerm :: Int -> Term a -> (a, MI.MultiIndex)
 expandTerm n (Constant c) = (c, MI.zero n)
-expandTerm _ (Term c mi)  = (c ,mi)
+expandTerm _ (Term c mi)  = (c, mi)
 
 \end{code}
 
@@ -364,7 +364,7 @@ addPolynomial :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
 addPolynomial (Polynomial r1 ts1) (Polynomial r2 ts2)
     | ts /= []  = Polynomial (max r1 r2) ts
     | otherwise = Polynomial 0 [Constant addId]
-  where ts = aggregate (ts1 ++ ts2)
+  where ts = (aggregate . removeZeros) (ts1 ++ ts2)
 
 removeZeros :: Ring a => [Term a] -> [Term a]
 removeZeros ts = [ t | t <- ts, coefficient t /= addId ]

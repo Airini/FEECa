@@ -9,7 +9,8 @@ import            Text.PrettyPrint
 import qualified  Text.PrettyPrint.HughesPJ as P
 import            Text.Printf
 import qualified  FEECa.Internal.MultiIndex as MI
-import            Data.List (intersperse)
+import qualified  FEECa.Internal.Spaces     as S
+import            Data.List ( intersperse )
 
 
 -- Some symbols
@@ -27,12 +28,12 @@ class Pretty p where
   pPrint :: p -> Doc
 
 instance Pretty Integer where
-  pPrint = text . show
+  pPrint = integer
 
 -- | Pretty printing for lists of Pretty instances.
 instance Pretty a => Pretty [a] where
   pPrint [] = text "Empty List"
-  pPrint l = text "[ "  P.$$  foldl1 addline (map pPrint l)  P.<+>  text "]"
+  pPrint l  = text "["  P.$$  foldl1 addline (map pPrint l)  P.$$  text "]"
     where addline x y = (x <> comma) P.$+$ y
 
 -- | Instance for 'Double'
@@ -87,8 +88,15 @@ maxWidth p l = maximum (map numLen l) + p + 1
 printPolynomial :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
 printPolynomial _   []           = double 0.0
 printPolynomial sym [ (c,mon) ]  = double c <+> printMonomial sym (MI.toList mon)
-printPolynomial sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
-  where s = double c <+> printMonomial sym (MI.toList mon)
+printPolynomial sym ((c,mon):ls) = ss <+> text "+" <+> printPolynomial sym ls
+  where ss      = double c <+> monDoc
+        monDoc  = printMonomial sym (MI.toList mon)
+        s       = (if (monDoc == empty || (c /= S.mulId && c /= S.addInv S.mulId))
+                    then double c
+                    else empty)
+                  <+> monDoc -- printMonomial sym (MI.toList mon)
+  -- (if c == S.mulId then empty
+  --                         else double c)
 
 -- | Pretty print polynomial
 printPolynomial0 :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
@@ -100,7 +108,7 @@ printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
 -- | Pretty print polynomial
 printBernstein :: [(Double,MI.MultiIndex)] -> Doc
 printBernstein []           = double 0.0
-printBernstein [(c,mon)]  = double c <+> printMonomial0 lambda (MI.toList mon)
+printBernstein [(c,mon)]    = double c <+> printMonomial0 lambda (MI.toList mon)
 printBernstein ((c,mon):ls) = if c == 0
                                 then printPolynomial lambda ls
                                 else s <+> text "+" <+> printPolynomial lambda ls
@@ -124,7 +132,7 @@ printMonomial' sym i (l:ls)
     | l > 0     = s <> printMonomial' sym (i+1) ls
     | otherwise = printMonomial' sym (i+1) ls
   where s = text sym <> printSub i <> printPower l
-printMonomial' _ _ [] = baseD
+printMonomial' _ _ [] = empty
 
 -- | Print symbol for PrLambdak space
 printPrLambdak :: Int -> Int -> Doc

@@ -1,3 +1,10 @@
+Key:
+  Bullet point      Status
+    x                 done
+    s                 started
+    b                 buggy
+    u                 unsatisfactory
+
 x regular printing in Form
 x add 2-form in 2D to pPrint for forms
 s polynomial simplification
