@@ -23,9 +23,15 @@ phi     = "\x03D5"
 --    ncomps :: v -> Int
 --    components :: v -> [Double]
 
--- | Pretty class prtotype.
+-- | Pretty class prototype.
 class Pretty p where
   pPrint :: p -> Doc
+
+{-#if MIN_VERSION_base(4,8,0)
+#else
+instance Eq Doc where
+  (==) = (==) `on` render
+#endif-}
 
 instance Pretty Integer where
   pPrint = integer
@@ -91,7 +97,7 @@ printPolynomial sym [ (c,mon) ]  = double c <+> printMonomial sym (MI.toList mon
 printPolynomial sym ((c,mon):ls) = ss <+> text "+" <+> printPolynomial sym ls
   where ss      = double c <+> monDoc
         monDoc  = printMonomial sym (MI.toList mon)
-        s       = (if (monDoc == empty || (c /= S.mulId && c /= S.addInv S.mulId))
+        s       = (if (isEmpty monDoc || (c /= S.mulId && c /= S.addInv S.mulId))
                     then double c
                     else empty)
                   <+> monDoc -- printMonomial sym (MI.toList mon)
