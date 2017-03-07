@@ -29,8 +29,8 @@ class Pretty p where
 -- | Pretty printing for lists of Pretty instances.
 instance (Pretty a) => Pretty [a] where
     pPrint [] = text "Empty List"
-    pPrint l = text "[ " P.$$ foldl addline empty l P.<+> text "]"
-        where addline x y = (x <> comma) P.$+$ pPrint y
+    pPrint l = text "[ "  P.$$  foldl1 addline (map pPrint l)  P.<+>  text "]"
+        where addline x y = (x <> comma) P.$+$ y
 
 -- | Render the symbol for Euclidean space of dimension n.
 rn :: Int -> Doc
