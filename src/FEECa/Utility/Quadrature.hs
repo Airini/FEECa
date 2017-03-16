@@ -1,9 +1,9 @@
 module FEECa.Utility.Quadrature where
 
-import Math.Combinatorics.Exact.Factorial
-import Numeric.LinearAlgebra.HMatrix
+import            Math.Combinatorics.Exact.Factorial
+import qualified  Numeric.LinearAlgebra.HMatrix  as M
 -- import Numeric.LinearAlgebra.Data
-import FEECa.Utility.Utility (pairM)
+import            FEECa.Utility.Utility ( pairM )
 
 -- | Type synomnym to represent a quadrature as a list pairs
 -- | of nodes and corresponding weights, the first element being the node
@@ -34,12 +34,12 @@ gaussLegendreQuadrature = golubWelsch 0 0
 -- | Golub-Welsch algorithm as described in "Calculation of Gauss Quadrature
 -- | Rules" (Golub, Welsch).
 golubWelsch :: Int -> Int -> Int -> Quadrature
-golubWelsch alpha beta n = extract $ eigSH' (buildMatrix n a b c)
+golubWelsch alpha beta n = extract $ M.eigSH' (buildMatrix n a b c)
     where a = a_jac alpha beta
           b = b_jac alpha beta
           c = c_jac alpha beta
-          extract (v, m) = zip (toList v)
-                               (square (toList (head (toRows m))))
+          extract (v, m) = zip (M.toList v)
+                               (square (M.toList (head (M.toRows m))))
           square  = map (** 2)
           -- TODO: why is scale defined but not used?
           -- normalize l = map ((2 / sum l) *) l
@@ -51,8 +51,8 @@ gamma a b = fromInteger (2^(a + b + 1) * factorial a * factorial b) /
             fromInteger (factorial (a + b + 1))
 
 -- Build the tridiagonal matrix used in the Golub-Welsch algorithm.
-buildMatrix :: Int -> Coeff Double -> Coeff Double -> Coeff Double -> Matrix Double
-buildMatrix n a b c = (n >< n) $ concat [ p1 i ++ [p2 i] ++ p3 i | i <- [1..n] ]
+buildMatrix :: Int -> Coeff Double -> Coeff Double -> Coeff Double -> M.Matrix Double
+buildMatrix n a b c = (n M.>< n) $ concat [ p1 i ++ [p2 i] ++ p3 i | i <- [1..n] ]
     where p1 i = replicate (i - 2) 0 ++ f1 i
           p2 i = - (b i / a i)
           p3 i = f2 i ++ replicate (n - i - 1) 0

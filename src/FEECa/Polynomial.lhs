@@ -66,17 +66,17 @@ module FEECa.Polynomial (
 import            Data.List
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
-import            FEECa.Utility.Print (Pretty (..), printPolynomial)
+import            FEECa.Utility.Print ( Pretty (..), printPolynomial )
 import qualified  FEECa.Internal.MultiIndex as MI (
                       MultiIndex, zero, unit, decrease,
-                      toList, add, degree, valid)
+                      toList, add, degree, valid )
 import            FEECa.Internal.Simplex
 
 import            FEECa.Internal.Spaces           (
                       Ring (..), Field (..), Dimensioned (..),
                       VectorSpace (..), EuclideanSpace (..),
-                      toDouble', fromDouble')
-import qualified  FEECa.Internal.Spaces     as S  (Function (..))
+                      toDouble' ) --, fromDouble')
+import qualified  FEECa.Internal.Spaces     as S  ( Function (..) )
 
 
 \end{code}
@@ -683,6 +683,10 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 %------------------------------------------------------------------------------%
 
 \begin{code}
+
+-- TODO: remove placeholders
+fromDouble' = undefined
+fromDouble  = undefined
 
 euclideanToBarycentric :: (EuclideanSpace v)
                        => Simplex v

@@ -161,16 +161,16 @@ nullForm n f = Form 0 n [(f, [])]
 -- If the function was actually a field, this part would be simplified
 contract :: (Ring f, VectorSpace v, Dimensioned v)
          => (Idx -> v -> f) -> Form f -> v -> Form f
-contract proj omega v
+contract pieIx omega v
     | vecNEq omega v = errForm "contract" MoVecEq
     | otherwise      = Form (max 0 (arity omega - 1)) (dimVec omega) $
         concatMap (\c -> map (pinchado c) [1..arity omega])
                   (terms omega)
   where pinchado (f,[]) _ = (f, []) -- error ??
         pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
-                              (expSign i $ mul f (proj j v), ds1 ++ ds2)
+                              (expSign i $ mul f (pieIx j v), ds1 ++ ds2)
   {- TODO:  optimise
-            error handling: proj indexing beyond dimension of v -}
+            error handling: pieIx indexing beyond dimension of v -}
 
 -- list_to_index :: Integral a => a -> [a] -> a
 -- list_to_index n (l:ls)
@@ -185,6 +185,9 @@ contract proj omega v
 apply :: (EuclideanSpace v, Ring w, VectorSpace w, Scalar v ~ Scalar w)
       => [v] -> [v] -> Form w -> w
 apply ds vs (Form k _ cs) = foldl addV addId (map (apply' k ds vs) cs)
+
+-- TODO: remove placeholder
+fromDouble = undefined
 
 apply' :: (EuclideanSpace v, VectorSpace w, Scalar v ~ Scalar w)
        => Int -> [v] -> [v] -> (w,[Int]) -> w
@@ -209,7 +212,7 @@ refine :: (Ring w, VectorSpace w, VectorSpace v, Scalar v ~ Scalar w)
                                       --   for the specific vector space
        -> Form w
        -> [v] -> w
-refine proj (Form _ _ cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . formify proj) cs')
+refine pieIx (Form _ _ cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . formify pieIx) cs')
   where cs' | null cs   = [(addId,[])]
             | otherwise = cs
 -- TODO: capture inconsistency between k and length vs here??
@@ -223,13 +226,13 @@ refine proj (Form _ _ cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . form
 formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
         => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
 formify _    (s, [])   _  = s
-formify proj (s, i:is) vs
-    | null is   = {-#SCC "Form.formify" #-}sclV (proj i (head vs)) s
+formify pieIx (s, i:is) vs
+    | null is   = {-#SCC "Form.formify" #-}sclV (pieIx i (head vs)) s
     | otherwise = {-#SCC "Form.formifyR" #-}
         foldl addV addId
               (map (\(w,e) -> sclV
-                                (mul (sign (w,e)) ((proj i . head) (pick' w vs)))
-                                (formify proj (s,is) (pick' e vs)))
+                                (mul (sign (w,e)) ((pieIx i . head) (pick' w vs)))
+                                (formify pieIx (s,is) (pick' e vs)))
                    (permutationPairs (length is + 1) 1 (length is)))
   where pick' ns = pick (differences ns)
 
@@ -238,14 +241,14 @@ formify proj (s, i:is) vs
 inner :: (InnerProductSpace w, EuclideanSpace v, Scalar w ~ Scalar v)
       => (Idx -> v -> Scalar w)  -- ^ Projection function in the specific vector space
       -> Form w -> Form w -> Scalar w
-inner proj omega eta
+inner pieIx omega eta
     | degNEq omega eta = errForm "inner" BiDegEq -- TODO (??)
     | otherwise = foldl
           (flip $ \vs -> add (S.inner (app omega vs) (app eta vs)))
           addId
           (map pick' (permutations n (arity omega)))
   where pick' is = pick (differences is) (map (unitVector n) [0..n-1])
-        app = refine proj
+        app = refine pieIx
         n = dimVec omega
 
 

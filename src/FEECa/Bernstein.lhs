@@ -443,9 +443,9 @@ integrateBernstein :: (EuclideanSpace v, r ~ Scalar v)
 integrateBernstein (Bernstein t1 p) = sumR (map f (toPairs k p))
   where f (c, mi)   = mul c (divide (mul (factorialMI mi) vol)
                                     (mul (factorial' (MI.degree mi)) (fac mi)))
-        factorialMI = fromDouble . MI.factorial
-        factorial'  = fromDouble . factorial
-        fac mi      = fromDouble (fromInteger ((k + MI.degree mi) `choose` k))
+        factorialMI = fromInt . (MI.factorial :: MI.MultiIndex -> Int)
+        factorial'  = fromInt . (factorial    :: Int -> Int)
+        fac mi      = {-fromDouble (fromInteger-} fromInt ((k + MI.degree mi) `choose` k :: Int)
         k     = topologicalDimension t1
         vol   = volume t1
 integrateBernstein (Constant _) = error "intergrateBernstein: No associated simplex for constant. Define over simplex first using redefine."

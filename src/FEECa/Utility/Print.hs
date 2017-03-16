@@ -9,7 +9,7 @@ import            Text.PrettyPrint
 import qualified  Text.PrettyPrint.HughesPJ as P
 import            Text.Printf
 import qualified  FEECa.Internal.MultiIndex as MI
-import            Data.List (intersperse)
+import            Data.List ( intersperse )
 
 
 -- Some symbols
@@ -27,7 +27,7 @@ class Pretty p where
     pPrint :: p -> Doc
 
 -- | Pretty printing for lists of Pretty instances.
-instance (Pretty a) => Pretty [a] where
+instance Pretty a => Pretty [a] where
     pPrint [] = text "Empty List"
     pPrint l = text "[ " P.$$ foldl addline empty l P.<+> text "]"
         where addline x y = (x <> comma) P.$+$ pPrint y

@@ -54,6 +54,9 @@ module FEECa.Internal.Simplex(
 
   -- * Coordinates
   cubicToBarycentric, barycentricToCartesian, cubicToCartesian
+
+  -- TODO: temporary; to be removed:
+  -- , fromDouble, fromDouble'
   ) where
 
 import Data.List
@@ -66,7 +69,7 @@ import FEECa.Utility.Print
 import FEECa.Utility.Quadrature
 import qualified  FEECa.Utility.Utility         as U
 
-import FEECa.Internal.Vector
+--import FEECa.Internal.Vector
 
 \end{code}
 
@@ -529,7 +532,8 @@ integrateOverSimplex q t f = mul vol (nestedSum q t f (n-1) [])
   where n   = topologicalDimension t
         vol = volume t
 
-fromDouble = undefined
+fromDouble  = undefined
+fromDouble' = undefined
 
 -- Recursion for the computation of the nested sum in the numerical approximation
 -- of the integral of a function over a simplex.

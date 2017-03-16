@@ -32,6 +32,7 @@ module FEECa.Utility.Combinatorics (
 
 import qualified Math.Combinatorics.Exact.Binomial  as B
 import qualified Math.Combinatorics.Exact.Factorial as F
+--import FEECa.Internal.Spaces
 
 \end{code}
 
@@ -49,7 +50,7 @@ for the computation of binomial coefficients and the function
 \begin{code}
 -- | Simple wrapper for 'factorial' that returns Num types.
 factorial :: Num a => Int -> a
-factorial = fromInteger . F.factorial
+factorial = fromInteger . F.factorial -- fromInt . (F.factorial :: Int -> Integer)
 
 -- | Simple wrapper for 'choose'
 choose :: (Integral a, Num b) => a -> a -> b

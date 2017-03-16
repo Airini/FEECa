@@ -69,7 +69,7 @@ evalSeparately t omega vs fs = V.toList $ foldl S.addV zero crossres
         ds          = P.barycentricGradients t
         omegasplit  = F.split omega
         l           = length vs * length fs
-        zero        = V.vector (replicate l $ S.fromDouble 0.0)
+        zero        = V.vector (replicate l $ S.fromInt (0::Int))
 
 inner :: S.Field a => DifferentialForm a -> DifferentialForm a -> a
 inner omega eta
