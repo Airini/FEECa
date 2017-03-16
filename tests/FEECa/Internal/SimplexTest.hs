@@ -13,6 +13,7 @@ module FEECa.Internal.SimplexTest (
 import Control.Monad
 import Data.Maybe
 import Data.List
+import System.Random
 
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
@@ -36,7 +37,7 @@ data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int
 --------------------------------------------------------------------------------
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
-instance (EuclideanSpace v, Arbitrary v) => Arbitrary (Simplex v) where
+instance (EuclideanSpace v, Arbitrary (Scalar v)) => Arbitrary (Simplex v) where
   arbitrary = Q.choose (1,6) >>= arbitrarySimplex
 
 
@@ -47,7 +48,7 @@ instance (EuclideanSpace v, Arbitrary v) => Arbitrary (Simplex v) where
 -- | Arbitrary instance to test generation of subsimplices. Generates a full
 -- | simplex of arbitrary dimension and integers k and i such that i is a valid
 -- | index of a subsimplex of dimension k.
-instance (EuclideanSpace v, Arbitrary v) => Arbitrary (SubsimplexTest v) where
+instance (EuclideanSpace v, Arbitrary (Scalar v)) => Arbitrary (SubsimplexTest v) where
   arbitrary = do
     t <- arbitrary
     let n = topologicalDimension t
@@ -112,14 +113,14 @@ pFace (SubsimplexTest t k i) = subs == face t (sigma subs)
 data Constant a = Constant a
 
 instance (EuclideanSpace v, r ~ Scalar v) => Function (Constant r) v where
-  derive v h = Constant (fromDouble 0.0)
+  derive v h = Constant (fromInt (0::Int))
   evaluate v (Constant c) = c
 
 prop_vol_integral :: Simplex (Vector Double) -> Bool
 prop_vol_integral = pVolIntegral
 
 pVolIntegral :: EuclideanSpace v => Simplex v -> Bool
-pVolIntegral t = eqNum (volume t) (integrate 2 t (Constant (fromDouble 1.0)))
+pVolIntegral t = eqNum (volume t) (integrate 2 t (Constant (fromInt (1::Int))))
   where n = topologicalDimension t  -- XXX: 2, 1, n??
 
 -- TODO: perhaps add check that simPos is satisfied (if that is an invariant)
@@ -137,13 +138,20 @@ newtype Cubic v r = Cubic v deriving (Show, Eq)
 
 -- | Randomly pick a dimension n and a point from the n-dimensional unit
 -- | cube.
-instance (EuclideanSpace v, r ~ Scalar v) => Arbitrary (Cubic v r) where
+instance (EuclideanSpace v, r ~ Scalar v, Arbitrary r, RealFrac r)
+    => Arbitrary (Cubic v r) where
   arbitrary = do
-      let intBelow   = truncate :: Double -> Integer
+      let intBelow   = truncate :: RealFrac r => r -> Integer
           restrict x = sub x ((fromInt . intBelow) x)
       n  <- Q.choose (1,10)
-      liftM (Cubic . fromDouble') $
+      liftM (Cubic . fromList) $
         Q.vectorOf n $ liftM (restrict . abs) arbitrary
+{-      cs <- Q.vectorOf n (fmap abs arbitrary)
+      let transf x = sub x ((fromInt . restrict) x)
+      return $ (Cubic . fromList . {-fromDouble'-} (map transf)) cs
+    where restrict :: RealFrac r => r -> Integer
+          restrict = truncate
+-}
 
 -- | Check that the transformation of a point in the n-dimensional unit cube is
 -- | a valid point in barycentric coordinates, i.e. that all components are

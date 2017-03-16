@@ -1,5 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 module FEECa.PolynomialTest where
 
 
@@ -19,6 +21,11 @@ import FEECa.Utility.Test
 import qualified Test.QuickCheck as Q
 import Test.QuickCheck  ( quickCheckAll )
 
+-- =======
+-- import qualified FEECa.Internal.MultiIndex as MI
+
+--import qualified Numeric.LinearAlgebra.HMatrix as M
+-- >>>>>>> efa221f... Cleaned up further tests (definitely shouldn't use `fromDouble`).
 
 ------------------------------------------------------------------------------
 -- Dimension of the space to be tested. Must be greater than zero.
@@ -129,7 +136,7 @@ prop_derivation_product_rational = propDerivation_linear
 --------------------------------------------------------------------------------
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
-instance (EuclideanSpace v, Q.Arbitrary v) => Q.Arbitrary (Simplex v) where
+instance (EuclideanSpace v, Q.Arbitrary (Scalar v)) => Q.Arbitrary (Simplex v) where
   arbitrary = do n <- Q.choose (1, 3)
                  k <- Q.choose (1, n)
                  arbitrarySubsimplex k n

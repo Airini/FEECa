@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts       #-}
+
 module FEECa.Utility.Test where
 
 import Data.List      ( sort )
@@ -64,17 +66,17 @@ increasingList k n =
         ( ( Q.infiniteListOf . Q.choose )  (0,n)  )
 
 -- | Generate a random vector of given length.
-arbitraryVector :: EuclideanSpace v => Int -> Q.Gen v
-arbitraryVector = liftM fromDouble' . Q.vector
+arbitraryVector :: (EuclideanSpace v, Q.Arbitrary (Scalar v)) => Int -> Q.Gen v
+arbitraryVector = liftM fromList . Q.vector
 
 -- | Generate a random simplex of given dimension.
-arbitrarySimplex :: (EuclideanSpace v, Q.Arbitrary v)
+arbitrarySimplex :: (EuclideanSpace v, Q.Arbitrary (Scalar v))
                  => Int -> Q.Gen (Simplex v)
 arbitrarySimplex n =  t `Q.suchThat` ((addId /=) . volume)
   where t   = liftM simplex vs
         vs  = Q.vectorOf (n+1) (arbitraryVector n)
 
 -- | Generate a random k-subsimplex of given dimension n.
-arbitrarySubsimplex :: (EuclideanSpace v, Q.Arbitrary v)
+arbitrarySubsimplex :: (EuclideanSpace v, Q.Arbitrary (Scalar v))
                     => Int -> Int -> Q.Gen (Simplex v)
 arbitrarySubsimplex k n = arbitrarySimplex n >>= Q.elements . (`subsimplices` k)

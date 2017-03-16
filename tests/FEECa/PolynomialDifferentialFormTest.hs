@@ -23,6 +23,7 @@ import FEECa.Utility.Combinatorics
 import FEECa.Utility.Print
 import FEECa.Utility.Utility
 
+import FEECa.Utility.Test
 import FEECa.BernsteinTest
 import qualified FEECa.PolynomialTest as PT ( n )
 
@@ -33,13 +34,6 @@ import Test.QuickCheck  ( arbitrary, (==>), Property, quickCheckAll )
 --------------------------------------------------------------------------------
 -- Random Simplices
 --------------------------------------------------------------------------------
-
--- | Generate a random k-subsimplex of given dimension n.
-arbitrarySubsimplex :: (EuclideanSpace v, Q.Arbitrary v)
-                    => Int -> Int -> Q.Gen (Simplex v)
-arbitrarySubsimplex k n = do t <- arbitrarySimplex n
-                             Q.elements (subsimplices t k)
-
 
 arbitraryConstituents :: (Q.Arbitrary a, Field a)
                       => Int -> Int -> Q.Gen [(BernsteinPolynomial a, [Int])]
