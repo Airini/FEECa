@@ -23,7 +23,7 @@ main = do
 --------------------------------------------------------------------------------
 n = 4
 
-instance EuclideanSpace (Vector r) => Arbitrary (Vector r) where
+instance (EuclideanSpace (Vector r), Arbitrary r) => Arbitrary (Vector r) where
     arbitrary = arbitraryVector n
 
 --------------------------------------------------------------------------------

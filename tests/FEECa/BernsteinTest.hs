@@ -8,10 +8,12 @@ import FEECa.Bernstein
 import FEECa.Internal.Simplex
 import FEECa.Internal.Vector
 import FEECa.Internal.Spaces
-import FEECa.Utility.Utility (eqNum)
+import FEECa.Utility.Utility      ( eqNum )
+
 import Properties
-import Test.QuickCheck.Property ((==>), property)
-import Test.QuickCheck.All (quickCheckAll)
+import FEECa.Utility.Test
+import Test.QuickCheck.Property   ( (==>), property )
+import Test.QuickCheck.All        ( quickCheckAll )
 import qualified Test.QuickCheck  as Q
 import qualified FEECa.Polynomial as P
 import qualified FEECa.PolynomialTest as PT (n, arbitraryPolynomial, propArithmetic)
@@ -19,16 +21,6 @@ import qualified FEECa.PolynomialTest as PT (n, arbitraryPolynomial, propArithme
 --------------------------------------------------------------------------------
 -- Random Bernstein Polynomials
 --------------------------------------------------------------------------------
-arbitraryVector :: EuclideanSpace v => Int -> Q.Gen v
-arbitraryVector n = do cs <- Q.vector n
-                       return (fromDouble' cs)
-
--- | Generate a random simplex of given dimension.
-arbitrarySimplex :: (EuclideanSpace v, Q.Arbitrary v)
-                 => Int -> Q.Gen (Simplex v)
-arbitrarySimplex n =  t `Q.suchThat` ((addId /=) . volume)
-                     where t = liftM simplex vs
-                           vs = Q.vectorOf (n+1) (arbitraryVector n)
 
 -- | Generate random simplex of dimesion n = 8.
 {- XXX: a second instance (vs the one in PT) and moreover not used in this

@@ -5,16 +5,17 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module FEECa.Internal.SimplexTest(
-                                 arbitrarySimplex,
-                                 arbitrarySubsimplex,
-                                 testSimplex
-                                ) where
+module FEECa.Internal.SimplexTest (
+    arbitrarySimplex
+  , arbitrarySubsimplex
+  , testSimplex
+  ) where
 
 
 import Control.Monad
 import Data.Maybe
 import Data.List
+import System.Random
 
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
@@ -23,20 +24,19 @@ import FEECa.Internal.VectorTest
 import FEECa.Utility.Combinatorics
 import FEECa.Utility.Utility
 import FEECa.Utility.Test
-import System.Random
-import Test.QuickCheck(Arbitrary, arbitrary, quickCheck, (==>), Property, quickCheckAll)
-import Test.QuickCheck.Gen(Gen, vectorOf)
-import qualified Test.QuickCheck as Q
-import qualified Test.QuickCheck.Gen as Q
+import Test.QuickCheck      ( Arbitrary, arbitrary, quickCheck, (==>), Property, quickCheckAll )
+import Test.QuickCheck.Gen  ( Gen, vectorOf )
+import qualified Test.QuickCheck      as Q
 
-data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int deriving (Show)
+data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int
+  deriving (Show)
 
 --------------------------------------------------------------------------------
 -- Random Simplices
 --------------------------------------------------------------------------------
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
-instance (EuclideanSpace v, Arbitrary v) => Arbitrary (Simplex v) where
+instance (EuclideanSpace v, Arbitrary (Scalar v)) => Arbitrary (Simplex v) where
     arbitrary = do n <- Q.choose (1, 6)
                    arbitrarySimplex n
 
@@ -47,7 +47,7 @@ instance (EuclideanSpace v, Arbitrary v) => Arbitrary (Simplex v) where
 -- | Arbitrary instance to test generation of subsimplices. Generates a full
 -- | simplex of arbitrary dimension and integers k and i such that i is a valid
 -- | index of a subsimplex of dimension k.
-instance (EuclideanSpace v, Arbitrary v) => Arbitrary (SubsimplexTest v) where
+instance (EuclideanSpace v, Arbitrary (Scalar v)) => Arbitrary (SubsimplexTest v) where
     arbitrary = do t <- arbitrary
                    let n = topologicalDimension t
                    k <- Q.choose (0,n)
@@ -112,14 +112,14 @@ pFace (SubsimplexTest t k i) = subs == face t (sigma subs)
 data Constant a = Constant a
 
 instance (EuclideanSpace v, r ~ Scalar v) => Function (Constant r) v where
-    derive v h = Constant (fromDouble 0.0)
+    derive v h = Constant (fromInt (0::Int))
     evaluate v (Constant c) = c
 
 prop_vol_integral :: Simplex (Vector Double) -> Bool
 prop_vol_integral = pVolIntegral
 
 pVolIntegral :: EuclideanSpace v => Simplex v -> Bool
-pVolIntegral t = eqNum (volume t) (integrate 2 t (Constant (fromDouble 1.0)))
+pVolIntegral t = eqNum (volume t) (integrate 2 t (Constant (fromInt (1::Int))))
      where n = topologicalDimension t
 
 -- TODO: perhaps add check that simPos is satisfied (if that is an invariant)
@@ -137,14 +137,15 @@ newtype Cubic v r = Cubic v deriving (Show, Eq)
 
 -- | Randomly pick a dimension n and a point from the n-dimensional unit
 -- | cube.
-instance (EuclideanSpace v, r ~ Scalar v) => Arbitrary (Cubic v r) where
-    arbitrary = do
-            n  <- Q.choose (1,10)
-            cs <- Q.vectorOf n (fmap abs arbitrary)
-            let transf x = sub x ((fromInt . restrict) x)
-            return (Cubic (fromDouble' (map transf cs)))
-        where restrict :: Double -> Integer
-              restrict = truncate
+instance (EuclideanSpace v, r ~ Scalar v, Arbitrary r, RealFrac r)
+    => Arbitrary (Cubic v r) where
+  arbitrary = do
+      n  <- Q.choose (1,10)
+      cs <- Q.vectorOf n (fmap abs arbitrary)
+      let transf x = sub x ((fromInt . restrict) x)
+      return $ (Cubic . fromList . {-fromDouble'-} (map transf)) cs
+    where restrict :: RealFrac r => r -> Integer
+          restrict = truncate
 
 -- | Check that the transformation of a point in the n-dimensional unit cube is
 -- | a valid point in barycentric coordinates, i.e. that all components are

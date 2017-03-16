@@ -1,7 +1,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
 module FEECa.PolynomialTest where
 
+
+import Control.Monad
 
 import Properties
 import FEECa.Polynomial
@@ -12,9 +16,10 @@ import FEECa.Utility.Utility
 import FEECa.Utility.Combinatorics
 import FEECa.Utility.Test
 import FEECa.Utility.Print
+import qualified FEECa.Internal.MultiIndex as MI
+
 import Test.QuickCheck (quickCheckAll)
 import qualified Test.QuickCheck as Q
-import qualified FEECa.Internal.MultiIndex as MI
 import qualified Numeric.LinearAlgebra.HMatrix as M
 
 ------------------------------------------------------------------------------
@@ -49,9 +54,9 @@ arbitraryConstant = do c <- Q.arbitrary
 -- the randomly generated polynomials.
 ------------------------------------------------------------------------------
 
-instance Field f => Q.Arbitrary (Vector f) where
-    arbitrary = do l <- Q.vector n
-                   return $ vector (map fromDouble l)
+instance (Field f, Q.Arbitrary f) => Q.Arbitrary (Vector f) where
+  arbitrary = liftM vector (Q.vector n)
+                 -- return $ vector (map fromDouble l)
 
 
 ------------------------------------------------------------------------------
@@ -149,7 +154,7 @@ prop_derivation_product_rational = propDerivation_linear
 --------------------------------------------------------------------------------
 
 -- | Generate random simplex of dimesion 1 <= n <= 10.
-instance (EuclideanSpace v, Q.Arbitrary v) => Q.Arbitrary (Simplex v) where
+instance (EuclideanSpace v, Q.Arbitrary (Scalar v)) => Q.Arbitrary (Simplex v) where
     arbitrary = do n <- Q.choose (1, 3)
                    k <- Q.choose (1, n)
                    arbitrarySubsimplex k n

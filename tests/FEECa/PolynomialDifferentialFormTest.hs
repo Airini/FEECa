@@ -23,6 +23,7 @@ import FEECa.Utility.Combinatorics
 import FEECa.Utility.Print
 import FEECa.Utility.Utility
 
+import FEECa.Utility.Test
 import Test.QuickCheck(Arbitrary, arbitrary, quickCheck, (==>), Property, quickCheckAll)
 import qualified Test.QuickCheck as Q
 import qualified Test.QuickCheck.Gen as Q
@@ -30,15 +31,6 @@ import qualified Test.QuickCheck.Gen as Q
 --------------------------------------------------------------------------------
 -- Random Simplices
 --------------------------------------------------------------------------------
-
--- | Generate a random k-subsimplex of given dimension n.
-arbitrarySubsimplex :: (EuclideanSpace v, Arbitrary v)
-                    => Int
-                    -> Int
-                    -> Q.Gen (Simplex v)
-arbitrarySubsimplex k n = do t <- arbitrarySimplex n
-                             Q.elements (subsimplices t k)
-
 
 arbitraryConstituents :: (Q.Arbitrary a, Field a)
                         => Int
