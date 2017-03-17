@@ -52,16 +52,13 @@ arbitraryConstant = do c <- Q.arbitrary
 -- multiplication must commute with the evaluate operator.
 --------------------------------------------------------------------------------
 
-prop_arithmetic :: BernsteinPolynomial (Vector Double) Double
-                -> BernsteinPolynomial (Vector Double) Double
-                -> Vector Double
-                -> Double
+prop_arithmetic :: Bernstein -> Bernstein -> Vector Double -> Double
                 -> Q.Property
-prop_arithmetic b1@(Bernstein t1 p1) (Bernstein t2 p2) v c
-    = volume t1 > 0 ==> PT.propArithmetic eqNum b1 b2' v c
-    where b2' = Bernstein t1 p2
-prop_arithmetic b1@(Bernstein t1 p1) b2 v c
-    = volume t1 > 0 ==> PT.propArithmetic eqNum b1 b2 v c
+prop_arithmetic b1@(Bernstein t1 p1) (Bernstein t2 p2) v c =
+    volume t1 > 0 ==> PT.propArithmetic eqNum b1 b2' v c
+  where b2' = Bernstein t1 p2
+prop_arithmetic b1@(Bernstein t1 p1) b2 v c =
+    volume t1 > 0 ==> PT.propArithmetic eqNum b1 b2 v c
 prop_arithmetic b1 b2 v c = property $ PT.propArithmetic eqNum b1 b2 v c
 
 
@@ -75,7 +72,7 @@ prop_integration :: Bernstein -> Q.Property
 prop_integration b@(Bernstein t p)
     | r > 0     = volume t > 0 ==> eqNum (integrate r t b) (integrateBernstein b)
     | otherwise = property True
-    where r = P.degree p
+  where r = P.degree p
 prop_integration _ = property True
 
 -- Linearity
@@ -98,12 +95,8 @@ prop_integration_linear c b1 b2 = property False -- this should not happen
 --------------------------------------------------------------------------------
 
 -- Linearity
-prop_derivation_linear :: Vector Double
-                       -> Vector Double
-                       -> Double
-                       -> Bernstein
-                       -> Bernstein
-                       -> Bool
+prop_derivation_linear :: Vector Double -> Vector Double -> Double
+                       -> Bernstein -> Bernstein -> Bool
 prop_derivation_linear v1 v2 c b1@(Bernstein t1 _) b2 =
     (prop_linearity eqNum (evaluate v1 . derive v2) c b1 b2')
   where b2' = redefine t1 b2
@@ -113,22 +106,19 @@ prop_derivation_linear v1 v2 c b1 b2 =
 
 -- Product rule
 -- TODO: Catch singular simplices!
-prop_derivation_product :: Vector Double
-                        -> Vector Double
-                        -> Bernstein
-                        -> Bernstein
-                        -> Bool
+prop_derivation_product :: Vector Double -> Vector Double
+                        -> Bernstein -> Bernstein -> Bool
 prop_derivation_product v1 v2 b1@(Bernstein t _) b2 =
-               eqNum (evaluate v1 (add (mul db1 b2') (mul db2' b1)))
-                     (evaluate v1 (derive v2 (mul b1 b2')))
-        where b2' = redefine t b2
-              db1 = derive v2 b1
-              db2' = derive v2 b2'
+    eqNum (evaluate v1 (add (mul db1 b2') (mul db2' b1)))
+          (evaluate v1 (derive v2 (mul b1 b2')))
+  where b2' = redefine t b2
+        db1 = derive v2 b1
+        db2' = derive v2 b2'
 prop_derivation_product v1 v2 b1 b2 =
-               eqNum (evaluate v1 (add (mul db1 b2) (mul db2 b1)))
-                     (evaluate v1 (derive v2 (mul b1 b2)))
-        where db1 = derive v2 b1
-              db2 = derive v2 b2
+    eqNum (evaluate v1 (add (mul db1 b2) (mul db2 b1)))
+          (evaluate v1 (derive v2 (mul b1 b2)))
+  where db1 = derive v2 b1
+        db2 = derive v2 b2
 
 type Bernstein = BernsteinPolynomial (Vector Double) Double
 

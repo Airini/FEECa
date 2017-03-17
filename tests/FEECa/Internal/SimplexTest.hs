@@ -143,7 +143,7 @@ instance (EuclideanSpace v, r ~ Scalar v, Arbitrary r, RealFrac r)
       n  <- Q.choose (1,10)
       cs <- Q.vectorOf n (fmap abs arbitrary)
       let transf x = sub x ((fromInt . restrict) x)
-      return $ (Cubic . fromList . {-fromDouble'-} (map transf)) cs
+      return $ (Cubic . fromList . {-fromDouble'-} map transf) cs
     where restrict :: RealFrac r => r -> Integer
           restrict = truncate
 

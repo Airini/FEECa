@@ -54,7 +54,7 @@ instance Show IncreasingList where
 
 unique :: Eq a => [a] -> [a]
 unique [] = []
-unique (l:ls) = l : (filter (l /=) (unique ls))
+unique (l:ls) = l : filter (l /=) (unique ls)
 
 ------------------------------------------------------------------------------
 -- Generate an increasing list as a random sublist of [0..n].
