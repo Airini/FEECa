@@ -62,7 +62,7 @@ arbitraryConstant = liftM constant Q.arbitrary
 ------------------------------------------------------------------------------
 
 instance (Field f, Q.Arbitrary f) => Q.Arbitrary (Vector f) where
-  arbitrary = liftM vector (Q.vector n)
+  arbitrary = arbitraryVector n
 
 
 ------------------------------------------------------------------------------
@@ -98,12 +98,14 @@ prop_arithmetic_rf = propArithmetic (==)
 -- Linearity
 propDerivation_linear :: (EuclideanSpace v, Function f v, VectorSpace f,
                           r ~ Scalar v, r ~ Scalar f)
-                       => v -> v -> r -> f -> f -> Bool
+                       => v -> v -> r -> f -> f
+                       -> Bool
 propDerivation_linear v1 v2 = prop_linearity (==) (evaluate v2 . derive v2)
 
 -- Product rule
 propDerivationProduct :: (EuclideanSpace v, Function f v, Ring f)
-                        => v -> v -> f -> f -> Bool
+                        => v -> v -> f -> f
+                        -> Bool
 propDerivationProduct v1 v2 f g =
     ev (add (mul g (d f)) (mul f (d g))) == (ev . d) (mul f g)
   where ev = evaluate v1
@@ -120,12 +122,14 @@ prop_arithmetic_rational :: Polynomial Rational -> Polynomial Rational
                          -> Bool
 prop_arithmetic_rational = propArithmetic (==)
 
-prop_derivation_linear_rational :: Vector Rational -> Vector Rational -> Rational
+prop_derivation_linear_rational :: Vector Rational -> Vector Rational
+                                -> Rational
                                 -> Polynomial Rational -> Polynomial Rational
                                 -> Bool
 prop_derivation_linear_rational = propDerivation_linear
 
-prop_derivation_product_rational :: Vector Rational -> Vector Rational -> Rational
+prop_derivation_product_rational :: Vector Rational -> Vector Rational
+                                 -> Rational
                                  -> Polynomial Rational -> Polynomial Rational
                                  -> Bool
 prop_derivation_product_rational = propDerivation_linear

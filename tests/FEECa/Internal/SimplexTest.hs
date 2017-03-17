@@ -148,7 +148,7 @@ instance (EuclideanSpace v, r ~ Scalar v, Arbitrary r, RealFrac r)
         Q.vectorOf n $ liftM (restrict . abs) arbitrary
 {-      cs <- Q.vectorOf n (fmap abs arbitrary)
       let transf x = sub x ((fromInt . restrict) x)
-      return $ (Cubic . fromList . {-fromDouble'-} (map transf)) cs
+      return $ (Cubic . fromList . {-fromDouble'-} map transf) cs
     where restrict :: RealFrac r => r -> Integer
           restrict = truncate
 -}
