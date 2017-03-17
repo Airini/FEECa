@@ -275,7 +275,8 @@ project bs vs = undefined
   --              | v <- vs]
 
 volume' :: EuclideanSpace v => Simplex v -> Scalar v
-volume' t = undefined -- fromDouble $  abs (M.det w) / fromInteger (factorial n)
+volume' t = divide (fromDouble $ abs (M.det w)) (fromInt (factorial n))
+    -- fromDouble $ abs (M.det w) / fromInteger (factorial n)
   where n = geometricalDimension t
         w = M.matrix n comps
         comps = concatMap toDouble' (spanningVectors t)
