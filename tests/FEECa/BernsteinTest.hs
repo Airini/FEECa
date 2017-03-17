@@ -112,7 +112,6 @@ prop_derivation_linear v1 v2 c b1 b2 =
 -- Product rule
 -- TODO: Catch singular simplices!
 prop_derivation_product :: Vector Double -> Vector Double
-<<<<<<< HEAD
                         -> Bernstein -> Bernstein
                         -> Bool
 prop_derivation_product v1 v2 b1@(Bernstein t _) b2 =

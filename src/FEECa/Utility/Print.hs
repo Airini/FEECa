@@ -27,11 +27,13 @@ phi     = "\x03D5"
 class Pretty p where
   pPrint :: p -> Doc
 
-{-#if MIN_VERSION_base(4,8,0)
+{-
+#if MIN_VERSION_base(4,8,0)
 #else
 instance Eq Doc where
   (==) = (==) `on` render
-#endif-}
+#endif
+-}
 
 instance Pretty Integer where
   pPrint = integer
