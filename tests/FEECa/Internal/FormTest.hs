@@ -68,7 +68,7 @@ calls max argFs prop n = p (mod (abs n) max + 1)
 -- | Anticommutativity property
 -- TODO: update to new property (propA_wedgeAntiComm)
 prop_antiComm :: Int -> Int -> Property
-prop_antiComm max n = p (2 + abs n `mod` max)   -- manually limited vectorspace dimension
+prop_antiComm max n = p (2 + abs n `mod` max)   -- manually limited module dimension
   where
     c   = nIntNumG :: Int -> Gen Double
     p n = forAll (elements (arityPairs n)) $ \(k,j) ->
@@ -81,13 +81,13 @@ prop_antiComm max n = p (2 + abs n `mod` max)   -- manually limited vectorspace 
 -- * Generating functions and examples
 
 -- | "Integer" coefficients generator
-intNumG :: Field f => Gen f
+intNumG :: Ring f => Gen f
 intNumG = liftM (embedIntegral . getNonZero) (arbitrary :: Gen (NonZero Integer))
 
-nIntNumG :: Field f => Int -> Gen f
+nIntNumG :: Ring f => Int -> Gen f
 nIntNumG = const intNumG
 
-nkIntNumG :: Field f => Int -> Int -> Gen f
+nkIntNumG :: Ring f => Int -> Int -> Gen f
 nkIntNumG = const nIntNumG
 
 prop_genf n k s = forAll (kform n' k' (nIntNumG :: Int -> Gen Double) s) $
@@ -125,12 +125,12 @@ kform n k coeffg terms = do
 -- dependent on order of function application when it comes to floating points
 -- OR: small values (overflows and sizing in testing... otherwise size number of terms)
 --    Also somewhat dependent on possibility of simplifying forms
-nVecGen :: Field f => Int -> Gen (V.Vector f)
+nVecGen :: Ring f => Int -> Gen (V.Vector f)
 nVecGen n = liftM V.vector $ -- map (fromIntegral . round)) $
               vectorOf n intNumG--(liftM fromInteger (choose (-11,11::Integer))) -- liftM fromIntegral (arbitrary :: Gen Int)) -- :: Gen Double)
 
 
-knTupGen :: Field f => Int -> Int -> Gen [V.Vector f]
+knTupGen :: Ring f => Int -> Int -> Gen [V.Vector f]
 knTupGen k n = vectorOf k (nVecGen n)
 
 

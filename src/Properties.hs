@@ -126,14 +126,14 @@ propA_wedgeAssoc = prop_associativity id (/\)
 --   arbitrary = sized (TQ.vector >=> return . vector)
 
 -- TODO: Eq?? would have to implement simplification + "canonising"
-propA_wedgeAssocEvl :: (Ring f, VectorSpace f,
+propA_wedgeAssocEvl :: (Ring f, Module f,
                         Projectable v (Scalar f), Scalar v ~ Scalar f, Show f)
                     => [v] -> Form f -> Form f -> Form f -> Property
 propA_wedgeAssocEvl vs = prop_associativity (#vs) (/\)
 
 -- Will turn into check without evaluation if simplification + grouping of
 -- terms with canonicalization is done
-propA_wedgeAntiComm :: (Ring f, VectorSpace f,
+propA_wedgeAntiComm :: (Ring f, Module f,
                         Projectable v (Scalar f), Scalar v ~ Scalar f, Show f)
                     => Form f -> Form f -> [v] -> Property
 propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) === expSign jk (y /\ x # vs)
@@ -141,7 +141,7 @@ propA_wedgeAntiComm x y = \vs -> (x /\ y # vs) === expSign jk (y /\ x # vs)
         k = arity y
         jk = j * k
 
-propA_contractLeibniz :: (Ring f, VectorSpace f, Dimensioned v,
+propA_contractLeibniz :: (Ring f, Module f, Dimensioned v,
                           Projectable v f, Projectable v (Scalar v),
                           Scalar v ~ Scalar f, Show f)
                       => Form f -> Form f -> v -> [v] -> Property
@@ -151,11 +151,11 @@ propA_contractLeibniz w t v vs =
   addV ((w ⌟ v) /\ t) (sclV (expSign (arity w) addId) (w /\ (t ⌟ v))) # vs
 -- TODO: Abstract Leibniz rule away
 
-(%#) :: (Ring f, VectorSpace f, Projectable v f, Scalar v ~ Scalar f, Dimensioned v)
+(%#) :: (Ring f, Module f, Projectable v f, Scalar v ~ Scalar f, Dimensioned v)
      => Form f -> v -> Form f
 (%#) = contract projection
 
-propA_contractCochain :: (Ring f, VectorSpace f, Dimensioned v,
+propA_contractCochain :: (Ring f, Module f, Dimensioned v,
                           Projectable v f, Projectable v (Scalar v),
                           Scalar v ~ Scalar f, Show f)
                       => Form f -> v -> [v] -> Property

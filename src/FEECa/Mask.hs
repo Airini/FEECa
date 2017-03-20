@@ -73,7 +73,7 @@ dxVP = (fmap . fmap) constant dxV
 dxVF :: (Eq f, Ring f) => Int -> VectorField f -> PolyRepresentation f
 dxVF i (Vector v) = v !! (i-1)
 
-(#) :: forall f v. (Ring f, VectorSpace v, VectorSpace f,
+(#) :: forall f v. (Ring f, Module f,
                     Projectable v (Scalar f), Scalar v ~ Scalar f)
     => Form f -> [v] -> f
 (#) = refine projection

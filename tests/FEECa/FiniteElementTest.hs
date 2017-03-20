@@ -128,7 +128,7 @@ prop_basis s =
 -- PrmLk Form associated to a face.
 --------------------------------------------------------------------------------
 
-linearIndependent :: VectorSpace v => (v -> v -> Double) -> [v] -> Bool
+linearIndependent :: Module v => (v -> v -> Double) -> [v] -> Bool
 linearIndependent f bs = M.rank mat == n
   where es  = M.eigenvaluesSH' mat
         -- TODO: changed eigenvaluesSH to eigenvaluesSH' for loading; check!

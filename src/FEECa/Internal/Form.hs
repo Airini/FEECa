@@ -47,7 +47,7 @@ data Form f =  -- we lose dependency on the type of vector!
   deriving (Eq)
 
 
-split :: (VectorSpace w, Scalar w ~ v) => Form w -> ([w], [Form v])
+split :: (Module w, Scalar w ~ v) => Form w -> ([w], [Form v])
 split (Form k n cs)   = unzip $ map split' cs
   where  split' (a,b) = (a, Form k n [(mulId, b)])
 
@@ -124,12 +124,13 @@ omega //\\ eta
   where dxs     (_,ys) = filter (null . intersect ys . snd) (terms omega)
         combine (a,xs) = pairM (mul a) (xs++)
 
--- | Forms over a 'Ring' form a 'VectorSpace'.
+-- | Forms over a 'Ring' form a 'Module'.
 instance Ring f => Module (Form f) where
   type Scalar (Form f) = f
   addV = (+++)
   sclV = (***)
 
+-- | Forms over a 'Field' form a 'VectorSpace'.
 instance Field f => VectorSpace (Form f)
 
 -- | For 'Form's defined over a 'Ring' we associate an 'Algebra': the exterior
@@ -189,11 +190,11 @@ contract proj omega v
 -- make_lookup  :: (Ring r, EuclideanSpace v, Scalar v ~ r)
 --              => Int -> Int -> [v] -> [[v]] -> Array [r]
 -- make_lookup n k ds vvs
-apply :: (EuclideanSpace v, Ring w, VectorSpace w, Scalar v ~ Scalar w)
+apply :: (EuclideanSpace v, Ring w, Module w, Scalar v ~ Scalar w)
       => [v] -> [v] -> Form w -> w
 apply ds vs (Form k _ cs) = foldl addV addId (map (apply' k ds vs) cs)
 
-apply' :: (EuclideanSpace v, VectorSpace w, Scalar v ~ Scalar w)
+apply' :: (EuclideanSpace v, Module w, Scalar v ~ Scalar w)
        => Int -> [v] -> [v] -> (w,[Int]) -> w
 apply' _ _  _  (p, []) = p
 apply' k ds vs (p, cs) = sclV c p
@@ -211,9 +212,9 @@ refineBasis ds vvs = map (map (fromDouble . M.det)) submatrices
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
-refine :: (Ring w, VectorSpace w, VectorSpace v, Scalar v ~ Scalar w)
-       => (Idx -> v -> Scalar w)      -- ^ The definition for the projection function
-                                      --   for the specific vector space
+refine :: (Ring w, Module w, Module v, Scalar v ~ Scalar w)
+       => (Idx -> v -> Scalar w)  -- ^ The definition for the projection function
+                                  --   for the specific vector space
        -> Form w
        -> [v] -> w
 refine proj (Form _ _ cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . formify proj) cs')
@@ -227,11 +228,11 @@ refine proj (Form _ _ cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . form
 
 -- | Helper function in evaluation: given a 1-form basis, converts a single
 --   'Form' term into an actual function on vectors
-formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
+formify :: (Ring w, Module w, Module v, Scalar w ~ Scalar v)
         => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
 formify _    (s, [])   _  = s
 formify proj (s, i:is) vs
-    | null is   = {-#SCC "Form.formify" #-}sclV (proj i (head vs)) s
+    | null is   = {-#SCC "Form.formify"  #-} sclV (proj i (head vs)) s
     | otherwise = {-#SCC "Form.formifyR" #-}
         foldl addV addId
               (map (\(w,e) -> sclV

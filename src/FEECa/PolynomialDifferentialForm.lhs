@@ -56,7 +56,7 @@ apply omega vs = {-# SCC "apply" #-} F.apply ds vs omega
   where t  = fromJust (findSimplex omega)
         ds = P.barycentricGradients t
 
-evalSeparately :: (S.Field a, S.VectorSpace a, S.Scalar a ~ a)
+evalSeparately :: (S.Field a, S.Module a, S.Scalar a ~ a)
                => Simplex (Vector a)
                -> DifferentialForm a
                -> [Vector a]

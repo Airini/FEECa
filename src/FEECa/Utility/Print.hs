@@ -99,7 +99,7 @@ printPolynomial sym [ (c,mon) ]  = double c <+> printMonomial sym (MI.toList mon
 printPolynomial sym ((c,mon):ls) = ss <+> text "+" <+> printPolynomial sym ls
   where ss      = double c <+> monDoc
         monDoc  = printMonomial sym (MI.toList mon)
-        s       = (if (isEmpty monDoc || (c /= S.mulId && c /= S.addInv S.mulId))
+        s       = (if isEmpty monDoc || (c /= S.mulId && c /= S.addInv S.mulId)
                     then double c
                     else empty)
                   <+> monDoc -- printMonomial sym (MI.toList mon)

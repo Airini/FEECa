@@ -671,7 +671,7 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 
 \begin{code}
 
-euclideanToBarycentric :: (EuclideanSpace v)
+euclideanToBarycentric :: EuclideanSpace v
                        => Simplex v -> [v] -> [v]
 euclideanToBarycentric t vs = map (fromDouble' . M.toList) $ M.toRows res
   where res  = vmat M.<> mat
