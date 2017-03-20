@@ -125,10 +125,12 @@ omega //\\ eta
         combine (a,xs) = pairM (mul a) (xs++)
 
 -- | Forms over a 'Ring' form a 'VectorSpace'.
-instance Ring f => VectorSpace (Form f) where
+instance Ring f => Module (Form f) where
   type Scalar (Form f) = f
   addV = (+++)
   sclV = (***)
+
+instance Field f => VectorSpace (Form f)
 
 -- | For 'Form's defined over a 'Ring' we associate an 'Algebra': the exterior
 -- algebra.
@@ -161,7 +163,7 @@ nullForm n f = Form 0 n [(f, [])]
 -- Necesitamos una función de pinchado
 --  y así pinchar las consecutivas componentes
 -- If the function was actually a field, this part would be simplified
-contract :: (Ring f, VectorSpace v, Dimensioned v)
+contract :: (Ring f, Module v, Dimensioned v)
          => (Idx -> v -> f) -> Form f -> v -> Form f
 contract proj omega v
     | vecNEq omega v = errForm "contract" MoVecEq

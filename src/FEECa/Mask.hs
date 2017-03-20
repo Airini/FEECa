@@ -26,10 +26,10 @@ type VectorField a = Vector (PolyRepresentation a)
 tangential :: Ring a => Int -> VectorField a
 tangential n = vector (map (monomial . MI.unit n) [0..n-1])
 
-(.*) :: VectorSpace v => Scalar v -> v -> v
+(.*) :: Module v => Scalar v -> v -> v
 (.*) = sclV
 
-(.+.) :: VectorSpace v => Binop v
+(.+.) :: Module v => Binop v
 (.+.) = addV
 
 (.+) :: Ring f => Binop f
@@ -73,7 +73,7 @@ dxVP = (fmap . fmap) constant dxV
 dxVF :: (Eq f, Ring f) => Int -> VectorField f -> PolyRepresentation f
 dxVF i (Vector v) = v !! (i-1)
 
-(#) :: forall f v. (Ring f, VectorSpace f,
+(#) :: forall f v. (Ring f, VectorSpace v, VectorSpace f,
                     Projectable v (Scalar f), Scalar v ~ Scalar f)
     => Form f -> [v] -> f
 (#) = refine projection
@@ -82,7 +82,8 @@ dxVF i (Vector v) = v !! (i-1)
 --d' :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
 --d' = df'
 
-class (Ring f, VectorSpace v) => Projectable v f where
+-- TODO: check constraints
+class (Ring f, Module v) => Projectable v f where
   projection :: Int -> v -> f
 
 instance Field f => Projectable (Vector f) f where

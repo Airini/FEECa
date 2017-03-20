@@ -45,8 +45,8 @@ sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
                   then mulId
                   else addInv mulId
 
--- | Summation over vector spaces
-sumV :: VectorSpace v => [v] -> v
+-- | Summation over modules.
+sumV :: Module m => [m] -> m
 sumV (v:vs) = foldl addV v vs
 sumV _      = error "sumV: Need at least one vector to sum!\n"
 

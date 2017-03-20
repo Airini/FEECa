@@ -154,7 +154,7 @@ prop_barycentric t =
         bs          = barycentricCoordinates t
         vs          = vertices t
         k           = topologicalDimension t
-        oneLists    = map (map fromInt') (sumRLists (k+1) 1)
+        oneLists    = map (map fromInt) (sumRLists (k+1) 1)
 
 
 return []
@@ -164,6 +164,6 @@ t  = referenceSimplex 3 :: (Simplex (Vector Double))
 bs = barycentricCoordinates t
 vs = vertices t
 l1 = [[evaluate v b | v <- vs] | b <- bs]
-l2 = (map (map fromInt') $ sumRLists (topologicalDimension t + 1) 1) :: [[Double]]
+l2 = (map (map fromInt) $ sumRLists (topologicalDimension t + 1) 1) :: [[Double]]
 
 allEq l1 l2 = and $ zipWith (\l3 l4 -> (and (zipWith eqNum l3 l4))) l1 l2

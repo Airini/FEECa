@@ -75,7 +75,7 @@ import qualified  FEECa.Internal.MultiIndex as MI (
 import            FEECa.Internal.Simplex
 import            FEECa.Internal.Spaces           (
                       Ring (..), Field (..), Dimensioned (..),
-                      VectorSpace (..), EuclideanSpace (..),
+                      Module (..), VectorSpace (..), EuclideanSpace (..),
                       toDouble', fromDouble' )
 import qualified  FEECa.Internal.Spaces     as S  ( Function (..) )
 
@@ -212,10 +212,12 @@ Polynomials over $\R{n}$ form a vector space over $\mathrm R$ and a ring. To
 \begin{code}
 
 -- | Polynomials as vector spaces.
-instance Ring a => VectorSpace (Polynomial a) where
+instance Ring a => Module (Polynomial a) where
   type Scalar (Polynomial a) = a
   addV = addPolynomial
   sclV = scalePolynomial
+
+instance Field a => VectorSpace (Polynomial a)
 
 -- | Polynomials as a ring.
 instance Ring a => Ring (Polynomial a) where
@@ -226,7 +228,7 @@ instance Ring a => Ring (Polynomial a) where
   mul       = multiplyPolynomial multiplyMonomial
   mulId     = constant mulId
 
-  fromInt x = Polynomial 0 [Constant (fromInt x)]
+  embedIntegral x = Polynomial 0 [Constant (embedIntegral x)]
 
 \end{code}
 
@@ -546,7 +548,7 @@ deriveTerm dx v (Term c mi)  = sclV c (foldl add addId (zipWith sclV v' (dx mi))
 -- | direction.
 deriveMonomial :: Ring r => Dx r
 deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
-  where c i   = fromInt (MI.toList mi !! i)
+  where c i   = embedIntegral (MI.toList mi !! i)
         mi' i = MI.decrease i mi
         n     = dim mi
 \end{code}

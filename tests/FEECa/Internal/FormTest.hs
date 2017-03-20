@@ -82,7 +82,7 @@ prop_antiComm max n = p (2 + abs n `mod` max)   -- manually limited vectorspace 
 
 -- | "Integer" coefficients generator
 intNumG :: Field f => Gen f
-intNumG = liftM (fromInt . getNonZero) (arbitrary :: Gen (NonZero Integer))
+intNumG = liftM (embedIntegral . getNonZero) (arbitrary :: Gen (NonZero Integer))
 
 nIntNumG :: Field f => Int -> Gen f
 nIntNumG = const intNumG

@@ -142,7 +142,7 @@ instance (EuclideanSpace v, r ~ Scalar v, Arbitrary r, RealFrac r)
     => Arbitrary (Cubic v r) where
   arbitrary = do
       let intBelow   = truncate :: RealFrac r => r -> Integer
-          restrict x = sub x ((fromInt . intBelow) x)
+          restrict x = sub x ((embedIntegral . intBelow) x)
       n  <- Q.choose (1,10)
       liftM (Cubic . fromList) $
         Q.vectorOf n $ liftM (restrict . abs) arbitrary

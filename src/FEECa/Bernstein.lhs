@@ -35,6 +35,8 @@ space $\ps{r}{\smp{f}}$.
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE UndecidableInstances   #-}
 
 module FEECa.Bernstein where
 
@@ -185,21 +187,25 @@ These algebraic structures are implemented by the \code{Ring} and
 \begin{code}
 
 -- | Bernstein polynomials as a vector space.
-instance (EuclideanSpace v, r ~ Scalar v) => VectorSpace (BernsteinPolynomial v r) where
+-- TODO: check on this EuclideanSpace constraint... for vector space instance instead or not?
+instance (EuclideanSpace v, r ~ Scalar v) => Module (BernsteinPolynomial v r) where
   type Scalar (BernsteinPolynomial v r) = r
   addV = addBernstein
   sclV = scaleBernstein
+
+-- TODO: fix these instances (check constraints, etc. which belong where?)
+instance (EuclideanSpace v, Field (Scalar v), r ~ Scalar v)  => VectorSpace (BernsteinPolynomial v r)
 
 -- | Bernstein polynomials as a ring.
 instance (EuclideanSpace v, r ~ Scalar v) => Ring (BernsteinPolynomial v r) where
   add     = addBernstein
   addId   = Constant addId
-  addInv  = scaleBernstein (sub addId mulId)
+  addInv  = scaleBernstein (addInv mulId)
 
   mul     = multiplyBernstein
   mulId   = Constant mulId
 
-  fromInt = Constant . fromInt
+  embedIntegral = Constant . embedIntegral
 
 \end{code}
 

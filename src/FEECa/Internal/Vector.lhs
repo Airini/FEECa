@@ -72,13 +72,15 @@ data Vector a = Vector { components :: [a] } deriving Show
 
 
 instance Eq a => Eq (Vector a) where
-    v1 == v2 = and (zipWith (==) (components v1) (components v2))
+  v1 == v2 = and (zipWith (==) (components v1) (components v2))
 
 -- | R^n as a vector space.
-instance Ring a => VectorSpace (Vector a) where
+instance Ring a => Module (Vector a) where
   type Scalar (Vector a) = a
   addV (Vector l1) (Vector l2) = Vector $ zipWith add l1 l2
   sclV c (Vector l) = Vector $ map (mul c) l
+
+instance Field a => VectorSpace (Vector a)
 
 -- | R^n as a Euclidean space.
 instance (Field a, Eq a) => EuclideanSpace (Vector a) where

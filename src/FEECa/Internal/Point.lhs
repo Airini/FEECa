@@ -110,10 +110,12 @@ fromPoint :: Point a -> Vector a
 fromPoint (Point v) = v
 
 -- Instances
-instance VectorSpace (Point Double) where
+instance Module (Point Double) where
   type Scalar (Point Double) = Double
   addV x = toPoint . uncurry addV . pairM fromPoint fromPoint . (x,)
   sclV _ = undefined
+
+instance VectorSpace (Point Double)
 
 instance EuclideanSpace (Point Double) where
   dot x    = uncurry dot . pairM fromPoint fromPoint . (x,)
