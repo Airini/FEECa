@@ -8,12 +8,17 @@ import FEECa.Internal.Point
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
+import FEECa.Utility.Utility  ( sumR, productR )
 import FEECa.Mask
 import FEECa.Polynomial
 
-import FEECa.Utility.Print    ( Pretty(..) )
-
+import FEECa.Utility.Print    ( Pretty(..), Doc, text, (<+>) )
+import qualified FEECa.Utility.Print as P ( (<>) )
 -------
+
+-- TODO: aid, to be removed.
+pNotation :: (Pretty a, Show a) => a -> Doc
+pNotation x = text (show x) <+> text "~~" <+> pPrint x P.<> text "\n"
 
 -- A 2D simplex
 x20, x21, x22 :: Vector Double

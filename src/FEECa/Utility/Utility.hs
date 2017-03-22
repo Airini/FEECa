@@ -2,7 +2,7 @@ module FEECa.Utility.Utility(
     Dimension (..)
   , takeIndices
   , pairM, pairUp, zipWithWhen
-  , sumR, sumV
+  , sumR, productR, sumV
   , expSign, sign
   , eqNum
   , toDouble, fromDouble
@@ -29,8 +29,12 @@ zipWithWhen f p (a:as) (b:bs) | p a b     = f a b : zipWithWhen f p as bs
                               | otherwise = zipWithWhen f p as bs
 
 -- | Equivalent to 'sum' for 'Ring' types
-sumR :: Ring a => [a] -> a
-sumR = foldl add addId
+sumR :: (Foldable t, Ring a) => t a -> a
+sumR = foldr add addId
+
+-- | Equivalent to 'product' for 'Ring' types
+productR :: (Foldable t, Ring a) => t a -> a
+productR = foldr mul mulId
 
 -- | Returns the appropriate function for arithmetic expressions having
 --   products with exponentials of -1 over 'Ring' types
@@ -47,7 +51,7 @@ sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
 
 -- | Summation over modules.
 sumV :: Module m => [m] -> m
-sumV (v:vs) = foldl addV v vs
+sumV (v:vs) = foldr addV v vs
 sumV _      = error "sumV: Need at least one vector to sum!\n"
 
 -- | Numerical equality accounting for round-off errors

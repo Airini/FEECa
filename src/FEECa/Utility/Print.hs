@@ -1,5 +1,6 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module FEECa.Utility.Print (
-    Pretty (..)
+    Pretty (..), Doc
   , printDouble, printComponent, printVector, printVectorRow
   , printBernstein, printPolynomial, printPolynomial0, printForm
   , lambda, dlambda, (<>), (<+>), (P.$$), (P.$+$), text, rn, int
@@ -14,10 +15,12 @@ import            Data.List ( intersperse )
 
 
 -- Some symbols
-dlambda, lambda, phi :: String
+dlambda, lambda, phi :: [Char]
 dlambda = 'd':lambda
 lambda  = "\x03BB"
 phi     = "\x03D5"
+
+type MIx = MI.MultiIndex
 
 -- class RenderVector v where
 --    ncomps :: v -> Int
@@ -27,13 +30,11 @@ phi     = "\x03D5"
 class Pretty p where
   pPrint :: p -> Doc
 
-{-
-#if MIN_VERSION_base(4,8,0)
-#else
-instance Eq Doc where
-  (==) = (==) `on` render
-#endif
--}
+-- #if MIN_VERSION_base(4,8,0)
+-- #else
+-- instance Eq Doc where
+--   (==) = (==) `on` render
+-- #endif
 
 instance Pretty Integer where
   pPrint = integer
@@ -41,7 +42,7 @@ instance Pretty Integer where
 -- | Pretty printing for lists of Pretty instances.
 instance Pretty a => Pretty [a] where
   pPrint [] = text "Empty List"
-  pPrint l  = text "["  P.$$  foldl1 addline (map pPrint l)  P.$$  text "]"
+  pPrint l  = text "["  P.$$  foldr1 addline (map pPrint l)  P.$$  text "]"
     where addline x y = (x <> comma) P.$+$ y
 
 -- | Instance for 'Double'
@@ -93,43 +94,36 @@ maxWidth p l = maximum (map numLen l) + p + 1
 
 
 -- | Pretty print polynomial
-printPolynomial :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
-printPolynomial _   []           = double 0.0
-printPolynomial sym [ (c,mon) ]  = double c <+> printMonomial sym (MI.toList mon)
-printPolynomial sym ((c,mon):ls) = ss <+> text "+" <+> printPolynomial sym ls
-  where ss      = double c <+> monDoc
-        monDoc  = printMonomial sym (MI.toList mon)
-        s       = (if isEmpty monDoc || (c /= S.mulId && c /= S.addInv S.mulId)
-                    then double c
+printTerms :: (S.Ring f, Ord f, Num f, Pretty f)
+           => ( [Int] -> Doc ) -> [ (f, MI.MultiIndex) ] -> Doc
+printTerms _     ([] :: [ (f,MIx) ])  = pPrint (S.addId :: f)
+printTerms prMon ((t,mon):ls)         = unSg t (monD mon) `pPol` ls
+  where pPol r []         = r <> baseD
+        pPol r ((c,m):ms) = r <+> signD c <+> unSg (abs c) (monD m) `pPol` ms
+        monD m   = prMon (MI.toList m)
+        unSg c m = (if isEmpty m || (c /= S.mulId && c /= S.addInv S.mulId)
+                    then pPrint c
                     else empty)
-                  <+> monDoc -- printMonomial sym (MI.toList mon)
-  -- (if c == S.mulId then empty
-  --                         else double c)
+                  <+> m
+
+printPolynomial :: [Char] -> [(Double, MI.MultiIndex)] -> Doc
+printPolynomial sym = printTerms (printMonomial1 sym)
 
 -- | Pretty print polynomial
 printPolynomial0 :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
-printPolynomial0 _   []           = double 0.0
-printPolynomial0 sym [ (c,mon) ]  = double c <+> printMonomial0 sym (MI.toList mon)
-printPolynomial0 sym ((c,mon):ls) = s <+> text "+" <+> printPolynomial sym ls
-  where s = double c <+> printMonomial0 sym (MI.toList mon)
+printPolynomial0 sym = printTerms (printMonomial0 sym)
 
 -- | Pretty print polynomial
 printBernstein :: [(Double,MI.MultiIndex)] -> Doc
-printBernstein []           = double 0.0
-printBernstein [(c,mon)]    = double c <+> printMonomial0 lambda (MI.toList mon)
-printBernstein ((c,mon):ls) = if c == 0
-                                then printPolynomial lambda ls
-                                else s <+> text "+" <+> printPolynomial lambda ls
-  where s = double c <+> printMonomial0 lambda (MI.toList mon)
-
+printBernstein = printTerms (printMonomial0 lambda)
 
 -- | Pretty print constant
 printConstant :: Double -> Doc
 printConstant = double
 
 -- | Pretty print monomial using sym for the components
-printMonomial :: [Char] -> [Int] -> Doc
-printMonomial sym = printMonomial' sym 1
+printMonomial1 :: [Char] -> [Int] -> Doc
+printMonomial1 sym = printMonomial' sym 1
 
 -- | Pretty print monomial using sym for the components
 printMonomial0 :: [Char] -> [Int] -> Doc
@@ -162,14 +156,20 @@ printWhitneyForm p ls = hsep $ punctuate (text " + ") (map printPair ls)
 printForm :: [Char] -> [Char] -> (f -> Doc) -> [(f,[Int])] -> Doc
 printForm _  unit _     []   = text unit -- $ coeff addId
 printForm df _    coeff rest = hsep $ punctuate (text " +") $
-  map (\(a,cs) -> text "(" <> coeff a <> text ")" <+>
+  map (\(a,cs) -> lparen <> coeff a <> rparen <+>
                   hsep (intersperse wedgeD (map ((<>) (text df) . printSub) cs)))
       rest
+
 
 -- * Auxiliary prints
 
 baseD :: Doc
 baseD = text ""
+
+-- | 'Doc' for a 'Ring' with "sign".
+signD :: (S.Ring f, Ord f) => f -> Doc
+signD c | c < S.addId = text "-"
+        | otherwise   = text "+"
 
 -- | Pretty print exponent using unicode superscripts. Prints "" for
 -- | 0.
@@ -185,7 +185,6 @@ printPower i
     | i==9  = text "\x2079"
     | i > 9 = printPower (div i 10)  <> printPower (mod i 10)
     | otherwise = text ""
-  -- where ld = truncate (logBase 10 (fromIntegral i))
 
 printSuperscript :: Integral a => a -> Doc
 printSuperscript i
