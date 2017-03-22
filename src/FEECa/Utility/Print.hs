@@ -22,9 +22,6 @@ phi     = "\x03D5"
 
 type MIx = MI.MultiIndex
 
--- class RenderVector v where
---    ncomps :: v -> Int
---    components :: v -> [Double]
 
 -- | Pretty class prototype.
 class Pretty p where
@@ -110,11 +107,11 @@ printPolynomial :: [Char] -> [(Double, MI.MultiIndex)] -> Doc
 printPolynomial sym = printTerms (printMonomial1 sym)
 
 -- | Pretty print polynomial
-printPolynomial0 :: [Char] -> [(Double,MI.MultiIndex)] -> Doc
+printPolynomial0 :: [Char] -> [(Double, MI.MultiIndex)] -> Doc
 printPolynomial0 sym = printTerms (printMonomial0 sym)
 
 -- | Pretty print polynomial
-printBernstein :: [(Double,MI.MultiIndex)] -> Doc
+printBernstein :: [(Double, MI.MultiIndex)] -> Doc
 printBernstein = printTerms (printMonomial0 lambda)
 
 -- | Pretty print constant

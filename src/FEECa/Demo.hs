@@ -8,7 +8,7 @@ import FEECa.Internal.Point
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
-import FEECa.Utility.Utility  ( sumR, productR )
+--import FEECa.Utility.Utility  ( sumR, productR )
 import FEECa.Mask
 import FEECa.Polynomial
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module FEECa.Utility.Utility(
     Dimension (..)
   , takeIndices
@@ -9,6 +10,11 @@ module FEECa.Utility.Utility(
   ) where
 
 import FEECa.Internal.Spaces
+
+#if MIN_VERSION_base(4,8,0)
+#else
+import Data.Foldable
+#endif
 
 takeIndices :: [a] -> [Int] -> [a]
 takeIndices l = map (l !!)
