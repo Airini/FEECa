@@ -13,7 +13,8 @@ import FEECa.Internal.Spaces
 
 #if MIN_VERSION_base(4,8,0)
 #else
-import Data.Foldable
+import Prelude        hiding  ( foldr, sum )
+import Data.Foldable          ( foldr, sum )
 #endif
 
 takeIndices :: [a] -> [Int] -> [a]

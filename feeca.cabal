@@ -115,7 +115,7 @@ test-suite test-feec
 benchmark bench
   type:               exitcode-stdio-1.0
   main-is:            bench/FEECa/bench.hs
-  ghc-options:        -prof -fprof-auto-exported -O2 -threaded -fexcess-precision -optc-O3 -optc-ffast-math -optc-mfpmath=sse -funfolding-use-threshold=16 "-with-rtsopts=-N -pa -s -h -i0.1"
+  ghc-options:        -fprof-auto-exported -O2 -threaded -fexcess-precision -optc-O3 -optc-ffast-math -optc-mfpmath=sse -funfolding-use-threshold=16 "-with-rtsopts=-N -pa -s -h -i0.1"
 
   build-depends:      base >= 4.6 && < 5, feeca,
                       criterion, timeit == 1.0.0.0, deepseq
