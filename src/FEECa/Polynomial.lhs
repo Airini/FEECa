@@ -38,6 +38,7 @@ polynomials implemented in the \module{Bernstein} module.
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
+-- {-# LANGUAGE AllowAmbiguousTypes    #-}
 
 module FEECa.Polynomial (
 
@@ -67,7 +68,7 @@ import            Data.List
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
 import            FEECa.Utility.Print   ( Pretty (..), printPolynomial )
-import            FEECa.Utility.Utility ( zipWithWhen )
+import            FEECa.Utility.Utility ( zipWithWhen, sumR, productR )
 
 import qualified  FEECa.Internal.MultiIndex as MI (
                       MultiIndex, zero, unit, decrease,
@@ -268,7 +269,7 @@ expandTerm _ (Term c mi)  = (c, mi)
 -- | Polynomials as functions.
 
 instance (EuclideanSpace v, r ~ Scalar v) => S.Function (Polynomial r) v where
-  evaluate v  = evaluatePolynomial (evaluateMonomial v)
+  evaluate v  = evaluatePolynomial (evaluateMonomial (toList v))
   derive      = derivePolynomial deriveMonomial
 
 \end{code}
@@ -446,11 +447,10 @@ evaluateTerm f (Term c mi)  = mul c (f mi)
 evaluateTerm _ (Constant c) = c
 
 -- | Evaluate monomial over standard monomial basis.
-evaluateMonomial :: (EuclideanSpace v, r ~ Scalar v)
-                 => v -> MI.MultiIndex -> r
-evaluateMonomial v mi = prod' (zipWith pow (toList v) (MI.toList mi::[Int]))
-  where prod' = foldl mul mulId
-
+evaluateMonomial :: Ring r -- (EuclideanSpace v, r ~ Scalar v)
+                 => [r] -> MI.MultiIndex -> r
+evaluateMonomial v mi = productR (zipWith pow v (MI.toList mi::[Int]))
+--  where prod' = foldl mul mulId
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -470,7 +470,7 @@ The evaluation of polynomials over the monomial basis can now be realized by
 -- | for the evaluation of monomials.
 evaluatePolynomial :: Ring r
                    => (MI.MultiIndex -> r) -> Polynomial r -> r
-evaluatePolynomial f p = foldl add addId (map (evaluateTerm f) (terms p))
+evaluatePolynomial f p = sumR {-foldl add addId-} (map (evaluateTerm f) (terms p))
 
 
 \end{code}
@@ -541,7 +541,7 @@ The function \code{deriveMonomial} implements the derivative of a monomial for
 deriveTerm :: (EuclideanSpace v, r ~ Scalar v)
            => Dx r -> v -> Term r -> Polynomial r
 deriveTerm _  _ (Constant _) = constant addId
-deriveTerm dx v (Term c mi)  = sclV c (foldl add addId (zipWith sclV v' (dx mi)))
+deriveTerm dx v (Term c mi)  = sclV c (sumR {-foldl add addId-} (zipWith sclV v' (dx mi)))
   where v' = toList v
 
 -- | Derivative of a monomial over the standard monomial basis in given space
@@ -567,8 +567,8 @@ deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
 -- | General derivative for a polynomial with arbitrary basis.
 derivePolynomial :: (EuclideanSpace v, r ~ Scalar v)
                  => Dx r -> v -> Polynomial r -> Polynomial r
-derivePolynomial dx v p = foldl add addId [ deriveTerm dx v t | t <- ts ]
-  where ts = terms p
+derivePolynomial dx v p = sumR {-foldl add addId-} [ deriveTerm dx v t | t <- terms p ] --ts ]
+--  where ts = terms p
 
 \end{code}
 
