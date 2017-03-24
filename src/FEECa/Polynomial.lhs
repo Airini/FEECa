@@ -292,6 +292,7 @@ The functions \code{constant}, \code{monomial}, \code{term} and
 -- | Create a constant polynomial with the given value.
 constant :: a -> Polynomial a
 constant c = Polynomial 0 [Constant c]
+
 -- | Create a polynomial consisting of a single monomial from a given
 -- | multi-index.
 monomial :: Ring a => MI.MultiIndex -> Polynomial a
@@ -311,16 +312,16 @@ polynomial l
 -- | Check whether a list of coefficient-multi-index pairs represents a
 -- | polynomial.
 checkPolynomial :: [(a, MI.MultiIndex)] -> Bool
-checkPolynomial ls = all (MI.valid . snd) ls&& sameLength (map snd ls)
+checkPolynomial ls = all (MI.valid . snd) ls && sameLength (map snd ls)
 
 -- | Check if all multi-indices in the list have the same dimension.
 sameLength :: [MI.MultiIndex] -> Bool
-sameLength (l:ls) = sameLength' (dim l) ls
-sameLength [] = True
+sameLength []     = True
+sameLength (l:ls) = all ((== dim l) . dim) ls
 
-sameLength' :: Int -> [MI.MultiIndex] -> Bool
-sameLength' i (l:ls) = (i == dim l) && sameLength' (dim l) ls
-sameLength' _ [] = True
+{-sameLength' :: Int -> [MI.MultiIndex] -> Bool
+sameLength' i (l:ls)  = (i == dim l) && sameLength' (dim l) ls
+sameLength' _ []      = True-}
 
 \end{code}
 

@@ -144,7 +144,7 @@ polynomial t l
     | otherwise               = error "polynomial: Dimensions of Simplex and Polynomials do not match."
   where n1      = (dim . snd . head) l
         n2      = topologicalDimension t
-        termsOk = all (\(_,mi) -> n1 == dim mi) (tail l)
+        termsOk = all ((== n1) . dim . snd) (tail l)
 
 
 -- | Create a Bernstein monomial over a given simplex and multi-index.
@@ -305,7 +305,7 @@ internal or underlying polynomial at the resulting vector.
 \begin{code}
 -- | Evaluate Bernstein polynomial by first evaluating the barycentric coordinates
 -- | and then evaluating the internal polynomial at the resulting vector.
-evaluateBernstein :: ( EuclideanSpace v, r ~ Scalar v)
+evaluateBernstein :: (EuclideanSpace v, r ~ Scalar v)
                   => v -> BernsteinPolynomial v r -> r
 evaluateBernstein v (Bernstein t p) = {-# SCC "evaluateBernstein" #-} evaluate vb p
   where vb = {-#SCC "barycentric" #-} vector $ map (evaluate v) (barycentricCoordinates t)

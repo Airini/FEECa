@@ -136,7 +136,7 @@ multiIndex l
 
 -- | Check whether a given multi-index is valid.
 valid :: MultiIndex -> Bool
-valid mi = all (0 <=) (toList mi)
+valid = all (>= 0)
 
 -- | Transform multi-index into list
 toList :: Integral a => MultiIndex -> [a]

@@ -233,3 +233,8 @@ fromDouble' = fromList . map fromDouble
 -- representation: lists of 'Double'.
 toDouble' :: EuclideanSpace v => v -> [Double]
 toDouble' = map toDouble . toList
+
+-- | General translation to 'EuclideanSpace' vectors from lists with
+-- 'Integral' components.
+fromIntegral' :: (EuclideanSpace v, Integral a) => [a] -> v
+fromIntegral' = fromList . map embedIntegral
