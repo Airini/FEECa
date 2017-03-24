@@ -77,10 +77,14 @@ the number of exponents in the multi-index.
 
 type MultiIndex = ZipList Int
 
+#if MIN_VERSION_base(4,9,0)
+#else
+deriving instance Foldable MultiIndex
 #if MIN_VERSION_base(4,7,0)
 #else
 deriving instance Show MultiIndex
 deriving instance Eq   MultiIndex
+#endif
 #endif
 
 instance Dimensioned MultiIndex where
