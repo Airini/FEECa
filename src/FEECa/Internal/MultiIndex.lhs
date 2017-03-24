@@ -79,7 +79,7 @@ type MultiIndex = ZipList Int
 
 #if MIN_VERSION_base(4,9,0)
 #else
-deriving instance Foldable MultiIndex
+deriving instance Foldable ZipList
 #if MIN_VERSION_base(4,7,0)
 #else
 deriving instance Show MultiIndex
