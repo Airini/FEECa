@@ -11,9 +11,10 @@
 module FEECa.PolynomialDifferentialForm where
 
 import Control.Applicative  ( liftA2 )
-import Data.Maybe
+import Control.Monad        ( MonadPlus (..) )
+import Data.Foldable  ( Foldable (..) )
 import Data.Monoid    ( First (..) )
-import Control.Monad  ( MonadPlus (..) )
+import Data.Maybe
 
 import            FEECa.Internal.Vector
 import            FEECa.Internal.Simplex

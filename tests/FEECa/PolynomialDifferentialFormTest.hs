@@ -134,9 +134,9 @@ prop_inner c omega@(Form k n cs) =
           normE   = op2 eta
           op2     = (`DF.inner` eta)
       in
-          (normO > 0 || S.inner b b `eqNum` 0.0)
+          ( normO > 0 || S.inner b b `eqNum` 0.0 )
        && ( (product `eqNum` op' eta && op2 (sclV cp omega) `eqNum` mul c product)
-          || normO `eqNum` 0.0 || normE `eqNum` 0.0 )
+            || normO `eqNum` 0.0 || normE `eqNum` 0.0 )
   where op    = DF.inner omega
         normO = op omega
         op'   = (`DF.inner` omega)
