@@ -43,6 +43,12 @@ sumR = foldr add addId
 productR :: (Foldable t, Ring a) => t a -> a
 productR = foldr mul mulId
 
+{-# INLINE pairM #-}
+{-# INLINE pairUp #-}
+{-# INLINE sumR #-}
+{-# INLINE productR #-}
+{-# INLINE sumV #-}
+
 -- | Returns the appropriate function for arithmetic expressions having
 --   products with exponentials of -1 over 'Ring' types
 expSign :: Ring f => Int -> f -> f
