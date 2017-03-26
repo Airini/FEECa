@@ -74,19 +74,31 @@ data Vector a = Vector { components :: [a] } deriving Show
 instance Eq a => Eq (Vector a) where
   v1 == v2 = and (zipWith (==) (components v1) (components v2))
 
+  -- TODO: Note that |zipWith| stops when the shorter vector ends, so
+  --   for all v. vector []  ==  v
+  -- Thus an invariant for this definition to work is that vectors
+  -- compared for equality always have the same dimenstion.
+
 -- | R^n as a vector space.
 instance Ring a => Module (Vector a) where
   type Scalar (Vector a) = a
   addV (Vector l1) (Vector l2) = Vector $ zipWith add l1 l2
   sclV c (Vector l) = Vector $ map (mul c) l
 
+  -- Note: Also here, for addV to be correct, it is important that
+  -- vectors have the same length (dimension).
+
 instance Field a => VectorSpace (Vector a)
 
 -- | R^n as a Euclidean space.
 instance (Field a, Eq a) => EuclideanSpace (Vector a) where
-  dot (Vector l1) (Vector l2) = foldl add addId (zipWith mul l1 l2)
-  toList   = components
-  fromList = vector
+  dot       = dotVector
+  toList    = components
+  fromList  = vector
+
+dotVector :: Ring r => Vector r -> Vector r -> r
+dotVector (Vector l1) (Vector l2) = foldl add addId (zipWith mul l1 l2)
+-- TODO: use sumR = foldl add addId if it is OK to import Utility.Utility
 
 -- | The dimension of vectors.
 instance Dimensioned (Vector a) where

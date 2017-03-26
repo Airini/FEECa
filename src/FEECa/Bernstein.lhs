@@ -330,6 +330,7 @@ tabulateBernstein' _  _               = error "tabulateBernstein': TODO"
 The derivative of a Bernstein monomial along a given direction in space is
 given by
 
+%TODO: Compare to the paper: there the macro \B has two arguments for sub- and superscipt.
 $$
 \begin{align}
   \frac{d}{dx_i}\B_{\vec{\alpha}}^{r}
