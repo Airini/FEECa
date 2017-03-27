@@ -55,6 +55,10 @@ module FEECa.Internal.MultiIndex (
 
 
 import            Control.Applicative               (ZipList(..), liftA2, pure, (<*>))
+#if MIN_VERSION_base(4,9,0)
+#else
+import Data.Foldable ( Foldable(..) )
+#endif
 
 import            FEECa.Utility.Combinatorics       (sumRLists)
 import qualified  FEECa.Utility.Combinatorics as C  (choose, factorial)
@@ -80,7 +84,6 @@ type MultiIndex = ZipList Int
 
 #if MIN_VERSION_base(4,9,0)
 #else
-import Data.Foldable ( Foldable(..) )
 deriving instance Foldable ZipList
 #if MIN_VERSION_base(4,7,0)
 #else
