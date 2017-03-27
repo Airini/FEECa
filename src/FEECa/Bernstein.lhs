@@ -241,7 +241,8 @@ derived so they are declared an instance of the class \code{Function}.
 
 \begin{code}
 
-instance (EuclideanSpace v, r ~ Scalar v) => Function (BernsteinPolynomial v r) v where
+instance (EuclideanSpace v, r ~ Scalar v, Ord r)
+    => Function (BernsteinPolynomial v r) v where
   evaluate = {-# SCC "evaluate" #-} evaluateBernstein
   derive   = deriveBernstein
 
@@ -305,14 +306,14 @@ internal or underlying polynomial at the resulting vector.
 \begin{code}
 -- | Evaluate Bernstein polynomial by first evaluating the barycentric coordinates
 -- | and then evaluating the internal polynomial at the resulting vector.
-evaluateBernstein :: (EuclideanSpace v, r ~ Scalar v)
+evaluateBernstein :: (EuclideanSpace v, r ~ Scalar v, Ord r)
                   => v -> BernsteinPolynomial v r -> r
 evaluateBernstein v (Bernstein t p) = {-# SCC "evaluateBernstein" #-} evaluate vb p
   where vb = {-#SCC "barycentric" #-} vector $ map (evaluate v) (barycentricCoordinates t)
 evaluateBernstein _ (Constant c)    = {-# SCC "evaluateConstant" #-} c
 
 
-tabulateBernstein :: (EuclideanSpace v, r ~ Scalar v)
+tabulateBernstein :: (EuclideanSpace v, r ~ Scalar v, Ord r)
                   => Simplex v -> [v] -> [BernsteinPolynomial v r] -> [[r]]
 tabulateBernstein t vs bs = [tabulateBernstein' ls b | b <- bs]
   where ls = P.euclideanToBarycentric t vs
@@ -355,7 +356,7 @@ function provided by the \module{Polynomial} module.
 \begin{code}
 
 -- | Derivative of a Bernstein monomial
-deriveMonomial :: ( EuclideanSpace v, r ~ Scalar v)
+deriveMonomial :: ( EuclideanSpace v, r ~ Scalar v, Ord r )
                => Simplex v -> MI.MultiIndex -> [ Polynomial r ]
 deriveMonomial t mi = [ sumR [sclV (grads j i) (dp j)  | j <- [0..n]] | i <- [0..n-1] ]
     where grads j i = toList (barycentricGradients t !! j) !! i
@@ -366,7 +367,7 @@ deriveMonomial t mi = [ sumR [sclV (grads j i) (dp j)  | j <- [0..n]] | i <- [0.
           n    = dim mi - 1
 
 -- | Derive Bernstein polynomial.
-deriveBernstein :: ( EuclideanSpace v, r ~ Scalar v)
+deriveBernstein :: ( EuclideanSpace v, r ~ Scalar v, Ord r )
                 => v -> BernsteinPolynomial v r -> BernsteinPolynomial v r
 deriveBernstein v (Bernstein t p) = Bernstein t (derivePolynomial (deriveMonomial t) v p)
 deriveBernstein _ (Constant _)    = Constant addId
@@ -390,7 +391,7 @@ This is implemented by the \code{integrate} function.
 
 -- | Numerically integrate the Bernstein polyonomial p over the simplex t using
 -- | a Gauss-Jacobi quadrature rule.
-integratePolynomial :: (EuclideanSpace v, r ~ Scalar v)
+integratePolynomial :: (EuclideanSpace v, r ~ Scalar v, Ord r)
                     => Simplex v -> BernsteinPolynomial v r -> r
 integratePolynomial t b = integrateOverSimplex q t (`evaluate` b)
   where q = div (r + 2) 2
@@ -474,7 +475,7 @@ product with the gradient vector.
 
 -- | Projection function for gradients of barycentric coordinates as basis for
 -- | the space of alternating forms.
-proj :: (EuclideanSpace v, r ~ Scalar v)
+proj :: (EuclideanSpace v, r ~ Scalar v, Ord r)
      => Simplex v -> Int -> v -> r
 proj t i  = dot u
   where u = barycentricGradient t i

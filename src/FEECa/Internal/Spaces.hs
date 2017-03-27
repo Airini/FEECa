@@ -56,18 +56,20 @@ dd  embedIntegral = fromInt
 
 -- | Completion of the 'Ring' class to that of a 'Field'
 class Ring f => Field f where
-  mulInv     :: f -> f
+  mulInv :: f -> f
+  mulInv = divide mulId
   
+  -- | Default derived division.
+  divide :: Field f => f -> f -> f
+  divide a b = mul a (mulInv b)
+
   fromDouble :: Double -> f
   fromDouble = undefined
   toDouble   :: f -> Double
   toDouble = undefined
   
-  {-# MINIMAL mulInv #-}
-
--- | Derived division operation from 'Field' class functions.
-divide :: Field f => f -> f -> f
-divide a b = mul a (mulInv b)
+  {-# MINIMAL mulInv
+            | divide #-}
 
 -- Example instances for the floating 'Double' and for the 'Rational' types.
 instance Ring Double where
@@ -89,7 +91,7 @@ instance Ring Integer where
   pow     = (^)
 
 instance Field Double where
-  mulInv     = (1/)
+  divide     = (/)
   fromDouble = id
   toDouble   = id
 
@@ -110,7 +112,7 @@ instance Ring Rational where
   embedIntegral = fromIntegral
 
 instance Field Rational where
-  mulInv      = (1/)
+  mulInv      = recip
   fromDouble  = realToFrac
   toDouble    = fromRat
 
@@ -166,12 +168,15 @@ class Dimensioned t where
 -- immeidate definition as coordinates wrt to a basis) and for appropriate inner
 -- products giving rise to metrics.
 -- TODO: check VS vs M
-class (Eq v, Dimensioned v, VectorSpace v, Eq (Scalar v), Field (Scalar v))
+class ( Eq v, Dimensioned v, VectorSpace v, Field (Scalar v) )
     => EuclideanSpace v where
   dot      :: v -> v -> Scalar v
   fromList :: [Scalar v] -> v
   toList   :: v -> [Scalar v]
 -- XXX: add basis??
+
+norm2 :: EuclideanSpace v => v -> Scalar v
+norm2 v = dot v v
 
 --- XXX: Hilbert Space?
 

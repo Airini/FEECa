@@ -91,7 +91,7 @@ instance Ring a => Module (Vector a) where
 instance Field a => VectorSpace (Vector a)
 
 -- | R^n as a Euclidean space.
-instance (Field a, Eq a) => EuclideanSpace (Vector a) where
+instance Field a => EuclideanSpace (Vector a) where
   dot       = dotVector
   toList    = components
   fromList  = vector

@@ -48,7 +48,7 @@ y :: Vector Double
 y = vector [3,-2.3,1]
 -}
 
-dxV :: (Eq (Vector f), Field f) => Int -> Vector f -> f
+dxV :: Field f => Int -> Vector f -> f
 dxV i x = toList x !! (i-1)
 
 {-expression = refine dxVP (t /\ g) [b, y]

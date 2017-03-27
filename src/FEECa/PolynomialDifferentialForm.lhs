@@ -5,8 +5,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts     #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE OverloadedStrings    #-}
-
 
 module FEECa.PolynomialDifferentialForm where
 
@@ -31,8 +29,6 @@ type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
 type DifferentialForm a    = D.DifferentialForm (BernsteinPolynomial a)
 
 {-
-instance Show (BernsteinPolynomial Double) where
-  show b = show $ pPrint b
 instance  Show (DifferentialForm Double) where
   show omega = show $ printForm ("d" ++ lambda) "0" pPrint (F.terms omega)
 -}
@@ -44,21 +40,22 @@ findSimplex' :: BernsteinPolynomial a -> First (Simplex (Vector a))
 findSimplex' (B.Bernstein t _)  = First $ Just t
 findSimplex' _                  = First $ Nothing
 
-tabulate :: (S.Field a, S.VectorSpace a, S.Scalar a ~ a)
+tabulate :: (S.Field a, S.VectorSpace a, S.Scalar a ~ a, Ord a)
          => [DifferentialForm a]
          -> [Vector a]
          -> [Simplex (Vector a)]
          -> [[a]]
-tabulate bs vs fs = [evalSeparately t b vs fs' | b <- bs]
+tabulate bs vs fs = [ evalSeparately t b vs fs' | b <- bs ]
   where t   = fromJust $ findSimplex $ head bs
         fs' = map spanningVectors fs
 
-apply :: S.Field a => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
+apply :: (S.Field a, Ord a)
+      => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
 apply omega vs = {-# SCC "apply" #-} F.apply ds vs omega
   where t  = fromJust (findSimplex omega)
         ds = P.barycentricGradients t
 
-evalSeparately :: (S.Field a, S.Module a, S.Scalar a ~ a)
+evalSeparately :: (S.Field a, S.Module a, S.Scalar a ~ a, Ord a)
                => Simplex (Vector a)
                -> DifferentialForm a
                -> [Vector a]
@@ -73,16 +70,17 @@ evalSeparately t omega vs fs = V.toList $ foldl S.addV (S.zero l) crossres
         l           = length vs * length fs
         -- zero        = V.vector (replicate l $ S.embedIntegral 0.0)
 
-inner :: S.Field a => DifferentialForm a -> DifferentialForm a -> a
+inner :: (S.Field a, Ord a) => DifferentialForm a -> DifferentialForm a -> a
 inner omega eta
     | isJust t  = F.inner (B.proj (fromJust t)) omega eta
     | otherwise =
         error "Inner: Need associated simplex to compute inner product."
   where t = findSimplex omega `mplus` findSimplex eta
 
-integrate :: S.Field a => Simplex (Vector a) -> DifferentialForm a -> a
+integrate :: (S.Field a, Ord a) => Simplex (Vector a) -> DifferentialForm a -> a
 integrate t omega = S.divide (B.integratePolynomial t b) (S.mul kfac (volume t))
   where b    = apply omega (spanningVectors t)
         b'   = S.sclV (S.mulInv (S.mul kfac (volume t))) b
         kfac = S.embedIntegral (C.factorial (topologicalDimension t))
+
 \end{code}

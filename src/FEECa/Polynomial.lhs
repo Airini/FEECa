@@ -672,7 +672,7 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 
 \begin{code}
 
-euclideanToBarycentric :: EuclideanSpace v
+euclideanToBarycentric :: (EuclideanSpace v, Ord (Scalar v))
                        => Simplex v -> [v] -> [v]
 euclideanToBarycentric t vs = map (fromDouble' . M.toList) $ M.toRows res
   where res  = vmat M.<> mat
@@ -685,7 +685,7 @@ euclideanToBarycentric t vs = map (fromDouble' . M.toList) $ M.toRows res
 -- | as large as the geometrical dimension, i.e. the simplex must contain n+1
 -- | vertices if the underlying space has dimensionality n.
 -- TODO: check take
-barycentricCoordinates :: (EuclideanSpace v, r ~ Scalar v)
+barycentricCoordinates :: (EuclideanSpace v, r ~ Scalar v, Ord r)
                        => Simplex v -> [ Polynomial r ]
 barycentricCoordinates s = {-# SCC "barycentricCoordinates" #-} take (nt + 1) bs
     where bs  = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
@@ -694,7 +694,7 @@ barycentricCoordinates s = {-# SCC "barycentricCoordinates" #-} take (nt + 1) bs
 
 -- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial
 -- | in the list
-barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v)
+barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v, Ord r)
                       => Simplex v -> Int -> Polynomial r
 barycentricCoordinate s i =  barycentricCoordinates s !! i
 
@@ -735,20 +735,20 @@ vectorToGradient :: EuclideanSpace v
 vectorToGradient v  = fromDouble' (tail (M.toList v))
 
 -- | Compute gradients of the barycentric coordinates.
-barycentricGradients :: EuclideanSpace v
+barycentricGradients :: (EuclideanSpace v, Ord (Scalar v))
                      => Simplex v -> [v]
 barycentricGradients t = {-# SCC "barycentricGradients" #-} map vectorToGradient (take (nt+1) (M.toColumns mat))
   where mat = M.inv (simplexToMatrix (extendSimplex t))
         nt  = topologicalDimension t
 
 -- | Compute gradients of the barycentric coordinates.
-barycentricGradients' :: EuclideanSpace v
+barycentricGradients' :: (EuclideanSpace v, Ord (Scalar v))
                       => Simplex v -> [v]
 barycentricGradients' t = map (fromDouble' . M.toList) (tail (M.toRows mat))
   where mat = M.inv (simplexToMatrix (extendSimplex t))
 
 -- | Compute gradient of the barycentric coordinate corresponding to edge i
-barycentricGradient :: EuclideanSpace v
+barycentricGradient :: (EuclideanSpace v, Ord (Scalar v))
                     => Simplex v
                     -> Int
                     -> v

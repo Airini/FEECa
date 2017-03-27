@@ -85,7 +85,8 @@ pSubsimplices (SubsimplexTest s@(Simplex _ l) k _) =
 prop_extend_subsimplex :: SubsimplexTest (Vector Double) -> Bool
 prop_extend_subsimplex = pExtendSubsimplex
 
-pExtendSubsimplex :: ( Show v, EuclideanSpace v) => SubsimplexTest v -> Bool
+pExtendSubsimplex :: ( Show v, EuclideanSpace v, Ord (Scalar v) )
+                  => SubsimplexTest v -> Bool
 pExtendSubsimplex (SubsimplexTest s@(Simplex _ l) k i) =
     volume t /= addId && topologicalDimension t == geometricalDimension t
   where t = extendSimplex (subsimplex s k i)

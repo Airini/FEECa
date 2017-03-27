@@ -32,11 +32,12 @@ The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
 \begin{code}
 
 {-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE DeriveFoldable       #-}
+{-# LANGUAGE CPP                  #-}
 
-module FEECa.Internal.MultiIndex(
+module FEECa.Internal.MultiIndex (
 
   -- * The MultiIndex type
     MultiIndex, toList, valid
@@ -54,7 +55,6 @@ module FEECa.Internal.MultiIndex(
 
 
 import            Control.Applicative               (ZipList(..), liftA2, pure, (<*>))
-import qualified  Data.Foldable               as F  (Foldable(..))
 
 import            FEECa.Utility.Combinatorics       (sumRLists)
 import qualified  FEECa.Utility.Combinatorics as C  (choose, factorial)
@@ -74,19 +74,23 @@ class for the implementation of methods on multi-indices.
 The dimension of a multi-index is the dimension of the underlying space, i.e.
 the number of exponents in the multi-index.
 %------------------------------------------------------------------------------%
-\begin{code}
 
-type MultiIndex = ZipList Int
-
+%if style /= newcode
 #if MIN_VERSION_base(4,9,0)
 #else
-deriving instance F.Foldable ZipList
+import Data.Foldable ( Foldable(..) )
+deriving instance Foldable ZipList
 #if MIN_VERSION_base(4,7,0)
 #else
 deriving instance Show MultiIndex
 deriving instance Eq   MultiIndex
 #endif
 #endif
+%endif
+
+\begin{code}
+
+type MultiIndex = ZipList Int
 
 instance Dimensioned MultiIndex where
   dim mi = length (getZipList mi)
@@ -145,7 +149,7 @@ valid = all (>= 0)
 
 -- | Transform multi-index into list
 toList :: Integral a => MultiIndex -> [a]
-toList = foldMap ((:[]).fromIntegral)-- . F.toList
+toList = foldMap ((:[]).fromIntegral)
 
 \end{code}
 

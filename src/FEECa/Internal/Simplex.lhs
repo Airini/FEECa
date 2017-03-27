@@ -57,6 +57,7 @@ module FEECa.Internal.Simplex(
   ) where
 
 import Data.List
+import Data.Ord (Down(..))
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
 import FEECa.Internal.Spaces
@@ -352,7 +353,7 @@ For the computation of the barycentric coordinates of a simplex whose
 \begin{code}
 -- | Extend the given simplex to a full simplex so that its geometrical
 -- | dimension is the same as its topological dimension.
-extendSimplex :: EuclideanSpace v => Simplex v -> Simplex v
+extendSimplex :: (EuclideanSpace v, Ord (Scalar v)) => Simplex v -> Simplex v
 extendSimplex t
     | n == nt   = t
     | otherwise = simplex' p0 (take n (extendVectors n dirs))
@@ -361,17 +362,12 @@ extendSimplex t
         dirs  = spanningVectors t
         p0    = referenceVertex t
 
-norm :: EuclideanSpace v => v -> v -> Ordering
-norm v1 v2 = compare v12 v22
-  where v12 = toDouble $ dot v1 v1
-        v22 = toDouble $ dot v2 v2
-
 -- | Uses the Gram-Schmidt method to add at most n orthogonal vectors to the
 -- | given set of vectors. Due to round off error the resulting list may contain
 -- | more than n vectors, which then have to be removed manually.
-extendVectors :: (EuclideanSpace v , Eq (Scalar v))
+extendVectors :: (EuclideanSpace v, Ord (Scalar v))
               => Int -> [v] -> [v]
-extendVectors n vs = vs ++ take (n - k) (sortBy (flip norm) vs')
+extendVectors n vs = vs ++ take (n - k) (sortOn (Down . norm2) vs')
   where vs' = drop k $ gramSchmidt $ vs ++ [unitVector n i | i <- [0..n-1]]
         k   = length vs
 
@@ -513,9 +509,9 @@ integrateOverSimplex :: (EuclideanSpace v, r ~ Scalar v, Eq r)
                      -> Simplex v       -- t
                      -> (v -> r)        -- f
                      -> r
-integrateOverSimplex q t f = mul vol (mul fac (nestedSum q t f (n-1) []))
+integrateOverSimplex q t f = mul vol ({-mul fac-} nestedSum q t f (n-1) [])
   where n   = topologicalDimension t
-        fac = fromDouble 1.0 -- (fromDouble . fromInteger) (factorial n)
+        --fac = embedIntegral 1 -- (fromDouble . fromInteger) (factorial n)
         vol = volume t
 
 -- Recursion for the computation of the nested sum in the numerical approximation
