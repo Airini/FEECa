@@ -34,7 +34,7 @@ The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE DeriveFoldable       #-}
+-- {-# LANGUAGE DeriveFoldable       #-}
 {-# LANGUAGE CPP                  #-}
 
 module FEECa.Internal.MultiIndex (
@@ -57,7 +57,7 @@ module FEECa.Internal.MultiIndex (
 import            Control.Applicative               (ZipList(..), liftA2, pure, (<*>))
 #if MIN_VERSION_base(4,9,0)
 #else
-import            Data.Foldable                     (Foldable(..), all)
+import            Data.Foldable                     (Foldable(..))
 #endif
 
 import            FEECa.Utility.Combinatorics       (sumRLists)
@@ -145,7 +145,7 @@ multiIndex l
 
 -- | Check whether a given multi-index is valid.
 valid :: MultiIndex -> Bool
-valid = Data.Foldable.all (>= 0)
+valid = all (>= 0) . getZipList
 
 -- | Transform multi-index into list
 toList :: Integral a => MultiIndex -> [a]
@@ -253,7 +253,7 @@ extend :: Int -> [Int] -> MultiIndex -> MultiIndex
 extend n sigma mi
     | length sigma == dim mi = multiIndex $ extend' n (-1) sigma mi'
     | otherwise = error $(show sigma) ++ " \n " ++ show mi ++ "extend: Dimensions of sigma and multi-index don't agree"
-  where mi' = toList mi
+  where mi' = getZipList mi
 
 extend' :: Int -> Int -> [Int] -> [Int] -> [Int]
 extend' n _ []      []      = replicate n 0
@@ -316,6 +316,7 @@ of the element-wise binomial coefficients.
 %------------------------------------------------------------------------------%
 
 \begin{code}
+
 -- | Generalized binomial coefficients for multi-indices as defined in the paper
 -- | by Kirby.
 choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
