@@ -61,7 +61,7 @@ evalSeparately :: (S.Field a, S.Module a, S.Scalar a ~ a, Ord a)
                -> [Vector a]
                -> [[Vector a]]
                -> [a]
-evalSeparately t omega vs fs = V.toList $ foldl S.addV (S.zero l) crossres
+evalSeparately t omega vs fs = V.toList $ Prelude.foldl S.addV (S.zero l) crossres
   where bvals       = B.tabulateBernstein t vs (fst omegasplit)
         fvals       = [[F.apply ds f eta | f <- fs] | eta <- snd omegasplit]
         crossres    = zipWith (\f v -> V.vector (liftA2 S.mul f v)) fvals bvals
