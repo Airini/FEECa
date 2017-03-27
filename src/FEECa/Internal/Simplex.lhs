@@ -93,7 +93,7 @@ import qualified  FEECa.Utility.Utility         as U
 
 \begin{code}
 -- | n-simplex represented by a list of vectors of given dimensionality
--- | Invariant: geometrical dimension = length of the vector - 1
+-- | Invariant: geometrical dimension = length of the vertices - 1
 data Simplex a =  Simplex { sigma :: [Int],
                             vertices :: [a] }
   deriving (Eq, Show)
@@ -418,11 +418,7 @@ extendVectors n vs = vs ++ take (n - k) (sortBy (flip norm) vs')
 -- | Convert a vector given in barycentric coordinates to euclidean coordinates.
 barycentricToCartesian :: EuclideanSpace v
                        => Simplex v -> v -> v
-barycentricToCartesian (Simplex _ vs) v = foldl sclAdd zero' (zip v' vs)
-  where sclAdd p (c, p0) = addV p (sclV c p0)
-        zero'            = zeroV (head vs)
-        v'               = toList v
-
+barycentricToCartesian (Simplex _ vs) v = U.sumV (zipWith sclV (toList v) vs)
 \end{code}
 
 %------------------------------------------------------------------------------%

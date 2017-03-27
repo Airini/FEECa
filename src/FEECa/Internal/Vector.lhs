@@ -23,7 +23,7 @@ module FEECa.Internal.Vector(
 
   ) where
 
-
+import FEECa.Utility.Utility (sumR)
 import FEECa.Internal.Spaces
 import FEECa.Utility.Print    as P
 
@@ -97,8 +97,7 @@ instance (Field a, Eq a) => EuclideanSpace (Vector a) where
   fromList  = vector
 
 dotVector :: Ring r => Vector r -> Vector r -> r
-dotVector (Vector l1) (Vector l2) = foldl add addId (zipWith mul l1 l2)
--- TODO: use sumR = foldl add addId if it is OK to import Utility.Utility
+dotVector (Vector l1) (Vector l2) = sumR (zipWith mul l1 l2)
 
 -- | The dimension of vectors.
 instance Dimensioned (Vector a) where

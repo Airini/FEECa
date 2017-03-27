@@ -9,6 +9,7 @@ module FEEC.FiniteElementSpace (
 import Data.List
 import FEEC.Bernstein (BernsteinPolynomial(..), monomial, multiIndices)
 import qualified FEEC.Bernstein as B (extend)
+import FEEC.Utility.Utility(sumV)
 import FEEC.Utility.Combinatorics
 import FEEC.DifferentialForm
 import FEEC.Internal.Form hiding (arity)
@@ -183,7 +184,7 @@ psi alpha sigma  = foldl (/\) unit [psi' alpha i | i <- sigma]
 
 -- TODO: Check form indices.
 psi' :: MI.MultiIndex -> Int -> BasisFunction v f
-psi' alpha i = subV (db i) (foldl addV zero [sclV (c j) (db j) | j <- [0..n]])
+psi' alpha i = subV (db i) (sumV [sclV (c j) (db j) | j <- [0..n]])
     where db j = oneForm (j+1) n -- Dimension should be n ?
           c j = sclV (fromIntegral (alpha' !! j) / fromIntegral r) mulId
           zero = zeroForm 1 n

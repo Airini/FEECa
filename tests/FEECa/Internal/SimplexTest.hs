@@ -10,22 +10,20 @@ module FEECa.Internal.SimplexTest (
 ) where
 
 
-import Control.Monad
-import Data.Maybe
-import Data.List
-import System.Random
+import Control.Monad(liftM)
+-- import System.Random()
 
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
-import FEECa.Internal.VectorTest
+-- import FEECa.Internal.VectorTest
 
 import FEECa.Utility.Combinatorics
 import FEECa.Utility.Utility
 import FEECa.Utility.Test
 
-import Test.QuickCheck  ( Arbitrary, arbitrary, (==>), Property,
-                          Gen, vectorOf, quickCheckAll )
+import Test.QuickCheck  ( Arbitrary, arbitrary, -- (==>), Property,
+                          quickCheckAll ) -- Gen, vectorOf,
 import qualified Test.QuickCheck as Q
 
 
@@ -159,7 +157,7 @@ instance (EuclideanSpace v, r ~ Scalar v, Arbitrary r, RealFrac r)
 prop_cubicToBarycentric :: Cubic (Vector Double) Double -> Bool
 prop_cubicToBarycentric = pCubicToBarycentric
 
-pCubicToBarycentric :: (EuclideanSpace v, r ~ Scalar v)
+pCubicToBarycentric :: (EuclideanSpace v, Ord r, r ~ Scalar v)
                     => Cubic v r -> Bool
 pCubicToBarycentric (Cubic v) =
         pBarycentricRange v' && pBarycentricSum v' && (dim v' == dim v + 1)
@@ -168,9 +166,10 @@ pCubicToBarycentric (Cubic v) =
 --prop_barycentric_range :: Vector Double -> Bool
 --prop_barycentric_range = pBarycentricRange
 
-pBarycentricRange :: EuclideanSpace v => v -> Bool
-pBarycentricRange v = all (0 <=) cs && all (1 >=) cs
-    where cs = toDouble' v
+pBarycentricRange :: (Ord (Scalar v), EuclideanSpace v) => v -> Bool
+pBarycentricRange v = all (addId <=) cs && all (mulId >=) cs
+  where cs = toList v
+
 -- XXX: changed Cubic generator (meant to be the standard unit cube)
 
 --prop_barycentric_sum :: Vector Double -> Bool
@@ -197,6 +196,8 @@ pBarycentricToCartesian t =
 --          quickCheck prop_vol_integral
 
 return []
+
+testSimplex :: IO Bool
 testSimplex = $quickCheckAll
 
 
@@ -215,4 +216,3 @@ main = quickCheck (prop_extend_subsimplex :: SubsimplexTest VectorD -> Bool)
 
 t3 = Simplex {sigma = [0,1,2,3,4], vertices = [Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]},Vector {components = [0.0,0.0,0.0,0.0]}]}
 -}
-

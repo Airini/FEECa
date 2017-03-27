@@ -102,7 +102,7 @@ prop_psi (PsiTest t f mi v) =
         k   = S.topologicalDimension f
 
 convexCombination :: Simplex -> MI.MultiIndex -> Vector
-convexCombination t mi = foldl addV zero (zipWith sclV mi' vs)
+convexCombination t mi = sumV (zipWith sclV mi' vs)
   where vs    = S.vertices t
         zero  = zeroV (head vs)
         (l,r) = (MI.toList mi, fromInt $ MI.degree mi)
@@ -141,4 +141,3 @@ testFiniteElement = $quickCheckAll
 
 
 space = PrmLk 3 0 (S.referenceSimplex 3)
-

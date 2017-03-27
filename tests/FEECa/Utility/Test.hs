@@ -5,7 +5,7 @@ module FEECa.Utility.Test where
 import Data.List      ( sort )
 import Control.Monad  ( liftM )
 
-import FEECa.Internal.Vector
+-- import FEECa.Internal.Vector
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
 import qualified FEECa.Internal.MultiIndex as MI
