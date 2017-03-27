@@ -76,7 +76,7 @@ import qualified  FEECa.Internal.MultiIndex as MI (
 import            FEECa.Internal.Simplex
 import            FEECa.Internal.Spaces           (
                       Ring (..), Field (..), Dimensioned (..),
-                      Module (..), VectorSpace (..), EuclideanSpace (..),
+                      Module (..), VectorSpace, EuclideanSpace (..),
                       toDouble', fromDouble' )
 import qualified  FEECa.Internal.Spaces     as S  ( Function (..) )
 

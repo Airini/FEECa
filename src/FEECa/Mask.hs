@@ -67,7 +67,7 @@ dx = oneForm
 dxN :: Ring f => Dim -> Dim -> Form f
 dxN = flip dx
 
-dxVP :: (Eq f, Field f) => Int -> Vector f -> PolyRepresentation f
+dxVP :: Field f => Int -> Vector f -> PolyRepresentation f
 dxVP = (fmap . fmap) constant dxV
 
 dxVF :: (Eq f, Ring f) => Int -> VectorField f -> PolyRepresentation f
@@ -154,7 +154,7 @@ d form = df (vector . flip canonCoord n) form
 
 --integral :: (FiniteElement t r, Function f (Primitive) =>
 integral :: (EuclideanSpace v, f ~ Scalar v) => Simplex v -> DifferentialForm (PolyRepresentation f) -> f
-integral t f = integratePolynomial t undefined {- (f#vs)
+integral t _f = integratePolynomial t undefined {- (f#vs)
   where vs = fmap (lii ) $ spanningVectors t
         lii v = vector (fmap constant (toList v))-}
 

@@ -60,7 +60,7 @@ class Ring f => Field f where
   mulInv = divide mulId
   
   -- | Default derived division.
-  divide :: Field f => f -> f -> f
+  divide :: f -> f -> f
   divide a b = mul a (mulInv b)
 
   fromDouble :: Double -> f

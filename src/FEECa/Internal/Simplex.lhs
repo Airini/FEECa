@@ -503,7 +503,7 @@ integral of $f$ over $\smp{T}$ can then be approximated using
 
 -- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
 -- | quadrature rule with q nodes.
-integrateOverSimplex :: (EuclideanSpace v, r ~ Scalar v, Eq r)
+integrateOverSimplex :: (EuclideanSpace v, r ~ Scalar v)
                      => Int             -- q
                      -> Simplex v       -- t
                      -> (v -> r)        -- f
