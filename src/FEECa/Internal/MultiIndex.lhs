@@ -57,7 +57,7 @@ module FEECa.Internal.MultiIndex (
 import            Control.Applicative               (ZipList(..), liftA2, pure, (<*>))
 #if MIN_VERSION_base(4,9,0)
 #else
-import Data.Foldable ( Foldable(..) )
+import            Data.Foldable                     (Foldable(..), all)
 #endif
 
 import            FEECa.Utility.Combinatorics       (sumRLists)
@@ -145,11 +145,11 @@ multiIndex l
 
 -- | Check whether a given multi-index is valid.
 valid :: MultiIndex -> Bool
-valid = all (>= 0)
+valid = Data.Foldable.all (>= 0)
 
 -- | Transform multi-index into list
 toList :: Integral a => MultiIndex -> [a]
-toList = foldMap ((:[]).fromIntegral)
+toList = map fromIntegral . getZipList -- foldMap ((:[]).fromIntegral)
 
 \end{code}
 
