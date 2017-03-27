@@ -54,6 +54,7 @@ module FEECa.Internal.MultiIndex(
 
 
 import            Control.Applicative               (ZipList(..), liftA2, pure, (<*>))
+import qualified  Data.Foldable               as F  (Foldable(..))
 
 import            FEECa.Utility.Combinatorics       (sumRLists)
 import qualified  FEECa.Utility.Combinatorics as C  (choose, factorial)
@@ -79,7 +80,7 @@ type MultiIndex = ZipList Int
 
 #if MIN_VERSION_base(4,9,0)
 #else
-deriving instance Foldable ZipList
+deriving instance F.Foldable ZipList
 #if MIN_VERSION_base(4,7,0)
 #else
 deriving instance Show MultiIndex
@@ -144,7 +145,7 @@ valid = all (>= 0)
 
 -- | Transform multi-index into list
 toList :: Integral a => MultiIndex -> [a]
-toList = map fromIntegral . getZipList
+toList = map fromIntegral . F.toList
 
 \end{code}
 
@@ -248,7 +249,7 @@ extend :: Int -> [Int] -> MultiIndex -> MultiIndex
 extend n sigma mi
     | length sigma == dim mi = multiIndex $ extend' n (-1) sigma mi'
     | otherwise = error $(show sigma) ++ " \n " ++ show mi ++ "extend: Dimensions of sigma and multi-index don't agree"
-  where mi'       = toList mi
+  where mi' = toList mi
 
 extend' :: Int -> Int -> [Int] -> [Int] -> [Int]
 extend' n _ []      []      = replicate n 0
