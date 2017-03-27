@@ -145,7 +145,7 @@ valid = all (>= 0)
 
 -- | Transform multi-index into list
 toList :: Integral a => MultiIndex -> [a]
-toList = map fromIntegral . F.toList
+toList = foldMap ((:[]).fromIntegral)-- . F.toList
 
 \end{code}
 
