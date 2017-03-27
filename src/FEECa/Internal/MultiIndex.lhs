@@ -74,8 +74,10 @@ class for the implementation of methods on multi-indices.
 The dimension of a multi-index is the dimension of the underlying space, i.e.
 the number of exponents in the multi-index.
 %------------------------------------------------------------------------------%
+\begin{code}
 
-%if style /= newcode
+type MultiIndex = ZipList Int
+
 #if MIN_VERSION_base(4,9,0)
 #else
 import Data.Foldable ( Foldable(..) )
@@ -86,11 +88,6 @@ deriving instance Show MultiIndex
 deriving instance Eq   MultiIndex
 #endif
 #endif
-%endif
-
-\begin{code}
-
-type MultiIndex = ZipList Int
 
 instance Dimensioned MultiIndex where
   dim mi = length (getZipList mi)
