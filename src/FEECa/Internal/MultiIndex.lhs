@@ -55,10 +55,12 @@ module FEECa.Internal.MultiIndex (
 
 
 import            Control.Applicative               (ZipList(..), liftA2, pure, (<*>))
-#if MIN_VERSION_base(4,9,0)
-#else
-import            Data.Foldable                     (Foldable(..))
-#endif
+{-
+  #if MIN_VERSION_base(4,9,0)
+  #else
+  import            Data.Foldable                     (Foldable(..))
+  #endif
+-}
 
 import            FEECa.Utility.Combinatorics       (sumRLists)
 import qualified  FEECa.Utility.Combinatorics as C  (choose, factorial)
@@ -82,15 +84,15 @@ the number of exponents in the multi-index.
 
 type MultiIndex = ZipList Int
 
-#if MIN_VERSION_base(4,9,0)
-#else
-deriving instance Foldable ZipList
+-- #if MIN_VERSION_base(4,9,0)
+-- #else
+-- deriving instance Foldable ZipList
 #if MIN_VERSION_base(4,7,0)
 #else
 deriving instance Show MultiIndex
 deriving instance Eq   MultiIndex
 #endif
-#endif
+-- #endif
 
 instance Dimensioned MultiIndex where
   dim mi = length (getZipList mi)
@@ -149,7 +151,7 @@ valid = all (>= 0) . getZipList
 
 -- | Transform multi-index into list
 toList :: Integral a => MultiIndex -> [a]
-toList = map fromIntegral . getZipList -- foldMap ((:[]).fromIntegral)
+toList = map fromIntegral . getZipList
 
 \end{code}
 
@@ -322,7 +324,7 @@ of the element-wise binomial coefficients.
 choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
 choose a b = product (getZipList (liftA2 C.choose a b))
 
-choose' :: Fractional b => Int -> ZipList Int -> b
+choose' :: Fractional b => Int -> MultiIndex -> b
 choose' a b = fromIntegral (C.factorial a) / fromIntegral (factorial b)
 
 \end{code}

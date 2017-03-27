@@ -32,13 +32,13 @@ increasing, i.e.\  $\sigma(j+1) > \sigma(j)$ for all $j=1,\ldots,k'-1$.
 %------------------------------------------------------------------------------%
 
 \begin{code}
-{-# LANGUAGE
-   MultiParamTypeClasses,
-   FlexibleContexts,
-   TypeFamilies,
-   FlexibleInstances #-}
 
-module FEECa.Internal.Simplex(
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE FlexibleInstances      #-}
+
+module FEECa.Internal.Simplex (
   -- * The Simplex type
   Simplex(..), simplex, simplex', referenceSimplex, face,
 
@@ -57,7 +57,7 @@ module FEECa.Internal.Simplex(
   ) where
 
 import Data.List
-import Data.Ord (Down(..))
+import Data.Ord   ( Down(..) )
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
 import FEECa.Internal.Spaces
@@ -367,10 +367,9 @@ extendSimplex t
 -- | more than n vectors, which then have to be removed manually.
 extendVectors :: (EuclideanSpace v, Ord (Scalar v))
               => Int -> [v] -> [v]
-extendVectors n vs = vs ++ take (n - k) (sortOn (Down . norm2) vs')
+extendVectors n vs = vs ++ take (n - k) (U.sortOn (Down . norm2) vs')
   where vs' = drop k $ gramSchmidt $ vs ++ [unitVector n i | i <- [0..n-1]]
         k   = length vs
-
 
 \end{code}
 

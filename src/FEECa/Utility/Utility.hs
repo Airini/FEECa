@@ -1,7 +1,8 @@
 {-# LANGUAGE CPP #-}
-module FEECa.Utility.Utility(
+
+module FEECa.Utility.Utility (
     Dimension (..)
-  , takeIndices
+  , sortOn, takeIndices
   , pairM, pairUp, zipWithWhen
   , sumR, productR, sumV
   , expSign, sign
@@ -12,9 +13,15 @@ module FEECa.Utility.Utility(
 import FEECa.Internal.Spaces
 
 #if MIN_VERSION_base(4,8,0)
+import Data.List              ( sortOn )
 #else
 import Prelude        hiding  ( foldr, sum )
 import Data.Foldable          ( Foldable (..), foldr, sum )
+import Data.List              ( sortBy )
+
+sortOn :: Ord b => (a -> b) -> [a] -> [a]
+sortOn = map snd .
+          sortBy (comparing fst) . map (\x -> let y = f x in y `seq` (y, x))
 #endif
 
 takeIndices :: [a] -> [Int] -> [a]
