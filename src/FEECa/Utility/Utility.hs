@@ -14,11 +14,11 @@ import FEECa.Internal.Spaces
 
 #if MIN_VERSION_base(4,8,0)
 import Data.List              ( sortOn )
-import Data.Ord               ( comparing )
 #else
 import Prelude        hiding  ( foldr, sum )
 import Data.Foldable          ( Foldable (..), foldr, sum )
 import Data.List              ( sortBy )
+import Data.Ord               ( comparing )
 
 sortOn :: Ord b => (a -> b) -> [a] -> [a]
 sortOn f = map snd .
