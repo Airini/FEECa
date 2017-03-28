@@ -84,6 +84,13 @@ eqNum a b
         b'  = toDouble b
         eps = 2e-10
 
+-- TODO: The eqNum function should have type
+--   eqNum :: Double -> Double -> Bool
+-- Or perhaps RealFrac a => a -> a -> Bool
+
+
+
+
 -- | Data type for dimension. Used to generate reasonably small dimensions to
 -- | use in testing.
 data Dimension = Dimension Int

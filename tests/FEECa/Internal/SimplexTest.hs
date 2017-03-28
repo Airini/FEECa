@@ -178,6 +178,7 @@ pBarycentricRange v = all (addId <=) cs && all (mulId >=) cs
 
 pBarycentricSum :: EuclideanSpace v => v -> Bool
 pBarycentricSum v = eqNum (sum (toDouble' v)) 1.0
+-- TODO: fix the toDouble dependency (use Num (Scalar v) => or similar)
 
 -- | Check that the unit vectors in barycentric coordinates reproduce the vertices
 -- | of the simplex when transformed to cartesian coordinates.
