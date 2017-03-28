@@ -59,7 +59,8 @@ module FEECa.Polynomial (
   , barycentricGradient, barycentricGradients
   , barycentricGradients', simplexToMatrix, euclideanToBarycentric
 
-  , simplifyT, simplifyP
+  -- XXX: removed from export list for now
+  -- , simplifyT, simplifyP
 
   ) where
 
@@ -364,11 +365,12 @@ Since polynomials are represented as a sum of terms addition of polynomials can
 \begin{code}
 
 -- | Add two polynomials.
-addPolynomial :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
+addPolynomial :: Ring a => Polynomial a -> Polynomial a -> Polynomial a
 addPolynomial (Polynomial r1 ts1) (Polynomial r2 ts2)
     | ts /= []  = Polynomial (max r1 r2) ts
     | otherwise = Polynomial 0 [Constant addId]
   where ts = (aggregate . removeZeros) (ts1 ++ ts2)
+-- aggregate (ts1 ++ ts2)
 
 removeZeros :: Ring a => [Term a] -> [Term a]
 removeZeros ts = [ t | t <- ts, coefficient t /= addId ]
@@ -418,7 +420,7 @@ multiplyPolynomial :: Ring a
                    => (MI.MultiIndex -> MI.MultiIndex -> Term a)
                    -> Polynomial a -> Polynomial a -> Polynomial a
 multiplyPolynomial f (Polynomial r1 ts1) (Polynomial r2 ts2) =
-  Polynomial (r1 + r2) $ aggregate [multiplyTerm f t1 t2 | t1 <- ts1, t2 <- ts2]
+  Polynomial (r1 + r2) $ {-aggregate-} [multiplyTerm f t1 t2 | t1 <- ts1, t2 <- ts2]
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -471,7 +473,7 @@ The evaluation of polynomials over the monomial basis can now be realized by
 -- | for the evaluation of monomials.
 evaluatePolynomial :: Ring r
                    => (MI.MultiIndex -> r) -> Polynomial r -> r
-evaluatePolynomial f p = sumR {-foldl add addId-} (map (evaluateTerm f) (terms p))
+evaluatePolynomial f p = sumR (map (evaluateTerm f) (terms p))
 
 
 \end{code}
@@ -542,7 +544,7 @@ The function \code{deriveMonomial} implements the derivative of a monomial for
 deriveTerm :: (EuclideanSpace v, r ~ Scalar v)
            => Dx r -> v -> Term r -> Polynomial r
 deriveTerm _  _ (Constant _) = constant addId
-deriveTerm dx v (Term c mi)  = sclV c (sumR {-foldl add addId-} (zipWith sclV v' (dx mi)))
+deriveTerm dx v (Term c mi)  = sclV c (sumR (zipWith sclV v' (dx mi)))
   where v' = toList v
 
 -- | Derivative of a monomial over the standard monomial basis in given space
@@ -568,8 +570,7 @@ deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
 -- | General derivative for a polynomial with arbitrary basis.
 derivePolynomial :: (EuclideanSpace v, r ~ Scalar v)
                  => Dx r -> v -> Polynomial r -> Polynomial r
-derivePolynomial dx v p = sumR {-foldl add addId-} [ deriveTerm dx v t | t <- terms p ] --ts ]
---  where ts = terms p
+derivePolynomial dx v p = sumR [ deriveTerm dx v t | t <- terms p ]
 
 \end{code}
 
@@ -759,6 +760,7 @@ barycentricGradient t i = barycentricGradients t !! i
 \begin{code}
 simplifyP :: Ring a => Polynomial a -> Polynomial a
 simplifyP (Polynomial d ts) = Polynomial d (aggregate (map simplifyT ts))
+-- filter ((/= addId) . coefficient) ts))
 
 -- combine all Constant into one
 -- combine all terms of the same ZipList into one
@@ -770,10 +772,11 @@ aggregate = foldr aggStep []
         aggStep (Constant c1) (Constant c2 : ts) = Constant (add c1 c2) : ts
         aggStep (Constant c1) ts                 = Constant c1 : ts
         aggStep (Term fa1 mi) ts = if null matches then insertTerm (Term fa1 mi) ts
-                                                   else insertTerm (Term (add fa1 fa2) mi) rest
+                                                   -- else insertTerm (Term (add fa1 fa2) mi) rest
+                                                   else insertTerm (Term (sumR (fa1:(map coefficient matches))) mi) rest
           where -- TODO: check this code
                 (matches, rest) = partition (eqMI mi) ts
-                [Term fa2 _mi'] = matches -- TODO: is matches always of length 1?
+                -- [Term fa2 _mi'] = matches -- TODO: is matches always of length 1?
 
 eqMI :: MI.MultiIndex -> Term a -> Bool
 eqMI _  (Constant _)  =  False -- all (0==) mi
