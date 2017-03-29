@@ -317,12 +317,15 @@ subsimplex s@(Simplex _ l) k i
 subsimplices :: Simplex v -> Int -> [Simplex v]
 subsimplices t@(Simplex _ l) k
     | k > n     = error err_dim
-    | otherwise = [Simplex i vs | (i, vs) <- zip indices subvertices]
-  where n = topologicalDimension t
+    | otherwise = {-[ Simplex ix (U.takeIndices l ix) |
+                     ix <- increasingLists (k+1) n ]-}
+        map (\ix -> Simplex ix (U.takeIndices l ix)) indices -- [Simplex i vs | (i, vs) <- zip indices subvertices]
+  where n       = topologicalDimension t
+        combs = n+1 `choose` (k+1) - 1
         indices = map (unrank (k+1) n) [0..(n+1) `choose` (k+1) - 1]
-        subvertices = map (U.takeIndices l) indices
-        err_dim = "subsimplices: Dimensionality of subsimplices is"
-                  ++ "higher than that of the simplex."
+        -- subvertices = map (U.takeIndices l) indices
+        err_dim     = "subsimplices: Dimensionality of subsimplices is"
+                      ++ "higher than that of the simplex."
 
 -- | List subsimplices of given simplex with dimension larger or equal to k.
 subsimplices' :: Simplex v -> Int -> [Simplex v]
@@ -356,7 +359,7 @@ For the computation of the barycentric coordinates of a simplex whose
 extendSimplex :: (EuclideanSpace v, Ord (Scalar v)) => Simplex v -> Simplex v
 extendSimplex t
     | n == nt   = t
-    | otherwise = simplex' p0 (take n (extendVectors n dirs))
+    | otherwise = simplex' p0 (extendVectors n dirs)
   where n     = geometricalDimension t
         nt    = topologicalDimension t
         dirs  = spanningVectors t
@@ -367,9 +370,17 @@ extendSimplex t
 -- | more than n vectors, which then have to be removed manually.
 extendVectors :: (EuclideanSpace v, Ord (Scalar v))
               => Int -> [v] -> [v]
-extendVectors n vs = vs ++ take (n - k) (U.sortOn (Down . norm2) vs')
-  where vs' = drop k $ gramSchmidt $ vs ++ [unitVector n i | i <- [0..n-1]]
-        k   = length vs
+extendVectors n vs = vs ++ us
+  where us = drop k $ gramSchmidt $ vs ++ [unitVector n i | i <- [0..(n-k-1)]]
+        k  = length vs
+    {- XXX: this was there before, jointly with providing GS with the
+            n unit vectors in addition to vs, but it seems to be quite
+            unnecessary; the comment in the function description doesn't seem
+            to apply since we know at most n-k additional vectors could ever
+            form an orthogonal basis jointly with vs
+          take (n - k)  (U.sortOn (Down . norm2) us
+        and
+          unitVector up to (n-1) instead of (n-k-1) -}
 
 \end{code}
 

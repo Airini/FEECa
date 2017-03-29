@@ -28,7 +28,7 @@ import qualified Test.QuickCheck as Q
 
 
 data SubsimplexTest v = SubsimplexTest (Simplex v) Int Int
-  deriving (Show)
+  deriving Show
 
 --------------------------------------------------------------------------------
 -- Random Simplices

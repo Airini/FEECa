@@ -99,7 +99,7 @@ degree (Constant _)    = 0
 
 domain :: BernsteinPolynomial v r -> Simplex v
 domain (Bernstein t _) = t
-domain _ = error "Domain: No domain associated with constant Bernstein polynomial."
+domain _ = error "domain: No domain associated with constant Bernstein polynomial."
 \end{code}
 
 %------------------------------------------------------------------------------%

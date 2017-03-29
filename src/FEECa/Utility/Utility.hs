@@ -2,7 +2,7 @@
 
 module FEECa.Utility.Utility (
     Dimension (..)
-  , sortOn, takeIndices
+  , sortOn, takeIndices, takeTransform
   , pairM, pairUp, zipWithWhen
   , sumR, productR, sumV
   , expSign, sign
@@ -24,6 +24,9 @@ sortOn :: Ord b => (a -> b) -> [a] -> [a]
 sortOn f = map snd .
             sortBy (comparing fst) . map (\x -> let y = f x in y `seq` (y, x))
 #endif
+
+takeTransform :: Integral a => a -> (b -> c) -> [b] -> [c]
+takeTransform n f = zipWith (const f) [0..n]
 
 takeIndices :: [a] -> [Int] -> [a]
 takeIndices l = map (l !!)

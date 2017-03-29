@@ -38,7 +38,6 @@ polynomials implemented in the \module{Bernstein} module.
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
--- {-# LANGUAGE AllowAmbiguousTypes    #-}
 
 module FEECa.Polynomial (
 
@@ -69,7 +68,8 @@ import            Data.List
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
 import            FEECa.Utility.Print   ( Pretty (..), printPolynomial )
-import            FEECa.Utility.Utility ( zipWithWhen, sumR, productR )
+import            FEECa.Utility.Utility (
+                      takeTransform, zipWithWhen, sumR, productR )
 
 import qualified  FEECa.Internal.MultiIndex as MI (
                       MultiIndex, zero, unit, decrease,
@@ -543,7 +543,7 @@ The function \code{deriveMonomial} implements the derivative of a monomial for
 deriveTerm :: (EuclideanSpace v, r ~ Scalar v)
            => Dx r -> v -> Term r -> Polynomial r
 deriveTerm _  _ (Constant _) = constant addId
-deriveTerm dx v (Term c mi)  = {-sclV c -} (sumR (zipWith (\x -> sclV (mul c x)) v' (dx mi)))
+deriveTerm dx v (Term c mi)  = {-sclV c -} sumR (zipWith (\x -> sclV (mul c x)) v' (dx mi))
   where v' = toList v
 
 -- | Derivative of a monomial over the standard monomial basis in given space
@@ -687,24 +687,24 @@ euclideanToBarycentric t vs = map (fromDouble' . M.toList) $ M.toRows res
 -- TODO: check take
 barycentricCoordinates :: (EuclideanSpace v, r ~ Scalar v, Ord r)
                        => Simplex v -> [ Polynomial r ]
-barycentricCoordinates s = {-# SCC "barycentricCoordinates" #-} take (nt + 1) bs
-    where bs  = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
-          mat = {-# SCC "solveSystem" #-}M.inv (simplexToMatrix (extendSimplex s))
+barycentricCoordinates s = {-# SCC "barycentricCoordinates" #-} bs
+    where bs  = takeTransform nt vectorToPolynomial (M.toColumns mat) -- [0..nt]
+          mat = {-# SCC "solveSystem" #-} M.inv (simplexToMatrix (extendSimplex s))
           nt  = topologicalDimension s
 
 -- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial
 -- | in the list
 barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v, Ord r)
                       => Simplex v -> Int -> Polynomial r
-barycentricCoordinate s i =  barycentricCoordinates s !! i
+barycentricCoordinate s i = barycentricCoordinates s !! i
 
 -- Transforms a given simplex into the matrix representing the linear
 -- equation system for the barycentric coordinates.
 simplexToMatrix :: EuclideanSpace v
                 => Simplex v -> M.Matrix Double
-simplexToMatrix s@(Simplex _ l) = M.matrix (n+1) (concatMap append1 l)
-  where n = geometricalDimension s
-        append1 v = 1 : toDouble' v
+simplexToMatrix s@(Simplex _ l) = M.matrix (n+1) (concatMap prefix1 l)
+  where n         = geometricalDimension s
+        prefix1 v = 1 : toDouble' v
 
 -- Transforms a solution vector of the linear equation system for the
 -- barycentric coordinates into the corresponding polynomial.
@@ -737,7 +737,8 @@ vectorToGradient v  = fromDouble' (tail (M.toList v))
 -- | Compute gradients of the barycentric coordinates.
 barycentricGradients :: (EuclideanSpace v, Ord (Scalar v))
                      => Simplex v -> [v]
-barycentricGradients t = {-# SCC "barycentricGradients" #-} map vectorToGradient (take (nt+1) (M.toColumns mat))
+barycentricGradients t = {-# SCC "barycentricGradients" #-}
+    takeTransform nt vectorToGradient (M.toColumns mat)-- (take (nt+1) (M.toColumns mat))
   where mat = M.inv (simplexToMatrix (extendSimplex t))
         nt  = topologicalDimension t
 
@@ -772,7 +773,7 @@ aggregate = foldr aggStep []
         aggStep (Constant c1) ts                 = Constant c1 : ts
         aggStep (Term fa1 mi) ts = if null matches then insertTerm (Term fa1 mi) ts
                                                    -- else insertTerm (Term (add fa1 fa2) mi) rest
-                                                   else insertTerm (Term (sumR (fa1:(map coefficient matches))) mi) rest
+                                                   else insertTerm (Term (sumR (fa1:map coefficient matches)) mi) rest
           where -- TODO: check this code
                 (matches, rest) = partition (eqMI mi) ts
                 -- [Term fa2 _mi'] = matches -- TODO: is matches always of length 1?
