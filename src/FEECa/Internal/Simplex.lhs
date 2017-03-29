@@ -305,7 +305,7 @@ subsimplex (Simplex _ []) _ _ =
 subsimplex s@(Simplex _ l) k i
     | k > n                     = error err_dim
     | i >= (n+1) `choose` (k+1) = error err_ind
-    | otherwise                 = Simplex indices (map (l !!) indices)
+    | otherwise                 = Simplex indices (U.takeIndices l indices)
   where n = topologicalDimension s
         indices = unrank (k+1) n i
         err_ind = "subsimplex: Index of subsimplex exceeds (n+1) choose (k+1)."
@@ -318,13 +318,13 @@ subsimplices t@(Simplex _ l) k
     | k > n     = error err_dim
     | otherwise = [ Simplex ix (U.takeIndices l ix) |
                       ix <- increasingLists (k+1) n ]
-        -- map (\ix -> Simplex ix (U.takeIndices l ix)) indices -- [Simplex i vs | (i, vs) <- zip indices subvertices]
   where n       = topologicalDimension t
-        -- combs = n+1 `choose` (k+1) - 1
-        -- indices = map (unrank (k+1) n) [0..(n+1) `choose` (k+1) - 1]
-        -- subvertices = map (U.takeIndices l) indices
-        err_dim     = "subsimplices: Dimensionality of subsimplices is"
-                      ++ "higher than that of the simplex."
+        err_dim = "subsimplices: Dimensionality of subsimplices is"
+                  ++ "higher than that of the simplex."
+-- TODO: note that the implementation has always seemed to ignore the original
+--  "permutation" of indices we had from the original simplex if the argument
+--  happens to be a subsimplex, ie: non-full simmplex. Now, should we check or
+--  is it intended functionality?
 
 -- | List subsimplices of given simplex with dimension larger or equal to k.
 subsimplices' :: Simplex v -> Int -> [Simplex v]
@@ -370,16 +370,16 @@ extendSimplex t
 extendVectors :: (EuclideanSpace v, Ord (Scalar v))
               => Int -> [v] -> [v]
 extendVectors n vs = vs ++ us
-  where us = drop k $ gramSchmidt $ vs ++ [unitVector n i | i <- [0..(n-k-1)]]
+  where us = drop k $ gramSchmidt $ vs ++ [unitVector n i | i <- [0..(n-1)]]
         k  = length vs
     {- XXX: this was there before, jointly with providing GS with the
             n unit vectors in addition to vs, but it seems to be quite
             unnecessary; the comment in the function description doesn't seem
             to apply since we know at most n-k additional vectors could ever
-            form an orthogonal basis jointly with vs
-          take (n - k)  (U.sortOn (Down . norm2) us
-        and
-          unitVector up to (n-1) instead of (n-k-1) -}
+            form an orthogonal basis jointly with vs; changed it so that GS
+            takes care of this, as would be expected (ie: it will give at most
+            n orthogonal vectors where n = dim (EuclideanSpace v):
+        take (n - k)  (U.sortOn (Down . norm2) us -}
 
 \end{code}
 

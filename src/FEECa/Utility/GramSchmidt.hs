@@ -9,18 +9,22 @@ import FEECa.Internal.Spaces
 gramSchmidt :: (EuclideanSpace v, Eq (Scalar v))
             => [v]
             -> [v]
-gramSchmidt = reverse . gramSchmidt' []
+gramSchmidt [] = []
+gramSchmidt vs = reverse $ gramSchmidt' (dim $ head vs) [] vs
 -- TODO: remove reverse!!!
 
 gramSchmidt' :: (EuclideanSpace v, Eq (Scalar v))
-             => [v]
+             => Int
              -> [v]
              -> [v]
-gramSchmidt' l (v:vs)
-    | dot v' v' == addId = gramSchmidt' l vs
-    | otherwise          = gramSchmidt' (v':l) vs
+             -> [v]
+gramSchmidt' n l (v:vs)
+    | n == 0              = l
+    | dot v' v' == addId  = gramSchmidt' n l vs
+    | otherwise           = gramSchmidt' (n-1) (v':l) vs
   where v'    = foldl subV v [sclV (f u v) u | u <- l]
               -- TODO: check tests, but (dot u u /= addId) as a side-condition
               --  in the list comprehension must be redundant due to the guard
         f u w = divide (dot u w) (dot u u)
-gramSchmidt' l _ = l
+gramSchmidt' _ l _        = l
+
