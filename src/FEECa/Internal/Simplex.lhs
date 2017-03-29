@@ -57,7 +57,6 @@ module FEECa.Internal.Simplex (
   ) where
 
 import Data.List
-import Data.Ord   ( Down(..) )
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
 import FEECa.Internal.Spaces
@@ -317,12 +316,12 @@ subsimplex s@(Simplex _ l) k i
 subsimplices :: Simplex v -> Int -> [Simplex v]
 subsimplices t@(Simplex _ l) k
     | k > n     = error err_dim
-    | otherwise = {-[ Simplex ix (U.takeIndices l ix) |
-                     ix <- increasingLists (k+1) n ]-}
-        map (\ix -> Simplex ix (U.takeIndices l ix)) indices -- [Simplex i vs | (i, vs) <- zip indices subvertices]
+    | otherwise = [ Simplex ix (U.takeIndices l ix) |
+                      ix <- increasingLists (k+1) n ]
+        -- map (\ix -> Simplex ix (U.takeIndices l ix)) indices -- [Simplex i vs | (i, vs) <- zip indices subvertices]
   where n       = topologicalDimension t
-        combs = n+1 `choose` (k+1) - 1
-        indices = map (unrank (k+1) n) [0..(n+1) `choose` (k+1) - 1]
+        -- combs = n+1 `choose` (k+1) - 1
+        -- indices = map (unrank (k+1) n) [0..(n+1) `choose` (k+1) - 1]
         -- subvertices = map (U.takeIndices l) indices
         err_dim     = "subsimplices: Dimensionality of subsimplices is"
                       ++ "higher than that of the simplex."
