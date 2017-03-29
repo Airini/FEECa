@@ -306,7 +306,7 @@ term (c, mi) = Term c mi
 -- | Create a polynomial from a list of coefficient-multi-index pairs.
 polynomial :: Ring a => [(a, MI.MultiIndex)] -> Polynomial a
 polynomial l
-    | checkPolynomial l = Polynomial r (map term l)
+    | checkPolynomial l = Polynomial r $ aggregate (map term l)
     | otherwise         = error "Given coefficients and multi-indices do not define a valid polynomial."
   where r = if not (null l) then maximum (map (MI.degree . snd) l) else 0
 
@@ -369,8 +369,7 @@ addPolynomial :: Ring a => Polynomial a -> Polynomial a -> Polynomial a
 addPolynomial (Polynomial r1 ts1) (Polynomial r2 ts2)
     | ts /= []  = Polynomial (max r1 r2) ts
     | otherwise = Polynomial 0 [Constant addId]
-  where ts = (aggregate . removeZeros) (ts1 ++ ts2)
--- aggregate (ts1 ++ ts2)
+  where ts = {-(aggregate . removeZeros)-} aggregate (ts1 ++ ts2)
 
 removeZeros :: Ring a => [Term a] -> [Term a]
 removeZeros ts = [ t | t <- ts, coefficient t /= addId ]
@@ -420,7 +419,7 @@ multiplyPolynomial :: Ring a
                    => (MI.MultiIndex -> MI.MultiIndex -> Term a)
                    -> Polynomial a -> Polynomial a -> Polynomial a
 multiplyPolynomial f (Polynomial r1 ts1) (Polynomial r2 ts2) =
-  Polynomial (r1 + r2) $ {-aggregate-} [multiplyTerm f t1 t2 | t1 <- ts1, t2 <- ts2]
+  Polynomial (r1 + r2) $ aggregate [multiplyTerm f t1 t2 | t1 <- ts1, t2 <- ts2]
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -544,7 +543,7 @@ The function \code{deriveMonomial} implements the derivative of a monomial for
 deriveTerm :: (EuclideanSpace v, r ~ Scalar v)
            => Dx r -> v -> Term r -> Polynomial r
 deriveTerm _  _ (Constant _) = constant addId
-deriveTerm dx v (Term c mi)  = sclV c (sumR (zipWith sclV v' (dx mi)))
+deriveTerm dx v (Term c mi)  = {-sclV c -} (sumR (zipWith (\x -> sclV (mul c x)) v' (dx mi)))
   where v' = toList v
 
 -- | Derivative of a monomial over the standard monomial basis in given space

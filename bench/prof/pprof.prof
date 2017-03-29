@@ -1,0 +1,322 @@
+	Sat Mar 25 02:54 2017 Time and Allocation Profiling Report  (Final)
+
+	   prof +RTS -N -p -s -hc -i0.1 -RTS
+
+	total time  =        0.13 secs   (134 ticks @ 1000 us, 1 processor)
+	total alloc =   8,206,824 bytes  (excludes profiling overheads)
+
+COST CENTRE            MODULE                            %time %alloc
+
+MAIN                   MAIN                               61.9    0.3
+CAF                    GHC.Event.Thread                   13.4    0.0
+CAF                    GHC.IO.Encoding                     7.5    0.0
+primes                 Math.Combinatorics.Exact.Primes     6.0    0.0
+main                   Main                                4.5    2.5
+apply                  Internal.Matrix                     1.5   10.0
+check                  Internal.Devel                      1.5    2.9
+evaluatePolynomial     FEECa.Polynomial                    1.5   17.1
+idxs                   Internal.Vector                     0.7    8.2
+basis                  FEECa.FiniteElementSpace            0.7   10.1
+matrix                 Internal.Util                       0.0    3.4
+toRows.ext             Internal.Matrix                     0.0    1.3
+extractAux             Internal.Matrix                     0.0    1.4
+createMatrix           Internal.Matrix                     0.0    1.3
+fi                     Internal.Vector                     0.0    1.3
+toList                 Internal.Vector                     0.0    3.3
+createVector.doMalloc  Internal.Vector                     0.0    1.5
+range                  FEECa.Internal.MultiIndex           0.0    2.8
+toList                 FEECa.Internal.MultiIndex           0.0    2.4
+zero                   FEECa.Internal.Spaces               0.0    1.2
+fromDouble'            FEECa.Internal.Spaces               0.0    2.8
+toDouble'              FEECa.Internal.Spaces               0.0    2.6
+evalSeparately         FEECa.PolynomialDifferentialForm    0.0    5.5
+tabulateBernstein'     FEECa.Bernstein                     0.0    2.7
+euclideanToBarycentric FEECa.Polynomial                    0.0    3.3
+
+
+                                                                                           individual      inherited
+COST CENTRE                           MODULE                            no.     entries  %time %alloc   %time %alloc
+
+MAIN                                  MAIN                              224          0   61.9    0.3   100.0  100.0
+ main                                 Main                              449          0    0.7    0.1     0.7    0.1
+ CAF                                  Main                              447          0    0.0    0.0    10.4   98.5
+  divide                              FEECa.Internal.Spaces             496         10    0.0    0.0     0.0    0.0
+  fromInt                             FEECa.Internal.Spaces             495         11    0.0    0.0     0.0    0.0
+  subsimplices                        FEECa.Internal.Simplex            477          1    0.0    0.0     0.0    0.0
+   choose                             FEECa.Utility.Combinatorics       479          1    0.0    0.0     0.0    0.0
+    choose                            Math.Combinatorics.Exact.Binomial 480          1    0.0    0.0     0.0    0.0
+   topologicalDimension               FEECa.Internal.Simplex            478          1    0.0    0.0     0.0    0.0
+  referenceSimplex                    FEECa.Internal.Simplex            452          1    0.0    0.0     0.0    0.0
+   unitVector                         FEECa.Internal.Spaces             525          3    0.0    0.0     0.0    0.0
+   zero                               FEECa.Internal.Spaces             500          1    0.0    0.0     0.0    0.0
+  basis                               FEECa.FiniteElementSpace          451          1    0.7   10.1     0.7   14.6
+   toList                             FEECa.Internal.MultiIndex         670          0    0.0    0.0     0.0    0.0
+   multiplyBernstein                  FEECa.Bernstein                   482         56    0.0    0.2     0.0    0.2
+   monomial                           FEECa.Bernstein                   470         56    0.0    0.1     0.0    0.1
+    monomial                          FEECa.Polynomial                  672         56    0.0    0.0     0.0    0.0
+    topologicalDimension              FEECa.Internal.Simplex            471         56    0.0    0.0     0.0    0.0
+   nullForm                           FEECa.Internal.Form               469         56    0.0    0.0     0.0    0.0
+   sigma                              FEECa.Internal.Simplex            465         15    0.0    0.0     0.0    0.0
+   range                              FEECa.Internal.MultiIndex         463          0    0.0    2.8     0.0    2.8
+   increasingLists                    FEECa.Utility.Combinatorics       461          1    0.0    0.0     0.0    0.0
+   degreeR                            FEECa.Internal.MultiIndex         459          1    0.0    0.1     0.0    0.9
+    sumRLists                         FEECa.Utility.Combinatorics       460         77    0.0    0.9     0.0    0.9
+   subsimplices                       FEECa.Internal.Simplex            454          4    0.0    0.1     0.0    0.4
+    unrank                            FEECa.Utility.Combinatorics       466         15    0.0    0.0     0.0    0.3
+     increasingLists                  FEECa.Utility.Combinatorics       467         15    0.0    0.3     0.0    0.3
+    choose                            FEECa.Utility.Combinatorics       456          4    0.0    0.0     0.0    0.0
+     choose                           Math.Combinatorics.Exact.Binomial 457          4    0.0    0.0     0.0    0.0
+    topologicalDimension              FEECa.Internal.Simplex            455          4    0.0    0.0     0.0    0.0
+   topologicalDimension               FEECa.Internal.Simplex            453          1    0.0    0.0     0.0    0.0
+  main                                Main                              448          1    3.7    2.4     9.7   83.8
+   tabulate                           FEECa.PolynomialDifferentialForm  450          1    0.0    0.1     6.0   81.4
+    findSimplex                       FEECa.PolynomialDifferentialForm  498          1    0.0    0.0     0.0    0.0
+     findSimplex'                     FEECa.PolynomialDifferentialForm  499          1    0.0    0.0     0.0    0.0
+    evalSeparately                    FEECa.PolynomialDifferentialForm  468         56    0.0    5.5     6.0   81.3
+     apply                            FEECa.Internal.Form               671        168    0.0    0.6     0.0    0.6
+     components                       FEECa.Internal.Vector             476         56    0.0    0.0     0.0    0.0
+     tabulateBernstein                FEECa.Bernstein                   475         56    0.0    0.1     6.0   73.8
+      euclideanToBarycentric          FEECa.Polynomial                  483         56    0.0    3.3     4.5   51.5
+       toList                         Internal.Vector                   708        560    0.0    3.3     0.0    3.3
+        unId                          Data.Vector.Fusion.Util           709        560    0.0    0.0     0.0    0.0
+       fromDouble'                    FEECa.Internal.Spaces             676         56    0.0    2.8     0.0    2.8
+       toRows                         Internal.Matrix                   663         56    0.0    0.7     2.2   23.2
+        toRows.ext                    Internal.Matrix                   677        560    0.0    1.3     2.2   22.0
+         xdat                         Internal.Matrix                   707        560    0.0    0.0     0.0    0.0
+         icols                        Internal.Matrix                   691        560    0.0    0.0     0.0    0.0
+         idxs                         Internal.Vector                   682       1120    0.7    6.6     0.7    6.6
+          unId                        Data.Vector.Fusion.Util           686       2800    0.0    0.0     0.0    0.0
+          sChunks                     Data.Vector.Fusion.Bundle.Monadic 685       1120    0.0    0.0     0.0    0.0
+          sSize                       Data.Vector.Fusion.Bundle.Monadic 684       1120    0.0    0.0     0.0    0.0
+          upperBound                  Data.Vector.Fusion.Bundle.Size    683       1120    0.0    0.0     0.0    0.0
+         extractR                     Internal.Matrix                   678          0    0.0    0.4     1.5   14.1
+          extractAux                  Internal.Matrix                   679        560    0.0    1.1     1.5   13.6
+           apply                      Internal.Devel                    695        560    0.0    0.0     0.0    0.0
+           #|                         Internal.Devel                    693          0    0.0    0.2     1.5   10.4
+            check                     Internal.Devel                    694        560    0.7    2.5     1.5   10.3
+             unId                     Data.Vector.Fusion.Util           701       1120    0.0    0.0     0.0    0.0
+             apply                    Internal.Matrix                   697       1120    0.7    6.9     0.7    7.8
+              xCol                    Internal.Matrix                   706       1120    0.0    0.0     0.0    0.0
+              xRow                    Internal.Matrix                   705       1120    0.0    0.0     0.0    0.0
+              icols                   Internal.Matrix                   704       1120    0.0    0.0     0.0    0.0
+              irows                   Internal.Matrix                   703       1120    0.0    0.0     0.0    0.0
+              fi                      Internal.Vector                   702          0    0.0    0.9     0.0    0.9
+              xdat                    Internal.Matrix                   698       1120    0.0    0.0     0.0    0.0
+             apply                    Internal.Devel                    696        560    0.0    0.0     0.0    0.0
+           extractAux.nc              Internal.Matrix                   689        560    0.0    0.1     0.0    0.1
+            unId                      Data.Vector.Fusion.Util           690        560    0.0    0.0     0.0    0.0
+           createMatrix               Internal.Matrix                   687        560    0.0    1.0     0.0    1.9
+            matrixFromVector          Internal.Matrix                   699        560    0.0    0.1     0.0    0.1
+             unId                     Data.Vector.Fusion.Util           700        560    0.0    0.0     0.0    0.0
+            createVector              Internal.Vector                   688        560    0.0    0.0     0.0    0.7
+             createVector.doMalloc    Internal.Vector                   692        560    0.0    0.7     0.0    0.7
+           extractAux.nr              Internal.Matrix                   680        560    0.0    0.1     0.0    0.1
+            unId                      Data.Vector.Fusion.Util           681        560    0.0    0.0     0.0    0.0
+        icols                         Internal.Matrix                   667         56    0.0    0.0     0.0    0.0
+        xCol                          Internal.Matrix                   666         56    0.0    0.0     0.0    0.0
+        toRows.rowRange               Internal.Matrix                   664         56    0.0    0.6     0.0    0.6
+         irows                        Internal.Matrix                   665         56    0.0    0.0     0.0    0.0
+       inv                            Internal.Algorithms               533         56    0.0    0.1     2.2    9.1
+        irows                         Internal.Matrix                   554         56    0.0    0.0     0.0    0.0
+        ident                         Internal.Numeric                  541         56    0.0    0.1     0.7    3.1
+         constantD                    Internal.Matrix                   551          0    0.7    0.0     0.7    0.7
+          constantAux                 Internal.Vectorized               552         56    0.0    0.2     0.0    0.7
+           applyRaw                   Internal.Devel                    559         56    0.0    0.0     0.0    0.0
+           #|                         Internal.Devel                    557          0    0.0    0.0     0.0    0.3
+            check                     Internal.Devel                    558         56    0.0    0.0     0.0    0.3
+             applyRaw                 Internal.Devel                    560          0    0.0    0.3     0.0    0.3
+              unId                    Data.Vector.Fusion.Util           561         56    0.0    0.0     0.0    0.0
+           createVector               Internal.Vector                   553         56    0.0    0.0     0.0    0.1
+            createVector.doMalloc     Internal.Vector                   555         56    0.0    0.1     0.0    0.1
+         diag                         Internal.Numeric                  542         56    0.0    0.1     0.0    2.4
+          diag.n                      Internal.Numeric                  548         56    0.0    0.2     0.0    0.2
+           unId                       Data.Vector.Fusion.Util           549         56    0.0    0.0     0.0    0.0
+          diagRect                    Internal.Element                  543         56    0.0    0.0     0.0    2.1
+           runSTMatrix                Internal.ST                       544         56    0.0    0.1     0.0    2.1
+            unsafeFreezeMatrix        Internal.ST                       581         56    0.0    0.0     0.0    0.0
+            diagRect.\                Internal.Element                  563        224    0.0    0.8     0.0    0.8
+             unId                     Data.Vector.Fusion.Util           580         56    0.0    0.0     0.0    0.0
+             xCol                     Internal.Matrix                   579        224    0.0    0.0     0.0    0.0
+             xRow                     Internal.Matrix                   578        224    0.0    0.0     0.0    0.0
+             xdat                     Internal.Matrix                   577        224    0.0    0.0     0.0    0.0
+             icols                    Internal.Matrix                   576        224    0.0    0.0     0.0    0.0
+             irows                    Internal.Matrix                   564        224    0.0    0.0     0.0    0.0
+            diagRect.d                Internal.Element                  547         56    0.0    0.2     0.0    0.2
+             unId                     Data.Vector.Fusion.Util           562         56    0.0    0.0     0.0    0.0
+            newMatrix                 Internal.ST                       545         56    0.0    0.1     0.0    1.1
+             reshape                  Internal.Matrix                   570         56    0.0    0.2     0.0    0.3
+              matrixFromVector        Internal.Matrix                   572         56    0.0    0.2     0.0    0.2
+               matrixFromVector.m     Internal.Matrix                   574         56    0.0    0.0     0.0    0.0
+                ==                    Internal.Matrix                   575         56    0.0    0.0     0.0    0.0
+               unId                   Data.Vector.Fusion.Util           573         56    0.0    0.0     0.0    0.0
+              unId                    Data.Vector.Fusion.Util           571         56    0.0    0.0     0.0    0.0
+             runSTVector              Internal.ST                       565         56    0.0    0.4     0.0    0.6
+              unsafeFreezeVector      Internal.ST                       569         56    0.0    0.0     0.0    0.0
+              newUndefinedVector      Internal.ST                       566         56    0.0    0.0     0.0    0.2
+               createVector           Internal.Vector                   567         56    0.0    0.0     0.0    0.2
+                createVector.doMalloc Internal.Vector                   568         56    0.0    0.1     0.0    0.1
+             unsafeThawMatrix         Internal.ST                       546         56    0.0    0.0     0.0    0.0
+        linearSolveR                  Internal.LAPACK                   540         56    0.0    0.1     1.5    5.9
+         linearSolveSQAux             Internal.LAPACK                   582         56    0.0    0.2     1.5    5.8
+          apply                       Internal.Matrix                   626        112    0.0    0.0     0.0    0.0
+          #|                          Internal.Devel                    624          0    0.0    0.0     0.7    0.7
+           check                      Internal.Devel                    625         56    0.0    0.0     0.7    0.7
+            apply                     Internal.Matrix                   627          0    0.7    0.6     0.7    0.7
+             xCol                     Internal.Matrix                   633        112    0.0    0.0     0.0    0.0
+             xRow                     Internal.Matrix                   632        112    0.0    0.0     0.0    0.0
+             icols                    Internal.Matrix                   631        112    0.0    0.0     0.0    0.0
+             irows                    Internal.Matrix                   630        112    0.0    0.0     0.0    0.0
+             fi                       Internal.Vector                   629          0    0.0    0.1     0.0    0.1
+             xdat                     Internal.Matrix                   628        112    0.0    0.0     0.0    0.0
+          copy                        Internal.Matrix                   589        112    0.0    0.3     0.7    4.9
+           icols                      Internal.Matrix                   605        112    0.0    0.0     0.0    0.0
+           irows                      Internal.Matrix                   600        112    0.0    0.0     0.0    0.0
+           idxs                       Internal.Vector                   595        224    0.0    1.6     0.0    1.6
+            unId                      Data.Vector.Fusion.Util           599        672    0.0    0.0     0.0    0.0
+            sChunks                   Data.Vector.Fusion.Bundle.Monadic 598        224    0.0    0.0     0.0    0.0
+            sSize                     Data.Vector.Fusion.Bundle.Monadic 597        224    0.0    0.0     0.0    0.0
+            upperBound                Data.Vector.Fusion.Bundle.Size    596        224    0.0    0.0     0.0    0.0
+           extractR                   Internal.Matrix                   591          0    0.0    0.1     0.7    2.9
+            extractAux                Internal.Matrix                   592        112    0.0    0.2     0.7    2.9
+             apply                    Internal.Devel                    609        112    0.0    0.0     0.0    0.0
+             #|                       Internal.Devel                    607          0    0.0    0.0     0.7    2.1
+              check                   Internal.Devel                    608        112    0.7    0.5     0.7    2.1
+               unId                   Data.Vector.Fusion.Util           617        224    0.0    0.0     0.0    0.0
+               apply                  Internal.Matrix                   611        224    0.0    1.4     0.0    1.6
+                xCol                  Internal.Matrix                   623        224    0.0    0.0     0.0    0.0
+                xRow                  Internal.Matrix                   622        224    0.0    0.0     0.0    0.0
+                icols                 Internal.Matrix                   621        224    0.0    0.0     0.0    0.0
+                irows                 Internal.Matrix                   620        224    0.0    0.0     0.0    0.0
+                fi                    Internal.Vector                   619          0    0.0    0.2     0.0    0.2
+                xdat                  Internal.Matrix                   612        224    0.0    0.0     0.0    0.0
+               apply                  Internal.Devel                    610        112    0.0    0.0     0.0    0.0
+             extractAux.nc            Internal.Matrix                   603        112    0.0    0.0     0.0    0.0
+              unId                    Data.Vector.Fusion.Util           604        112    0.0    0.0     0.0    0.0
+             createMatrix             Internal.Matrix                   601        112    0.0    0.2     0.0    0.5
+              matrixFromVector        Internal.Matrix                   613        112    0.0    0.0     0.0    0.0
+               matrixFromVector.m     Internal.Matrix                   615        112    0.0    0.0     0.0    0.0
+                ==                    Internal.Matrix                   616        112    0.0    0.0     0.0    0.0
+               unId                   Data.Vector.Fusion.Util           614        112    0.0    0.0     0.0    0.0
+              createVector            Internal.Vector                   602        112    0.0    0.0     0.0    0.3
+               createVector.doMalloc  Internal.Vector                   606        112    0.0    0.3     0.0    0.3
+             extractAux.nr            Internal.Matrix                   593        112    0.0    0.0     0.0    0.0
+              unId                    Data.Vector.Fusion.Util           594        112    0.0    0.0     0.0    0.0
+          linearSolveSQAux.r          Internal.LAPACK                   587         56    0.0    0.0     0.0    0.0
+           irows                      Internal.Matrix                   588         56    0.0    0.0     0.0    0.0
+          linearSolveSQAux.n2         Internal.LAPACK                   585         56    0.0    0.0     0.0    0.0
+           icols                      Internal.Matrix                   586         56    0.0    0.0     0.0    0.0
+          linearSolveSQAux.n1         Internal.LAPACK                   583         56    0.0    0.0     0.0    0.0
+           irows                      Internal.Matrix                   584         56    0.0    0.0     0.0    0.0
+        linearSolve                   Internal.Algorithms               537         56    0.0    0.0     0.0    0.0
+         linearSolve                  Internal.Algorithms               538         56    0.0    0.0     0.0    0.0
+        square                        Internal.Algorithms               534         56    0.0    0.0     0.0    0.0
+         icols                        Internal.Matrix                   536         56    0.0    0.0     0.0    0.0
+         irows                        Internal.Matrix                   535         56    0.0    0.0     0.0    0.0
+       simplexToMatrix                FEECa.Polynomial                  517         56    0.0    1.0     0.0    3.1
+        geometricalDimension          FEECa.Internal.Simplex            526         56    0.0    0.0     0.0    0.0
+        toDouble'                     FEECa.Internal.Spaces             523         56    0.0    0.8     0.0    0.8
+         components                   FEECa.Internal.Vector             524        224    0.0    0.0     0.0    0.0
+        matrix                        Internal.Util                     518         56    0.0    1.0     0.0    1.4
+         reshape                      Internal.Matrix                   527         56    0.0    0.2     0.0    0.3
+          matrixFromVector            Internal.Matrix                   529         56    0.0    0.2     0.0    0.2
+           matrixFromVector.m         Internal.Matrix                   531         56    0.0    0.0     0.0    0.0
+            ==                        Internal.Matrix                   532         56    0.0    0.0     0.0    0.0
+           unId                       Data.Vector.Fusion.Util           530         56    0.0    0.0     0.0    0.0
+          unId                        Data.Vector.Fusion.Util           528         56    0.0    0.0     0.0    0.0
+         unId                         Data.Vector.Fusion.Util           522        952    0.0    0.0     0.0    0.0
+         sChunks                      Data.Vector.Fusion.Bundle.Monadic 521         56    0.0    0.0     0.0    0.0
+         sSize                        Data.Vector.Fusion.Bundle.Monadic 520         56    0.0    0.0     0.0    0.0
+         upperBound                   Data.Vector.Fusion.Bundle.Size    519         56    0.0    0.0     0.0    0.0
+       extendSimplex                  FEECa.Internal.Simplex            514         56    0.0    0.0     0.0    0.0
+        topologicalDimension          FEECa.Internal.Simplex            516         56    0.0    0.0     0.0    0.0
+        geometricalDimension          FEECa.Internal.Simplex            515         56    0.0    0.0     0.0    0.0
+       geometricalDimension           FEECa.Internal.Simplex            497         56    0.0    0.0     0.0    0.0
+       toDouble'                      FEECa.Internal.Spaces             493         56    0.0    1.9     0.0    1.9
+        components                    FEECa.Internal.Vector             494        560    0.0    0.0     0.0    0.0
+       matrix                         Internal.Util                     488         56    0.0    2.3     0.0    2.7
+        reshape                       Internal.Matrix                   501         56    0.0    0.2     0.0    0.3
+         matrixFromVector             Internal.Matrix                   503         56    0.0    0.2     0.0    0.2
+          matrixFromVector.m          Internal.Matrix                   505         56    0.0    0.0     0.0    0.0
+           ==                         Internal.Matrix                   506         56    0.0    0.0     0.0    0.0
+          unId                        Data.Vector.Fusion.Util           504         56    0.0    0.0     0.0    0.0
+         unId                         Data.Vector.Fusion.Util           502         56    0.0    0.0     0.0    0.0
+        unId                          Data.Vector.Fusion.Util           492       2296    0.0    0.0     0.0    0.0
+        sChunks                       Data.Vector.Fusion.Bundle.Monadic 491         56    0.0    0.0     0.0    0.0
+        sSize                         Data.Vector.Fusion.Bundle.Monadic 490         56    0.0    0.0     0.0    0.0
+        upperBound                    Data.Vector.Fusion.Bundle.Size    489         56    0.0    0.0     0.0    0.0
+       multiply                       Internal.Numeric                  487          0    0.0    0.0     0.0    2.2
+        emptyMul                      Internal.Numeric                  507         56    0.0    0.0     0.0    2.2
+         multiplyR                    Internal.LAPACK                   634         56    0.0    0.0     0.0    2.1
+          multiplyR                   Internal.LAPACK                   635         56    0.0    0.0     0.0    2.1
+           multiplyAux                Internal.LAPACK                   636         56    0.0    0.5     0.0    2.1
+            isT                       Internal.LAPACK                   655        112    0.0    0.0     0.0    0.0
+             icols                    Internal.Matrix                   657         56    0.0    0.0     0.0    0.0
+             xCol                     Internal.Matrix                   656        112    0.0    0.0     0.0    0.0
+            tt                        Internal.LAPACK                   646        112    0.0    0.0     0.0    0.0
+             icols                    Internal.Matrix                   650         56    0.0    0.0     0.0    0.0
+             trans                    Internal.Matrix                   648         56    0.0    0.0     0.0    0.0
+             xCol                     Internal.Matrix                   647        112    0.0    0.0     0.0    0.0
+            apply                     Internal.Matrix                   644        168    0.0    0.1     0.0    0.1
+            #|                        Internal.Devel                    642          0    0.0    0.0     0.0    1.1
+             check                    Internal.Devel                    643         56    0.0    0.0     0.0    1.1
+              apply                   Internal.Matrix                   645          0    0.0    0.9     0.0    1.1
+               xCol                   Internal.Matrix                   662        168    0.0    0.0     0.0    0.0
+               xRow                   Internal.Matrix                   661        168    0.0    0.0     0.0    0.0
+               icols                  Internal.Matrix                   660        168    0.0    0.0     0.0    0.0
+               irows                  Internal.Matrix                   659        168    0.0    0.0     0.0    0.0
+               fi                     Internal.Vector                   658          0    0.0    0.1     0.0    0.1
+               xdat                   Internal.Matrix                   649        168    0.0    0.0     0.0    0.0
+            createMatrix              Internal.Matrix                   639         56    0.0    0.1     0.0    0.4
+             matrixFromVector         Internal.Matrix                   651         56    0.0    0.0     0.0    0.0
+              matrixFromVector.m      Internal.Matrix                   653         56    0.0    0.0     0.0    0.0
+               ==                     Internal.Matrix                   654         56    0.0    0.0     0.0    0.0
+              unId                    Data.Vector.Fusion.Util           652         56    0.0    0.0     0.0    0.0
+             createVector             Internal.Vector                   640         56    0.0    0.0     0.0    0.3
+              createVector.doMalloc   Internal.Vector                   641         56    0.0    0.3     0.0    0.3
+            irows                     Internal.Matrix                   638        112    0.0    0.0     0.0    0.0
+            icols                     Internal.Matrix                   637        112    0.0    0.0     0.0    0.0
+         emptyMul.c                   Internal.Numeric                  512         56    0.0    0.0     0.0    0.0
+          icols                       Internal.Matrix                   513         56    0.0    0.0     0.0    0.0
+         emptyMul.r                   Internal.Numeric                  510         56    0.0    0.0     0.0    0.0
+          irows                       Internal.Matrix                   511         56    0.0    0.0     0.0    0.0
+         emptyMul.x1                  Internal.Numeric                  508         56    0.0    0.0     0.0    0.0
+          icols                       Internal.Matrix                   509         56    0.0    0.0     0.0    0.0
+       <>                             Numeric.LinearAlgebra             484         56    0.0    0.0     0.0    0.0
+        mXm                           Internal.Numeric                  485         56    0.0    0.0     0.0    0.0
+      tabulateBernstein'              FEECa.Bernstein                   481         56    0.0    2.7     1.5   22.2
+       components                     FEECa.Internal.Vector             675        560    0.0    0.0     0.0    0.0
+       evaluatePolynomial             FEECa.Polynomial                  673        560    1.5   17.1     1.5   19.5
+        toList                        FEECa.Internal.MultiIndex         711          0    0.0    2.4     0.0    2.4
+        terms                         FEECa.Polynomial                  674        560    0.0    0.0     0.0    0.0
+     zero                             FEECa.Internal.Spaces             473         56    0.0    1.2     0.0    1.2
+     split                            FEECa.Internal.Form               472         56    0.0    0.2     0.0    0.2
+ CAF                                  FEECa.FiniteElementSpace          444          0    0.0    0.0     0.0    0.0
+  basis                               FEECa.FiniteElementSpace          668          0    0.0    0.0     0.0    0.0
+   toList                             FEECa.Internal.MultiIndex         669          1    0.0    0.0     0.0    0.0
+ CAF                                  FEECa.Internal.Vector             441          0    0.0    0.0     0.0    0.0
+  vector                              FEECa.Internal.Vector             474          1    0.0    0.0     0.0    0.0
+ CAF                                  FEECa.Internal.MultiIndex         438          0    0.0    0.0     0.0    0.0
+  toList                              FEECa.Internal.MultiIndex         710          1    0.0    0.0     0.0    0.0
+  range                               FEECa.Internal.MultiIndex         462          1    0.0    0.0     0.0    0.0
+ CAF                                  Internal.Vector                   430          0    0.0    0.0     0.0    0.0
+  fi                                  Internal.Vector                   618          1    0.0    0.0     0.0    0.0
+ CAF                                  Internal.Devel                    429          0    0.0    0.0     0.0    0.0
+  #|                                  Internal.Devel                    556          1    0.0    0.0     0.0    0.0
+ CAF                                  Internal.Matrix                   427          0    0.0    0.0     0.0    0.0
+  extractR                            Internal.Matrix                   590          1    0.0    0.0     0.0    0.0
+  constantD                           Internal.Matrix                   550          1    0.0    0.0     0.0    0.0
+ CAF                                  Internal.Numeric                  421          0    0.0    0.0     0.0    0.0
+  multiply                            Internal.Numeric                  486          1    0.0    0.0     0.0    0.0
+ CAF                                  Internal.Algorithms               420          0    0.0    0.0     0.0    0.0
+  linearSolve'                        Internal.Algorithms               539          1    0.0    0.0     0.0    0.0
+ CAF                                  Math.Combinatorics.Exact.Primes   386          0    0.0    0.0     6.0    0.0
+  primes                              Math.Combinatorics.Exact.Primes   458          1    6.0    0.0     6.0    0.0
+ CAF                                  GHC.Conc.Signal                   315          0    0.0    0.0     0.0    0.0
+ CAF                                  GHC.Float                         307          0    0.0    0.6     0.0    0.6
+ CAF                                  GHC.IO.Encoding                   297          0    7.5    0.0     7.5    0.0
+ CAF                                  GHC.IO.Encoding.Iconv             295          0    0.0    0.0     0.0    0.0
+ CAF                                  GHC.IO.Handle.FD                  286          0    0.0    0.4     0.0    0.4
+ CAF                                  GHC.IO.Handle.Text                284          0    0.0    0.0     0.0    0.0
+ CAF                                  GHC.Event.KQueue                  243          0    0.0    0.0     0.0    0.0
+ CAF                                  GHC.Event.Poll                    240          0    0.0    0.0     0.0    0.0
+ CAF                                  GHC.Event.Thread                  239          0   13.4    0.0    13.4    0.0
