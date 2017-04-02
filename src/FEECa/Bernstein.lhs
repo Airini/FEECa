@@ -55,7 +55,7 @@ import qualified  FEECa.Polynomial   as P (
                       constant, polynomial, euclideanToBarycentric)
 
 import            FEECa.Utility.Combinatorics (choose, factorial)
-import            FEECa.Utility.Print
+import            FEECa.Utility.Print hiding  (($$))
 import            FEECa.Utility.Utility       (sumR, pairM)
 
 \end{code}
@@ -198,9 +198,9 @@ instance (EuclideanSpace v, Field (Scalar v), r ~ Scalar v)  => VectorSpace (Ber
 
 -- | Bernstein polynomials as a ring.
 instance (EuclideanSpace v, r ~ Scalar v) => Ring (BernsteinPolynomial v r) where
-  add     = addBernstein
+  add     = addV
   addId   = Constant addId
-  addInv  = scaleBernstein (addInv mulId)
+  addInv  = sclV (addInv mulId)
 
   mul     = multiplyBernstein
   mulId   = Constant mulId
@@ -241,7 +241,7 @@ derived so they are declared an instance of the class \code{Function}.
 
 \begin{code}
 
-instance (EuclideanSpace v, r ~ Scalar v, Ord r)
+instance (EuclideanSpace v, r ~ Scalar v)
     => Function (BernsteinPolynomial v r) v where
   evaluate = {-# SCC "evaluate" #-} evaluateBernstein
   derive   = deriveBernstein
@@ -306,21 +306,20 @@ internal or underlying polynomial at the resulting vector.
 \begin{code}
 -- | Evaluate Bernstein polynomial by first evaluating the barycentric coordinates
 -- | and then evaluating the internal polynomial at the resulting vector.
-evaluateBernstein :: (EuclideanSpace v, r ~ Scalar v, Ord r)
+evaluateBernstein :: (EuclideanSpace v, r ~ Scalar v)
                   => v -> BernsteinPolynomial v r -> r
 evaluateBernstein v (Bernstein t p) = {-# SCC "evaluateBernstein" #-} evaluate vb p
   where vb = {-#SCC "barycentric" #-} vector $ map (evaluate v) (barycentricCoordinates t)
 evaluateBernstein _ (Constant c)    = {-# SCC "evaluateConstant" #-} c
 
 
-tabulateBernstein :: (EuclideanSpace v, r ~ Scalar v, Ord r)
+tabulateBernstein :: (EuclideanSpace v, r ~ Scalar v)
                   => Simplex v -> [v] -> [BernsteinPolynomial v r] -> [[r]]
-tabulateBernstein t vs bs = [tabulateBernstein' ls b | b <- bs]
-  where ls = P.euclideanToBarycentric t vs
+tabulateBernstein t = map . tabulateBernstein' . P.euclideanToBarycentric t
 
 tabulateBernstein' :: (EuclideanSpace v, r ~ Scalar v)
                    => [v] -> BernsteinPolynomial v r -> [r]
-tabulateBernstein' vs (Bernstein _ p) = [evaluate v p | v <- vs]
+tabulateBernstein' vs (Bernstein _ p) = map (p $$) vs
 tabulateBernstein' _  _               = error "tabulateBernstein': TODO"
 \end{code}
 
@@ -356,9 +355,9 @@ function provided by the \module{Polynomial} module.
 \begin{code}
 
 -- | Derivative of a Bernstein monomial
-deriveMonomial :: ( EuclideanSpace v, r ~ Scalar v, Ord r )
+deriveMonomial :: ( EuclideanSpace v, r ~ Scalar v )
                => Simplex v -> MI.MultiIndex -> [ Polynomial r ]
-deriveMonomial t mi = [ sumR [sclV (grads j i) (dp j)  | j <- [0..n]] | i <- [0..n-1] ]
+deriveMonomial t mi = [ sumR [sclV (grads j i) (dp j) | j <- [0..n]] | i <- [0..n-1] ]
     where grads j i = toList (barycentricGradients t !! j) !! i
           dp j = if (mi' !! j) > 0
                  then P.polynomial [MI.derive j mi]
@@ -367,7 +366,7 @@ deriveMonomial t mi = [ sumR [sclV (grads j i) (dp j)  | j <- [0..n]] | i <- [0.
           n    = dim mi - 1
 
 -- | Derive Bernstein polynomial.
-deriveBernstein :: ( EuclideanSpace v, r ~ Scalar v, Ord r )
+deriveBernstein :: ( EuclideanSpace v, r ~ Scalar v )
                 => v -> BernsteinPolynomial v r -> BernsteinPolynomial v r
 deriveBernstein v (Bernstein t p) = Bernstein t (derivePolynomial (deriveMonomial t) v p)
 deriveBernstein _ (Constant _)    = Constant addId
@@ -391,9 +390,9 @@ This is implemented by the \code{integrate} function.
 
 -- | Numerically integrate the Bernstein polyonomial p over the simplex t using
 -- | a Gauss-Jacobi quadrature rule.
-integratePolynomial :: (EuclideanSpace v, r ~ Scalar v, Ord r)
+integratePolynomial :: (EuclideanSpace v, r ~ Scalar v)
                     => Simplex v -> BernsteinPolynomial v r -> r
-integratePolynomial t b = integrateOverSimplex q t (`evaluate` b)
+integratePolynomial t b = integrateOverSimplex q t (b $$)
   where q = div (r + 2) 2
         r = degree b
 
@@ -475,10 +474,9 @@ product with the gradient vector.
 
 -- | Projection function for gradients of barycentric coordinates as basis for
 -- | the space of alternating forms.
-proj :: (EuclideanSpace v, r ~ Scalar v, Ord r)
+proj :: (EuclideanSpace v, r ~ Scalar v)
      => Simplex v -> Int -> v -> r
-proj t i  = dot u
-  where u = barycentricGradient t i
+proj t i  = dot (barycentricGradient t i)
 \end{code}
 
 %------------------------------------------------------------------------------%

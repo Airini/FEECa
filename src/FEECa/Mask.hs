@@ -70,7 +70,7 @@ dxN = flip dx
 dxVP :: Field f => Int -> Vector f -> PolyRepresentation f
 dxVP = (fmap . fmap) constant dxV
 
-dxVF :: (Eq f, Ring f) => Int -> VectorField f -> PolyRepresentation f
+dxVF :: Ring f => Int -> VectorField f -> PolyRepresentation f
 dxVF i (Vector v) = v !! (i-1)
 
 (#) :: forall f v. (Ring f, Module f,
@@ -111,7 +111,7 @@ bssIx :: Ring a => Int -> Int -> Vector a
 bssIx n = vector . flip canonCoord n
 
 -- or <|> ?
-(<>) :: (Eq f, Field f{-, InnerProductSpace (Form f)-}) => Form f -> Form f -> Scalar f
+(<>) :: Field f {-, InnerProductSpace (Form f)-} => Form f -> Form f -> Scalar f
 (<>) omega eta = undefined --S.inner omega eta -- inner dxV omega eta
   where n = dimVec omega
 {-
@@ -119,8 +119,7 @@ bssIx n = vector . flip canonCoord n
 (⌟) = contract dxV
 -}
 
-(⌟) :: (Ring f, Projectable v f, Dimensioned v)
-     => Form f -> v -> Form f
+(⌟) :: (Projectable v f, Dimensioned v) => Form f -> v -> Form f
 (⌟) = contract projection
 
 {-interior :: (Eq f, Field f) => Form f -> Vector f -> Form f
@@ -140,12 +139,15 @@ d form = df (vector . flip canonCoord n) form
   where n = dimVec form
 
 -- | Evaluation of differential forms at a given point to obtain an alternating form
-(§) :: DifferentialForm (PolyRepresentation Double) -> Vector Double -> Form Double
+(§) :: DifferentialForm (PolyRepresentation Double) -> Vector Double
+    -> Form Double
 (§) = eval
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors
 --   (some kind of canonical projection)
-(&) :: (Field f, Eq (Vector f)) => DifferentialForm (PolyRepresentation f) -> VectorField f -> DifferentialForm (PolyRepresentation f)
+(&) :: Field f
+    => DifferentialForm (PolyRepresentation f) -> VectorField f
+    -> DifferentialForm (PolyRepresentation f)
 (&) = contract dxVF
 -- ALSO: generalise Vector? that way we can have parameterised vectors :)
 -- kappa, etc. => explicit symbols
@@ -164,18 +166,6 @@ instance Field f => Field (PolyRepresentation f) where
   fromDouble = constant . fromDouble
   toDouble = undefined
 -}
-
-
--- XXX: additional instances for now
-instance Functor Vector where
-  fmap f (Vector v) = Vector (fmap f v)
-
-instance Functor Term where
-  fmap f (Constant a) = Constant (f a)
-  fmap f (Term a mi)  = Term (f a) mi
-
-instance Functor Polynomial where
-  fmap f (Polynomial n ts) = Polynomial n (fmap (fmap f) ts)
 
 {-
 instance Applicative Polynomial where

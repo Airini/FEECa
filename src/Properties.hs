@@ -151,7 +151,7 @@ propA_contractLeibniz w t v vs =
   addV ((w ⌟ v) /\ t) (sclV (expSign (arity w) addId) (w /\ (t ⌟ v))) # vs
 -- TODO: Abstract Leibniz rule away
 
-(%#) :: (Ring f, Module f, Projectable v f, Scalar v ~ Scalar f, Dimensioned v)
+(%#) :: (Module f, Projectable v f, Scalar v ~ Scalar f, Dimensioned v)
      => Form f -> v -> Form f
 (%#) = contract projection
 

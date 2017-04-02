@@ -7,16 +7,14 @@
 
 module FEECa.Internal.SimplexTest (
     arbitrarySimplex, arbitrarySubsimplex, testSimplex
-) where
+  ) where
 
 
 import Control.Monad(liftM)
--- import System.Random()
 
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
--- import FEECa.Internal.VectorTest
 
 import FEECa.Utility.Combinatorics
 import FEECa.Utility.Utility
@@ -85,11 +83,24 @@ pSubsimplices (SubsimplexTest s@(Simplex _ l) k _) =
 prop_extend_subsimplex :: SubsimplexTest (Vector Double) -> Bool
 prop_extend_subsimplex = pExtendSubsimplex
 
-pExtendSubsimplex :: ( Show v, EuclideanSpace v, Ord (Scalar v) )
+pExtendSubsimplex :: ( Show v, EuclideanSpace v )
                   => SubsimplexTest v -> Bool
-pExtendSubsimplex (SubsimplexTest s@(Simplex _ l) k i) =
+pExtendSubsimplex (SubsimplexTest s k i) =
     volume t /= addId && topologicalDimension t == geometricalDimension t
   where t = extendSimplex (subsimplex s k i)
+
+-- | The extension of a subsimplex should preserve the spanning vectors (aside
+-- | from those added to acquire full dimensionality).
+prop_extend_preserves_span :: SubsimplexTest (Vector Double) -> Bool
+prop_extend_preserves_span = pSpanPreserve
+
+pSpanPreserve :: (Show v, EuclideanSpace v)
+              => SubsimplexTest v -> Bool
+pSpanPreserve (SubsimplexTest s k i) = and $ zipWith (==) spSub spFll
+  where subsx = subsimplex s k i
+        full  = extendSimplex subsx
+        spSub = spanningVectors subsx
+        spFll = spanningVectors full
 
 
 -- | The simplex obtained from subsimplex should be the same
@@ -119,12 +130,12 @@ prop_vol_integral :: Simplex (Vector Double) -> Bool
 prop_vol_integral = pVolIntegral
 
 pVolIntegral :: EuclideanSpace v => Simplex v -> Bool
-pVolIntegral t = eqNum (volume t) (integrate 2 t (Constant (fromInt (1::Int))))
+pVolIntegral t = volume t `eqNum` integrate 2 t (Constant (embedIntegral 1))
   where n = topologicalDimension t  -- XXX: 2, 1, n??
 
 -- TODO: perhaps add check that simPos is satisfied (if that is an invariant)
-simPos :: Simplex (Vector Double) -> Bool
-simPos s = volume s >= 0
+simPos :: (EuclideanSpace v, Ord (Scalar v)) => Simplex v -> Bool
+simPos s = volume s >= addId
 
 
 
@@ -140,11 +151,11 @@ newtype Cubic v r = Cubic v deriving (Show, Eq)
 instance (EuclideanSpace v, r ~ Scalar v, Arbitrary r, RealFrac r)
     => Arbitrary (Cubic v r) where
   arbitrary = do
-      let intBelow   = truncate :: RealFrac r => r -> Integer
-          restrict x = sub x ((embedIntegral . intBelow) x)
-      n  <- Q.choose (1,10)
-      liftM (Cubic . fromList) $
-        Q.vectorOf n $ liftM (restrict . abs) arbitrary
+    let intBelow   = truncate :: RealFrac r => r -> Integer
+        restrict x = sub x ((embedIntegral . intBelow) x)
+    n  <- Q.choose (1,10)
+    liftM (Cubic . fromList) $
+      Q.vectorOf n $ liftM (restrict . abs) arbitrary
 {-      cs <- Q.vectorOf n (fmap abs arbitrary)
       let transf x = sub x ((fromInt . restrict) x)
       return $ (Cubic . fromList . {-fromDouble'-} map transf) cs
@@ -158,16 +169,16 @@ instance (EuclideanSpace v, r ~ Scalar v, Arbitrary r, RealFrac r)
 prop_cubicToBarycentric :: Cubic (Vector Double) Double -> Bool
 prop_cubicToBarycentric = pCubicToBarycentric
 
-pCubicToBarycentric :: (EuclideanSpace v, Ord r, r ~ Scalar v)
+pCubicToBarycentric :: (EuclideanSpace v, r ~ Scalar v, Ord r)
                     => Cubic v r -> Bool
 pCubicToBarycentric (Cubic v) =
-        pBarycentricRange v' && pBarycentricSum v' && (dim v' == dim v + 1)
-    where v' = cubicToBarycentric v
+    pBarycentricRange v' && pBarycentricSum v' && (dim v' == dim v + 1)
+  where v' = cubicToBarycentric v
 
 --prop_barycentric_range :: Vector Double -> Bool
 --prop_barycentric_range = pBarycentricRange
 
-pBarycentricRange :: (Ord (Scalar v), EuclideanSpace v) => v -> Bool
+pBarycentricRange :: (EuclideanSpace v, Ord (Scalar v)) => v -> Bool
 pBarycentricRange v = all (addId <=) cs && all (mulId >=) cs
   where cs = toList v
 
@@ -177,8 +188,7 @@ pBarycentricRange v = all (addId <=) cs && all (mulId >=) cs
 --prop_barycentric_sum = pBarycentricSum
 
 pBarycentricSum :: EuclideanSpace v => v -> Bool
-pBarycentricSum v = eqNum (sum (toDouble' v)) 1.0
--- TODO: fix the toDouble dependency (use Num (Scalar v) => or similar)
+pBarycentricSum v = (sumR . toList) v `eqNum` mulId
 
 -- | Check that the unit vectors in barycentric coordinates reproduce the vertices
 -- | of the simplex when transformed to cartesian coordinates.
@@ -186,10 +196,9 @@ prop_barycentricToCartesian :: Simplex (Vector Double) -> Bool
 prop_barycentricToCartesian = pBarycentricToCartesian
 
 pBarycentricToCartesian :: EuclideanSpace v => Simplex v -> Bool
-pBarycentricToCartesian t =
-        map (barycentricToCartesian t) vs == vertices t
-    where n = geometricalDimension t
-          vs = [unitVector (n+1) i | i <- [0..n]]
+pBarycentricToCartesian t = map (barycentricToCartesian t) vs == vertices t
+  where n  = geometricalDimension t
+        vs = map (unitVector (n+1)) [0..n]
 
 -- TODO: Add testing for barycentric coordinates of subsimplices.
 

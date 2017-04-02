@@ -37,10 +37,10 @@ findSimplex :: DifferentialForm a -> Maybe (Simplex (Vector a))
 findSimplex (F.Form _ _ cs) = getFirst $ foldMap (findSimplex' . fst) cs
 
 findSimplex' :: BernsteinPolynomial a -> First (Simplex (Vector a))
-findSimplex' (B.Bernstein t _)  = First $ Just t
-findSimplex' _                  = First $ Nothing
+findSimplex' (B.Bernstein t _)  = First (Just t)
+findSimplex' _                  = First Nothing
 
-tabulate :: (S.Field a, S.VectorSpace a, S.Scalar a ~ a, Ord a)
+tabulate :: (S.VectorSpace a, S.Scalar a ~ a)
          => [DifferentialForm a]
          -> [Vector a]
          -> [Simplex (Vector a)]
@@ -49,13 +49,13 @@ tabulate bs vs fs = [ evalSeparately t b vs fs' | b <- bs ]
   where t   = fromJust $ findSimplex $ head bs
         fs' = map spanningVectors fs
 
-apply :: (S.Field a, Ord a)
+apply :: S.Field a
       => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
 apply omega vs = {-# SCC "apply" #-} F.apply ds vs omega
   where t  = fromJust (findSimplex omega)
         ds = P.barycentricGradients t
 
-evalSeparately :: (S.Field a, S.Module a, S.Scalar a ~ a, Ord a)
+evalSeparately :: (S.VectorSpace a, S.Scalar a ~ a)
                => Simplex (Vector a)
                -> DifferentialForm a
                -> [Vector a]
@@ -77,10 +77,10 @@ inner omega eta
         error "Inner: Need associated simplex to compute inner product."
   where t = findSimplex omega `mplus` findSimplex eta
 
-integrate :: (S.Field a, Ord a) => Simplex (Vector a) -> DifferentialForm a -> a
+integrate :: S.Field a => Simplex (Vector a) -> DifferentialForm a -> a
 integrate t omega = S.divide (B.integratePolynomial t b) (S.mul kfac (volume t))
   where b    = apply omega (spanningVectors t)
-        b'   = S.sclV (S.mulInv (S.mul kfac (volume t))) b
+        -- b'   = S.sclV (S.mulInv (S.mul kfac (volume t))) b
         kfac = S.embedIntegral (C.factorial (topologicalDimension t))
 
 \end{code}
