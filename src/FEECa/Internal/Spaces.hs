@@ -168,7 +168,7 @@ class Dimensioned t where
 -- immeidate definition as coordinates wrt to a basis) and for appropriate inner
 -- products giving rise to metrics.
 -- TODO: check VS vs M
-class ( Eq v, Dimensioned v, VectorSpace v, Field (Scalar v) )
+class ( Eq v, Dimensioned v, VectorSpace v )
     => EuclideanSpace v where
   dot      :: v -> v -> Scalar v
   fromList :: [Scalar v] -> v

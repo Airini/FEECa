@@ -260,9 +260,9 @@ volume t
         bs = map (fromList . map fromDouble) $ M.toLists tt -- gramSchmidt vs
         t' = M.matrix n (concatMap toDouble' vs)
         tt = M.orthSVD (Right k) t' (M.leftSV t')
-        zs = (map (fromList . map fromDouble) . M.toLists . snd) $ M.rightSV t'
-        _ = project vs zs
-        _ = project bs vs
+        -- zs = (map (fromList . map fromDouble) . M.toLists . snd) $ M.rightSV t'
+        -- _ = project vs zs
+        -- _ = project bs vs
 
 project :: EuclideanSpace v => [v] -> [v] -> [v]
 project bs vs = map fromList [[ proj b v | b <- bs] | v <- vs]
@@ -355,7 +355,7 @@ For the computation of the barycentric coordinates of a simplex whose
 \begin{code}
 -- | Extend the given simplex to a full simplex so that its geometrical
 -- | dimension is the same as its topological dimension.
-extendSimplex :: (EuclideanSpace v, Ord (Scalar v)) => Simplex v -> Simplex v
+extendSimplex :: EuclideanSpace v => Simplex v -> Simplex v
 extendSimplex t
     | n == nt   = t
     | otherwise = simplex' p0 (extendVectors n dirs)
@@ -367,11 +367,10 @@ extendSimplex t
 -- | Uses the Gram-Schmidt method to add at most n orthogonal vectors to the
 -- | given set of vectors. Due to round off error the resulting list may contain
 -- | more than n vectors, which then have to be removed manually.
-extendVectors :: (EuclideanSpace v, Ord (Scalar v))
+extendVectors :: EuclideanSpace v
               => Int -> [v] -> [v]
-extendVectors n vs = vs ++ us
-  where us = drop k $ gramSchmidt $ vs ++ [unitVector n i | i <- [0..(n-1)]]
-        k  = length vs
+extendVectors n [] = extendOrthGS (Right n)
+extendVectors _ vs = extendOrthGS (Left vs)
     {- XXX: this was there before, jointly with providing GS with the
             n unit vectors in addition to vs, but it seems to be quite
             unnecessary; the comment in the function description doesn't seem
@@ -379,8 +378,9 @@ extendVectors n vs = vs ++ us
             form an orthogonal basis jointly with vs; changed it so that GS
             takes care of this, as would be expected (ie: it will give at most
             n orthogonal vectors where n = dim (EuclideanSpace v):
-        take (n - k)  (U.sortOn (Down . norm2) us -}
-
+        take (n - k)  (U.sortOn (Down . norm2) us
+      where us = {-drop k $ -}gramSchmidt $ vs ++ [unitVector n i | i <- [0..(n-1)]]
+            k  = length vs -}
 \end{code}
 
 %------------------------------------------------------------------------------%

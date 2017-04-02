@@ -44,12 +44,12 @@ data Form f =  -- we lose dependency on the type of vector!
     Form  { arity   :: Dim            -- ^ For complete evaluation
           , dimVec  :: Dim            -- ^ Of the underlying vector space
           , terms   :: [(f, Prd)] }   -- ^ List of terms of (coeff,wedge)'s
-  deriving (Eq)
+  deriving Eq
 
 
 split :: (Module w, Scalar w ~ v) => Form w -> ([w], [Form v])
-split (Form k n cs)   = unzip $ map split' cs
-  where  split' (a,b) = (a, Form k n [(mulId, b)])
+split (Form k n cs) = unzip $ map split' cs
+  where split' (a,b) = (a, Form k n [(mulId, b)])
 
 -- terms [(17, [1,2]), (38, [1,3])] = 17*dx1/\dx2 + 38*dx1/\dx3
 

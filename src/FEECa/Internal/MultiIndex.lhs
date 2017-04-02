@@ -150,8 +150,8 @@ valid :: MultiIndex -> Bool
 valid = all (>= 0) . getZipList
 
 -- | Transform multi-index into list
-toList :: Integral a => MultiIndex -> [a]
-toList = map fromIntegral . getZipList
+toList :: {-Integral a =>-} MultiIndex -> [Int]
+toList = {-map fromIntegral .-} getZipList
 
 \end{code}
 
@@ -278,7 +278,7 @@ the addition of the each pair of elements separately.
 \begin{code}
 
 -- | Add two multi-indices
-add :: (Integral a) => ZipList a -> ZipList a -> ZipList a
+add :: Integral a => ZipList a -> ZipList a -> ZipList a
 add = liftA2 (+)
 
 \end{code}
@@ -322,10 +322,11 @@ of the element-wise binomial coefficients.
 -- | Generalized binomial coefficients for multi-indices as defined in the paper
 -- | by Kirby.
 choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
-choose a b = product (getZipList (liftA2 C.choose a b))
+choose a b = product (getZipList $ liftA2 C.choose a b)
 
 choose' :: Fractional b => Int -> MultiIndex -> b
-choose' a b = fromIntegral (C.factorial a) / fromIntegral (factorial b)
+choose' a b = C.factorial a / factorial b -- fromIntegral (C.factorial a) / fromIntegral (factorial b)
+-- TODO: investigate *why* fromIntegral was there before.
 
 \end{code}
 

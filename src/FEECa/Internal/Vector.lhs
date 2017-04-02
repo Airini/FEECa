@@ -70,6 +70,8 @@ data Vector a = Vector { components :: [a] } deriving Show
 --instance Eq (Vector Rational) where
 --    v1 == v2 = and (zipWith (==) (components v1) (components v2))
 
+instance Functor Vector where
+  fmap f (Vector v) = Vector (fmap f v)
 
 instance Eq a => Eq (Vector a) where
   v1 == v2 = and (zipWith (==) (components v1) (components v2))
@@ -78,6 +80,7 @@ instance Eq a => Eq (Vector a) where
   --   for all v. vector []  ==  v
   -- Thus an invariant for this definition to work is that vectors
   -- compared for equality always have the same dimenstion.
+  -- TODO: #2 : why is the instance not derived?
 
 -- | R^n as a vector space.
 instance Ring a => Module (Vector a) where

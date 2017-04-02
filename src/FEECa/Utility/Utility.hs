@@ -2,7 +2,7 @@
 
 module FEECa.Utility.Utility (
     Dimension (..)
-  , sortOn, takeIndices, takeTransform
+  , sortOn, takeIndices, takeMap
   , pairM, pairUp, zipWithWhen
   , sumR, productR, sumV
   , expSign, sign
@@ -25,8 +25,8 @@ sortOn f = map snd .
             sortBy (comparing fst) . map (\x -> let y = f x in y `seq` (y, x))
 #endif
 
-takeTransform :: Integral a => a -> (b -> c) -> [b] -> [c]
-takeTransform n f = zipWith (const f) [0..n]
+takeMap :: Integral a => a -> (b -> c) -> [b] -> [c]
+takeMap n = (`zipWith` [0..n]) . const
 
 takeIndices :: [a] -> [Int] -> [a]
 takeIndices l = map (l !!)
@@ -54,13 +54,13 @@ sumR = foldr add addId
 productR :: (Foldable t, Ring a) => t a -> a
 productR = foldr mul mulId
 
-{-# INLINE takeTransform  #-}
-{-# INLINE takeIndices    #-}
-{-# INLINE pairM          #-}
-{-# INLINE pairUp         #-}
-{-# INLINE sumR           #-}
-{-# INLINE productR       #-}
-{-# INLINE sumV           #-}
+{-# INLINE takeMap      #-}
+{-# INLINE takeIndices  #-}
+{-# INLINE pairM        #-}
+{-# INLINE pairUp       #-}
+{-# INLINE sumR         #-}
+{-# INLINE productR     #-}
+{-# INLINE sumV         #-}
 
 -- | Returns the appropriate function for arithmetic expressions having
 --   products with exponentials of -1 over 'Ring' types
