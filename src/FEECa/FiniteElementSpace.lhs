@@ -29,7 +29,7 @@ module FEECa.FiniteElementSpace (
 
     FiniteElementSpace (..), Name(..), BasisFunction
 
-  , finiteElementSpace, basis, vspaceDim
+  , finiteElementSpace, basis, vspaceDim, degree, arity
   , prmLkBasis, prmLkFace
   , whitneyForm, psi'
 
@@ -37,15 +37,16 @@ module FEECa.FiniteElementSpace (
 
  -- * Introduction
  -- $intro
-) where
+  ) where
 
 import            Data.List
+import            Data.Function (on)
 import qualified  Math.Combinatorics.Exact.Binomial as CBin
 
 import            FEECa.Utility.Combinatorics     (increasingLists, sublists)
 import            FEECa.Utility.Print             (printForm, dlambda)
 import qualified  FEECa.Utility.Print       as P  (Pretty(..))
-import            FEECa.Utility.Utility           (pairM)
+import            FEECa.Utility.Utility           (pairM, sumV)
 
 import            FEECa.Internal.Form   hiding    (arity, inner)
 import qualified  FEECa.Internal.MultiIndex as MI
@@ -392,17 +393,24 @@ Define $\psf{\alpha}{f}{g}{\sigma}$
 psi :: Simplex -> Simplex -> MI.MultiIndex -> [Int] -> Form BernsteinPolynomial
 psi t f alpha sigma  = foldl (/\) unit [psi' t f alpha i | i <- sigma]
   where unit = nullForm n mulId
-        n = dim alpha - 1
+        n    = dim alpha - 1
 
 -- TODO: Check form indices.
 psi' :: Simplex -> Simplex -> MI.MultiIndex -> Int -> Form BernsteinPolynomial
-psi' t f alpha i = foldl subV (db i) [ sclV (c j) (db j) | j <- sigma]
-  where db j = sclV (constant t 1.0) $ oneForm j n
-        c _  = sclV ((alpha' !! i) / r) mulId -- TODO: check here!
-        r    = fromInteger $ MI.degree alpha
-        alpha' = map fromInteger $ MI.toList alpha
-        n      = S.geometricalDimension f
-        sigma  = S.sigma f
+psi' t f alpha i = sumV $ db i : map (sclV c . db) sigma -- db j | j <- sigma ]
+  where db j    = oneForm j n
+        --dxiOnT  = sclV (constant t mulId) (db i)
+        c       = (constant t . addInv) ((divide `on` embedIntegral) alpha_i r)
+        -- TODO: check here! used to be (c j) in the list comprehension... even though j as an argument was unused
+        r       = MI.degree alpha
+        alpha_i = MI.toList alpha !! i
+        n       = S.geometricalDimension f
+        sigma   = S.sigma f
+--psi' t f alpha i = fold subV (db i) [ sclV (c j) (db j) | j <- sigma ]
+        --db j = sclV (constant t 1.0) (oneForm j n)
+        --c _  = sclV ((alpha' !! i) / r) mulId -- TODO: check here!
+        --c _  = divide (embedIntegral $ alpha' !! i) r -- sclV ((alpha' !! i) / r) mulId -- TODO: check here!
+        --alpha' = map fromInteger $ MI.toList alpha
 
 \end{code}
 
