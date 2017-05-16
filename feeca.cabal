@@ -97,7 +97,7 @@ library
 
   ghc-options:        -O2 -fexcess-precision -optc-ffast-math -optc-O3 -optc-mfpmath=sse
 --    -Wall -Wredundant-constraints
-    -Wdodgy-imports -Wunused-local-binds -Wunused-matches -Worphans
+--    -Wdodgy-imports -Wunused-local-binds -Wunused-matches -Worphans
     -fpedantic-bottoms
     -funfolding-use-threshold=16
     -fwarn-tabs
