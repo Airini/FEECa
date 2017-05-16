@@ -12,13 +12,13 @@ import FEECa.Utility.Utility
 import FEECa.Utility.Test
 
 import Properties       ( prop_commutativity )
-import Test.QuickCheck  ( Arbitrary(..), (==>), Gen, Property, quickCheckResult )
+import Test.QuickCheck  ( Arbitrary(..), (==>), Gen, Property, quickCheckWithResult )
 import Test.QuickCheck.Test           ( isSuccess )
 import qualified Test.QuickCheck as Q ( vector )
 
-testVector = do
-  ps <- mapM quickCheckResult [ prop_dim, prop_toList ]
-  dp <- quickCheckResult
+testVector args = do
+  ps <- mapM (quickCheckWithResult args) [ prop_dim, prop_toList ]
+  dp <- quickCheckWithResult args
         (prop_dot :: Double -> Vector Double -> Vector Double -> Vector Double -> Bool)
   return $ all isSuccess (dp : ps)
 

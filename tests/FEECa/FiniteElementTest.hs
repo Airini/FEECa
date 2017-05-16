@@ -26,7 +26,7 @@ import FEECa.Utility.Test
 import FEECa.Internal.SimplexTest
 
 import qualified Test.QuickCheck                 as Q
-import Test.QuickCheck  ( quickCheckAll, (==>) )
+import           Test.QuickCheck  ( (==>) )
 
 import qualified Numeric.LinearAlgebra.HMatrix    as M
 
@@ -137,7 +137,7 @@ linearIndependent f bs = M.rank mat == n
 
 
 return []
-testFiniteElement = $quickCheckAll
+testFiniteElement = $quickCheckWithAll
 
 
 space = PrmLk 3 0 (S.referenceSimplex 3)

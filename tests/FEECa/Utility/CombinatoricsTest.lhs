@@ -13,16 +13,17 @@ module to be used with the \code{QuickCheck}\cite{package:qc} module.
 
 module FEECa.Utility.CombinatoricsTest (
     testCombinatorics
-) where
+  ) where
 
 import Control.Monad  ( liftM )
 
 import FEECa.Utility.Combinatorics  ( choose, unrank, sublists,
                                       increasingLists, increasingLists1,
                                       sumRLists, sumRLists' )
+import FEECa.Utility.Test           ( quickCheckWithAll )
 
 import qualified  Test.QuickCheck as Q  ( choose )
-import            Test.QuickCheck       ( quickCheckAll, Arbitrary, arbitrary )
+import            Test.QuickCheck       ( Arbitrary, arbitrary )
 
 \end{code}
 %}
@@ -250,7 +251,7 @@ prop_sum_r'_positive (SmallInt n) (SmallInt r) = all (all (0<=)) l
 \begin{code}
 
 return []
-testCombinatorics = $quickCheckAll
+testCombinatorics = $quickCheckWithAll
 
 \end{code}
 

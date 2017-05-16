@@ -58,6 +58,10 @@ flag online-doc
   description:      Enable generation of online documentation with Hakyll.
   default:          False
 
+flag fast
+  description:      A brief check on properties.
+  manual:           False
+
 
 library
   -- Modules exported by the library.
@@ -92,7 +96,9 @@ library
   hs-source-dirs:     src, tests, bench
 
   ghc-options:        -O2 -fexcess-precision -optc-ffast-math -optc-O3 -optc-mfpmath=sse
---    -Wall
+--    -Wall -Wredundant-constraints
+    -Wdodgy-imports -Wunused-local-binds -Wunused-matches -Worphans
+    -fpedantic-bottoms
     -funfolding-use-threshold=16
     -fwarn-tabs
     -fwarn-unused-imports
@@ -107,23 +113,25 @@ test-suite test-feec
   type:               exitcode-stdio-1.0
   hs-source-dirs:     tests, src
   main-is:            TestDummy.hs
+  ghc-options:        -O2 -threaded -fexcess-precision -optc-O3 -optc-ffast-math -optc-mfpmath=sse -funfolding-use-threshold=16 "-with-rtsopts=-N"
+  ghc-prof-options:   -fprof-auto-exported "-with-rtsopts=-N -pa -s -hc -i0.1"
   build-depends:      base >= 4.6 && < 5, exact-combinatorics >= 0.2,
                       QuickCheck >= 2.7, random >= 1.0, hmatrix >= 0.16,
-                      pretty >= 1.1.1, feeca
+                      pretty >= 1.1.1, feeca, template-haskell
   default-language:   Haskell2010
 
 benchmark bench
   type:               exitcode-stdio-1.0
   main-is:            bench/FEECa/bench.hs
-  ghc-options:        -fprof-auto-exported -O2 -threaded -fexcess-precision -optc-O3 -optc-ffast-math -optc-mfpmath=sse -funfolding-use-threshold=16 "-with-rtsopts=-N -pa -s -h -i0.1"
-
+  ghc-options:        -O2 -threaded -fexcess-precision -optc-O3 -optc-ffast-math -optc-mfpmath=sse -funfolding-use-threshold=16 "-with-rtsopts=-N2"
+  ghc-prof-options:   -fprof-auto-exported "-with-rtsopts=-N2 -pa -s -hc -i0.1"
   build-depends:      base >= 4.6 && < 5, feeca,
                       criterion, timeit == 1.0.0.0, deepseq
   default-language:   Haskell2010
 
 executable prof
   main-is: prof.hs
-  ghc-options:        -fprof-auto-exported -O2 -threaded -fexcess-precision -optc-O3 -optc-ffast-math -optc-mfpmath=sse -funfolding-use-threshold=16 "-with-rtsopts=-N -pa -s -h -i0.1"
+  ghc-options:        -fprof-auto-exported -O2 -threaded -fexcess-precision -optc-O3 -optc-ffast-math -optc-mfpmath=sse -funfolding-use-threshold=16 "-with-rtsopts=-N -p -s -hc -i0.1"
   build-depends:      base >= 4.6 && < 5, feeca
   default-language:   Haskell2010
 

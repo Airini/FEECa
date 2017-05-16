@@ -2,7 +2,7 @@
 
 module FEECa.Utility.QuadratureTest (
     testQuadrature
-) where
+  ) where
 
 import FEECa.Utility.Quadrature
 import FEECa.Utility.Utility
@@ -26,5 +26,5 @@ prop_sum_1 n = n > 0 ==> eqNum 1.0 (sum weights)
 
 
 return []
-testQuadrature = $quickCheckAll
+testQuadrature = $quickCheckWithAll
 

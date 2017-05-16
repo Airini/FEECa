@@ -4,7 +4,6 @@
 
 module FEECa.PolynomialDifferentialFormTest where
 
--- import Control.Applicative
 import Data.Maybe     ( fromJust )
 import Control.Monad  ( liftM, liftM2 )
 
@@ -28,7 +27,7 @@ import FEECa.BernsteinTest
 import qualified FEECa.PolynomialTest as PT ( n )
 
 import qualified Test.QuickCheck      as Q
-import Test.QuickCheck  ( arbitrary, (==>), Property, quickCheckAll )
+import           Test.QuickCheck            ( arbitrary, (==>), Property )
 
 
 --------------------------------------------------------------------------------
@@ -73,11 +72,11 @@ instance Q.Arbitrary (Form Double) where
 --------------------------------------------------------------------------------
 
 prop_proj :: Simplex (Vector Double) -> Bool
-prop_proj t = and [vector [applyOmega i j | j <- [0..n-1]] == dlambda i | i <- [0..n]]
-  where dlambda        = barycentricGradient t
-        applyOmega i j = refine (B.proj t) (omega i) [S.unitVector n j]
-        omega i        = Form 1 n [(1.0,[i])]
-        n              = topologicalDimension t -- geometricalDimension t
+prop_proj t = and [ dl i == vector [omOnj i j | j <- [0..n-1]] | i <- [0..n] ]
+  where dl        = barycentricGradient t
+        omOnj i j = refine (B.proj t) (omega i) [S.unitVector n j]
+        omega i   = oneForm i n
+        n         = topologicalDimension t
 
 -- prop_alt_inner :: Double
 --                -> Form Double
@@ -98,7 +97,7 @@ prop_proj t = and [vector [applyOmega i j | j <- [0..n-1]] == dlambda i | i <- [
 -- | on p. 44 in Arnold, Falk, Winther.
 prop_volume_form :: Simplex (Vector Double) -> Vector Double -> Property
 prop_volume_form t v =
-    volume t > 0 ==> evaluate v b `eqNum` 1.0
+    volume t > 0 ==> evaluate v b `eqNum` mulId
   where b     = DF.apply omega vs
         omega = Form n n [(B.constant t mulId, [1..n])]
         n     = topologicalDimension t
@@ -123,19 +122,19 @@ prop_integral t =
 --------------------------------------------------------------------------------
 
 redefine :: Simplex (Vector Double) -> DifferentialForm Double -> DifferentialForm Double
-redefine t omega@(Form k n cs) = Form k n (map (redefine' t) cs)
-  where redefine' t (b,c) = (B.redefine t b, c)
+redefine t omega@(Form k n cs) = Form k n (map redefine' cs)
+  where redefine' (b,c) = (B.redefine t b, c)
 
 
 prop_inner :: Double -> DifferentialForm Double -> Property
-prop_inner c omega@(Form k n cs) =
+prop_inner c omega@(Form k n _) =
     Q.forAll (redefine t `liftM` arbitraryForm k n) $ \eta ->
-      let product = op eta
-          normE   = op2 eta
-          op2     = (`DF.inner` eta)
+      let innerP = op eta
+          normE  = op2 eta
+          op2    = (`DF.inner` eta)
       in
           ( normO > 0 || S.inner b b `eqNum` 0.0 )
-       && ( (product `eqNum` op' eta && op2 (sclV cp omega) `eqNum` mul c product)
+       && ( (innerP `eqNum` op' eta && op2 (sclV cp omega) `eqNum` mul c innerP)
             || normO `eqNum` 0.0 || normE `eqNum` 0.0 )
   where op    = DF.inner omega
         normO = op omega
@@ -147,5 +146,5 @@ prop_inner c omega@(Form k n cs) =
 
 
 return []
-testDifferentialForm = $quickCheckAll
+testDifferentialForm = $quickCheckWithAll
 

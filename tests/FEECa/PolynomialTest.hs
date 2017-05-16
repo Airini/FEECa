@@ -19,7 +19,7 @@ import FEECa.Utility.Print
 import Properties
 import FEECa.Utility.Test
 import qualified Test.QuickCheck as Q
-import Test.QuickCheck  ( quickCheckAll )
+
 
 -- =======
 -- import qualified FEECa.Internal.MultiIndex as MI
@@ -158,7 +158,9 @@ prop_barycentric t =
 
 
 return []
-testPolynomial = $quickCheckAll
+testPolynomial = $quickCheckWithAll
+
+
 
 t  = referenceSimplex 3 :: (Simplex (Vector Double))
 bs = barycentricCoordinates t

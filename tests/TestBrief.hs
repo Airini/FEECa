@@ -16,7 +16,7 @@ import qualified FEECa.PolynomialDifferentialFormTest as DF
 import Control.Monad    ( liftM, unless )
 import System.Exit      ( exitFailure )
 
-import Test.QuickCheck  ( stdArgs )
+import Test.QuickCheck  ( Args (..), stdArgs )
 
 nmax :: Int
 nmax = 4
@@ -25,7 +25,7 @@ nmax = 4
 -- | A test dummy
 main :: IO ()
 main =
-  (liftM and . mapM ($ stdArgs))
+  (liftM and . mapM ($ (stdArgs {maxSuccess = 40, maxSize = 20})))
     [ C.testCombinatorics
     , F.testForm nmax
     , B.testBernstein

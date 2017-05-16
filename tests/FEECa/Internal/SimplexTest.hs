@@ -20,8 +20,7 @@ import FEECa.Utility.Combinatorics
 import FEECa.Utility.Utility
 import FEECa.Utility.Test
 
-import Test.QuickCheck  ( Arbitrary, arbitrary, -- (==>), Property,
-                          quickCheckAll ) -- Gen, vectorOf,
+import Test.QuickCheck  ( Arbitrary, arbitrary, Args ) -- (==>), Property,
 import qualified Test.QuickCheck as Q
 
 
@@ -208,8 +207,8 @@ pBarycentricToCartesian t = map (barycentricToCartesian t) vs == vertices t
 
 return []
 
-testSimplex :: IO Bool
-testSimplex = $quickCheckAll
+testSimplex :: Args -> IO Bool
+testSimplex = $quickCheckWithAll
 
 
 

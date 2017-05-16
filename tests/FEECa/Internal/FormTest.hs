@@ -23,11 +23,11 @@ import Test.QuickCheck.Test ( isSuccess )
 -- * Instantiated testable properties 
 
 -- | Tests batch of properties
-testForm maxDim = do
+testForm maxDim args = do
   putStrLn $
     "Testing alternating forms of vector space dimension up to " ++ show maxDim
-  ps <- mapM quickCheckResult (checkList maxDim)
-  ap <- quickCheckResult (label "Anticommutativity" $ prop_antiComm maxDim)
+  ps <- mapM (quickCheckWithResult args) (checkList maxDim)
+  ap <- quickCheckWithResult args (label "Anticommutativity" $ prop_antiComm maxDim)
   return $ all isSuccess (ap : ps)
 
 -- | Tests for algebraic operations involving no evaluation/refining of

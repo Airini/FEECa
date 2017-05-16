@@ -1,0 +1,10 @@
+# FEniCS configuration file created by fenics-install.sh on Wed Apr  6 10:44:00 CEST 2016
+# Build type: stable
+
+export PROFILE=andrk7vlko4c
+export PROFILE_INSTALL_DIR=/Users/airini/.hashdist/bld/profile/$PROFILE
+export PATH=$PROFILE_INSTALL_DIR/bin:$PATH
+export CMAKE_PREFIX_PATH=$PROFILE_INSTALL_DIR:$CMAKE_PREFIX_PATH
+export PYTHONPATH=$PROFILE_INSTALL_DIR/lib/python2.7/site-packages:$PYTHONPATH
+export PYTHONPATH=$PROFILE_INSTALL_DIR/Python.framework/Versions/2.7/lib/python2.7/site-packages:$PYTHONPATH
+export INSTANT_CACHE_DIR=$HOME/.cache/instant/$PROFILE

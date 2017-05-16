@@ -50,5 +50,5 @@ prop_add = forAll (pairOf testableMI testableMI) $ \(mi1, mi2) ->
 
 
 return []
-testMI = $quickCheckAll
+testMI = $quickCheckWithAll
 

@@ -1,16 +1,22 @@
-{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TemplateHaskell  #-}
 
 module FEECa.Utility.Test where
 
 import Data.List      ( sort )
 import Control.Monad  ( liftM )
 
--- import FEECa.Internal.Vector
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
 import qualified FEECa.Internal.MultiIndex as MI
 
-import qualified Test.QuickCheck as Q
+import qualified Test.QuickCheck      as Q
+import qualified Language.Haskell.TH  as TH
+
+
+-- | Helper à la 'quickCheckAll' but allowing arguments to QuickCheck's driver.
+quickCheckWithAll :: TH.ExpQ -- :: Q.Args -> IO Bool
+quickCheckWithAll = [| \a -> $(Q.forAllProperties) (Q.quickCheckWithResult a) |]
 
 
 ------------------------------------------------------------------------------

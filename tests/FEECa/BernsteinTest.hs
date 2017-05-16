@@ -19,7 +19,7 @@ import FEECa.Utility.Test
 import qualified FEECa.PolynomialTest as PT ( n, arbitraryPolynomial, propArithmetic )
 
 import qualified Test.QuickCheck      as Q
-import Test.QuickCheck                      ( (==>), property, quickCheckAll )
+import           Test.QuickCheck            ( (==>), property )
 
 
 --------------------------------------------------------------------------------
@@ -131,6 +131,6 @@ prop_derivation_product v1 v2 b1 b2 =
 --------------------------------------------------------------------------------
 
 return []
-testBernstein = $quickCheckAll
+testBernstein = $quickCheckWithAll
 
 --------------------------------------------------------------------------------
