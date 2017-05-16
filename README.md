@@ -29,15 +29,31 @@ The [FEECa online documentation][docu] is under construction.
 
 ## Installation
 
-To build and use FEECa, the Haskell compiler [GHC][ghc] and [Cabal][cabal]
-should be installed in your system. You may also use [Stack][stack] but it is
-not necessary. The package and dependencies are tested for GHC 7.6 upwards and
-will not build with any older version of the compiler (which is not advisable
-to be using ;) ). Cabal 1.16 and upwards will work, though the cabal libraries
-some of FEECa's need to see actually need to be version 1.18 or above.
+To build and use FEECa, the Haskell compiler [GHC][ghc]
+and [Cabal][cabal] should be installed in your system. Or you could
+use [Stack][stack], which will install the Haskell tools (including
+GHC and Cabal) for you.
 
-If you are new to Haskell or the building environment described, we recommend
-you install the [Haskell Platform][hplatform] which provides GHC and Cabal.
+Short version (for Ubuntu):
+```shell
+sudo apt-get install libblas-dev liblapack-dev
+sudo apt-get install stack
+stack upgrade
+git clone https://github.com/Airini/FEECa.git
+cd FEECa
+stack build
+```
+
+Details:
+
+The package and dependencies are tested for GHC 7.6 upwards and will
+not build with older versions of the compiler. Cabal 1.16 and upwards
+will work, though the cabal libraries some of FEECa's need to see
+actually need to be version 1.18 or above.
+
+If you are new to Haskell or the building environment described, we
+recommend you install the [Haskell Platform][hplatform] which provides
+GHC, Cabal and stack.
 
 If you happen to be working with GHC 7.6 and Cabal 1.16, and do not want to
 update these, you might need to:
