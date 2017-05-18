@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
+-- XXX: {-# LANGUAGE UndecidableInstances   #-}
 
 
 module FEECa.Mask where
@@ -10,8 +11,9 @@ module FEECa.Mask where
 -- import Control.Applicative ()
 
 import FEECa.DifferentialForm
-import FEECa.Internal.Form
-import FEECa.Internal.Spaces hiding ( inner )
+import FEECa.Internal.Form hiding ( inner )
+import qualified FEECa.Internal.Form as F ( inner )
+import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
 import FEECa.Internal.Simplex
 import FEECa.Polynomial
@@ -110,9 +112,18 @@ coordinates = fmap linearPolynomial . canonCoords
 bssIx :: Ring a => Int -> Int -> Vector a
 bssIx n = vector . flip canonCoord n
 
+{- XXX: TODO: quick, dirty fix for now. REDO!
+instance (Ring a, VectorSpace a, a ~ Scalar a) => InnerProductSpace a where
+  inner = mul
+-}
+instance InnerProductSpace Double where
+  inner = mul
+
 -- or <|> ?
-(<>) :: Field f {-, InnerProductSpace (Form f)-} => Form f -> Form f -> Scalar f
-(<>) omega eta = undefined --S.inner omega eta -- inner dxV omega eta
+(<>) :: (Field f, InnerProductSpace f)
+        {-, Projectable (Vector (Scalar f)) f) -}
+     => Form f -> Form f -> Scalar f
+(<>) omega eta = F.inner dxV omega eta -- undefined --S.inner omega eta -- inner dxV omega eta
   where n = dimVec omega
 {-
 (⌟) :: (Eq f, Field f) => Form f -> Vector f -> Form f

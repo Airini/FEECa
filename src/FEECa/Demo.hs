@@ -15,6 +15,9 @@ import FEECa.Polynomial
 import FEECa.Utility.Print    ( Pretty(..), Doc, text, (<+>) )
 import qualified FEECa.Utility.Print as P ( (<>) )
 -------
+-- TODO: remove.... projectables, etc.
+import qualified FEECa.Internal.Form as F ( inner )
+import FEECa.DifferentialForm ( dxV )
 
 -- TODO: aid, to be removed.
 pNotation :: (Pretty a, Show a) => a -> Doc
@@ -156,7 +159,8 @@ ku = 𝝹 u
 -- Inner product
 val6 :: Double
 val6 = w1 <> w2 -- summation over the basis
--- val7 = inner u v t3 -- same summation but also an integration over all x in t3
+--val12 :: Double
+--val12 = F.inner dxVF u v -- t3 -- same summation but also an integration over all x in t3
 
 -- Interior product/contraction
 v5 :: Vector Double

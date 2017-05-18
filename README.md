@@ -86,7 +86,7 @@ cabal install
 The first instruction will install all dependencies (alone); the parameter
 `--reorder-goals` might become necessary for some versions of Cabal. If you do
 not install them first, `cabal` will display the missing dependencies and
-instructions to install them.
+the instructions to install them.
 
 
 If you wish to run the test-suite:
@@ -94,6 +94,11 @@ If you wish to run the test-suite:
 cabal configure --enable-tests
 cabal build
 cabal test
+```
+
+Or:
+```
+make test-feec
 ```
 
 

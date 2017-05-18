@@ -17,6 +17,7 @@ ConfFLAGS =
 
 BuildSPEC =
 
+TSTAMP    := $(shell date +'%y%m%d_%H%M%S')
 
 default:
 	cabal configure $(ConfFLAGS)
@@ -56,7 +57,7 @@ profile: prof
 	./$(PROFBIN)
 
 benchmark.%: bench
-	./$(BENCHBIN) &> xxxxBENCHxxxx
+	./$(BENCHBIN) &> $(addsuffix _$(TSTAMP),$(BENCH))
 
 test-feec.%: tests
 	cabal test
@@ -68,4 +69,4 @@ clean: clean-prof
 	cabal clean
 
 clean-data: clean
-	rm *.prof *.dat
+	rm -f *.prof *.dat

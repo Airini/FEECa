@@ -252,9 +252,9 @@ inner proj omega eta
           (flip $ \vs -> add (S.inner (app omega vs) (app eta vs)))
           addId
           (map pick' (permutations n (arity omega)))
-  where pick' is = pick (differences is) (map (unitVector n) [0..n-1])
-        app = refine proj
-        n = dimVec omega
+  where pick' is  = pick (differences is) (map (unitVector n) [0..n-1])
+        app       = refine proj
+        n         = dimVec omega
 
 
 -- * Helper functions
