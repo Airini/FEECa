@@ -26,26 +26,27 @@
         <div id="content">
 
             <h1 id="polynomials">Polynomials</h1>
-<p>The <span><code>Polynomial</code></span> module provides data types and functions for polynomials over <span class="math inline">\({\mathbb{R}^{n}}\)</span>. Given a vector <span class="math inline">\({\boldsymbol{x}} \in {\mathbb{R}^{n}}\)</span>, the power of <span class="math inline">\({\boldsymbol{x}}\)</span> with respect to a multi-index <span class="math inline">\({\boldsymbol{\alpha}} = (\alpha_0,\ldots,\alpha_{n-1})\)</span> is given by</p>
+<p>The <span><span><strong>Polynomial</strong></span></span> module provides data types and functions for polynomials over <span class="math inline">\({\mathbb{R}^{n}}\)</span>. Given a vector <span class="math inline">\({\boldsymbol{x}} \in {\mathbb{R}^{n}}\)</span>, the power of <span class="math inline">\({\boldsymbol{x}}\)</span> with respect to a multi-index <span class="math inline">\({\boldsymbol{\alpha}} =
+(\alpha_0,\ldots,\alpha_{n-1})\)</span> is given by</p>
 <p><span class="math display">\[\begin{align}
   {\boldsymbol{x}}^{{\boldsymbol{\alpha}}} &amp;= \prod_{i=0}^{n-1} x_i^{\alpha_i}
  \label{eq:pow}
 \end{align}\]</span></p>
 <p>A polynomial in <span class="math inline">\({\mathbb{R}^{n}}\)</span> is a function that maps a vector <span class="math inline">\({\boldsymbol{x}}\)</span> to a linear combination of powers of <span class="math inline">\({\boldsymbol{x}}\)</span>:</p>
-<p><span class="math display">\[\begin{align}
-  p({\boldsymbol{x}}) &amp;= \sum_i c_i {\boldsymbol{x}}^{{\boldsymbol{\alpha}}}
+<p><span class="math inline">\(A : I \to (\{0 \ldots n-1\} \to ℕ)\)</span> <span class="math display">\[\begin{align}
+  p({\boldsymbol{x}}) &amp;= \sum_i c_i {\boldsymbol{x}}^{A_i}
 \end{align}\]</span></p>
-<p>Apart from implementing polynomials over vectors in <span class="math inline">\({\mathbb{R}^{n}}\)</span>, the <span><span><strong>Polynomial</strong></span></span> module also provides abstract functions for polynomials that use different bases, such as the Bernstein polynomials implemented in the <span><code>Bernstein</code></span> module.</p>
+<p>Apart from implementing polynomials over vectors in <span class="math inline">\({\mathbb{R}^{n}}\)</span>, the <span><span><strong>Polynomial</strong></span></span> module also provides abstract functions for polynomials that use different bases, such as the Bernstein polynomials implemented in the <span><span><strong>Bernstein</strong></span></span> module.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="ot">{-# LANGUAGE TypeFamilies #-}</span>
-<span class="ot">{-# LANGUAGE FlexibleInstances #-}</span>
-<span class="ot">{-# LANGUAGE FlexibleContexts #-}</span>
-<span class="ot">{-# LANGUAGE MultiParamTypeClasses #-}</span>
+<span class="ot">{-# LANGUAGE TypeFamilies           #-}</span>
+<span class="ot">{-# LANGUAGE FlexibleInstances      #-}</span>
+<span class="ot">{-# LANGUAGE FlexibleContexts       #-}</span>
+<span class="ot">{-# LANGUAGE MultiParamTypeClasses  #-}</span>
 
 <span class="kw">module</span> <span class="dt">FEECa.Polynomial</span> (
 
   <span class="co">-- * Polynomial types</span>
-  <span class="dt">Polynomial</span>(<span class="fu">..</span>), <span class="dt">Term</span>(<span class="fu">..</span>)
+    <span class="dt">Polynomial</span> (<span class="fu">..</span>), <span class="dt">Term</span> (<span class="fu">..</span>)
 
   <span class="co">-- ** Constructors</span>
   , polynomial, constant, linearPolynomial, term
@@ -61,30 +62,27 @@
   , barycentricGradient, barycentricGradients
   , barycentricGradients', simplexToMatrix, euclideanToBarycentric
 
+  <span class="co">-- XXX:</span>
   , simplifyT, simplifyP
+
   ) <span class="kw">where</span>
 
-<span class="kw">import </span><span class="dt">Data.Maybe</span> (fromJust)
-<span class="kw">import </span><span class="dt">Data.List</span>
-<span class="kw">import qualified</span> <span class="dt">FEECa.Internal.MultiIndex</span> <span class="kw">as</span> <span class="dt">MI</span> (<span class="dt">MultiIndex</span>, zero, unit, decrease, toList, add, degree, valid)
-<span class="kw">import </span><span class="dt">FEECa.Internal.Simplex</span>
-<span class="kw">import </span><span class="dt">FEECa.Internal.Spaces</span>(<span class="dt">VectorSpace</span>(..),
-                            <span class="dt">Ring</span>(<span class="fu">..</span>),
-                            <span class="dt">Field</span>(<span class="fu">..</span>),
-                            <span class="dt">Dimensioned</span>(<span class="fu">..</span>),
-                            <span class="dt">EuclideanSpace</span>(<span class="fu">..</span>),
-                            toDouble',
-                            fromDouble')
-<span class="kw">import qualified</span> <span class="dt">FEECa.Internal.Spaces</span> <span class="kw">as</span> <span class="dt">S</span>(<span class="dt">Function</span>(..))
-<span class="kw">import </span><span class="dt">FEECa.Internal.Point</span>
-<span class="kw">import </span><span class="dt">FEECa.Internal.Vector</span>(<span class="dt">Vector</span>, vector, toList)
-<span class="kw">import qualified</span> <span class="dt">FEECa.Internal.Vector</span> <span class="kw">as</span> <span class="dt">V</span>(pow)
-<span class="kw">import </span><span class="dt">FEECa.Utility.Print</span>(<span class="dt">Pretty</span>(..), printPolynomial)
-<span class="kw">import </span><span class="dt">FEECa.Utility.Utility</span>(pairM, takeIndices)
-<span class="kw">import </span><span class="dt">Text.PrettyPrint</span>
-<span class="kw">import qualified</span> <span class="dt">Numeric.LinearAlgebra.HMatrix</span> <span class="kw">as</span> <span class="dt">M</span>
-<span class="kw">import qualified</span> <span class="dt">Numeric.LinearAlgebra.Data</span> <span class="kw">as</span> <span class="dt">M</span>
-<span class="kw">import </span><span class="dt">Debug.Trace</span></code></pre></div>
+
+<span class="kw">import            </span><span class="dt">Data.List</span>
+<span class="kw">import qualified</span>  <span class="dt">Numeric.LinearAlgebra.HMatrix</span> <span class="kw">as</span> <span class="dt">M</span>
+
+<span class="kw">import            </span><span class="dt">FEECa.Utility.Print</span>   ( <span class="dt">Pretty</span> (..), printPolynomial )
+<span class="kw">import            </span><span class="dt">FEECa.Utility.Utility</span> ( takeMap, zipWithWhen, sumR, productR )
+
+<span class="kw">import qualified</span>  <span class="dt">FEECa.Internal.MultiIndex</span> <span class="kw">as</span> <span class="dt">MI</span> (
+                      <span class="dt">MultiIndex</span>, zero, unit, decrease,
+                      toList, add, degree, valid )
+<span class="kw">import            </span><span class="dt">FEECa.Internal.Simplex</span>
+<span class="kw">import            </span><span class="dt">FEECa.Internal.Spaces</span>           (
+                      <span class="dt">Ring</span> (<span class="fu">..</span>), <span class="dt">Field</span> (<span class="fu">..</span>), <span class="dt">Dimensioned</span> (<span class="fu">..</span>),
+                      <span class="dt">Module</span> (<span class="fu">..</span>), <span class="dt">VectorSpace</span>, <span class="dt">EuclideanSpace</span> (<span class="fu">..</span>),
+                      toDouble', fromDouble' )
+<span class="kw">import qualified</span>  <span class="dt">FEECa.Internal.Spaces</span>     <span class="kw">as</span> <span class="dt">S</span>  ( <span class="dt">Function</span> (..) )</code></pre></div>
 <h2 id="the-polynomial-type"> The <span><code>Polynomial</code></span> Type</h2>
 <p>Two types are used to represent polynomials. The <span><code>Term</code></span> type represents a single term in the sum that constitutes the polynomial. The <span><code>Term</code></span> type provides two constructors. The <span><code>Constant</code></span> constructor for constant terms and the <span><code>Monomial</code></span> constructor for a monomial (represented by a <span><code>MultiIndex</code></span>) scaled by a scalar. Note that the constant term carries no information about the underlying space while the monomial contains this information implicitly in the length of the multi-index. The <span><code>Term</code></span> type is parametrized in order to allow for the definition of polynomials over arbitrary Rings.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
@@ -93,11 +91,15 @@
 <span class="co">-- | monomial scaled by a scalar.</span>
 <span class="kw">data</span> <span class="dt">Term</span> a <span class="fu">=</span> <span class="dt">Constant</span> a
             <span class="fu">|</span> <span class="dt">Term</span> a <span class="dt">MI.MultiIndex</span>
-            <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)
+  <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)
 
 <span class="ot">coefficient ::</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> a
 coefficient (<span class="dt">Constant</span> a) <span class="fu">=</span> a
-coefficient (<span class="dt">Term</span> a _)   <span class="fu">=</span> a</code></pre></div>
+coefficient (<span class="dt">Term</span> a _)   <span class="fu">=</span> a
+
+<span class="kw">instance</span> <span class="dt">Functor</span> <span class="dt">Term</span> <span class="kw">where</span>
+  fmap f (<span class="dt">Constant</span> a) <span class="fu">=</span> <span class="dt">Constant</span> (f a)
+  fmap f (<span class="dt">Term</span> a mi)  <span class="fu">=</span> <span class="dt">Term</span> (f a) mi</code></pre></div>
 <p>Based on the <span><code>Term</code></span> type, a polynomial is now be represented as a list of terms, keeping the sum implicit. In addition to that, the <span><code>Polynomial</code></span> type provides the <span><code>degree</code></span> field that holds the degree of the polynomial.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 
@@ -109,7 +111,10 @@ coefficient (<span class="dt">Term</span> a _)   <span class="fu">=</span> a</co
 <span class="kw">data</span> <span class="dt">Polynomial</span> a <span class="fu">=</span>
     <span class="dt">Polynomial</span> {<span class="ot"> degree ::</span> <span class="dt">Int</span>,
 <span class="ot">                 terms  ::</span> [<span class="dt">Term</span> a] }
-    <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)</code></pre></div>
+  <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)
+
+<span class="kw">instance</span> <span class="dt">Functor</span> <span class="dt">Polynomial</span> <span class="kw">where</span>
+  fmap f (<span class="dt">Polynomial</span> n ts) <span class="fu">=</span> <span class="dt">Polynomial</span> n (map (fmap f) ts)</code></pre></div>
 <p>For the extension of polynomials defined on simplices it is necessary to extract the multi-indices defining the polynomial. To this end the <span><span><strong>Polynomial</strong></span></span> module provides the function <span><code>multiIndices</code></span> which converts all of the constants in the polynomials to multi-index representation, i.e. with multi-index conatining only zeros, and returns a list of them.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | Returns a list of the multi-indices in the polynomial.</span>
@@ -119,7 +124,7 @@ multiIndices n (<span class="dt">Polynomial</span> _ ls) <span class="fu">=</spa
 <span class="ot">multiIndices' ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Term</span> a] <span class="ot">-&gt;</span> [<span class="dt">MI.MultiIndex</span>]
 multiIndices' n (<span class="dt">Term</span> _ mi  <span class="fu">:</span> ls) <span class="fu">=</span> mi <span class="fu">:</span> multiIndices' n ls
 multiIndices' n (<span class="dt">Constant</span> _ <span class="fu">:</span> ls) <span class="fu">=</span> MI.zero n <span class="fu">:</span> multiIndices' n ls
-multiIndices' _ [] <span class="fu">=</span> []</code></pre></div>
+multiIndices' _ []                <span class="fu">=</span> []</code></pre></div>
 <p>For the integration of Bernstein polynomials it is also necessary to access the degrees of each term of the polynomial. To keep the internal structure of the polynomials encapsulated, the function <span><code>degrees</code></span> is provided, that returns a list containing the degrees of the terms in the polynomial.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | Return a list of the degrees of each term in the polynomial.</span>
@@ -127,50 +132,52 @@ multiIndices' _ [] <span class="fu">=</span> []</code></pre></div>
 degrees (<span class="dt">Polynomial</span> _ ts) <span class="fu">=</span> degrees' ts
 
 <span class="ot">degrees' ::</span> [<span class="dt">Term</span> a] <span class="ot">-&gt;</span> [<span class="dt">Int</span>]
-degrees' (<span class="dt">Term</span> _ mi<span class="fu">:</span>ls)  <span class="fu">=</span> MI.degree mi <span class="fu">:</span> degrees' ls
-degrees' (<span class="dt">Constant</span> c<span class="fu">:</span>ls) <span class="fu">=</span> <span class="dv">0</span> <span class="fu">:</span> degrees' ls
-degrees' [] <span class="fu">=</span> []</code></pre></div>
+degrees' []              <span class="fu">=</span> []
+degrees' (<span class="dt">Term</span>  _ mi<span class="fu">:</span>ls) <span class="fu">=</span> MI.degree mi <span class="fu">:</span> degrees' ls
+degrees' (<span class="dt">Constant</span> _<span class="fu">:</span>ls) <span class="fu">=</span> <span class="dv">0</span> <span class="fu">:</span> degrees' ls</code></pre></div>
 <p>For some computations on Bernstein polynomials it is necessary to obtain the polynomial represented as a list of coefficient-multi-index pairs. To this end the <span><code>toPairs</code></span> function is provided, that extends all constant terms in the polynomial and returns a list of the coefficient-multi-index pairs.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | Return polynomial represented as list of coefficient-multi-index pairs.</span>
 <span class="ot">toPairs ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a <span class="ot">-&gt;</span> [(a, <span class="dt">MI.MultiIndex</span>)]
-toPairs n p <span class="fu">=</span> map (expandTerm n) (terms p)</code></pre></div>
+toPairs n <span class="fu">=</span> map (expandTerm n) <span class="fu">.</span> terms</code></pre></div>
 <h3 id="class-instantiations">Class Instantiations</h3>
 <p>Polynomials over <span class="math inline">\({\mathbb{R}^{n}}\)</span> form a vector space over <span class="math inline">\(\mathrm R\)</span> and a ring. To make their algebraic structure available in <span><code>FEECa</code></span>, we make them instances of the <span><code>Vectorspace</code></span> and <span><code>Ring</code></span> classes. The implementation of the arithmetic functions on polynomials is given below.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | Polynomials as vector spaces.</span>
-<span class="kw">instance</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">VectorSpace</span> (<span class="dt">Polynomial</span> a) <span class="kw">where</span>
+<span class="kw">instance</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">Module</span> (<span class="dt">Polynomial</span> a) <span class="kw">where</span>
   <span class="kw">type</span> <span class="dt">Scalar</span> (<span class="dt">Polynomial</span> a) <span class="fu">=</span> a
   addV <span class="fu">=</span> addPolynomial
   sclV <span class="fu">=</span> scalePolynomial
 
+<span class="kw">instance</span> <span class="dt">Field</span> a <span class="ot">=&gt;</span> <span class="dt">VectorSpace</span> (<span class="dt">Polynomial</span> a)
+
 <span class="co">-- | Polynomials as a ring.</span>
 <span class="kw">instance</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">Ring</span> (<span class="dt">Polynomial</span> a) <span class="kw">where</span>
-  add    <span class="fu">=</span> addPolynomial
+  add    <span class="fu">=</span> addV
   addId  <span class="fu">=</span> constant addId
-  addInv <span class="fu">=</span> scalePolynomial (addInv mulId)
+  addInv <span class="fu">=</span> sclV (addInv mulId)
 
-  mul       <span class="fu">=</span> multiplyPolynomial multiplyMonomial
-  mulId     <span class="fu">=</span> constant mulId
+  mul    <span class="fu">=</span> multiplyPolynomial multiplyMonomial
+  mulId  <span class="fu">=</span> constant mulId
 
-  fromInt x <span class="fu">=</span> <span class="dt">Polynomial</span> <span class="dv">0</span> [<span class="dt">Constant</span> (fromInt x)]</code></pre></div>
+  embedIntegral <span class="fu">=</span> constant <span class="fu">.</span> embedIntegral</code></pre></div>
 <p>As for all other types, pretty printing of polynomials is provided by instantiating the <span><code>Pretty</code></span> class. To hide the internal implementation of the <span><code>Polynomial</code></span> type, the terms have to be expanded to pairs of coefficients and multi-indices before using the rendering functions in the <span><span><strong>Print</strong></span></span> module.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | Pretty printing of polynomials.</span>
 <span class="kw">instance</span> <span class="dt">Pretty</span> (<span class="dt">Polynomial</span> <span class="dt">Double</span>) <span class="kw">where</span>
-    pPrint p <span class="fu">=</span> printPolynomial <span class="st">&quot;x&quot;</span> (map (expandTerm <span class="dv">0</span>) (terms p))
+  pPrint p <span class="fu">=</span> printPolynomial <span class="st">&quot;x&quot;</span> (map (expandTerm <span class="dv">0</span>) (terms p))
 
 <span class="co">-- | Expand term to (Double, MI.MultiIndex)-form suitable for printing.</span>
 <span class="ot">expandTerm ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> (a, <span class="dt">MI.MultiIndex</span>)
 expandTerm n (<span class="dt">Constant</span> c) <span class="fu">=</span> (c, MI.zero n)
-expandTerm _ (<span class="dt">Term</span> c mi) <span class="fu">=</span> (c ,mi)</code></pre></div>
+expandTerm _ (<span class="dt">Term</span> c mi)  <span class="fu">=</span> (c, mi)</code></pre></div>
 <p>The main purpose of the polynomial type is of course its use as a function over <span class="math inline">\({\mathbb{R}^{n}}\)</span>. We therefore declare the type an instance of the abstract <span><code>Function</code></span> class. The implementation of evaluation and derivation of polynomials is given below.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | Polynomials as functions.</span>
 
 <span class="kw">instance</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v) <span class="ot">=&gt;</span> <span class="dt">S.Function</span> (<span class="dt">Polynomial</span> r) v <span class="kw">where</span>
-  evaluate v <span class="fu">=</span> evaluatePolynomial (evaluateMonomial v)
-  derive <span class="fu">=</span> derivePolynomial deriveMonomial</code></pre></div>
+  evaluate <span class="fu">=</span> evaluatePolynomial <span class="fu">.</span> evaluateMonomial <span class="fu">.</span> toList
+  derive   <span class="fu">=</span> derivePolynomial deriveMonomial</code></pre></div>
 <h3 id="constructors">Constructors</h3>
 <p>The <span><span><strong>Polynomial</strong></span></span> provides smart constructors to simplify the creation of valid polynomials. The stress here lies on valid, because not every instance of <span><code>Polynomial</code></span> represents a valid polynomial. For a polynomials to be valid, all multi-indices representing the monomials must be of the same length.</p>
 <p>The functions <span><code>constant</code></span>, <span><code>monomial</code></span>, <span><code>term</code></span> and <span><code>polynomial</code></span> can be used to create a constant polynomial, a monomial, a term (scaled monomial) and a polynomial. The function <span><code>polynomial</code></span> performs a check if the given parameters represent a valid polynomial and puts out an error message if not.</p>
@@ -178,6 +185,7 @@ expandTerm _ (<span class="dt">Term</span> c mi) <span class="fu">=</span> (c ,m
 <span class="co">-- | Create a constant polynomial with the given value.</span>
 <span class="ot">constant ::</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
 constant c <span class="fu">=</span> <span class="dt">Polynomial</span> <span class="dv">0</span> [<span class="dt">Constant</span> c]
+
 <span class="co">-- | Create a polynomial consisting of a single monomial from a given</span>
 <span class="co">-- | multi-index.</span>
 <span class="ot">monomial ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
@@ -185,89 +193,88 @@ monomial mi <span class="fu">=</span> <span class="dt">Polynomial</span> (MI.deg
 
 <span class="co">-- | Create a term of a polynomial consisting of a scaled monomial.</span>
 <span class="ot">term ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> (a, <span class="dt">MI.MultiIndex</span>) <span class="ot">-&gt;</span> <span class="dt">Term</span> a
-term (c, mi) <span class="fu">=</span> <span class="dt">Term</span> c mi
+term <span class="fu">=</span> uncurry <span class="dt">Term</span>
 
 <span class="co">-- | Create a polynomial from a list of coefficient-multi-index pairs.</span>
 <span class="ot">polynomial ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> [(a, <span class="dt">MI.MultiIndex</span>)] <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
-polynomial l <span class="fu">=</span> <span class="kw">if</span> checkPolynomial l
-               <span class="kw">then</span> <span class="dt">Polynomial</span> r (map term l)
-               <span class="kw">else</span> error <span class="st">&quot;Given coefficients and multi-indices do not define a valid polynomial.&quot;</span>
-    <span class="kw">where</span> r <span class="fu">=</span> <span class="kw">if</span> not (null l) <span class="kw">then</span> maximum (map (MI.degree <span class="fu">.</span> snd) l) <span class="kw">else</span> <span class="dv">0</span>
+polynomial l
+    <span class="fu">|</span> checkPolynomial l <span class="fu">=</span> <span class="dt">Polynomial</span> r <span class="fu">$</span> aggregate (map term l)
+    <span class="fu">|</span> otherwise         <span class="fu">=</span> error <span class="st">&quot;Given coefficients and multi-indices do not define a valid polynomial.&quot;</span>
+  <span class="kw">where</span> r <span class="fu">=</span> <span class="kw">if</span> null l <span class="kw">then</span> <span class="dv">0</span> <span class="kw">else</span> maximum (map (MI.degree <span class="fu">.</span> snd) l)
 
 <span class="co">-- | Check whether a list of coefficient-multi-index pairs represents a</span>
 <span class="co">-- | polynomial.</span>
 <span class="ot">checkPolynomial ::</span> [(a, <span class="dt">MI.MultiIndex</span>)] <span class="ot">-&gt;</span> <span class="dt">Bool</span>
-checkPolynomial ls <span class="fu">=</span> all (MI.valid <span class="fu">.</span> snd) ls<span class="fu">&amp;&amp;</span> sameLength (map snd ls)
+checkPolynomial ls <span class="fu">=</span> all (MI.valid <span class="fu">.</span> snd) ls <span class="fu">&amp;&amp;</span> sameLength (map snd ls)
 
 <span class="co">-- | Check if all multi-indices in the list have the same dimension.</span>
 <span class="ot">sameLength ::</span> [<span class="dt">MI.MultiIndex</span>] <span class="ot">-&gt;</span> <span class="dt">Bool</span>
-sameLength (l<span class="fu">:</span>ls) <span class="fu">=</span> sameLength' (dim l) ls
-sameLength [] <span class="fu">=</span> <span class="dt">True</span>
+sameLength []     <span class="fu">=</span> <span class="dt">True</span>
+sameLength (l<span class="fu">:</span>ls) <span class="fu">=</span> all ((<span class="fu">==</span> dim l) <span class="fu">.</span> dim) ls
 
-<span class="ot">sameLength' ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">MI.MultiIndex</span>] <span class="ot">-&gt;</span> <span class="dt">Bool</span>
-sameLength' i (l<span class="fu">:</span>ls) <span class="fu">=</span> (i <span class="fu">==</span> dim l) <span class="fu">&amp;&amp;</span> sameLength' (dim l) ls
-sameLength' _ [] <span class="fu">=</span> <span class="dt">True</span></code></pre></div>
+<span class="co">{-sameLength' :: Int -&gt; [MI.MultiIndex] -&gt; Bool</span>
+<span class="co">sameLength' i (l:ls)  = (i == dim l) &amp;&amp; sameLength' (dim l) ls</span>
+<span class="co">sameLength' _ []      = True-}</span></code></pre></div>
 <p>In addition to that a constructor for homogeneous, linear polynomials <span><code>linearPolynomial</code></span> in <span class="math inline">\({\mathbb{R}^{n}}\)</span> is provided, which takes a list of <span class="math inline">\(n\)</span> coefficients that contains the slope of the <span class="math inline">\(n\)</span> variables of the polynomials.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | Create 1st degree homogeneous polynomial in n variables from</span>
 <span class="co">-- | length n list of coefficients. The coefficient with index i in the list</span>
 <span class="co">-- | equals the coefficient of the ith variable of the returned polynomial.</span>
-<span class="ot">linearPolynomial ::</span> [a] <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
-linearPolynomial l <span class="fu">=</span> <span class="dt">Polynomial</span> <span class="dv">1</span> <span class="fu">$</span> zipWith <span class="dt">Term</span> l [MI.unit n i <span class="fu">|</span> i <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>n <span class="fu">-</span> <span class="dv">1</span>]]
-  <span class="kw">where</span> n  <span class="fu">=</span> length l</code></pre></div>
+<span class="ot">linearPolynomial ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
+linearPolynomial l <span class="fu">=</span> <span class="dt">Polynomial</span> <span class="dv">1</span> <span class="fu">$</span> zipWithWhen <span class="dt">Term</span> (flip (const (<span class="fu">/=</span> addId)))
+                                                l [MI.unit n i <span class="fu">|</span> i <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>n <span class="fu">-</span> <span class="dv">1</span>]]
+  <span class="kw">where</span> n  <span class="fu">=</span> length l
+<span class="co">-- TODO: check so as to have a smarter constructor</span></code></pre></div>
 <h2 id="arithmetic">Arithmetic</h2>
 <p>As mentioned above, polynomials over <span class="math inline">\({\mathbb{R}^{n}}\)</span> form a ring and a vector space. The arithmetic operations we need to implement are thus addition, substraction, multiplication and multiplication by a scalar.</p>
 <h3 id="addition">Addition</h3>
 <p>Since polynomials are represented as a sum of terms addition of polynomials can be implemented by simply concatenating the two lists representing the two polynomials.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | Add two polynomials.</span>
-<span class="ot">addPolynomial ::</span> (<span class="dt">Ring</span> a) <span class="ot">=&gt;</span> <span class="dt">Polynomial</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
+<span class="ot">addPolynomial ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">Polynomial</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
 addPolynomial (<span class="dt">Polynomial</span> r1 ts1) (<span class="dt">Polynomial</span> r2 ts2)
-    <span class="fu">|</span> ts <span class="fu">/=</span> [] <span class="fu">=</span> <span class="dt">Polynomial</span> (max r1 r2) ts
-    <span class="fu">|</span> otherwise <span class="fu">=</span> <span class="dt">Polynomial</span> <span class="dv">0</span> [<span class="dt">Constant</span> addId]
-                  <span class="kw">where</span> ts <span class="fu">=</span> removeZeros (ts1 <span class="fu">++</span> ts2)
+    <span class="fu">|</span> null ts   <span class="fu">=</span> constant addId
+    <span class="fu">|</span> otherwise <span class="fu">=</span> <span class="dt">Polynomial</span> (max r1 r2) ts
+  <span class="kw">where</span> ts <span class="fu">=</span> <span class="co">{-(aggregate . removeZeros)-}</span> aggregate (ts1 <span class="fu">++</span> ts2)
 
-<span class="ot">removeZeros ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> [<span class="dt">Term</span> a] <span class="ot">-&gt;</span> [<span class="dt">Term</span> a]
-removeZeros ts <span class="fu">=</span> [ t <span class="fu">|</span> t <span class="ot">&lt;-</span> ts, coefficient t <span class="fu">/=</span> addId ]</code></pre></div>
+<span class="co">--removeZeroes :: Ring a =&gt; [Term a] -&gt; [Term a]</span>
+<span class="co">--removeZeroes = filter ((/= addId) . coefficient)</span></code></pre></div>
 <h3 id="scaling-and-multiplication">Scaling and Multiplication</h3>
 <p>The implementation of scaling and multiplication of polynomials is straight forward. Scaling of a polynomials amounts to simply scaling each of the terms in the polynomials, whereas multiplication of polynomial amounts to multiplying each term in the first polynomials with each term in the second polynomial.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | Scale term by a scalar.</span>
 <span class="ot">scaleTerm ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> <span class="dt">Term</span> a
-scaleTerm c1 (<span class="dt">Term</span> c2 mi)  <span class="fu">=</span> <span class="dt">Term</span> (mul c1 c2) mi
-scaleTerm c1 (<span class="dt">Constant</span> c2) <span class="fu">=</span> <span class="dt">Constant</span> (mul c1 c2)
+scaleTerm <span class="fu">=</span> fmap <span class="fu">.</span> mul
 
 <span class="co">-- | Scaling of a polynomial.</span>
-<span class="ot">scalePolynomial ::</span> (<span class="dt">Ring</span> a) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
-scalePolynomial c (<span class="dt">Polynomial</span> r ts) <span class="fu">=</span> <span class="dt">Polynomial</span> r (map (scaleTerm c) ts)
+<span class="ot">scalePolynomial ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
+scalePolynomial c <span class="fu">|</span> c <span class="fu">==</span> addId <span class="fu">=</span> const addId
+                  <span class="fu">|</span> otherwise  <span class="fu">=</span> fmap (mul c)
+<span class="co">-- c (Polynomial r ts) = Polynomial r (map (scaleTerm c) ts)</span>
 
-<span class="co">-- | Multiply two terms using the function f two multiply the monomials given by</span>
-<span class="co">-- | multi-indices mi1, mi2.</span>
+<span class="co">-- | Multiplication of two terms of a given function for monomial</span>
+<span class="co">-- | multiplication when represented as multi-indices.</span>
 <span class="ot">multiplyTerm ::</span> <span class="dt">Ring</span> a
-             <span class="ot">=&gt;</span> (<span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">Term</span> a) <span class="co">-- f</span>
-             <span class="ot">-&gt;</span> <span class="dt">Term</span> a <span class="co">-- mi1</span>
-             <span class="ot">-&gt;</span> <span class="dt">Term</span> a <span class="co">-- mi2</span>
-             <span class="ot">-&gt;</span> <span class="dt">Term</span> a
+             <span class="ot">=&gt;</span> (<span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">Term</span> a)
+             <span class="ot">-&gt;</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> <span class="dt">Term</span> a
+multiplyTerm _ (<span class="dt">Constant</span> c)  t             <span class="fu">=</span> scaleTerm c t <span class="co">-- (Constant c2) = Constant (mul c1 c2)</span>
+<span class="co">--multiplyTerm _ (Constant c)  t(Term c2 mi)  = Term (mul c1 c2) mi</span>
+multiplyTerm _ t             (<span class="dt">Constant</span> c)  <span class="fu">=</span> scaleTerm c t <span class="co">--Term (mul c1 c2) mi</span>
 multiplyTerm f (<span class="dt">Term</span> c1 mi1) (<span class="dt">Term</span> c2 mi2) <span class="fu">=</span> scaleTerm (mul c1 c2) (f mi1 mi2)
-multiplyTerm _ (<span class="dt">Term</span> c1 mi)  (<span class="dt">Constant</span> c2) <span class="fu">=</span> <span class="dt">Term</span> (mul c1 c2) mi
-multiplyTerm _ (<span class="dt">Constant</span> c2) (<span class="dt">Term</span> c1 mi)  <span class="fu">=</span> <span class="dt">Term</span> (mul c1 c2) mi
-multiplyTerm _ (<span class="dt">Constant</span> c1) (<span class="dt">Constant</span> c2) <span class="fu">=</span> <span class="dt">Constant</span> (mul c1 c2)
 
 <span class="co">-- | Multiplication of two monomials.</span>
-<span class="ot">multiplyMonomial ::</span> (<span class="dt">Ring</span> a) <span class="ot">=&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">Term</span> a
+<span class="ot">multiplyMonomial ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">Term</span> a
 multiplyMonomial mi1 mi2
-    <span class="fu">|</span> dim mi1 <span class="fu">==</span> dim mi2  <span class="fu">=</span> <span class="dt">Term</span> mulId (MI.add mi1 mi2)
-    <span class="fu">|</span> otherwise <span class="fu">=</span> error <span class="st">&quot;multiplyMonomial: Polynomial dimensions don't agree.&quot;</span>
+  <span class="fu">|</span> dim mi1 <span class="fu">==</span> dim mi2  <span class="fu">=</span> <span class="dt">Term</span> mulId (MI.add mi1 mi2)
+  <span class="fu">|</span> otherwise <span class="fu">=</span> error <span class="st">&quot;multiplyMonomial: Polynomial dimensions don't agree.&quot;</span>
 
-<span class="co">-- | General multiplication of polynomial using the function f for the multi-</span>
-<span class="co">-- | plication of monomial.</span>
+<span class="co">-- | General multiplication of polynomials in terms of a given function for</span>
+<span class="co">-- | monomial multiplication.</span>
 <span class="ot">multiplyPolynomial ::</span> <span class="dt">Ring</span> a
-                   <span class="ot">=&gt;</span> (<span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">Term</span> a) <span class="co">-- f</span>
-                   <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
-                   <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
-                   <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
+                   <span class="ot">=&gt;</span> (<span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">Term</span> a)
+                   <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
 multiplyPolynomial f (<span class="dt">Polynomial</span> r1 ts1) (<span class="dt">Polynomial</span> r2 ts2) <span class="fu">=</span>
-    <span class="dt">Polynomial</span> (r1 <span class="fu">+</span> r2) [multiplyTerm f t1 t2 <span class="fu">|</span> t1 <span class="ot">&lt;-</span> ts1, t2 <span class="ot">&lt;-</span> ts2]</code></pre></div>
+  <span class="dt">Polynomial</span> (r1 <span class="fu">+</span> r2) <span class="fu">$</span> aggregate [multiplyTerm f t1 t2 <span class="fu">|</span> t1 <span class="ot">&lt;-</span> ts1, t2 <span class="ot">&lt;-</span> ts2]</code></pre></div>
 <h2 id="evaluation">Evaluation</h2>
 <p>The <span><code>Polynomial</code></span> type also provides abstract functions for the implementation of polynomials over different bases. To this end, the <span><code>evaluateTerm</code></span> function provides an abstract function for the evaluation of a term of a polynomial, which takes a function that evaluates a monomial given by a given multi-index and scales the result be the terms coefficient.</p>
 <p>The function <span><code>evaluateMonomial</code></span> implements the evaluation function for the standard monomial basis over <span class="math inline">\({\mathbb{R}^{n}}\)</span>. In this case the evaluation function for the monomial just implements eq. <span class="math inline">\(\eqref{eq:pow}\)</span>.</p>
@@ -276,29 +283,23 @@ multiplyPolynomial f (<span class="dt">Polynomial</span> r1 ts1) (<span class="d
 <span class="co">-- | scaled by the terms coefficient or simply the value of the term if the term</span>
 <span class="co">-- | is constant.</span>
 <span class="ot">evaluateTerm ::</span> <span class="dt">Ring</span> r
-         <span class="ot">=&gt;</span> (<span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> r) <span class="co">-- The evaluation function</span>
-         <span class="ot">-&gt;</span> <span class="dt">Term</span> r
-         <span class="ot">-&gt;</span> r
+             <span class="ot">=&gt;</span> (<span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> r) <span class="ot">-&gt;</span> <span class="dt">Term</span> r <span class="ot">-&gt;</span> r
 evaluateTerm f (<span class="dt">Term</span> c mi)  <span class="fu">=</span> mul c (f mi)
 evaluateTerm _ (<span class="dt">Constant</span> c) <span class="fu">=</span> c
 
 <span class="co">-- | Evaluate monomial over standard monomial basis.</span>
-<span class="ot">evaluateMonomial ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
-                 <span class="ot">=&gt;</span> v
-                 <span class="ot">-&gt;</span> <span class="dt">MI.MultiIndex</span>
-                 <span class="ot">-&gt;</span> r
-evaluateMonomial v mi <span class="fu">=</span> prod' (zipWith pow (toList v) (MI.toList<span class="ot"> mi::</span>[<span class="dt">Int</span>]))
-    <span class="kw">where</span> prod' <span class="fu">=</span> foldl mul mulId</code></pre></div>
+<span class="ot">evaluateMonomial ::</span> <span class="dt">Ring</span> r <span class="co">-- (EuclideanSpace v, r ~ Scalar v)</span>
+                 <span class="ot">=&gt;</span> [r] <span class="ot">-&gt;</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> r
+evaluateMonomial v mi <span class="fu">=</span> productR (zipWith pow v (MI.toList<span class="ot"> mi::</span>[<span class="dt">Int</span>]))
+<span class="co">--  where prod' = foldl mul mulId</span></code></pre></div>
 <p>General evaluation of a polynomial can then be implemented by using the general <span><code>evalTerm</code></span> function to evaluate each term and add up the results. This is implemented in the <span><code>evaluate'</code></span> function.</p>
 <p>The evaluation of polynomials over the monomial basis can now be realized by partially evaluating <span><code>evaluate</code></span> with <span><code>evaluateMonomial</code></span>.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | General evaluation function of a polynomial p using the given function f</span>
 <span class="co">-- | for the evaluation of monomials.</span>
 <span class="ot">evaluatePolynomial ::</span> <span class="dt">Ring</span> r
-                   <span class="ot">=&gt;</span> (<span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> r) <span class="co">-- f</span>
-                   <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r         <span class="co">-- p</span>
-                   <span class="ot">-&gt;</span> r
-evaluatePolynomial f p <span class="fu">=</span> foldl add addId (map (evaluateTerm f) (terms p))</code></pre></div>
+                   <span class="ot">=&gt;</span> (<span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> r) <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r <span class="ot">-&gt;</span> r
+evaluatePolynomial f <span class="fu">=</span> sumR <span class="fu">.</span> map (evaluateTerm f) <span class="fu">.</span> terms</code></pre></div>
 <h2 id="derivation">Derivation</h2>
 <p>The derivative of a polynomial is just the sum of the scaled derivatives of the monomials in each term. A general monomial may be written as a vector valued function <span class="math inline">\({\boldsymbol{y({\boldsymbol{x}})}}\)</span> taken to the power <span class="math inline">\({\boldsymbol{\alpha}}\)</span> for a given multi-index <span class="math inline">\({\boldsymbol{\alpha}}\)</span>. The directional derivative along the <span class="math inline">\(i\)</span>th dimension of such a monomial is given by</p>
 <p><span class="math display">\[\begin{aligned}
@@ -322,43 +323,34 @@ evaluatePolynomial f p <span class="fu">=</span> foldl add addId (map (evaluateT
 <span class="co">-- | in a given space direction, the function computes the derivative of the given</span>
 <span class="co">-- | term using the product rule.</span>
 <span class="ot">deriveTerm ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
-           <span class="ot">=&gt;</span> <span class="dt">Dx</span> r
-           <span class="ot">-&gt;</span> v
-           <span class="ot">-&gt;</span> <span class="dt">Term</span> r
-           <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r
-deriveTerm dx v (<span class="dt">Constant</span> _) <span class="fu">=</span> constant addId
-deriveTerm dx v (<span class="dt">Term</span> c mi)  <span class="fu">=</span> sclV c (foldl add addId (zipWith sclV v' (dx mi)))
-    <span class="kw">where</span> v' <span class="fu">=</span> toList v
+           <span class="ot">=&gt;</span> <span class="dt">Dx</span> r <span class="ot">-&gt;</span> v <span class="ot">-&gt;</span> <span class="dt">Term</span> r <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r
+deriveTerm _  _ (<span class="dt">Constant</span> _) <span class="fu">=</span> constant addId
+deriveTerm dx v (<span class="dt">Term</span> c mi)  <span class="fu">=</span> <span class="co">{-sclV c -}</span> sumR (zipWith (sclV <span class="fu">.</span> mul c) v' (dx mi))
+  <span class="kw">where</span> v' <span class="fu">=</span> toList v
 
 <span class="co">-- | Derivative of a monomial over the standard monomial basis in given space</span>
 <span class="co">-- | direction.</span>
 <span class="ot">deriveMonomial ::</span> <span class="dt">Ring</span> r <span class="ot">=&gt;</span> <span class="dt">Dx</span> r
 deriveMonomial mi <span class="fu">=</span> [ polynomial [(c i, mi' i)] <span class="fu">|</span> i <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>n<span class="fu">-</span><span class="dv">1</span>] ]
-  <span class="kw">where</span> c i <span class="fu">=</span> fromInt (MI.toList mi <span class="fu">!!</span> i)
+  <span class="kw">where</span> c i   <span class="fu">=</span> embedIntegral (MI.toList mi <span class="fu">!!</span> i)
         mi' i <span class="fu">=</span> MI.decrease i mi
-        n  <span class="fu">=</span> dim mi</code></pre></div>
+        n     <span class="fu">=</span> dim mi</code></pre></div>
 <p>In the same way as for the evaluation of polynomials, we provide a basis-independent implementation of the deriviation for the derivation of polynomials. The function for deriving a polynomial over the monomial basis can be obtained by partially evaluating <span><code>derivePolynomial deriveMonomial</code></span>.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | General derivative for a polynomial with arbitrary basis.</span>
 <span class="ot">derivePolynomial ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
-                 <span class="ot">=&gt;</span> <span class="dt">Dx</span> r
-                 <span class="ot">-&gt;</span> v
-                 <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r
-                 <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r
-derivePolynomial dx v p <span class="fu">=</span> foldl add addId [ deriveTerm dx v t <span class="fu">|</span> t <span class="ot">&lt;-</span> ts ]
-    <span class="kw">where</span> ts <span class="fu">=</span> terms p</code></pre></div>
+                 <span class="ot">=&gt;</span> <span class="dt">Dx</span> r <span class="ot">-&gt;</span> v <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r
+derivePolynomial dx v <span class="fu">=</span> sumR <span class="fu">.</span> map (deriveTerm dx v) <span class="fu">.</span> terms <span class="co">-- t | t &lt;- terms p ]</span></code></pre></div>
 <h2 id="integration">Integration</h2>
 <p>For integration of polynomials over simplices, we use the <span><code>integrateOverSimplex</code></span> function provided by the <span><span><strong>Simplex</strong></span></span> module. Since the method used has precision <span class="math inline">\(2q - 1\)</span>, the integration of a polynomial of degree <span class="math inline">\(r\)</span> is exact if <span class="math inline">\(q \geq \frac{(r + 1)}{2}\)</span>.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | Numerically integrate the polynomial p over the simplex t using a Gauss-Jacobi</span>
 <span class="co">-- | quadrature rule.</span>
 <span class="ot">integratePolynomial ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
-                    <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v      <span class="co">-- t</span>
-                    <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r   <span class="co">-- p</span>
-                    <span class="ot">-&gt;</span> r
-integratePolynomial t p <span class="fu">=</span> integrateOverSimplex q t (<span class="ot">`S.evaluate`</span> p)
-    <span class="kw">where</span> q <span class="fu">=</span> div (r <span class="fu">+</span> <span class="dv">2</span>) <span class="dv">2</span>
-          r <span class="fu">=</span> degree p</code></pre></div>
+                    <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r <span class="ot">-&gt;</span> r
+integratePolynomial t p <span class="fu">=</span> integrateOverSimplex q t (p <span class="fu">S.$$</span>)
+  <span class="kw">where</span> q <span class="fu">=</span> div (r <span class="fu">+</span> <span class="dv">2</span>) <span class="dv">2</span>
+        r <span class="fu">=</span> degree p</code></pre></div>
 <h2 id="barycentric-coordinates">Barycentric Coordinates</h2>
 <p>An important building block for the construction of Bernstein polynomials are barycentric coordinates. Barycentric coordinates defined with respect to a simplex <span class="math inline">\({\mathcal{T}} = [{\boldsymbol{v}}_0,\ldots,{\boldsymbol{v}}_n]\)</span>, are a set of <span class="math inline">\(n+1\)</span> coordinates <span class="math inline">\(\lambda_0,\ldots,\lambda_n\)</span> satisfying</p>
 <p><span class="math display">\[\begin{align}
@@ -388,19 +380,16 @@ integratePolynomial t p <span class="fu">=</span> integrateOverSimplex q t (<spa
 \label{eq:def_barycentric}
   \lambda_i({\boldsymbol{x}}) &amp;= a_i + {\boldsymbol{b}}_i^T {\boldsymbol{x}}\end{aligned}\]</span></p>
 <p>Note that the above method assumes that the simplex <span class="math inline">\(T\)</span> has <span class="math inline">\(n+1\)</span> vertices, for simplices with less vertices it is necessary to extend the simplex first. This is done using the <span><code>extendSimplex</code></span> function.</p>
-<p>The inversion of the matrix is performed using the <span><code>hmatrix</code></span> package <span class="citation">Ruiz (n.d.)</span>. The <span><code>simplexToMatrix</code></span> and <span><code>vectorToPolynomial</code></span> functions handle the conversion between the simplex, the linear system and the polynomials representing the barycentric coordinates.</p>
+<p>The inversion of the matrix is performed using the <span><code>hmatrix</code></span> package <span class="citation">(Ruiz, n.d.)</span>. The <span><code>simplexToMatrix</code></span> and <span><code>vectorToPolynomial</code></span> functions handle the conversion between the simplex, the linear system and the polynomials representing the barycentric coordinates.</p>
 <p>Finally, the function <span><code>barycentricCoordinates</code></span> and <span><code>barycentricCoordinate</code></span> return a list containing all barycentric coordinates and only the <span class="math inline">\(i\)</span> barycentric coordinate, respectively.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="ot">euclideanToBarycentric ::</span> (<span class="dt">EuclideanSpace</span> v)
-                       <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
-                       <span class="ot">-&gt;</span> [v]
-                       <span class="ot">-&gt;</span> [v]
-euclideanToBarycentric t vs <span class="fu">=</span>  map (fromDouble' <span class="fu">.</span> M.toList) <span class="fu">$</span> M.toRows <span class="fu">$</span> res
-    <span class="kw">where</span> res  <span class="fu">=</span> vmat <span class="fu">M.&lt;&gt;</span> mat
-          mat  <span class="fu">=</span> M.inv (simplexToMatrix (extendSimplex t))
-          vmat <span class="fu">=</span> M.matrix (n<span class="fu">+</span><span class="dv">1</span>) <span class="fu">$</span> concatMap ((<span class="fl">1.0</span><span class="fu">:</span>) <span class="fu">.</span> toDouble') vs
-          n    <span class="fu">=</span> geometricalDimension t
-          nt   <span class="fu">=</span> topologicalDimension t
+<span class="ot">euclideanToBarycentric ::</span> <span class="dt">EuclideanSpace</span> v
+                       <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> [v] <span class="ot">-&gt;</span> [v]
+euclideanToBarycentric t vs <span class="fu">=</span> map (fromDouble' <span class="fu">.</span> M.toList) <span class="fu">$</span> M.toRows res
+  <span class="kw">where</span> res  <span class="fu">=</span> vmat <span class="fu">M.&lt;&gt;</span> mat
+        mat  <span class="fu">=</span> M.inv (simplexToMatrix (extendSimplex t))
+        vmat <span class="fu">=</span> M.matrix (n<span class="fu">+</span><span class="dv">1</span>) <span class="fu">$</span> concatMap ((<span class="fl">1.0</span><span class="fu">:</span>) <span class="fu">.</span> toDouble') vs
+        n    <span class="fu">=</span> geometricalDimension t
 
 <span class="co">-- | 1st degree polynomial taking value 1 on vertex n_i of the simplex and</span>
 <span class="co">-- | 0 on all others. Requires the topological dimension of the simplex to be</span>
@@ -408,63 +397,53 @@ euclideanToBarycentric t vs <span class="fu">=</span>  map (fromDouble' <span cl
 <span class="co">-- | vertices if the underlying space has dimensionality n.</span>
 <span class="co">-- TODO: check take</span>
 <span class="ot">barycentricCoordinates ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
-                       <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
-                       <span class="ot">-&gt;</span> [ <span class="dt">Polynomial</span> r ]
-barycentricCoordinates s <span class="fu">=</span> <span class="ot">{-# SCC &quot;barycentricCoordinates&quot; #-}</span> take (nt <span class="fu">+</span> <span class="dv">1</span>) bs
-    <span class="kw">where</span> bs  <span class="fu">=</span> map vectorToPolynomial (take (nt<span class="fu">+</span><span class="dv">1</span>) (M.toColumns mat))
-          mat <span class="fu">=</span> <span class="ot">{-# SCC &quot;solveSystem&quot; #-}</span>M.inv (simplexToMatrix (extendSimplex s))
-          n   <span class="fu">=</span> geometricalDimension s
-          nt  <span class="fu">=</span> topologicalDimension s
+                       <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> [ <span class="dt">Polynomial</span> r ]
+barycentricCoordinates s <span class="fu">=</span> <span class="ot">{-# SCC &quot;barycentricCoordinates&quot; #-}</span>
+    takeMap nt vectorToPolynomial (M.toColumns mat)
+  <span class="kw">where</span> mat <span class="fu">=</span> <span class="ot">{-# SCC &quot;solveSystem&quot; #-}</span> M.inv (simplexToMatrix (extendSimplex s))
+        nt  <span class="fu">=</span> topologicalDimension s
 
 <span class="co">-- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial</span>
 <span class="co">-- | in the list</span>
 <span class="ot">barycentricCoordinate ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
-                      <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
-                      <span class="ot">-&gt;</span> <span class="dt">Int</span>
-                      <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r
-barycentricCoordinate s i <span class="fu">=</span>  barycentricCoordinates s <span class="fu">!!</span> i
+                      <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> r
+barycentricCoordinate s i <span class="fu">=</span> barycentricCoordinates s <span class="fu">!!</span> i
 
 <span class="co">-- Transforms a given simplex into the matrix representing the linear</span>
 <span class="co">-- equation system for the barycentric coordinates.</span>
 <span class="ot">simplexToMatrix ::</span> <span class="dt">EuclideanSpace</span> v
-                <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
-                <span class="ot">-&gt;</span> <span class="dt">M.Matrix</span> <span class="dt">Double</span>
-simplexToMatrix s<span class="fu">@</span>(<span class="dt">Simplex</span> _ l) <span class="fu">=</span> M.matrix (n<span class="fu">+</span><span class="dv">1</span>) (concatMap append1 l)
-    <span class="kw">where</span> n <span class="fu">=</span> geometricalDimension s
-          append1 v <span class="fu">=</span> <span class="dv">1</span> <span class="fu">:</span> toDouble' v
+                <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">M.Matrix</span> <span class="dt">Double</span>
+simplexToMatrix s<span class="fu">@</span>(<span class="dt">Simplex</span> _ l) <span class="fu">=</span> M.matrix (n<span class="fu">+</span><span class="dv">1</span>) (concatMap prefix1 l)
+  <span class="kw">where</span> n         <span class="fu">=</span> geometricalDimension s
+        prefix1 v <span class="fu">=</span> <span class="dv">1</span> <span class="fu">:</span> toDouble' v
 
 <span class="co">-- Transforms a solution vector of the linear equation system for the</span>
 <span class="co">-- barycentric coordinates into the corresponding polynomial.</span>
 <span class="ot">vectorToPolynomial ::</span> <span class="dt">Field</span> s
                    <span class="ot">=&gt;</span> <span class="dt">M.Vector</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> s
 vectorToPolynomial v <span class="fu">=</span> add (constant (head l)) (linearPolynomial (tail l))
-    <span class="kw">where</span> l <span class="fu">=</span> map fromDouble (M.toList v)</code></pre></div>
+  <span class="kw">where</span> l <span class="fu">=</span> map fromDouble (M.toList v)</code></pre></div>
 <p>Since the barycentric coordinates are linear functions, the gradients of the barycentric coordinates are constant vectors, namely the vectors <span class="math inline">\({\boldsymbol{b}}_n\)</span> in equation ([eq:def_barycentric]). The functions <span><code>barycentricGradients</code></span> and <span><code>barycentricGradient</code></span> return the list of the gradients of the barycentric coordinates and the gradient of the <span class="math inline">\(i\)</span>th barycentric coordinate, repsectively.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- Transforms a solution vector of the linear equation system into the</span>
 <span class="co">-- gradients of the barycentric coordinates.</span>
 <span class="ot">vectorToGradient ::</span> <span class="dt">EuclideanSpace</span> v
-                 <span class="ot">=&gt;</span> <span class="dt">M.Vector</span> <span class="dt">Double</span>
-                 <span class="ot">-&gt;</span> v
-vectorToGradient v  <span class="fu">=</span> fromDouble' (tail (M.toList v))
+                 <span class="ot">=&gt;</span> <span class="dt">M.Vector</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> v
+vectorToGradient <span class="fu">=</span> fromDouble' <span class="fu">.</span> tail <span class="fu">.</span> M.toList
 
 <span class="co">-- | Compute gradients of the barycentric coordinates.</span>
 <span class="ot">barycentricGradients ::</span> <span class="dt">EuclideanSpace</span> v
-                     <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
-                     <span class="ot">-&gt;</span> [v]
-barycentricGradients t <span class="fu">=</span> <span class="ot">{-# SCC &quot;barycentricGradients&quot; #-}</span> map vectorToGradient (take (nt<span class="fu">+</span><span class="dv">1</span>) (M.toColumns mat))
-    <span class="kw">where</span> mat <span class="fu">=</span> M.inv (simplexToMatrix (extendSimplex t))
-          n <span class="fu">=</span> geometricalDimension t
-          nt <span class="fu">=</span> topologicalDimension t
+                     <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> [v]
+barycentricGradients t <span class="fu">=</span> <span class="ot">{-# SCC &quot;barycentricGradients&quot; #-}</span>
+    takeMap nt vectorToGradient (M.toColumns mat)<span class="co">-- (take (nt+1) (M.toColumns mat))</span>
+  <span class="kw">where</span> mat <span class="fu">=</span> M.inv (simplexToMatrix (extendSimplex t))
+        nt  <span class="fu">=</span> topologicalDimension t
 
 <span class="co">-- | Compute gradients of the barycentric coordinates.</span>
 <span class="ot">barycentricGradients' ::</span> <span class="dt">EuclideanSpace</span> v
-                      <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v
-                      <span class="ot">-&gt;</span> [v]
+                      <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> [v]
 barycentricGradients' t <span class="fu">=</span> map (fromDouble' <span class="fu">.</span> M.toList) (tail (M.toRows mat))
-    <span class="kw">where</span> mat <span class="fu">=</span> M.inv (simplexToMatrix (extendSimplex t))
-          n <span class="fu">=</span> geometricalDimension t
-          nt <span class="fu">=</span> topologicalDimension t
+  <span class="kw">where</span> mat <span class="fu">=</span> M.inv (simplexToMatrix (extendSimplex t))
 
 <span class="co">-- | Compute gradient of the barycentric coordinate corresponding to edge i</span>
 <span class="ot">barycentricGradient ::</span> <span class="dt">EuclideanSpace</span> v
@@ -473,32 +452,39 @@ barycentricGradients' t <span class="fu">=</span> map (fromDouble' <span class="
                     <span class="ot">-&gt;</span> v
 barycentricGradient t i <span class="fu">=</span> barycentricGradients t <span class="fu">!!</span> i</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">simplifyP ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">Polynomial</span> a <span class="ot">-&gt;</span> <span class="dt">Polynomial</span> a
-simplifyP (<span class="dt">Polynomial</span> d ts) <span class="fu">=</span> <span class="dt">Polynomial</span> d (aggregate (map simplifyT ts))
+simplifyP (<span class="dt">Polynomial</span> d ts) <span class="fu">=</span> <span class="dt">Polynomial</span> d (aggregate <span class="co">{-filter ((/= addId) . coefficient) ts) -}</span> (map simplifyT ts))
 
-<span class="co">-- combine all Constant into one</span>
+<span class="co">-- combine all Constant terms into one</span>
 <span class="co">-- combine all terms of the same ZipList into one</span>
 <span class="kw">type</span> <span class="dt">SimpleTerms</span> a <span class="fu">=</span> [<span class="dt">Term</span> a]
 <span class="ot">aggregate ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> [<span class="dt">Term</span> a] <span class="ot">-&gt;</span> <span class="dt">SimpleTerms</span> a
 aggregate <span class="fu">=</span> foldr aggStep []
   <span class="kw">where</span><span class="ot"> aggStep ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> <span class="dt">SimpleTerms</span> a <span class="ot">-&gt;</span> <span class="dt">SimpleTerms</span> a
         aggStep t [] <span class="fu">=</span> [t]
-        aggStep (<span class="dt">Constant</span> c1) (<span class="dt">Constant</span> c2 <span class="fu">:</span> ts) <span class="fu">=</span> <span class="dt">Constant</span> (add c1 c2) <span class="fu">:</span> ts
-        aggStep (<span class="dt">Constant</span> c1) ts                 <span class="fu">=</span> <span class="dt">Constant</span> c1 <span class="fu">:</span> ts
+        aggStep ct<span class="fu">@</span>(<span class="dt">Constant</span> c1) (t<span class="fu">:</span>ts)
+          <span class="fu">|</span> c1 <span class="fu">==</span> addId <span class="fu">=</span> ts
+          <span class="fu">|</span> otherwise   <span class="fu">=</span> <span class="kw">case</span> t <span class="kw">of</span> <span class="dt">Constant</span> c2 <span class="ot">-&gt;</span> <span class="dt">Constant</span> (add c1 c2) <span class="fu">:</span> ts
+                                    _           <span class="ot">-&gt;</span> ct <span class="fu">:</span> ts
+        <span class="co">-- aggStep (Constant c1) ts                 = Constant c1 : ts</span>
         aggStep (<span class="dt">Term</span> fa1 mi) ts <span class="fu">=</span> <span class="kw">if</span> null matches <span class="kw">then</span> insertTerm (<span class="dt">Term</span> fa1 mi) ts
-                                                   <span class="kw">else</span> insertTerm (<span class="dt">Term</span> (add fa1 fa2) mi) rest
-          <span class="kw">where</span> (matches, rest) <span class="fu">=</span> partition (eqMI mi) ts
-                [<span class="dt">Term</span> fa2 mi'] <span class="fu">=</span> matches
-<span class="ot">                eqMI ::</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> <span class="dt">Bool</span>
-                eqMI mi (<span class="dt">Constant</span> _)  <span class="fu">=</span> <span class="dt">False</span> <span class="co">-- all (0==) mi</span>
-                eqMI mi (<span class="dt">Term</span> fa mi') <span class="fu">=</span> mi <span class="fu">==</span> mi'
+                                                   <span class="co">-- else insertTerm (Term (add fa1 fa2) mi) rest</span>
+                                                   <span class="kw">else</span> insertTerm (<span class="dt">Term</span> (sumR (fa1<span class="fu">:</span>map coefficient matches)) mi) rest
+          <span class="kw">where</span> <span class="co">-- TODO: check this code</span>
+                (matches, rest) <span class="fu">=</span> partition (eqMI mi) ts
+                <span class="co">-- [Term fa2 _mi'] = matches -- TODO: is matches always of length 1?</span>
 
-<span class="ot">insertTerm ::</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> <span class="dt">SimpleTerms</span> a <span class="ot">-&gt;</span> <span class="dt">SimpleTerms</span> a
-insertTerm t (<span class="dt">Constant</span> c <span class="fu">:</span> ts) <span class="fu">=</span> <span class="dt">Constant</span> c <span class="fu">:</span> t <span class="fu">:</span> ts
-insertTerm t ts                <span class="fu">=</span> t <span class="fu">:</span> ts
+<span class="ot">eqMI ::</span> <span class="dt">MI.MultiIndex</span> <span class="ot">-&gt;</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> <span class="dt">Bool</span>
+eqMI _  (<span class="dt">Constant</span> _)  <span class="fu">=</span>  <span class="dt">False</span> <span class="co">-- all (0==) mi</span>
+eqMI mi (<span class="dt">Term</span> _ mi')  <span class="fu">=</span>  mi <span class="fu">==</span> mi'
+
+<span class="ot">insertTerm ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> <span class="dt">SimpleTerms</span> a <span class="ot">-&gt;</span> <span class="dt">SimpleTerms</span> a
+insertTerm t (<span class="dt">Constant</span> c <span class="fu">:</span> ts)  <span class="fu">=</span> <span class="dt">Constant</span> c <span class="fu">:</span> t <span class="fu">:</span> ts
+  <span class="co">-- | c == addId  = t : ts</span>
+insertTerm t ts                 <span class="fu">=</span> t <span class="fu">:</span> ts
 
 <span class="ot">simplifyT ::</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">Term</span> a <span class="ot">-&gt;</span> <span class="dt">Term</span> a
-simplifyT (<span class="dt">Term</span> fa mi) <span class="fu">|</span> fa <span class="fu">==</span> addId <span class="fu">=</span> <span class="dt">Constant</span> addId
-simplifyT t <span class="fu">=</span> t</code></pre></div>
+simplifyT (<span class="dt">Term</span> fa _) <span class="fu">|</span> fa <span class="fu">==</span> addId <span class="fu">=</span> <span class="dt">Constant</span> addId
+simplifyT t                         <span class="fu">=</span> t</code></pre></div>
 <div id="refs" class="references">
 <div id="ref-Ruiz">
 <p>Ruiz, Alberto. n.d. “Hmatrix: Numeric Linear Algebra.” <a href="http://hackage.haskell.org/package/hmatrix" class="uri">http://hackage.haskell.org/package/hmatrix</a>.</p>

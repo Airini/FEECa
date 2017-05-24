@@ -33,28 +33,32 @@
 <li><p>generation of multi-indices of a given degree.</p></li>
 </ul>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="kw">module</span> <span class="dt">FEECa.Utility.Combinatorics</span>(
+<span class="kw">module</span> <span class="dt">FEECa.Utility.Combinatorics</span> (
+
   <span class="co">-- * Mathematical Functions</span>
-  choose, factorial,
+    choose, factorial
+
   <span class="co">-- * Increasing Lists</span>
   <span class="co">-- ** Generation</span>
-  increasingLists,  increasingLists1,
+  , increasingLists, increasingLists1
   <span class="co">-- ** Indexing</span>
-  unrank,
+  , unrank
+
   <span class="co">-- * Lists of degree r</span>
-  sublists, kSublists ,  sumRLists, sumRLists'
+  , sublists, kSublists, sumRLists, sumRLists'
+
   ) <span class="kw">where</span>
 
-<span class="kw">import </span><span class="dt">Data.List</span> (find)
-<span class="kw">import qualified</span> <span class="dt">Math.Combinatorics.Exact.Binomial</span> <span class="kw">as</span> <span class="dt">B</span>
+
+<span class="kw">import qualified</span> <span class="dt">Math.Combinatorics.Exact.Binomial</span>  <span class="kw">as</span> <span class="dt">B</span>
 <span class="kw">import qualified</span> <span class="dt">Math.Combinatorics.Exact.Factorial</span> <span class="kw">as</span> <span class="dt">F</span></code></pre></div>
 <h2 id="mathematical-functions">Mathematical Functions</h2>
-<p>The <span><code>Combinatorics</code></span> module re-exports the function <span><code>choose</code></span> for the computation of binomial coefficients and the function <span><code>factorial</code></span> for the computation of factorials from the <strong>exact-combinatorics</strong> <span class="citation">(<span class="citeproc-not-found" data-reference-id="WrenGayleRomano"><strong>???</strong></span>)</span> package.</p>
+<p>The <span><code>Combinatorics</code></span> module re-exports the function <span><code>choose</code></span> for the computation of binomial coefficients and the function <span><code>factorial</code></span> for the computation of factorials from the <strong>exact-combinatorics</strong> <span class="citation">(Romano 2015)</span> package.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Simple wrapper for 'factorial' that returns Num types.</span>
-<span class="ot">factorial ::</span> (<span class="dt">Num</span> a) <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> a
+<span class="ot">factorial ::</span> <span class="dt">Num</span> a <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> a
 factorial <span class="fu">=</span> fromInteger <span class="fu">.</span> F.factorial
 
-<span class="co">-- | Simple wrapper for 'factorial' that returns Num types.</span>
+<span class="co">-- | Simple wrapper for 'choose'</span>
 <span class="ot">choose ::</span> (<span class="dt">Integral</span> a, <span class="dt">Num</span> b) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> b
 choose i j <span class="fu">=</span> fromIntegral (B.choose i j)</code></pre></div>
 <h2 id="increasing-lists">Increasing Lists</h2>
@@ -88,8 +92,8 @@ increasingLists1 k n <span class="fu">=</span> increasingLists' k n <span class=
                  <span class="ot">-&gt;</span> a <span class="co">-- x0</span>
                  <span class="ot">-&gt;</span> [[a]]
 increasingLists' k n x0
-    <span class="fu">|</span> k <span class="fu">&lt;</span> <span class="dv">1</span> <span class="fu">=</span> [[]]
-    <span class="fu">|</span> k <span class="fu">==</span> <span class="dv">1</span> <span class="fu">=</span> [[x] <span class="fu">|</span> x <span class="ot">&lt;-</span> [x0 <span class="fu">..</span> n]]
+    <span class="fu">|</span> k <span class="fu">&lt;</span> <span class="dv">1</span>     <span class="fu">=</span> [[]]
+    <span class="fu">|</span> k <span class="fu">==</span> <span class="dv">1</span>    <span class="fu">=</span> [[x] <span class="fu">|</span> x <span class="ot">&lt;-</span> [x0 <span class="fu">..</span> n]]
     <span class="fu">|</span> otherwise <span class="fu">=</span> [ x <span class="fu">:</span> xs <span class="fu">|</span> x <span class="ot">&lt;-</span> [x0 <span class="fu">..</span> (n <span class="fu">-</span> k) <span class="fu">+</span> <span class="dv">1</span>],
                              xs <span class="ot">&lt;-</span> increasingLists' (k <span class="fu">-</span> <span class="dv">1</span>) n (x <span class="fu">+</span> <span class="dv">1</span>)]</code></pre></div>
 <h3 id="indexing">Indexing</h3>
@@ -103,14 +107,16 @@ increasingLists' k n x0
        <span class="ot">-&gt;</span> [a]
 unrank k n i <span class="fu">=</span> increasingLists k n <span class="fu">!!</span> fromIntegral i
 
-<span class="ot">rank ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Int</span>
-rank n ls <span class="fu">=</span>  rank' <span class="dv">0</span> n ls
+<span class="co">{- TODO: not used? Check when it might be a better idea (if at any time)</span>
+<span class="co">rank :: Int -&gt; [Int] -&gt; Int</span>
+<span class="co">rank = rank' 0</span>
 
-<span class="ot">rank' ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Int</span>
-rank' lower upper (l<span class="fu">:</span>ls) <span class="fu">=</span>  (l <span class="fu">-</span> lower) <span class="fu">*</span> (upper <span class="fu">-</span> l <span class="fu">-</span> <span class="dv">1</span>) <span class="ot">`choose`</span> (k <span class="fu">-</span> <span class="dv">1</span>)
-                            <span class="fu">+</span> rank' (l <span class="fu">+</span> <span class="dv">1</span>) upper ls
-  <span class="kw">where</span> k <span class="fu">=</span> length ls <span class="fu">+</span> <span class="dv">1</span>
-rank' _ _ [] <span class="fu">=</span> <span class="dv">0</span></code></pre></div>
+<span class="co">rank' :: Int -&gt; Int -&gt; [Int] -&gt; Int</span>
+<span class="co">rank' _     _     []      = 0</span>
+<span class="co">rank' lower upper (l:ls)  = (l - lower) * (upper - l - 1) `choose` (k - 1)</span>
+<span class="co">                            + rank' (l + 1) upper ls</span>
+<span class="co">  where k = length ls + 1</span>
+<span class="co">-}</span></code></pre></div>
 <p>The function <span><code>sublists</code></span> returns all length <span class="math inline">\(k-1\)</span> sublists of a given length <span class="math inline">\(k\)</span> list. The ordering of the list is preserved.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="co">-- | List all length k-1 sublists of the given length k list.</span>
@@ -119,12 +125,12 @@ rank' _ _ [] <span class="fu">=</span> <span class="dv">0</span></code></pre></d
 sublists ls <span class="fu">=</span> [ take i ls <span class="fu">++</span> drop (i<span class="fu">+</span><span class="dv">1</span>) ls <span class="fu">|</span> i <span class="ot">&lt;-</span> [<span class="dv">0</span> <span class="fu">..</span> length ls <span class="fu">-</span> <span class="dv">1</span>]]
 
 <span class="ot">kSublists ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [[a]]
+kSublists _ []     <span class="fu">=</span> [[]]
 kSublists k ls<span class="fu">@</span>(h<span class="fu">:</span>t)
   <span class="fu">|</span> k <span class="fu">&lt;=</span> <span class="dv">0</span>         <span class="fu">=</span> [[]]
   <span class="fu">|</span> k <span class="fu">&gt;=</span> length ls <span class="fu">=</span> [ls]
   <span class="fu">|</span> k <span class="fu">==</span> <span class="dv">1</span>         <span class="fu">=</span> [[l] <span class="fu">|</span> l <span class="ot">&lt;-</span> ls]
-  <span class="fu">|</span> otherwise      <span class="fu">=</span> [h <span class="fu">:</span> ts <span class="fu">|</span> ts <span class="ot">&lt;-</span> kSublists (k <span class="fu">-</span> <span class="dv">1</span>) t] <span class="fu">++</span> (kSublists k t)
-kSublists k [] <span class="fu">=</span>  [[]]</code></pre></div>
+  <span class="fu">|</span> otherwise      <span class="fu">=</span> [h <span class="fu">:</span> ts <span class="fu">|</span> ts <span class="ot">&lt;-</span> kSublists (k <span class="fu">-</span> <span class="dv">1</span>) t] <span class="fu">++</span> kSublists k t</code></pre></div>
 <h2 id="lists-of-degree-r">Lists of Degree <span class="math inline">\(r\)</span></h2>
 <p>For generating multi-indices of degree <span class="math inline">\(r\)</span>, it is necessary to generate lists of positive integers that sum to a given value. Note that here we will use the parameter <span class="math inline">\(n\)</span> to denote the length of the list. This is because those functions are used for the generation of multi-indices and therefore in most cases have length equal to the dimension <span class="math inline">\(n\)</span> of the underlying vector space.</p>
 <p>Two variants of functions generating such lists are provided. The function <span><code>sumRLists</code></span> returns a list of all length <span class="math inline">\(n\)</span> lists that sum to <span class="math inline">\(r\)</span>. The function <span><code>sumRLists'</code></span> lists all length <span class="math inline">\(n\)</span> lists that sum to <span class="math inline">\(r\)</span> <strong>or less</strong>.</p>
@@ -135,9 +141,9 @@ kSublists k [] <span class="fu">=</span>  [[]]</code></pre></div>
           <span class="ot">-&gt;</span> a <span class="co">-- r</span>
           <span class="ot">-&gt;</span> [[a]]
 sumRLists n r
-    <span class="fu">|</span> r <span class="fu">==</span> <span class="dv">0</span> <span class="fu">=</span> [replicate (fromIntegral n) <span class="dv">0</span>]
-    <span class="fu">|</span> n <span class="fu">==</span> <span class="dv">1</span> <span class="fu">=</span> [[r]]
-    <span class="fu">|</span> n <span class="fu">&lt;</span> <span class="dv">1</span> <span class="fu">=</span> []
+    <span class="fu">|</span> r <span class="fu">==</span> <span class="dv">0</span>    <span class="fu">=</span> [replicate (fromIntegral n) <span class="dv">0</span>]
+    <span class="fu">|</span> n <span class="fu">==</span> <span class="dv">1</span>    <span class="fu">=</span> [[r]]
+    <span class="fu">|</span> n <span class="fu">&lt;</span> <span class="dv">1</span>     <span class="fu">=</span> []
     <span class="fu">|</span> otherwise <span class="fu">=</span> concat [[ls <span class="fu">++</span> [l] <span class="fu">|</span> ls <span class="ot">&lt;-</span> sumRLists (n<span class="fu">-</span><span class="dv">1</span>) (r<span class="fu">-</span>l)] <span class="fu">|</span> l <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>r]]
 
 <span class="co">-- | All length n lists of integers whose sum to r or less.</span>
@@ -148,7 +154,9 @@ sumRLists n r
 sumRLists' n r <span class="fu">=</span> concat [ sumRLists n r' <span class="fu">|</span> r' <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>r]]</code></pre></div>
 <h1 id="bibliography" class="unnumbered">Bibliography</h1>
 <div id="refs" class="references">
-
+<div id="ref-package:ec">
+<p>Romano, Wren G. 2015. “Exact-Combinatorics: Efficient Exact Computation of Combinatoric Functions.” <a href="http://hackage.haskell.org/package/exact-combinatorics" class="uri">http://hackage.haskell.org/package/exact-combinatorics</a>.</p>
+</div>
 </div>
 
         </div>

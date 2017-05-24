@@ -25,7 +25,329 @@
       <div id="main">
         <div id="content">
 
-            
+            <h1 id="simplex">Simplex</h1>
+<p>The <span><code>Simplex</code></span> module implements simplices in n-dimensional Euclidean space <span class="math inline">\({\mathbb{R}^{n}}\)</span>. A <span class="math inline">\(k\)</span>-simplex <span class="math inline">\({\mathcal{T}} = [{\boldsymbol{v_0}},\ldots,{\boldsymbol{v_k}}]\)</span> in <span class="math inline">\(n\)</span>-dimensional Euclidean space <span class="math inline">\({\mathbb{R}^{n}}\)</span> is the convex hull of <span class="math inline">\(k+1\)</span> vertices <span class="math inline">\({\boldsymbol{v_0}},\ldots,{\boldsymbol{v_k}}\)</span> such that the spanning vectors <span class="math inline">\({\boldsymbol{v_1}}-{\boldsymbol{v_0}} ,\ldots,{\boldsymbol{v_k}}-{\boldsymbol{v_0}}\)</span> are linearly independent. The <em>topological dimension</em> of a simplex is the number <span class="math inline">\(k\)</span> of vectors spanning the simplex. The <em>geometrical dimension</em> of a simplex is the dimension <span class="math inline">\(n\)</span> of the underlying space <span class="math inline">\({\mathbb{R}^{n}}\)</span>. If <span class="math inline">\(k=n\)</span>, we speak of a full simplex. A subsimplex of a given simplex <span class="math inline">\({\mathcal{T}} = [{\boldsymbol{v_0}},\ldots,{\boldsymbol{v_k}}]\)</span> is a simplex <span class="math inline">\({\mathcal{T'}} = [{\boldsymbol{v_{i_0}}},\ldots,{\boldsymbol{v_{i_{k'}}}}]\)</span> such that <span class="math inline">\(\{i_0,\ldots,i_{k'}\} \subset \{1,\ldots,k\}\)</span>. Such a subsimplex can be conveniently represented using a map <span class="math inline">\(\sigma: \{0,\ldots,k'\} \to \{0,\ldots,k\}\)</span> such that <span class="math inline">\(\sigma(j) = i_j\)</span> for all <span class="math inline">\(j=0,\ldots,k'\)</span>. For the representation to be unique, we require <span class="math inline">\(\sigma\)</span> to be increasing, i.e.  <span class="math inline">\(\sigma(j+1) &gt; \sigma(j)\)</span> for all <span class="math inline">\(j=1,\ldots,k'-1\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="ot">{-# LANGUAGE MultiParamTypeClasses  #-}</span>
+<span class="ot">{-# LANGUAGE FlexibleContexts       #-}</span>
+<span class="ot">{-# LANGUAGE TypeFamilies           #-}</span>
+<span class="ot">{-# LANGUAGE FlexibleInstances      #-}</span>
+
+<span class="kw">module</span> <span class="dt">FEECa.Internal.Simplex</span> (
+  <span class="co">-- * The Simplex type</span>
+  <span class="dt">Simplex</span>(<span class="fu">..</span>), simplex, simplex', referenceSimplex, face,
+
+  <span class="co">-- ** Properties</span>
+  geometricalDimension, topologicalDimension, volume, spanningVectors,
+  referenceVertex, extendVectors,
+
+  <span class="co">-- * Subsimplices</span>
+  subsimplex, subsimplices, subsimplices', extendSimplex, complement,
+
+  <span class="co">-- * Integration</span>
+  integrateOverSimplex,
+
+  <span class="co">-- * Coordinates</span>
+  cubicToBarycentric, barycentricToCartesian, cubicToCartesian
+  ) <span class="kw">where</span>
+
+<span class="kw">import </span><span class="dt">Data.List</span>
+<span class="kw">import qualified</span>  <span class="dt">Numeric.LinearAlgebra.HMatrix</span> <span class="kw">as</span> <span class="dt">M</span>
+
+<span class="kw">import </span><span class="dt">FEECa.Internal.Spaces</span>
+<span class="kw">import </span><span class="dt">FEECa.Utility.Combinatorics</span>
+<span class="kw">import </span><span class="dt">FEECa.Utility.GramSchmidt</span>
+<span class="kw">import </span><span class="dt">FEECa.Utility.Print</span>
+<span class="kw">import </span><span class="dt">FEECa.Utility.Quadrature</span>
+<span class="kw">import qualified</span>  <span class="dt">FEECa.Utility.Utility</span>         <span class="kw">as</span> <span class="dt">U</span></code></pre></div>
+<h2 id="the-simplex-type">The <span><code>Simplex</code></span> type</h2>
+<p>We represent a simplex <span class="math inline">\({\mathcal{T}} = [{\boldsymbol{v_0}},\ldots,{\boldsymbol{v_k}}]\)</span> by a list containing the vertices <span class="math inline">\({\boldsymbol{v_0}},\ldots,{\boldsymbol{v_k}}\)</span> and an increasing map <span class="math inline">\(\sigma\)</span> keeping track of which vertices of a potential super-simplex the simplex contains. The mapping <span class="math inline">\(\sigma\)</span> is represented by an increasing list <span class="math inline">\(\sigma(1),\ldots, \sigma(k)\)</span>.</p>
+<p>The <span><code>Simplex</code></span> type is parametrized by the type used to represent vectors in <span class="math inline">\({\mathbb{R}^{n}}\)</span>. The type <span><code>Simplex a</code></span> contains two fields. <span><code>sigma :: [Int]</code></span> represents the mapping <span class="math inline">\(\sigma\)</span> and <span><code>vertices :: [a]</code></span> the vertices of the simplex. For full simplices, <span class="math inline">\(\sigma\)</span> is just <span class="math inline">\(0,\ldots,n\)</span>. For subsimplices of another simplex, <span class="math inline">\(\sigma\)</span> keeps track of which of the vertices of the supersimplex are included in the subsimplex. This is needed for the extension of polynomials defined on a subsimplex of another simplex to the simplex itself.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | n-simplex represented by a list of vectors of given dimensionality</span>
+<span class="co">-- | Invariant: geometrical dimension = length of the vertices - 1</span>
+<span class="kw">data</span> <span class="dt">Simplex</span> a <span class="fu">=</span>  <span class="dt">Simplex</span> {<span class="ot"> sigma ::</span> [<span class="dt">Int</span>],
+<span class="ot">                            vertices ::</span> [a] }
+  <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)
+
+<span class="co">-- | The geometrical dimension of a simplex is the dimensionality of the</span>
+<span class="co">-- | underlying vector space.</span>
+<span class="ot">geometricalDimension ::</span> <span class="dt">Dimensioned</span> a <span class="ot">=&gt;</span> <span class="dt">Simplex</span> a <span class="ot">-&gt;</span> <span class="dt">Int</span>
+geometricalDimension (<span class="dt">Simplex</span> _ (p<span class="fu">:</span>_)) <span class="fu">=</span> dim p
+geometricalDimension _                 <span class="fu">=</span> error <span class="st">&quot;geometricalDimension: empty list or vertices&quot;</span>
+
+<span class="co">-- | The topological dimension of a n-simplex is the number of vertices minus</span>
+<span class="co">-- | one.</span>
+<span class="ot">topologicalDimension ::</span> <span class="dt">Simplex</span> a <span class="ot">-&gt;</span> <span class="dt">Int</span>
+topologicalDimension (<span class="dt">Simplex</span> _ l) <span class="fu">=</span> length l <span class="fu">-</span> <span class="dv">1</span></code></pre></div>
+<p>We call the first vertex <span class="math inline">\({\boldsymbol{v_0}}\)</span> of a simplex <span class="math inline">\({\mathcal{T}} = [{\boldsymbol{v_0}},\ldots,{\boldsymbol{v_k}}]\)</span> as its reference vertex. The vectors <span class="math inline">\({\boldsymbol{v_1}}-{\boldsymbol{v_0}},\ldots,{\boldsymbol{v_n}}-{\boldsymbol{v_0}}\)</span>. are referred to as the simplices spanning vectors.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Reference vertex of the simplex, i.e. the first point in the list</span>
+<span class="co">-- | of vectors</span>
+<span class="ot">referenceVertex ::</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> v
+referenceVertex (<span class="dt">Simplex</span> _ (p<span class="fu">:</span>_)) <span class="fu">=</span> p
+referenceVertex _                 <span class="fu">=</span> error <span class="st">&quot;referenceVertex: there is no vertex in this simplex&quot;</span>
+
+<span class="co">-- | List of the n direction vector pointing from the first point of the</span>
+<span class="co">-- | simplex to the others.</span>
+<span class="ot">spanningVectors ::</span> <span class="dt">VectorSpace</span> v <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> [v]
+spanningVectors (<span class="dt">Simplex</span> _ (v<span class="fu">:</span>vs)) <span class="fu">=</span> map (<span class="ot">`subV`</span> v) vs
+spanningVectors (<span class="dt">Simplex</span> _ _)      <span class="fu">=</span> []</code></pre></div>
+<h3 id="printing-simplices">Printing Simplices</h3>
+<p>For printing of simplices two methods are provided. As an instance of the <span><code>Show</code></span> class¸ <span><code>show</code></span> displays the internal structure of the <span><code>Simplex</code></span> type. <span><code>pPrint</code></span> renders the simplex as a list of vectors using unicode.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">EuclideanSpace</span> v <span class="ot">=&gt;</span> <span class="dt">Pretty</span> (<span class="dt">Simplex</span> v) <span class="kw">where</span>
+  pPrint t<span class="fu">@</span>(<span class="dt">Simplex</span> _ l) <span class="fu">=</span> int m <span class="fu">&lt;&gt;</span> text <span class="st">&quot;-Simplex in &quot;</span>
+                            <span class="fu">&lt;&gt;</span> rn n <span class="fu">$+$</span> <span class="co">-- &lt;&gt; text &quot;:\n&quot;</span>
+                            printVectorRow <span class="dv">2</span> cs
+    <span class="kw">where</span> cs <span class="fu">=</span> map toDouble' l
+          n  <span class="fu">=</span> geometricalDimension t
+          m  <span class="fu">=</span> topologicalDimension t</code></pre></div>
+<h3 id="constructors">Constructors</h3>
+<p>The <span><code>Simplex</code></span> type provides two different constructors for the construction of full simplices. The <span><code>simplex</code></span> constructor creates a simplex from a given list of vertices. The <span><code>simplex'</code></span> constructor creates a simplex from a given reference vertex <span class="math inline">\({\boldsymbol{v_0}}\)</span> and <span class="math inline">\(n\)</span> direction vectors <span class="math inline">\({\boldsymbol{v_1}}-{\boldsymbol{v_0}},\ldots,{\boldsymbol{v_n}}-{\boldsymbol{v_0}}\)</span>. In both cases the topological dimension of the simplex must agree with the geometrical one, otherwise an error is thrown.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Construct a full simplex from a given list of points in R^n</span>
+<span class="ot">simplex ::</span> <span class="dt">EuclideanSpace</span> v <span class="ot">=&gt;</span> [v] <span class="ot">-&gt;</span> <span class="dt">Simplex</span> v
+simplex []        <span class="fu">=</span> error <span class="st">&quot;simplex: empty list.&quot;</span>
+simplex l<span class="fu">@</span>(p<span class="fu">:</span>_)
+    <span class="fu">|</span> dim p <span class="fu">==</span> n  <span class="fu">=</span> <span class="dt">Simplex</span> [<span class="dv">0</span><span class="fu">..</span>n] l
+    <span class="fu">|</span> otherwise   <span class="fu">=</span> error <span class="st">&quot;simplex: Dimensions don't agree.&quot;</span>
+  <span class="kw">where</span> n <span class="fu">=</span> length l <span class="fu">-</span> <span class="dv">1</span>
+
+<span class="co">-- | Construct a full simplex from a reference vertex and n direction vectors.</span>
+<span class="ot">simplex' ::</span> <span class="dt">EuclideanSpace</span> v <span class="ot">=&gt;</span> v <span class="ot">-&gt;</span> [v] <span class="ot">-&gt;</span> <span class="dt">Simplex</span> v
+simplex' _  []             <span class="fu">=</span> error <span class="st">&quot;simplex': Topological dimension is zero.&quot;</span>
+simplex' p0 vs
+    <span class="fu">|</span> all ((n<span class="fu">==</span>) <span class="fu">.</span> dim) vs <span class="fu">=</span> <span class="dt">Simplex</span> [<span class="dv">0</span><span class="fu">..</span>n] (p0<span class="fu">:</span>vs')
+    <span class="fu">|</span> otherwise            <span class="fu">=</span> error <span class="st">&quot;simplex': Dimensions don't agree.&quot;</span>
+  <span class="kw">where</span> vs' <span class="fu">=</span> map (addV p0) vs
+        n   <span class="fu">=</span> length vs</code></pre></div>
+<p>The function <span><code>referenceSimplex</code></span> constructs the reference simplex in <span class="math inline">\({\mathbb{R}^{n}}\)</span>, which is defined as the simplex <span class="math inline">\(T=[{\boldsymbol{v_0}},\ldots,{\boldsymbol{v_n}}]\)</span> with vertices <span class="math display">\[\begin{aligned}
+  {\boldsymbol{v_0}} =
+\left [ \begin{array}{c} 0 \\ 0 \\ \vdots \\ 0 \end{array} \right ],
+  {\boldsymbol{v_1}} =
+\left [ \begin{array}{c} 1 \\ 0 \\ \vdots \\ 0 \end{array} \right ],
+  {\boldsymbol{v_2}} =
+\left [ \begin{array}{c} 0 \\ 1 \\ \vdots \\ 0 \end{array} \right ],
+\ldots,
+  {\boldsymbol{v_n}} =
+\left [ \begin{array}{c} 0 \\ 0 \\ \vdots \\ 1 \end{array} \right ]\end{aligned}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Reference simplex in R^n</span>
+<span class="ot">referenceSimplex ::</span> <span class="dt">EuclideanSpace</span> v <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Simplex</span> v
+referenceSimplex n <span class="fu">=</span> <span class="dt">Simplex</span> [<span class="dv">0</span><span class="fu">..</span>n] (zero n <span class="fu">:</span> [unitVector n i <span class="fu">|</span> i <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>n<span class="fu">-</span><span class="dv">1</span>]])
+
+<span class="ot">face ::</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Simplex</span> v
+face (<span class="dt">Simplex</span> sigma1 vs) sigma2 <span class="fu">=</span> <span class="dt">Simplex</span> [sigma1 <span class="fu">!!</span> i <span class="fu">|</span> i <span class="ot">&lt;-</span> sigma2]
+                                          [vs <span class="fu">!!</span> i     <span class="fu">|</span> i <span class="ot">&lt;-</span> sigma2]</code></pre></div>
+<h2 id="volume-of-a-simplex">Volume of a Simplex</h2>
+<p>The volume of a full simplex <span class="math inline">\({\mathcal{T}}\)</span> in n dimensions is given by <span class="math display">\[\begin{aligned}
+\label{eq:simplex_vol}
+  V({\mathcal{T}}) &amp;=
+  \left | \frac{1}{n!}\text{det}\{{\boldsymbol{v_1}}-{\boldsymbol{v_0}},
+                                  \ldots,
+                                  {\boldsymbol{v_n}}-{\boldsymbol{v_0}}\} \right |
+ \end{aligned}\]</span> If the topological dimension of the simplex is less than k, it is necessary to project the spanning vectors <span class="math inline">\(v_n-v_0,\ldots,v_1-v_0\)</span> onto the space spanned by the subsimplex first. This is done by first constructing an orthonormal basis of the space using the Gram-Schmidt method and then projecting the spanning vectors onto that space.</p>
+<p>The function <span><code>volume</code></span> checks whether the given simplex has full space dimension and if not performs the projection using <span><code>project</code></span> and <span><code>gramSchmidt</code></span>. <span><code>volume'</code></span> simply uses the above formula to compute the volume of a full simplex <span class="math inline">\({\mathcal{T}}\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Computes the k-dimensional volume (Lebesgue measure) of a simplex</span>
+<span class="co">-- | in n dimensions using the Gram Determinant rule.</span>
+<span class="ot">volume ::</span> <span class="dt">EuclideanSpace</span> v
+       <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">Scalar</span> v
+volume t
+    <span class="fu">|</span> k <span class="fu">==</span> n     <span class="fu">=</span> volume' t
+    <span class="fu">|</span> otherwise  <span class="fu">=</span> volume (simplex' (zero k) (project bs vs))
+  <span class="kw">where</span> k  <span class="fu">=</span> topologicalDimension t
+        n  <span class="fu">=</span> geometricalDimension t
+        vs <span class="fu">=</span> spanningVectors t
+        bs <span class="fu">=</span> map (fromList <span class="fu">.</span> map fromDouble) <span class="fu">$</span> M.toLists tt <span class="co">-- gramSchmidt vs</span>
+        t' <span class="fu">=</span> M.matrix n (concatMap toDouble' vs)
+        tt <span class="fu">=</span> M.orthSVD (<span class="dt">Right</span> k) t' (M.leftSV t')
+        <span class="co">-- zs = (map (fromList . map fromDouble) . M.toLists . snd) $ M.rightSV t'</span>
+        <span class="co">-- _ = project vs zs</span>
+        <span class="co">-- _ = project bs vs</span>
+
+<span class="ot">project ::</span> <span class="dt">EuclideanSpace</span> v <span class="ot">=&gt;</span> [v] <span class="ot">-&gt;</span> [v] <span class="ot">-&gt;</span> [v]
+project bs vs <span class="fu">=</span> map fromList [[ proj b v <span class="fu">|</span> b <span class="ot">&lt;-</span> bs] <span class="fu">|</span> v <span class="ot">&lt;-</span> vs]
+  <span class="kw">where</span> proj b v  <span class="fu">=</span> divide (dot b v) (sqrt' (dot b b))
+        sqrt'     <span class="fu">=</span> fromDouble <span class="fu">.</span> sqrt <span class="fu">.</span> toDouble
+
+<span class="ot">volume' ::</span> <span class="dt">EuclideanSpace</span> v <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">Scalar</span> v
+volume' t <span class="fu">=</span> fromDouble <span class="fu">$</span>  abs (M.det w) <span class="fu">/</span> fromInteger (factorial n)
+  <span class="kw">where</span> n <span class="fu">=</span> geometricalDimension t
+        w <span class="fu">=</span> M.matrix n comps
+        comps <span class="fu">=</span> concatMap toDouble' (spanningVectors t)</code></pre></div>
+<h2 id="subsimplices">Subsimplices</h2>
+<p>A subsimplex, or face, <span class="math inline">\({\mathcal{f}}\)</span> of dimension <span class="math inline">\(k\)</span> of a simplex <span class="math inline">\({\mathcal{T}} = [{\boldsymbol{v_0}},\ldots,{\boldsymbol{v_n}}]\)</span> is any simplex consisting of a subset <span class="math inline">\({\boldsymbol{v_{i_0}}},\ldots,{\boldsymbol{v_{i_k}}}\)</span> of the vertices <span class="math inline">\(v_0,\ldots,v_n\)</span>. Such a <span class="math inline">\(k\)</span>-subsimplex of a given simplex may be identified by an increasing map <span class="math inline">\(\sigma\)</span>. Using lexicographic ordering of the increasing maps of a given length it is possible to define an ordering over the simplices. This allows us to index each subsimplex of a given dimension <span class="math inline">\(k\)</span> of a simplex.</p>
+<p>Three functions are provided to obtain subsimplices from a given simplex. <span><code>subsimplex</code></span> returns the <span class="math inline">\(i\)</span>th <span class="math inline">\(k\)</span>-subsimplex of a given simplex. <span><code>subsimplices</code></span> returns a list of all the subsimplices of dimension <span class="math inline">\(k\)</span> and <span><code>subsimplices'</code></span> returns a list of all the subsimplices of dimension <span class="math inline">\(k\)</span> or higher.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | i:th k-dimensional subsimplex of given simplex</span>
+<span class="ot">subsimplex ::</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Simplex</span> v
+subsimplex (<span class="dt">Simplex</span> _ []) _ _ <span class="fu">=</span>
+      error <span class="st">&quot;subsimplex: Encountered Simplex without vertices.&quot;</span>
+subsimplex s<span class="fu">@</span>(<span class="dt">Simplex</span> _ l) k i
+    <span class="fu">|</span> k <span class="fu">&gt;</span> n                     <span class="fu">=</span> error err_dim
+    <span class="fu">|</span> i <span class="fu">&gt;=</span> (n<span class="fu">+</span><span class="dv">1</span>) <span class="ot">`choose`</span> (k<span class="fu">+</span><span class="dv">1</span>) <span class="fu">=</span> error err_ind
+    <span class="fu">|</span> otherwise                 <span class="fu">=</span> <span class="dt">Simplex</span> indices (U.takeIndices l indices)
+  <span class="kw">where</span> n <span class="fu">=</span> topologicalDimension s
+        indices <span class="fu">=</span> unrank (k<span class="fu">+</span><span class="dv">1</span>) n i
+        err_ind <span class="fu">=</span> <span class="st">&quot;subsimplex: Index of subsimplex exceeds (n+1) choose (k+1).&quot;</span>
+        err_dim <span class="fu">=</span> <span class="st">&quot;subsimplex: Dimensionality of subsimplex is higher than&quot;</span>
+                  <span class="fu">++</span> <span class="st">&quot; that of the simplex.&quot;</span>
+
+<span class="co">-- | List subsimplices of given simplex with dimension k.</span>
+<span class="ot">subsimplices ::</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Simplex</span> v]
+subsimplices t<span class="fu">@</span>(<span class="dt">Simplex</span> _ l) k
+    <span class="fu">|</span> k <span class="fu">&gt;</span> n     <span class="fu">=</span> error err_dim
+    <span class="fu">|</span> otherwise <span class="fu">=</span> [ <span class="dt">Simplex</span> ix (U.takeIndices l ix) <span class="fu">|</span>
+                      ix <span class="ot">&lt;-</span> increasingLists (k<span class="fu">+</span><span class="dv">1</span>) n ]
+  <span class="kw">where</span> n       <span class="fu">=</span> topologicalDimension t
+        err_dim <span class="fu">=</span> <span class="st">&quot;subsimplices: Dimensionality of subsimplices is&quot;</span>
+                  <span class="fu">++</span> <span class="st">&quot;higher than that of the simplex.&quot;</span>
+<span class="co">-- TODO: note that the implementation has always seemed to ignore the original</span>
+<span class="co">--  &quot;permutation&quot; of indices we had from the original simplex if the argument</span>
+<span class="co">--  happens to be a subsimplex, ie: non-full simmplex. Now, should we check or</span>
+<span class="co">--  is it intended functionality?</span>
+
+<span class="co">-- | List subsimplices of given simplex with dimension larger or equal to k.</span>
+<span class="ot">subsimplices' ::</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Simplex</span> v]
+subsimplices' t k <span class="fu">=</span> concat [ subsimplices t k' <span class="fu">|</span> k' <span class="ot">&lt;-</span> [k<span class="fu">..</span>n] ]
+  <span class="kw">where</span> n <span class="fu">=</span> topologicalDimension t</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">complement ::</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> [v]
+complement (<span class="dt">Simplex</span> _ l) (<span class="dt">Simplex</span> sigm _) <span class="fu">=</span> [l <span class="fu">!!</span> i <span class="fu">|</span> i <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>n], i <span class="ot">`notElem`</span> sigm]
+    <span class="kw">where</span> n <span class="fu">=</span> length l <span class="fu">-</span> <span class="dv">1</span></code></pre></div>
+<p>For the computation of the barycentric coordinates of a simplex whose topological dimension is smaller than its geometrical dimension it is necessary to extend the simplex to a full simplex. For a given <span class="math inline">\(k\)</span>-subsimplex in <span class="math inline">\(n\)</span> dimensions this is done by adding <span class="math inline">\(n-k\)</span> vertices <span class="math inline">\(v_{k+1},\ldots,v_{n}\)</span> such that the vectors <span class="math inline">\(v_{k+1}-v_0,\ldots,v_{n}-v_0\)</span> are orthogonal mutually as well as to the vectors <span class="math inline">\(v_{1}-v_{0},\ldots,v_{k}-v_{0}\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Extend the given simplex to a full simplex so that its geometrical</span>
+<span class="co">-- | dimension is the same as its topological dimension.</span>
+<span class="ot">extendSimplex ::</span> <span class="dt">EuclideanSpace</span> v <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> <span class="dt">Simplex</span> v
+extendSimplex t
+    <span class="fu">|</span> n <span class="fu">==</span> nt   <span class="fu">=</span> t
+    <span class="fu">|</span> otherwise <span class="fu">=</span> simplex' p0 (extendVectors n dirs)
+  <span class="kw">where</span> n     <span class="fu">=</span> geometricalDimension t
+        nt    <span class="fu">=</span> topologicalDimension t
+        dirs  <span class="fu">=</span> spanningVectors t
+        p0    <span class="fu">=</span> referenceVertex t
+
+<span class="co">-- | Uses the Gram-Schmidt method to add at most n orthogonal vectors to the</span>
+<span class="co">-- | given set of vectors. Due to round off error the resulting list may contain</span>
+<span class="co">-- | more than n vectors, which then have to be removed manually.</span>
+<span class="ot">extendVectors ::</span> <span class="dt">EuclideanSpace</span> v
+              <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [v] <span class="ot">-&gt;</span> [v]
+extendVectors n [] <span class="fu">=</span> extendOrthGS (<span class="dt">Right</span> n)
+extendVectors _ vs <span class="fu">=</span> extendOrthGS (<span class="dt">Left</span> vs)
+    <span class="co">{- XXX: this was there before, jointly with providing GS with the</span>
+<span class="co">            n unit vectors in addition to vs, but it seems to be quite</span>
+<span class="co">            unnecessary; the comment in the function description doesn't seem</span>
+<span class="co">            to apply since we know at most n-k additional vectors could ever</span>
+<span class="co">            form an orthogonal basis jointly with vs; changed it so that GS</span>
+<span class="co">            takes care of this, as would be expected (ie: it will give at most</span>
+<span class="co">            n orthogonal vectors where n = dim (EuclideanSpace v):</span>
+<span class="co">        take (n - k)  (U.sortOn (Down . norm2) us</span>
+<span class="co">      where us = {-drop k $ -}gramSchmidt $ vs ++ [unitVector n i | i &lt;- [0..(n-1)]]</span>
+<span class="co">            k  = length vs -}</span></code></pre></div>
+<h2 id="sec:Coordinates">Coordinates</h2>
+<p>In exterior calculus we will be working with two different coordinates systems: Standard cartesian coordinates and barycentric coordinates of a given simplex. Moreover, for the computation of integrals over a simplex we will use an additional set of coordinates to which we will refer to as cubic coordinates.</p>
+<h3 id="barycentric-coordinates">Barycentric Coordinates</h3>
+<p>In barycentric coordinates, a point inside a simplex <span class="math inline">\({\mathcal{T}} = [{\boldsymbol{v_0}},\ldots,{\boldsymbol{v_n}}]\)</span> is given by a convex combination of its vertices. That is, a point <span class="math inline">\({\boldsymbol{p}}\)</span> is given in barycentric coordinates by a tuple <span class="math inline">\((\lambda_0,\ldots,\lambda_n)\)</span> if</p>
+<p><span class="math display">\[\begin{aligned}
+   {\boldsymbol{p}} &amp;= \lambda_0{\boldsymbol{v_0}} + \ldots + \lambda_n{\boldsymbol{v_n}}
+ \end{aligned}\]</span></p>
+<p>The barycentric coordinates of a point inside a simplex are either positive or zero and sum to one. Moreover, the barycentric coordinates of the vertices of the simplex are given by</p>
+<p><span class="math display">\[\begin{aligned}
+   {\boldsymbol{v_0}} = (1,0,\ldots,0), {\boldsymbol{v_1}} = (0,1,\ldots,0),\ldots,
+   {\boldsymbol{v_n}}=(0,0,\ldots,1)
+ \end{aligned}\]</span></p>
+<p>The function <span><code>barycentricToCartesian</code></span> converts a vector given in barycentric coordinates to cartesian coordinates:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Convert a vector given in barycentric coordinates to euclidean coordinates.</span>
+<span class="ot">barycentricToCartesian ::</span> <span class="dt">EuclideanSpace</span> v
+                       <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> v <span class="ot">-&gt;</span> v
+barycentricToCartesian (<span class="dt">Simplex</span> _ vs) v <span class="fu">=</span> U.sumV (zipWith sclV (toList v) vs)</code></pre></div>
+<h3 id="cubic-coordinates">Cubic Coordinates</h3>
+<p>A mapping between points in the n-dimensional unit cube <span class="math inline">\(t = (t_0,\ldots,t_{n-1}) \in [0,1]^{n}\)</span> and the barycentric coordinates of a simplex <span class="math inline">\({\mathcal{T}}\)</span> can be defined using</p>
+<p><span class="math display">\[\begin{aligned}
+    \lambda_0 &amp;= t_0 \\
+    \lambda_1 &amp;= t_1(1 - \lambda_0) \\
+    \lambda_2 &amp;= t_2(1 - \lambda_1 - \lambda_0) \\
+    &amp; \vdots \\
+    \lambda_{n-1} &amp;= t_{n-1}(1 - \lambda_{n-1} - \cdots - \lambda_0) \\
+    \lambda_{n} &amp;= 1 - \lambda_{n-1} - \cdots - \lambda_0
+  \end{aligned}\]</span></p>
+<p>We refer to the tuple <span class="math inline">\((t_0,\ldots,t_{n-1})\)</span> as the cubic coordinates of the corresponding point <span class="math inline">\((\lambda_0,\ldots,\lambda_n)\)</span> in barycentric coordinates.</p>
+<p>The functions <span><code>cubicToCartesian</code></span> and <span><code>cubicToBarycentric</code></span> convert from the cubic coordinate system to Cartesian and barycentric coordinates, respectively. Note that cubic coordinates define a point in space only with respect to a given simplex.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | The inverse Duffy transform. Maps a point from the unit cube in R^{n+1}</span>
+<span class="co">-- | to Euclidean space.</span>
+<span class="ot">cubicToCartesian ::</span> <span class="dt">EuclideanSpace</span> v <span class="ot">=&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> v <span class="ot">-&gt;</span> v
+cubicToCartesian t <span class="fu">=</span> barycentricToCartesian t <span class="fu">.</span> cubicToBarycentric
+
+<span class="co">-- | Convert vector given in cubic coordinates to barycentric coordinates.</span>
+<span class="ot">cubicToBarycentric ::</span> <span class="dt">EuclideanSpace</span> v <span class="ot">=&gt;</span> v <span class="ot">-&gt;</span> v
+cubicToBarycentric v <span class="fu">=</span> fromList (ls <span class="fu">++</span> [l])
+  <span class="kw">where</span> ts      <span class="fu">=</span> toList v
+        (l,ls)  <span class="fu">=</span> mapAccumL f mulId ts
+        f acc t <span class="fu">=</span> (mul acc (sub mulId t), mul t acc)</code></pre></div>
+<h2 id="integrals-over-simplices">Integrals over Simplices</h2>
+<p>For the integration of a function <span class="math inline">\(f\)</span> over a simplex <span class="math inline">\({\mathcal{T}}\)</span> we use the method proposed in <span class="citation">(Ainsworth, Andriamaro, and Davydov 2011)</span>. Performing a change of coordinates from Cartesian to cubic coordinates, the integral over the simplex takes the form</p>
+<p><span class="math display">\[\begin{aligned}
+   \int_{\mathcal{T}} d{\boldsymbol{x}} \: f({\boldsymbol{x}}) \:  &amp;=
+   V({\mathcal{T}}) \int_0^1 dt_1(1-t_1)^{n-1}\ldots\int_0^1 dt_nf({\boldsymbol{x}}(t_0,\ldots,t_{n-1}))
+ \end{aligned}\]</span></p>
+<p>where <span class="math inline">\(V({\mathcal{T}})\)</span> is the volume of the simplex. For a numerical approximation of the integral, the factors <span class="math inline">\((1-t_i)^{n-i}\)</span> can be absorbed into the quadrature rule by using a Gauss-Jacobi quadrature</p>
+<p><span class="math display">\[\begin{aligned}
+  \int_0^1 dt_i(1-t_i)^\alpha = \sum_{j=0}^q w^\alpha_j f(\xi^\alpha_j)\end{aligned}\]</span></p>
+<p>where <span class="math inline">\(\alpha=n-i\)</span>. The points <span class="math inline">\(\xi^\alpha_j\)</span> are the roots of the Jacobi polynomial <span class="math inline">\(P_q^{\alpha,0}\)</span> and the <span class="math inline">\(w^\alpha_j\)</span> the corresponding weights, that can be computed using the Golub-Welsch algorithm <span class="citation">(Golub and Welsch 1969)</span>. The integral of <span class="math inline">\(f\)</span> over <span class="math inline">\({\mathcal{T}}\)</span> can then be approximated using</p>
+<p><span class="math display">\[\begin{aligned}
+\label{eq:integral}
+  \int_{\mathcal{T}} d{\boldsymbol{x}} \: f({\boldsymbol{x}}) \:&amp;=
+  V({\mathcal{T}}) \sum_{j_1=0}^q w^{n-1}_{j_1}\ldots \sum_{j_n=0}^qw_{j_n}f(\xi^0_{j_n}) \end{aligned}\]</span></p>
+<p>The above formula is implemented by the function <span><code>integral</code></span>. The computation of the quadrature weights and nodes is implemented in <span><code>FEECa.Utility.Quadrature</code></span>.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
+<span class="co">-- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi</span>
+<span class="co">-- | quadrature rule with q nodes.</span>
+<span class="ot">integrateOverSimplex ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+                     <span class="ot">=&gt;</span> <span class="dt">Int</span>             <span class="co">-- q</span>
+                     <span class="ot">-&gt;</span> <span class="dt">Simplex</span> v       <span class="co">-- t</span>
+                     <span class="ot">-&gt;</span> (v <span class="ot">-&gt;</span> r)        <span class="co">-- f</span>
+                     <span class="ot">-&gt;</span> r
+integrateOverSimplex q t f <span class="fu">=</span> mul vol (<span class="co">{-mul fac-}</span> nestedSum q t f (n<span class="fu">-</span><span class="dv">1</span>) [])
+  <span class="kw">where</span> n   <span class="fu">=</span> topologicalDimension t
+        <span class="co">--fac = embedIntegral 1 -- (fromDouble . fromInteger) (factorial n)</span>
+        vol <span class="fu">=</span> volume t
+
+<span class="co">-- Recursion for the computation of the nested sum in the numerical approximation</span>
+<span class="co">-- of the integral of a function over a simplex.</span>
+<span class="ot">nestedSum ::</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v)
+             <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Simplex</span> v <span class="ot">-&gt;</span> (v <span class="ot">-&gt;</span> r) <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [r] <span class="ot">-&gt;</span> r
+nestedSum k t f d ls
+    <span class="fu">|</span> d <span class="fu">==</span> <span class="dv">0</span>    <span class="fu">=</span> U.sumR [ mul w fx
+                            <span class="fu">|</span> (xi,a) <span class="ot">&lt;-</span> quad,
+                              <span class="kw">let</span> w   <span class="fu">=</span> fromDouble a,
+                              <span class="kw">let</span> fx  <span class="fu">=</span> xNode (f<span class="fu">.</span>nodeCoord) xi ]
+                        <span class="co">-- [ mul w (f x)</span>
+                        <span class="co">--    | (w, x) &lt;- zip weights' xs ]</span>
+    <span class="fu">|</span> otherwise <span class="fu">=</span> U.sumR <span class="fu">$</span> map (uncurry mul <span class="fu">.</span> U.pairM (xNode (nestedSum k t f (d<span class="fu">-</span><span class="dv">1</span>))) fromDouble) quad
+                        <span class="co">-- [ mul w (nestedSum k (d-1) (x:ls) t f)</span>
+                        <span class="co">--    | (w, x) &lt;- zip weights' nodes' ]</span>
+  <span class="kw">where</span> nodeCoord <span class="fu">=</span> cubicToCartesian t <span class="fu">.</span> fromList'
+        <span class="co">-- xs        = [ (cubicToCartesian t (fromList' (xi : ls)) , w) | (xi, w) &lt;- quad ]</span>
+        fromList' <span class="fu">=</span> fromList <span class="fu">.</span> reverse
+        <span class="co">-- TODO: remove list reversal above via a local declaration + accum param</span>
+        <span class="co">--      + generalise according to the commong ground found above (via xNode)</span>
+        <span class="co">-- wMul      = mul . fromDouble</span>
+        xNode h   <span class="fu">=</span> h <span class="fu">.</span> (<span class="fu">:</span>ls) <span class="fu">.</span> fromDouble
+        quad      <span class="fu">=</span> gaussJacobiQuadrature' d <span class="dv">0</span> k
+        <span class="co">-- (nodes, weights) = unzip $ gaussJacobiQuadrature' d 0 k</span>
+        <span class="co">-- nodes     = map (fromDouble.fst) quad</span>
+        <span class="co">-- weights   = map (fromDouble.snd) quad</span>
+
+<span class="kw">instance</span> (<span class="dt">EuclideanSpace</span> v, r <span class="fu">~</span> <span class="dt">Scalar</span> v) <span class="ot">=&gt;</span> <span class="dt">FiniteElement</span> (<span class="dt">Simplex</span> v) r <span class="kw">where</span>
+  <span class="kw">type</span> <span class="dt">Primitive</span> (<span class="dt">Simplex</span> v) <span class="fu">=</span> v
+  quadrature <span class="fu">=</span> integrateOverSimplex</code></pre></div>
+<h1 id="bibliography" class="unnumbered">Bibliography</h1>
+<div id="refs" class="references">
+<div id="ref-Ainsworth">
+<p>Ainsworth, Mark, Gaelle Andriamaro, and Oleg Davydov. 2011. “Bernstein–Bézier Finite Elements of Arbitrary Order and Optimal Assembly Procedures.” <em>SIAM Journal on Scientific Computing</em> 33 (6): 3087–3109. doi:<a href="https://doi.org/10.1137/11082539X">10.1137/11082539X</a>.</p>
+</div>
+<div id="ref-GolubWelsch">
+<p>Golub, Gene H., and John H. Welsch. 1969. “Calculation of Gauss Quadrature Rules.” <em>Mathematics of Computation</em> 23 (106). American Mathematical Society: pp. 221–230+s1–s10. <a href="http://www.jstor.org/stable/2004418" class="uri">http://www.jstor.org/stable/2004418</a>.</p>
+</div>
+</div>
+
         </div>
         <div id="footer">
             Site proudly generated by
