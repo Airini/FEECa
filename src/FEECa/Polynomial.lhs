@@ -766,7 +766,7 @@ barycentricGradient t i = barycentricGradients t !! i
 simplifyP :: Ring a => Polynomial a -> Polynomial a
 simplifyP (Polynomial d ts) = Polynomial d (aggregate {-filter ((/= addId) . coefficient) ts) -} (map simplifyT ts))
 
--- combine all Constant into one
+-- combine all Constant terms into one
 -- combine all terms of the same ZipList into one
 type SimpleTerms a = [Term a]
 aggregate :: Ring a => [Term a] -> SimpleTerms a
@@ -786,9 +786,11 @@ eqMI :: MI.MultiIndex -> Term a -> Bool
 eqMI _  (Constant _)  =  False -- all (0==) mi
 eqMI mi (Term _ mi')  =  mi == mi'
 
-insertTerm :: Term a -> SimpleTerms a -> SimpleTerms a
-insertTerm t (Constant c : ts) = Constant c : t : ts
-insertTerm t ts                = t : ts
+insertTerm :: Ring a => Term a -> SimpleTerms a -> SimpleTerms a
+insertTerm t (Constant c : ts)
+  | c == addId  = t : ts
+  | otherwise   = Constant c : t : ts
+insertTerm t ts = t : ts
 
 simplifyT :: Ring a => Term a -> Term a
 simplifyT (Term fa _) | fa == addId = Constant addId
