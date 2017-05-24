@@ -773,8 +773,11 @@ aggregate :: Ring a => [Term a] -> SimpleTerms a
 aggregate = foldr aggStep []
   where aggStep :: Ring a => Term a -> SimpleTerms a -> SimpleTerms a
         aggStep t [] = [t]
-        aggStep (Constant c1) (Constant c2 : ts) = Constant (add c1 c2) : ts
-        aggStep (Constant c1) ts                 = Constant c1 : ts
+        aggStep ct@(Constant c1) (t:ts)
+          | c1 == addId = ts
+          | otherwise   = case t of Constant c2 -> Constant (add c1 c2) : ts
+                                    _           -> ct : ts
+        -- aggStep (Constant c1) ts                 = Constant c1 : ts
         aggStep (Term fa1 mi) ts = if null matches then insertTerm (Term fa1 mi) ts
                                                    -- else insertTerm (Term (add fa1 fa2) mi) rest
                                                    else insertTerm (Term (sumR (fa1:map coefficient matches)) mi) rest
@@ -787,10 +790,9 @@ eqMI _  (Constant _)  =  False -- all (0==) mi
 eqMI mi (Term _ mi')  =  mi == mi'
 
 insertTerm :: Ring a => Term a -> SimpleTerms a -> SimpleTerms a
-insertTerm t (Constant c : ts)
-  | c == addId  = t : ts
-  | otherwise   = Constant c : t : ts
-insertTerm t ts = t : ts
+insertTerm t (Constant c : ts)  = Constant c : t : ts
+  -- | c == addId  = t : ts
+insertTerm t ts                 = t : ts
 
 simplifyT :: Ring a => Term a -> Term a
 simplifyT (Term fa _) | fa == addId = Constant addId
