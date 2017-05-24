@@ -774,9 +774,9 @@ aggregate = foldr aggStep []
   where aggStep :: Ring a => Term a -> SimpleTerms a -> SimpleTerms a
         aggStep t [] = [t]
         aggStep ct@(Constant c1) (t:ts)
-          | c1 == addId = ts
+          | c1 == addId = t : ts
           | otherwise   = case t of Constant c2 -> Constant (add c1 c2) : ts
-                                    _           -> ct : ts
+                                    _           -> ct : t : ts
         -- aggStep (Constant c1) ts                 = Constant c1 : ts
         aggStep (Term fa1 mi) ts = if null matches then insertTerm (Term fa1 mi) ts
                                                    -- else insertTerm (Term (add fa1 fa2) mi) rest
