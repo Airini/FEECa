@@ -51,12 +51,13 @@ module FEECa.Polynomial (
   , expandTerm, monomial, multiIndices, degrees, toPairs
 
   -- * Mathematical operations
-  , evaluatePolynomial, derivePolynomial, integratePolynomial, multiplyPolynomial
+  , evaluatePolynomial, derivePolynomial, derivePolynomialBasis
+  ,  integratePolynomial, multiplyPolynomial
 
   -- * Barycentric Coordinates
   , barycentricCoordinate, barycentricCoordinates
-  , barycentricGradient, barycentricGradients
-  , barycentricGradients', simplexToMatrix, euclideanToBarycentric
+  , barycentricGradient, barycentricGradients, barycentricGradients'
+  , simplexToMatrix, euclideanToBarycentric, localBarycentricGradients
 
   -- XXX:
   , simplifyT, simplifyP
@@ -64,7 +65,9 @@ module FEECa.Polynomial (
   ) where
 
 
+
 import            Data.List
+import            Numeric.LinearAlgebra.HMatrix (tr, (??), (<>), Extractor(All, Drop))
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
 import            FEECa.Utility.Print   ( Pretty (..), printPolynomial )
@@ -79,6 +82,7 @@ import            FEECa.Internal.Spaces           (
                       Module (..), VectorSpace, EuclideanSpace (..),
                       toDouble', fromDouble' )
 import qualified  FEECa.Internal.Spaces     as S  ( Function (..) )
+
 
 
 \end{code}
@@ -551,6 +555,10 @@ deriveTerm _  _ (Constant _) = constant addId
 deriveTerm dx v (Term c mi)  = {-sclV c -} sumR (zipWith (sclV . mul c) v' (dx mi))
   where v' = toList v
 
+deriveTermBasis :: Ring r => Dx r -> Int -> Term r -> Polynomial r
+deriveTermBasis _  _ (Constant _) = constant addId
+deriveTermBasis dx i (Term c mi)  = sclV c ((dx mi) !! i)
+
 -- | Derivative of a monomial over the standard monomial basis in given space
 -- | direction.
 deriveMonomial :: Ring r => Dx r
@@ -575,6 +583,10 @@ deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
 derivePolynomial :: (EuclideanSpace v, r ~ Scalar v)
                  => Dx r -> v -> Polynomial r -> Polynomial r
 derivePolynomial dx v = sumR . map (deriveTerm dx v) . terms -- t | t <- terms p ]
+
+derivePolynomialBasis :: Ring r => Dx r -> Int -> Polynomial r -> Polynomial r
+derivePolynomialBasis dx i = sumR . map (deriveTermBasis dx i) . terms -- t | t <- terms p ]
+
 
 \end{code}
 
@@ -759,6 +771,16 @@ barycentricGradient :: EuclideanSpace v
                     -> Int
                     -> v
 barycentricGradient t i = barycentricGradients t !! i
+
+localBarycentricGradients :: EuclideanSpace v
+                          => Simplex v
+                          -> [v]
+localBarycentricGradients t = map (fromDouble' . M.toList) (M.toColumns b)
+  where t'  = simplexToMatrix $ extendSimplex t
+        t'' = t' ?? (All, Drop 1)
+        a   = M.inv t'
+        a'  = a ?? (Drop 1, All)
+        b   = t'' <> a'
 
 \end{code}
 

@@ -47,9 +47,9 @@ import            FEECa.Internal.Vector
 
 import            FEECa.Polynomial        (
                       Polynomial, terms, expandTerm,
-                      derivePolynomial,
+                      derivePolynomial, derivePolynomialBasis,
                       barycentricCoordinates, barycentricGradient,
-                      barycentricGradients, toPairs)
+                      barycentricGradients, localBarycentricGradients, toPairs)
 import qualified  FEECa.Polynomial   as P (
                       degree, multiIndices, monomial,
                       constant, polynomial, euclideanToBarycentric)
@@ -244,7 +244,7 @@ derived so they are declared an instance of the class \code{Function}.
 instance (EuclideanSpace v, r ~ Scalar v)
     => Function (BernsteinPolynomial v r) v where
   evaluate = {-# SCC "evaluate" #-} evaluateBernstein
-  derive   = deriveBernstein
+  derive   = deriveBernsteinLocal
 
 \end{code}
 
@@ -365,11 +365,33 @@ deriveMonomial t mi = [ sumR [sclV (grads j i) (dp j) | j <- [0..n]] | i <- [0..
           mi'  = MI.toList mi :: [Int]
           n    = dim mi - 1
 
+-- | Derivative of a Bernstein monomial
+deriveMonomialLocal :: ( EuclideanSpace v, r ~ Scalar v )
+               => Simplex v -> MI.MultiIndex -> [ Polynomial r ]
+deriveMonomialLocal t mi = [ sumR [sclV (grads j i) (dp j) | j <- [0..n]] | i <- [0..n] ]
+    where grads j i = toList (localBarycentricGradients t !! j) !! i
+          dp j = if (mi' !! j) > 0
+                 then P.polynomial [MI.derive j mi]
+                 else P.constant addId
+          mi'  = MI.toList mi :: [Int]
+          n    = dim mi - 1
+
 -- | Derive Bernstein polynomial.
 deriveBernstein :: ( EuclideanSpace v, r ~ Scalar v )
                 => v -> BernsteinPolynomial v r -> BernsteinPolynomial v r
 deriveBernstein v (Bernstein t p) = Bernstein t (derivePolynomial (deriveMonomial t) v p)
 deriveBernstein _ (Constant _)    = Constant addId
+
+deriveBernsteinLocal :: (EuclideanSpace v, r ~ Scalar v)
+                 => v -> BernsteinPolynomial v r -> BernsteinPolynomial v r
+deriveBernsteinLocal _ (Constant _) = Constant addId
+deriveBernsteinLocal v (Bernstein t p) = Bernstein t (derivePolynomial (deriveMonomialLocal t) v p)
+ 
+deriveBernsteinBasis :: (EuclideanSpace v, r ~ Scalar v)
+                     =>Int -> BernsteinPolynomial v r -> BernsteinPolynomial v r
+deriveBernsteinBasis _ (Constant _) = Constant addId
+deriveBernsteinBasis i (Bernstein t p) = Bernstein t (derivePolynomialBasis
+                                                      (deriveMonomialLocal t) i p)
 \end{code}
 
 
