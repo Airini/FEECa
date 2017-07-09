@@ -208,6 +208,33 @@ pBarycentricToCartesian t = map (barycentricToCartesian t) vs == vertices t
   where n  = geometricalDimension t
         vs = map (unitVector (n+1)) [0..n]
 
+--------------------------------------------------------------------------------
+-- Gradients of Barycentric Coordinates
+--------------------------------------------------------------------------------
+
+-- Helper function to create list of vector with 1.0 as first component
+d0vectors :: Field a => Int -> [Vector a]
+d0vectors n = [fromList $ [mulId]
+                 ++ (replicate (i-1) addId)
+                 ++ [addInv mulId]
+                 ++ (replicate (n - i) addId) | i <- [1..n]]
+
+-- Local gradients of barycentric coordinates, i.e. taken w.r.t the barycentric
+-- coordinates themselves. Here we ensure that for a random simplex, if we move
+-- from one corner a to corner b (in barycentric coordinates) the multiplication
+-- of the  different vector with jacobian yields the corner b
+-- (also in barycentric coordinates). This is equivalent to the vectors
+-- [x_0, ..., x_n] with x_0 = 1 and x_i = -1 for any i > 0 being eigenvectors of
+-- the gradient matrix.
+prop_local_gradients :: Simplex (Vector Double) -> Bool
+prop_local_gradients t = all (\v -> and $ zipWith eqNum (toList ((mult grads v)::Vector Double)) (toList v)) vs
+  where grads     = localBarycentricGradients t
+        vs        = d0vectors n :: [Vector Double]
+        mult vs v = fromList [dot w v | w <- vs]
+        n         = topologicalDimension t
+
+t :: Simplex (Vector Double)
+t  = (referenceSimplex 2)
 
 -- TODO: Add testing for barycentric coordinates of subsimplices.
 
