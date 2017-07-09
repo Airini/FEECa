@@ -132,6 +132,15 @@ pVolIntegral :: EuclideanSpace v => Simplex v -> Bool
 pVolIntegral t = volume t `eqNum` integrate 2 t (Constant (embedIntegral 1))
   where n = topologicalDimension t  -- XXX: 2, 1, n??
 
+prop_vol_length :: Simplex (Vector Double) -> Q.Property
+prop_vol_length = pVolLength
+
+-- | The volume in 1 dimension should just be the length of the vector.
+pVolLength :: (EuclideanSpace v, Show (Scalar v)) => Simplex v -> Q.Property
+pVolLength t = (topologicalDimension t) > 1 Q.==> all (\t' -> volume t' `eqNum` length t') ts
+  where length t' = fromDouble . sqrt . toDouble $ norm2 $ spanningVectors t' !! 0
+        ts        = subsimplices t 1
+
 -- TODO: perhaps add check that simPos is satisfied (if that is an invariant)
 simPos :: (EuclideanSpace v, Ord (Scalar v)) => Simplex v -> Bool
 simPos s = volume s >= addId
@@ -198,6 +207,7 @@ pBarycentricToCartesian :: EuclideanSpace v => Simplex v -> Bool
 pBarycentricToCartesian t = map (barycentricToCartesian t) vs == vertices t
   where n  = geometricalDimension t
         vs = map (unitVector (n+1)) [0..n]
+
 
 -- TODO: Add testing for barycentric coordinates of subsimplices.
 
