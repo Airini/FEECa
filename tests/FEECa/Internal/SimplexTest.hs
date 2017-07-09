@@ -233,9 +233,6 @@ prop_local_gradients t = all (\v -> and $ zipWith eqNum (toList ((mult grads v):
         mult vs v = fromList [dot w v | w <- vs]
         n         = topologicalDimension t
 
-t :: Simplex (Vector Double)
-t  = (referenceSimplex 2)
-
 -- TODO: Add testing for barycentric coordinates of subsimplices.
 
 --main = do quickCheck (prop_subsimplex :: SubsimplexTest v -> Bool)
