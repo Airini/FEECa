@@ -126,7 +126,12 @@ prop_derivation_product v1 v2 b1 b2 =
   where db1 = derive v2 b1
         db2 = derive v2 b2
 
-
+prop_derivation_basis :: Bernstein -> Vector Double -> Bool
+prop_derivation_basis b v =
+  all (\i -> evaldb ((unitVector n i) :: Vector Double) `eqNum` evaldbi i) [0..n-1]
+  where n       = dim v
+        evaldb  w = evaluate v (derive w b)
+        evaldbi i = evaluate v (deriveBernsteinBasis i b)
 
 --------------------------------------------------------------------------------
 
