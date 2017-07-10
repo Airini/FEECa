@@ -24,7 +24,6 @@ import qualified  FEECa.Internal.Spaces       as S
 import qualified  FEECa.Utility.Combinatorics as C
 import qualified  FEECa.Internal.Vector       as V
 
-
 type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
 type DifferentialForm a    = D.DifferentialForm (BernsteinPolynomial a)
 
@@ -78,9 +77,17 @@ inner omega eta
   where t = findSimplex omega `mplus` findSimplex eta
 
 integrate :: S.Field a => Simplex (Vector a) -> DifferentialForm a -> a
-integrate t omega = S.divide (B.integratePolynomial t b) (S.mul kfac (volume t))
+integrate t omega = S.divide (B.integratePolynomial t b) (S.mul kfac vol)
   where b    = apply omega (spanningVectors t)
         -- b'   = S.sclV (S.mulInv (S.mul kfac (volume t))) b
+        vol  = volume t
         kfac = S.embedIntegral (C.factorial (topologicalDimension t))
+
+
+d :: S.Field a => DifferentialForm a -> DifferentialForm a
+d omega = foldr (S.addA . (\i -> fmap (B.deriveBernsteinBasis i) ((F.oneForm i n) S./\ omega)))
+          (F.zeroForm (1 + F.arity omega) n)
+          [0..n]
+  where n = F.dimVec omega
 
 \end{code}
