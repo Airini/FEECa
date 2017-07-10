@@ -48,6 +48,7 @@ module FEECa.Internal.Simplex (
 
   -- * Subsimplices
   subsimplex, subsimplices, subsimplices', extendSimplex, complement,
+  boundary, boundarySigns,
 
   -- * Integration
   integrateOverSimplex,
@@ -334,6 +335,22 @@ subsimplices' t k = concat [ subsimplices t k' | k' <- [k..n] ]
 complement :: Simplex v -> Simplex v -> [v]
 complement (Simplex _ l) (Simplex sigm _) = [l !! i | i <- [0..n], i `notElem` sigm]
     where n = length l - 1
+
+boundary :: Simplex v -> [Simplex v]
+boundary t
+  | k <= 0    = error err_dim
+  | otherwise = subsimplices t (k-1)
+  where k = topologicalDimension t
+        err_dim = "boundary: Can't take the boundary of a simplex with topological dimension "
+                  ++ "less than 1."
+
+boundarySigns :: EuclideanSpace v => Simplex v -> [Scalar v]
+boundarySigns t
+  | k <= 0    = error err_dim
+  | otherwise = map (\x -> if (even x) then mulId else addInv mulId) [0..k]
+  where k = topologicalDimension t
+        err_dim = "boundary: Can't take the boundary of a simplex with topological dimension "
+                  ++ "less than 1."
 \end{code}
 
 %------------------------------------------------------------------------------%
