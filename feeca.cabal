@@ -89,7 +89,7 @@ library
 
   -- Other library packages from which modules are imported.
   build-depends:      base >= 4.6 && < 5, exact-combinatorics >= 0.2,
-                      QuickCheck >= 2.7, random >= 1.0, hmatrix >= 0.16,
+                      QuickCheck >= 2.7, random >= 1.0, hmatrix >= 0.17,
                       pretty >= 1.1.1
 
   -- Directories containing source files.
