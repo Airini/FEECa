@@ -87,7 +87,7 @@ eqNum a b
     | otherwise                   = max (abs a') (abs b') < eps
   where a'  = toDouble a
         b'  = toDouble b
-        eps = 2e-10
+        eps = 2e-6
 
 -- TODO: The eqNum function should have type
 --   eqNum :: Double -> Double -> Bool

@@ -144,6 +144,19 @@ prop_inner c omega@(Form k n _) =
         cp    = B.constant t c
         -- eta2   = DF.inner eta eta  -- XXX: or with eta' ?
 
+--------------------------------------------------------------------------------
+-- Exterior Derivative (Stokes Theorem)
+--------------------------------------------------------------------------------
+
+prop_stokes :: Simplex (Vector Double) -> DifferentialForm Double -> Property
+prop_stokes t omega@(Form k n _) =
+  (topologicalDimension t == n) && (k < n) ==>
+  let omega' = redefine t omega
+      f  = if (k < n) then subsimplex t (k + 1) 0 else t
+      fs = subsimplices f k
+      alternatingSum = sum . (zipWith (mul) (boundarySigns f))
+  in alternatingSum [DF.integrate f' omega' | f' <- fs ] `eqNum` DF.integrate f (d omega')
+
 
 return []
 testDifferentialForm = $quickCheckWithAll
