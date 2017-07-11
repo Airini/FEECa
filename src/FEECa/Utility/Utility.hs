@@ -83,11 +83,13 @@ sumV _      = error "sumV: Need at least one vector to sum!\n"
 -- | Numerical equality accounting for round-off errors
 eqNum :: Field a => a -> a -> Bool
 eqNum a b
-    | (a' /= 0.0) && (b' /= 0.0)  = toDouble (abs ((a' - b') / max a' b')) < eps
+    | (a_abs > 1e-6) || (b_abs > 1e-6)  = toDouble (abs (a' - b') / max a_abs b_abs) < eps
     | otherwise                   = max (abs a') (abs b') < eps
   where a'  = toDouble a
         b'  = toDouble b
-        eps = 2e-6
+        a_abs = abs a'
+        b_abs = abs b'
+        eps = 1e-6
 
 -- TODO: The eqNum function should have type
 --   eqNum :: Double -> Double -> Bool
