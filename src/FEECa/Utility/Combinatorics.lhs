@@ -176,11 +176,6 @@ sublists :: [a] -- the length k list
          -> [[a]]
 sublists ls = [ take i ls ++ drop (i+1) ls | i <- [0 .. length ls - 1]]
 
---sublistsSigns :: [a] -- the length k list
---              -> [[a]]
---sublistsSigns :: Ring r => [a] -> ([r], [a])
---sublists ls = ([pow addInv i])[ take i ls ++ drop (i+1) ls | i <- [0 .. length ls - 1]]
-
 kSublists :: Int -> [a] -> [[a]]
 kSublists _ []     = [[]]
 kSublists k ls@(h:t)
