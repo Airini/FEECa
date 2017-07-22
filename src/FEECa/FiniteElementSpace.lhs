@@ -101,6 +101,11 @@ data FiniteElementSpace = PrLk Int Int Simplex
 -- | Form BernsteinPolynomial.
 type BasisFunction = DifferentialForm
 
+
+-- | Type synomym for a degree of freedom, i.e. a linear bounded map from
+-- | the space of polynomial differential forms to the reals.
+type DoF = DifferentialForm -> Double
+
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -470,6 +475,21 @@ prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas
         isZero alpha sigma = all (0==) (take (minimum' sigma) (MI.toList alpha))
         minimum' sigma     = minimum ([0..n] \\ sigma)
 
+prLkDofs :: Int -> Int -> Simplex -> [DoF]
+prLkDofs r k t = concat [prLkDofsFace r k f | f <- fs]
+  where fs = concat [S.subsimplices t k | k <- [0..n]]
+        n  = S.topologicalDimension t
+
+prLkDofsFace :: Int -> Int -> Simplex -> [DoF]
+prLkDofsFace r k f
+  | r' < 0 = []
+  | k' < 0 = []
+  | otherwise = [\omega -> D.integrate f (omega /\ eta) | eta <- bs]
+  where dimf = S.topologicalDimension f
+        r' = r + k - dimf
+        k' = dimf - k
+        bs = prmLkBasis r' k' f
+
 {-
 t = S.referenceSimplex 2
 t2 = S.subsimplex t 2 0
@@ -485,5 +505,6 @@ s1 = finiteElementSpace N2f 3 t
 -}
 
 \end{code}
+
 
 \section{Bibliography}
