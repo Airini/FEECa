@@ -61,6 +61,7 @@ eg1 = evaluate (vector [-0.1,10,0]) expression
 --      OR: add zero-th vector to 'VectorSpace' class?
 -- Remark: reduced generality for our R^n types
 
+
 -- Generalised to any appropriate form (polynomial differential forms being but
 -- a case)
 df :: (Function h v, Algebra (Form h)) => (Int -> v) -> Form h -> Form h

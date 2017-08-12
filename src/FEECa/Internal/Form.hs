@@ -10,13 +10,14 @@ module FEECa.Internal.Form (
   , zeroForm, nullForm, oneForm
 
   -- * Form operations
-  , apply, refine, refineBasis, inner, contract
+  , apply, refine, refineBasis, inner, contract, trace
   
   ) where
 
 
 -- import Control.Applicative
-import            Data.List ( intersect )
+import            Data.List ( intersect, elemIndex )
+import            Data.Maybe ( fromJust )
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 -- import qualified Numeric.LinearAlgebra.Data as M
 
@@ -28,7 +29,6 @@ import            FEECa.Utility.Utility               ( pairM, sumV, expSign, si
 
 import            FEECa.Internal.Spaces     hiding    ( inner )
 import qualified  FEECa.Internal.Spaces         as S  ( inner )
-
 
 -- * General form: does not depend on the underlying vector space it works on
 --   in any way.
@@ -256,8 +256,16 @@ inner proj omega eta
         app       = refine proj
         n         = dimVec omega
 
+trace :: [Int] -> Form w -> Form w
+trace sigma (Form k n ts)
+  | k' < k    = Form k' n []
+  | otherwise = Form k n (map (pairM id restrict') (filter' ts))
+  where filter'   = filter ((is_in_range' sigma) . snd)
+        restrict' = map (\x -> fromJust $ elemIndex x sigma)
+        k' = length sigma
 
--- * Helper functions
+is_in_range' :: [Int] -> [Int] -> Bool
+is_in_range' sigma is = and [elem i sigma | i <- is]
 
 -- | Checks arity equality
 degNEq :: Form f -> Form f -> Bool

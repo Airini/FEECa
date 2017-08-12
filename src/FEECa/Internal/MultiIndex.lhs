@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 %------------------------------------------------------------------------------%
 
 \section{Multi-Indices}
@@ -45,8 +46,8 @@ module FEECa.Internal.MultiIndex (
   -- ** Constructors
   , multiIndex, zero, unit, degreeR
 
-  -- * Extension
-  , extend
+  -- * Extension and Restriction
+  , extend, is_in_range, restrict
 
   -- * Mathematical Operations
   , add, decrease, derive, factorial, choose, choose', degree, range
@@ -65,6 +66,8 @@ import            Control.Applicative               (ZipList(..), liftA2, pure, 
 import            FEECa.Utility.Combinatorics       (sumRLists)
 import qualified  FEECa.Utility.Combinatorics as C  (choose, factorial)
 import            FEECa.Internal.Spaces             (Dimensioned(..), Field(..))
+
+
 
 \end{code}
 
@@ -262,6 +265,29 @@ extend' n _ []      []      = replicate n 0
 extend' n i (s:ss)  (j:js)  = replicate di 0 ++ (j : extend' (n - di - 1) s ss js)
   where di = s - i - 1  -- Number of zeros to pad.
 extend' _ _ _       _       = error "extend': list argument lengths must match"
+
+is_in_range :: [Int] -> MultiIndex -> Bool
+is_in_range sigma mi = is_in_range' sigma (toList mi)
+
+is_in_range' :: [Int] -> [Int] -> Bool
+is_in_range' [] is = all (0==) is
+is_in_range' sigma@(s:ss) (i:is)
+  | s > 0  = (i == 0) && (is_in_range' sigma' is)
+  | s == 0 = is_in_range' ss' is
+  where sigma' = map ((+) (-1)) sigma
+        ss'    = map ((+) (-1)) ss
+
+restrict :: [Int] -> MultiIndex -> MultiIndex
+restrict sigma mi = multiIndex $ restrict' sigma (toList mi)
+
+restrict' :: [Int] -> [Int] -> [Int]
+restrict' [] _ = []
+restrict' sigma@(s:ss) (i:is)
+  | s > 0  = restrict' sigma' is
+  | s == 0 = i : restrict' ss' is
+  where sigma' = map ((+) (-1)) sigma
+        ss'    = map ((+) (-1)) ss
+
 \end{code}
 
 %------------------------------------------------------------------------------%

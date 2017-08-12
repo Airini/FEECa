@@ -4,7 +4,7 @@
 
 module FEECa.PolynomialDifferentialFormTest where
 
-import Data.Maybe     ( fromJust )
+import Data.Maybe     ( fromJust, isJust )
 import Control.Monad  ( liftM, liftM2 )
 
 import FEECa.Internal.Form
@@ -21,6 +21,8 @@ import qualified FEECa.Internal.Spaces            as S
 import FEECa.Utility.Combinatorics
 import FEECa.Utility.Print
 import FEECa.Utility.Utility
+
+import Debug.Trace
 
 import FEECa.Utility.Test
 import FEECa.BernsteinTest
@@ -155,7 +157,20 @@ prop_stokes t omega@(Form k n _) =
       f  = if (k < n) then subsimplex t (k + 1) 0 else t
       fs = subsimplices f k
       alternatingSum = sum . (zipWith (mul) (boundarySigns f))
-  in alternatingSum [DF.integrate f' omega' | f' <- fs ] `eqNum` DF.integrate f (d omega')
+  in (traceShowId $ alternatingSum [DF.integrate f' omega' | f' <- fs ]) `eqNum` (traceShowId $ DF.integrate f (d omega'))
+
+--------------------------------------------------------------------------------
+-- Trace Operator
+--------------------------------------------------------------------------------
+
+prop_trace :: DifferentialForm Double -> Property
+prop_trace omega@(Form k n _) = isJust (findSimplex omega) ==>
+  and [DF.integrate f omega' `eqNum`
+       DF.integrate f (DF.trace f omega') | f <- subsimplices t k]
+  where t = extendSimplex $ fromJust $ findSimplex omega
+        omega' = redefine t omega
+
+
 
 
 return []

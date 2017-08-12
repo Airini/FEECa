@@ -15,6 +15,8 @@ import FEECa.Internal.FormTest ( pairOf )   -- TODO: move this somewhere appropr
 import Properties
 import Test.QuickCheck
 
+import Debug.Trace
+
 {-
 instance Arbitrary MultiIndex where
     arbitrary = arbitraryMI 5 5
@@ -37,10 +39,22 @@ prop_degreeR (SmallInt n) (SmallInt' r) = all ((r ==) . degree) (degreeR n r)
 prop_extend :: IncreasingList -> Property
 prop_extend (IncreasingList sigma) = forAll testableMI $ \mi ->
     let mi' = extend n sigma mi
-    in    degree mi' == degree mi
-        && map (toList mi' !!) sigma == toList mi
+    in  degree mi' == degree mi
   where n = 10
         --r = degree mi
+
+prop_range :: IncreasingList -> Property
+prop_range (IncreasingList sigma) = forAll testableMI $ \mi ->
+    let mi' = extend n sigma mi
+    in  is_in_range sigma mi'
+  where n = 10
+
+prop_restrict :: IncreasingList -> Property
+prop_restrict (IncreasingList sigma) = forAll testableMI $ \mi ->
+    let mi'  = extend n sigma mi
+        mi'' = restrict sigma mi'
+    in    mi'' == mi
+  where n = 10
 
 prop_add :: Property
 prop_add = forAll (pairOf testableMI testableMI) $ \(mi1, mi2) ->

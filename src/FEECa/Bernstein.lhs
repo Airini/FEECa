@@ -139,6 +139,7 @@ not require to be passed a simplex argument.
 -- | multi-indices and the simplex are inconsistent.
 polynomial :: (EuclideanSpace v, r ~ Scalar v)
            => Simplex v -> [(r, MI.MultiIndex)] -> BernsteinPolynomial v r
+polynomial t [] = Constant addId
 polynomial t l
     | n1 == n2 + 1 && termsOk = Bernstein t (P.polynomial l)
     | otherwise               = error "polynomial: Dimensions of Simplex and Polynomials do not match."
@@ -523,5 +524,16 @@ extend t (Bernstein f p) = polynomial t (extend' (toPairs n' p))
          n        = topologicalDimension t
          n'       = topologicalDimension f
 extend _ c = c
+
+-- | Restricts the multi-indices of polynomial to the given face and discards all terms
+-- | that are non-zero of the face.
+trace :: (EuclideanSpace v, r ~ Scalar v)
+      => Simplex v -> BernsteinPolynomial v r -> BernsteinPolynomial v r
+trace f (Bernstein t p) = polynomial f $ (trace' . removeZeros) (toPairs n' p)
+  where  trace'      = map (pairM id (MI.restrict (sigma f)))
+         removeZeros = filter $ (MI.is_in_range (sigma f)) . snd
+         n      = topologicalDimension t
+         n'     = topologicalDimension f
+trace f c = redefine f c
 
 \end{code}

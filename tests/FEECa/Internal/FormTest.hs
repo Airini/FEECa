@@ -105,7 +105,6 @@ prop_anti n = p (2 + abs n `mod` 9)
               forAll (pairOf (sized $ kform n k c) (sized $ kform n j c)) $
                 \(w1, w2) -> prop_invar (w1 /\ w2) && prop_invar (w2 /\ w1)
 
-
 -- | Form generator
 kform :: Ring f
       => Int  -- ^ n: vectorspace to be applied to dimension

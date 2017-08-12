@@ -23,6 +23,9 @@ import qualified  FEECa.Polynomial            as P
 import qualified  FEECa.Internal.Spaces       as S
 import qualified  FEECa.Utility.Combinatorics as C
 import qualified  FEECa.Internal.Vector       as V
+import            FEECa.Utility.Utility(pairM)
+
+import Debug.Trace(traceShow)
 
 type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
 type DifferentialForm a    = D.DifferentialForm (BernsteinPolynomial a)
@@ -48,9 +51,10 @@ tabulate bs vs fs = [ evalSeparately t b vs fs' | b <- bs ]
   where t   = fromJust $ findSimplex $ head bs
         fs' = map spanningVectors fs
 
-apply :: S.Field a
+apply :: (S.Field a, Show a)
       => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
-apply omega vs = {-# SCC "apply" #-} F.apply ds vs omega
+apply (F.Form k n []) _ = S.addId
+apply omega vs = traceShow omega ${-# SCC "apply" #-} F.apply ds vs omega
   where t  = fromJust (findSimplex omega)
         ds = P.barycentricGradients t
 
@@ -70,19 +74,24 @@ evalSeparately t omega vs fs = V.toList $ Prelude.foldl S.addV (S.zero l) crossr
         -- zero        = V.vector (replicate l $ S.embedIntegral 0.0)
 
 inner :: (S.Field a, Ord a) => DifferentialForm a -> DifferentialForm a -> a
+inner (F.Form _ _ []) eta   = S.addId
+inner omega (F.Form _ _ []) = S.addId
 inner omega eta
     | isJust t  = F.inner (B.proj (fromJust t)) omega eta
     | otherwise =
         error "Inner: Need associated simplex to compute inner product."
   where t = findSimplex omega `mplus` findSimplex eta
 
-integrate :: S.Field a => Simplex (Vector a) -> DifferentialForm a -> a
+integrate :: (Show a, S.Field a) => Simplex (Vector a) -> DifferentialForm a -> a
 integrate t omega = S.divide (B.integratePolynomial t b) (S.mul kfac vol)
-  where b    = apply omega (spanningVectors t)
+  where b    = traceShow ("b: " ++ (show $ apply omega (spanningVectors t))) apply omega (spanningVectors t)
         -- b'   = S.sclV (S.mulInv (S.mul kfac (volume t))) b
         vol  = volume t
         kfac = S.embedIntegral (C.factorial (topologicalDimension t))
 
+trace :: S.Field a => Simplex (Vector a) -> DifferentialForm a -> DifferentialForm a
+trace f omega = F.Form (F.arity omega) n' $ F.terms (fmap ((B.redefine f) . (B.trace f)) $ F.trace (sigma f) omega)
+  where n' = topologicalDimension f
 
 d :: S.Field a => DifferentialForm a -> DifferentialForm a
 d omega = foldr (S.addA . (\i -> fmap (B.deriveBernsteinBasis i) ((F.oneForm i n) S./\ omega)))

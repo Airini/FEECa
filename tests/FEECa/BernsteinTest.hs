@@ -134,6 +134,17 @@ prop_derivation_basis b v =
         evaldbi i = evaluate v (deriveBernsteinBasis i b)
 
 --------------------------------------------------------------------------------
+-- Derivation of Bernstein Polynomials
+--------------------------------------------------------------------------------
+
+prop_trace :: Bernstein -> Bool
+prop_trace b@(Bernstein t _) =
+  and [integratePolynomial f (trace f b) `eqNum` integratePolynomial f b
+      | f <- concat [subsimplices t k | k <- [1..n]]]
+  where n = topologicalDimension t
+prop_trace c = True
+
+--------------------------------------------------------------------------------
 
 return []
 testBernstein = $quickCheckWithAll
