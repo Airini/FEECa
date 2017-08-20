@@ -415,7 +415,9 @@ This is implemented by the \code{integrate} function.
 -- | a Gauss-Jacobi quadrature rule.
 integratePolynomial :: (EuclideanSpace v, r ~ Scalar v)
                     => Simplex v -> BernsteinPolynomial v r -> r
-integratePolynomial t b = integrateOverSimplex q t (b $$)
+integratePolynomial t b
+  | topologicalDimension t == 0 = evaluate (referenceVertex t) b
+  | otherwise                   = integrateOverSimplex q t (b $$)
   where q = div (r + 2) 2
         r = degree b
 

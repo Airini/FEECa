@@ -17,10 +17,10 @@ import FEECa.Utility.Combinatorics
 import FEECa.Utility.Print
 import FEECa.Utility.Utility
 
-import FEECa.Bernstein
 import FEECa.FiniteElementSpace
 import qualified FEECa.Polynomial                 as P
 import qualified FEECa.PolynomialDifferentialForm as DF
+import qualified FEECa.Bernstein                  as B
 
 import FEECa.Utility.Test
 import FEECa.Internal.SimplexTest
@@ -29,7 +29,7 @@ import qualified Test.QuickCheck                 as Q
 import           Test.QuickCheck  ( (==>) )
 
 import qualified Numeric.LinearAlgebra.HMatrix    as M
-
+import Debug.Trace
 
 --------------------------------------------------------------------------------
 -- Random Finite Element Space
@@ -54,7 +54,7 @@ arbitraryPrmLk = arbitraryPL PrmLk
 
 
 instance Q.Arbitrary FiniteElementSpace where
-  arbitrary = arbitraryPrmLk
+  arbitrary = arbitraryPrLk
 
 n = 4
 
@@ -134,6 +134,19 @@ linearIndependent f bs = M.rank mat == n
         -- TODO: changed eigenvaluesSH to eigenvaluesSH' for loading; check!
         mat = M.matrix n [ f omega eta | omega <- bs, eta <- bs ]
         n   = length bs
+
+--------------------------------------------------------------------------------
+-- DoFs of PrLk space
+--------------------------------------------------------------------------------
+
+prop_dof_basis :: FiniteElementSpace -> Q.Property
+prop_dof_basis s = dim s > 0 && degree s > 0 ==> M.rank mat == n
+  where mat = M.matrix (n) [d b | d <- dofs s, b <- basis s]
+        n   = dim s
+
+prop_ndofs :: FiniteElementSpace -> Q.Property
+prop_ndofs s = degree s > 0 ==> length (dofs s) == sum [nDofs s k | k <- [0..n]]
+  where n = S.topologicalDimension $ simplex s
 
 
 return []

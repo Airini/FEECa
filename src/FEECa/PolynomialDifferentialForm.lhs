@@ -25,8 +25,6 @@ import qualified  FEECa.Utility.Combinatorics as C
 import qualified  FEECa.Internal.Vector       as V
 import            FEECa.Utility.Utility(pairM)
 
-import Debug.Trace(traceShow)
-
 type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
 type DifferentialForm a    = D.DifferentialForm (BernsteinPolynomial a)
 
@@ -54,7 +52,7 @@ tabulate bs vs fs = [ evalSeparately t b vs fs' | b <- bs ]
 apply :: (S.Field a, Show a)
       => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
 apply (F.Form k n []) _ = S.addId
-apply omega vs = traceShow omega ${-# SCC "apply" #-} F.apply ds vs omega
+apply omega vs = {-# SCC "apply" #-} F.apply ds vs omega
   where t  = fromJust (findSimplex omega)
         ds = P.barycentricGradients t
 
@@ -84,9 +82,9 @@ inner omega eta
 
 integrate :: (Show a, S.Field a) => Simplex (Vector a) -> DifferentialForm a -> a
 integrate t omega = S.divide (B.integratePolynomial t b) (S.mul kfac vol)
-  where b    = traceShow ("b: " ++ (show $ apply omega (spanningVectors t))) apply omega (spanningVectors t)
+  where b    = apply omega (spanningVectors t)
         -- b'   = S.sclV (S.mulInv (S.mul kfac (volume t))) b
-        vol  = volume t
+        vol  = if topologicalDimension t == 0 then S.mulId else volume t
         kfac = S.embedIntegral (C.factorial (topologicalDimension t))
 
 trace :: S.Field a => Simplex (Vector a) -> DifferentialForm a -> DifferentialForm a
