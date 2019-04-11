@@ -23,7 +23,9 @@ module FEECa.Internal.Vector(
 
   ) where
 
-import FEECa.Utility.Utility (sumR)
+
+import Prelude        hiding  ( (<>) )
+import FEECa.Utility.Utility  ( sumR )
 import FEECa.Internal.Spaces
 import FEECa.Utility.Print    as P
 

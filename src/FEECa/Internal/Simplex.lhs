@@ -57,6 +57,7 @@ module FEECa.Internal.Simplex (
   cubicToBarycentric, barycentricToCartesian, cubicToCartesian
   ) where
 
+import Prelude    hiding  ( (<>) )
 import Data.List
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 

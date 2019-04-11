@@ -6,6 +6,7 @@ module FEECa.Utility.Print (
   , lambda, dlambda, (<>), (<+>), (P.$$), (P.$+$), text, rn, int
   ) where
 
+import            Prelude                   hiding  ( (<>) )
 import            Text.PrettyPrint
 import qualified  Text.PrettyPrint.HughesPJ as P
 import            Text.Printf

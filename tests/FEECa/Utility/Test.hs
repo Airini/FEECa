@@ -5,6 +5,7 @@ module FEECa.Utility.Test where
 
 import Data.List      ( sort )
 import Control.Monad  ( liftM )
+import Control.Monad.Fail as MF
 
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
@@ -18,6 +19,9 @@ import qualified Language.Haskell.TH  as TH
 quickCheckWithAll :: TH.ExpQ -- :: Q.Args -> IO Bool
 quickCheckWithAll = [| \a -> $(Q.forAllProperties) (Q.quickCheckWithResult a) |]
 
+-- NB: In accordance with MFP
+instance MF.MonadFail Q.Gen where
+  fail = Prelude.fail
 
 ------------------------------------------------------------------------------
 -- Auxiliary Int type for randomly generated values between 0 and 10.

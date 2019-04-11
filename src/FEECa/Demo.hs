@@ -1,5 +1,6 @@
 module FEECa.Demo where
 
+import Prelude        hiding  ( (<>) )
 -- import Control.Applicative ()
 
 import FEECa.DifferentialForm ( DifferentialForm )

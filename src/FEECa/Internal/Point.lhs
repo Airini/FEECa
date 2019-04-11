@@ -26,10 +26,12 @@ module FEECa.Internal.Point (
 
   ) where
 
+import Prelude  hiding  ( (<>) )
+
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
 import FEECa.Utility.Print
-import FEECa.Utility.Utility (pairM)
+import FEECa.Utility.Utility  ( pairM )
 
 \end{code}
 }

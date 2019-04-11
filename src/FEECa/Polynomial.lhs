@@ -65,10 +65,10 @@ module FEECa.Polynomial (
   ) where
 
 
-
+import            Prelude                     hiding  ( (<>) )
 import            Data.List
-import            Numeric.LinearAlgebra.HMatrix (tr, (<>))
-import            Numeric.LinearAlgebra.Data ((??), Extractor(All, Drop))
+import            Numeric.LinearAlgebra.HMatrix       ( tr, (<>) )
+import            Numeric.LinearAlgebra.Data          ( (??), Extractor(All, Drop) )
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
 import            FEECa.Utility.Print   ( Pretty (..), printPolynomial )
