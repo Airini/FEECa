@@ -74,7 +74,9 @@ library
 
   build-depends:      base >= 4.6 && < 5, exact-combinatorics >= 0.2,
                       QuickCheck >= 2.7, random >= 1.0, hmatrix >= 0.17,
-                      pretty >= 1.1.1
+                      pretty >= 1.1.1,
+                      -- Benchmark dependencies (for the Travis's sake)
+                      criterion, timeit >= 1.0.0.0, deepseq
 
   hs-source-dirs:     src, tests, bench
 
