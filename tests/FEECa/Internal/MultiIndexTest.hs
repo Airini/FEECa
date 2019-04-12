@@ -15,8 +15,6 @@ import FEECa.Internal.FormTest ( pairOf )   -- TODO: move this somewhere appropr
 import Properties
 import Test.QuickCheck
 
-import Debug.Trace
-
 {-
 instance Arbitrary MultiIndex where
     arbitrary = arbitraryMI 5 5

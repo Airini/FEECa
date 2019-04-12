@@ -58,7 +58,6 @@ import            FEECa.Bernstein                 (constant, monomial)
 import qualified  FEECa.Bernstein           as B  (extend)
 import qualified  FEECa.PolynomialDifferentialForm as D
 
-import Debug.Trace
 
 -- $intro
 -- This file implements the finite element space $P_r\Lambda^k$ and $P_r^-\Lambda^k$
@@ -392,7 +391,7 @@ prmLkFace t f r k = [ sclV (lambda a) (phi s) | a <- alphas, s <- sigmas, valid 
 
 prmLkDofs :: Int -> Int -> Simplex -> [DoF]
 prmLkDofs r k t = concat [prmLkDofsFace r k f | f <- fs]
-  where fs = concat [S.subsimplices t k | k <- [0..n]]
+  where fs = concat [S.subsimplices t d | d <- [0..n]]
         n  = S.topologicalDimension t
 
 prmLkDofsFace :: Int -> Int -> Simplex -> [DoF]
@@ -514,7 +513,7 @@ prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas
 
 prLkDofs :: Int -> Int -> Simplex -> [DoF]
 prLkDofs r k t = concat [prLkDofsFace r k f | f <- fs]
-  where fs = concat [S.subsimplices t k | k <- [0..n]]
+  where fs = concat [S.subsimplices t d | d <- [0..n]]
         n  = S.topologicalDimension t
 
 prLkDofsFace :: Int -> Int -> Simplex -> [DoF]

@@ -23,7 +23,6 @@ import qualified  FEECa.Polynomial            as P
 import qualified  FEECa.Internal.Spaces       as S
 import qualified  FEECa.Utility.Combinatorics as C
 import qualified  FEECa.Internal.Vector       as V
-import            FEECa.Utility.Utility(pairM)
 
 type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
 type DifferentialForm a    = D.DifferentialForm (BernsteinPolynomial a)

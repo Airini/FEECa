@@ -91,7 +91,7 @@ prop_integration_linear c b1 b2@(Bernstein t _) =
 prop_integration_linear c b1@(Constant _) b2@(Constant _) = property True
     -- property $ prop_linearity eqNum integrateBernstein c b1 b2
 -- TODO: Just True?? This should check remaining cases!! (constant?)
-prop_integration_linear c b1 b2 = property False -- this should not happen
+--prop_integration_linear c b1 b2 = property False -- this should not happen
 
 
 --------------------------------------------------------------------------------
@@ -137,12 +137,12 @@ prop_derivation_basis b v =
 -- Derivation of Bernstein Polynomials
 --------------------------------------------------------------------------------
 
-prop_trace :: Bernstein -> Bool
-prop_trace b@(Bernstein t _) =
-  and [integratePolynomial f (trace f b) `eqNum` integratePolynomial f b
-      | f <- concat [subsimplices t k | k <- [1..n]]]
+prop_traceB :: Bernstein -> Bool
+prop_traceB b@(Bernstein t _) =
+    and [integratePolynomial f (trace f b) `eqNum` integratePolynomial f b
+          | f <- concat [subsimplices t k | k <- [1..n]]]
   where n = topologicalDimension t
-prop_trace c = True
+prop_traceB c = True
 
 --------------------------------------------------------------------------------
 

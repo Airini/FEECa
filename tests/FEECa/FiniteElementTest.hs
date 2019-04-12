@@ -29,7 +29,6 @@ import qualified Test.QuickCheck                 as Q
 import           Test.QuickCheck  ( (==>) )
 
 import qualified Numeric.LinearAlgebra.HMatrix    as M
-import Debug.Trace
 
 --------------------------------------------------------------------------------
 -- Random Finite Element Space

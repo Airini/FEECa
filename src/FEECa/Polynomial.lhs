@@ -67,7 +67,6 @@ module FEECa.Polynomial (
 
 import            Prelude                     hiding  ( (<>) )
 import            Data.List
-import            Numeric.LinearAlgebra.HMatrix       ( tr, (<>) )
 import            Numeric.LinearAlgebra.Data          ( (??), Extractor(All, Drop) )
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
@@ -781,7 +780,7 @@ localBarycentricGradients t = map (fromDouble' . M.toList) (M.toColumns b)
         t'' = t' ?? (All, Drop 1)
         a   = M.inv t'
         a'  = a ?? (Drop 1, All)
-        b   = t'' <> a'
+        b   = t'' M.<> a'
 
 \end{code}
 

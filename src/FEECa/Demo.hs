@@ -17,8 +17,8 @@ import FEECa.Utility.Print    ( Pretty(..), Doc, text, (<+>) )
 import qualified FEECa.Utility.Print as P ( (<>) )
 -------
 -- TODO: remove.... projectables, etc.
-import qualified FEECa.Internal.Form as F ( inner )
-import FEECa.DifferentialForm ( dxV )
+--import qualified FEECa.Internal.Form as F ( inner )
+--import FEECa.DifferentialForm ( dxV )
 
 -- TODO: aid, to be removed.
 pNotation :: (Pretty a, Show a) => a -> Doc
