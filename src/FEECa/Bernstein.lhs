@@ -534,7 +534,6 @@ trace :: (EuclideanSpace v, r ~ Scalar v)
 trace f (Bernstein t p) = polynomial f $ (trace' . removeZeros) (toPairs n' p)
   where  trace'      = map (pairM id (MI.restrict (sigma f)))
          removeZeros = filter $ (MI.is_in_range (sigma f)) . snd
-         n      = topologicalDimension t
          n'     = topologicalDimension f
 trace f c = redefine f c
 

@@ -50,7 +50,7 @@ tabulate bs vs fs = [ evalSeparately t b vs fs' | b <- bs ]
 
 apply :: (S.Field a, Show a)
       => DifferentialForm a -> [Vector a] -> BernsteinPolynomial a
-apply (F.Form k n []) _ = S.addId
+apply (F.Form _ _ []) _ = S.addId
 apply omega vs = {-# SCC "apply" #-} F.apply ds vs omega
   where t  = fromJust (findSimplex omega)
         ds = P.barycentricGradients t
@@ -71,8 +71,8 @@ evalSeparately t omega vs fs = V.toList $ Prelude.foldl S.addV (S.zero l) crossr
         -- zero        = V.vector (replicate l $ S.embedIntegral 0.0)
 
 inner :: (S.Field a, Ord a) => DifferentialForm a -> DifferentialForm a -> a
-inner (F.Form _ _ []) eta   = S.addId
-inner omega (F.Form _ _ []) = S.addId
+inner (F.Form _ _ []) _               = S.addId
+inner _               (F.Form _ _ []) = S.addId
 inner omega eta
     | isJust t  = F.inner (B.proj (fromJust t)) omega eta
     | otherwise =

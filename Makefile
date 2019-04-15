@@ -1,6 +1,6 @@
 LIBRARY_N := feeca
 LIBRARY_D := FEECa
-BINDIR    := dist/build
+BINDIR    := dist-newstyle/build
 PROF      := prof
 TEST      := test-feec
 BENCH     := bench
@@ -20,14 +20,14 @@ BuildSPEC =
 TSTAMP    := $(shell date +'%y%m%d_%H%M%S')
 
 default:
-	cabal configure $(ConfFLAGS)
-	cabal build $(BuildSPEC)
+	cabal new-configure $(ConfFLAGS)
+	cabal new-build $(BuildSPEC)
 
 redoc:
-	cabal run doc rebuild
-	cabal run doc check
+	cabal new-run doc rebuild
+	cabal new-run doc check
 	open http://0.0.0.0:8000
-	cabal run doc server
+	cabal new-run doc server
 
 preview:
 	stack build feeca
@@ -60,13 +60,13 @@ benchmark.%: bench
 	./$(BENCHBIN) &> $(addsuffix _$(TSTAMP),$(BENCH))
 
 test-feec.%: tests
-	cabal test
+	cabal new-test
 
 clean-prof:
 	rm -f *.tix *.hp *.aux $(PROFBIN)
 
 clean: clean-prof
-	cabal clean
+	cabal new-clean
 
 clean-data: clean
 	rm -f *.prof *.dat

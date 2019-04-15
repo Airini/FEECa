@@ -152,7 +152,7 @@ printWhitneyForm p ls = hsep $ punctuate (text " + ") (map printPair ls)
 
 -- OR: unit as f + apply coeff
 printForm :: [Char] -> [Char] -> (f -> Doc) -> [(f,[Int])] -> Doc
-printForm _  unit _     []   = text unit -- $ coeff addId
+printForm _  unit _     []   = text unit  --  $ coeff addId
 printForm df _    coeff rest = hsep $ punctuate (text " +") $
   map (\(a,cs) -> lparen <> coeff a <> rparen <+>
                   hsep (intersperse wedgeD (map ((<>) (text df) . printSub) cs)))

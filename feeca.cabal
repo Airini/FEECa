@@ -32,9 +32,8 @@ build-type:          Simple
 
 -- extra-source-files:
 
--- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >= 1.10
-tested-with:         GHC == 7.8.*, GHC == 7.10.*, GHC == 8.0.*, GHC == 8.6.3
+tested-with:         GHC == 8.0.*, GHC == 8.2.*, GHC == 8.4.*, GHC == 8.6.*
 
 source-repository head
   type:     git
@@ -75,14 +74,14 @@ library
   build-depends:      base >= 4.6 && < 5, exact-combinatorics >= 0.2,
                       QuickCheck >= 2.7, random >= 1.0, hmatrix >= 0.17,
                       pretty >= 1.1.1,
-                      -- Benchmark dependencies (for the Travis's sake)
-                      criterion, timeit >= 1.0.0.0, deepseq
+                      -- Benchmark dependencies (for Travis's sake)
+                      criterion, timeit == 1.0.0.0, deepseq
 
   hs-source-dirs:     src, tests, bench
 
   ghc-options:        -O2 -fexcess-precision -optc-ffast-math -optc-O3 -optc-mfpmath=sse
---    -Wall -Wredundant-constraints
---    -Wdodgy-imports -Wunused-local-binds -Wunused-matches -Worphans
+    -Wall -Wredundant-constraints
+    -Wdodgy-imports -Wunused-local-binds -Wunused-matches -Worphans
     -fpedantic-bottoms
     -funfolding-use-threshold=16
     -fwarn-tabs
@@ -103,6 +102,24 @@ test-suite test-feec
   build-depends:      base >= 4.6 && < 5, exact-combinatorics >= 0.2,
                       QuickCheck >= 2.7, random >= 1.0, hmatrix >= 0.16,
                       pretty >= 1.1.1, feeca, template-haskell
+  other-modules:      FEECa.Bernstein, FEECa.BernsteinTest,
+                      FEECa.DifferentialForm,
+                      FEECa.FiniteElementSpace, FEECa.FiniteElementTest,
+                      FEECa.Internal.Form, FEECa.Internal.FormTest,
+                      FEECa.Internal.MultiIndex, FEECa.Internal.MultiIndexTest,
+                      FEECa.Internal.Simplex, FEECa.Internal.SimplexTest,
+                      FEECa.Internal.Spaces,
+                      FEECa.Internal.Vector, FEECa.Internal.VectorTest,
+                      FEECa.Polynomial, FEECa.PolynomialTest,
+                      FEECa.PolynomialDifferentialForm, FEECa.PolynomialDifferentialFormTest,
+                      FEECa.Utility.Combinatorics, FEECa.Utility.CombinatoricsTest,
+                      FEECa.Utility.Discrete,
+                      FEECa.Utility.GramSchmidt,
+                      FEECa.Utility.Print,
+                      FEECa.Utility.Quadrature, FEECa.Utility.QuadratureTest,
+                      FEECa.Utility.Test,
+                      FEECa.Utility.Utility,
+                      Properties
   default-language:   Haskell2010
 
 benchmark bench
@@ -112,7 +129,7 @@ benchmark bench
   ghc-prof-options:   -fprof-auto-exported "-with-rtsopts=-N2 -pa -s -hc -i0.1"
 
   build-depends:      base >= 4.6 && < 5, feeca,
-                      criterion, timeit >= 1.0.0.0, deepseq
+                      criterion, timeit == 1.0.0.0, deepseq
   default-language:   Haskell2010
 
 executable prof

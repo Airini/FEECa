@@ -813,7 +813,7 @@ eqMI mi (Term _ mi')  =  mi == mi'
 
 insertTerm :: Ring a => Term a -> SimpleTerms a -> SimpleTerms a
 insertTerm t (Constant c : ts)  = Constant c : t : ts
-  -- | c == addId  = t : ts
+  --  | c == addId  = t : ts
 insertTerm t ts                 = t : ts
 
 simplifyT :: Ring a => Term a -> Term a

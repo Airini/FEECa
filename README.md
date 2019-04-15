@@ -46,21 +46,12 @@ stack build
 
 Details:
 
-The package and dependencies are tested for GHC 7.6 upwards and will
-not build with older versions of the compiler. Cabal 1.16 and upwards
-will work, though the cabal libraries some of FEECa's need to see
-actually need to be version 1.18 or above.
+The package and dependencies are tested for GHC 8.0 upwards and will
+not build with older versions of the compiler.
 
 If you are new to Haskell or the building environment described, we
 recommend you install the [Haskell Platform][hplatform] which provides
 GHC, Cabal and stack.
-
-If you happen to be working with GHC 7.6 and Cabal 1.16, and do not want to
-update these, you might need to:
-
-```
-cabal install Cabal-1.18.0
-```
 
 LAPACK and BLAS should also be installed. If not so, and you are on a linux
 machine, use `apt-get` (the snippet below will install developer versions of
@@ -73,6 +64,9 @@ sudo apt-get install -y libblas-dev liblapack-dev
 
 For other systems, we recommend you search for the best way of getting these
 libraries. On OS X, you may install them via Homebrew or Macports.
+
+*Note:* The "new-style" `cabal` commands may be used in place of the old style
+ones in the following snippets.
 
 When these dependencies are ready, FEECa may be built and installed as a Cabal
 package using `cabal` (or stack):

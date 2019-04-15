@@ -8,3 +8,5 @@ dist/
 .stack-work
 _cache
 _site
+*.prof
+cabal.project.local*
