@@ -1,14 +1,32 @@
-module FEECa.Utility.Utility(
+{-# LANGUAGE CPP #-}
+
+module FEECa.Utility.Utility (
     Dimension (..)
-  , takeIndices
-  , pairM, pairUp
-  , sumR, sumV
+  , sortOn, takeIndices, takeMap
+  , pairM, pairUp, zipWithWhen
+  , sumR, productR, sumV
   , expSign, sign
   , eqNum
   , toDouble
   ) where
 
 import FEECa.Internal.Spaces
+
+#if MIN_VERSION_base(4,8,0)
+import Data.List              ( sortOn )
+#else
+import Prelude        hiding  ( foldr, sum )
+import Data.Foldable          ( Foldable (..), foldr, sum )
+import Data.List              ( sortBy )
+import Data.Ord               ( comparing )
+
+sortOn :: Ord b => (a -> b) -> [a] -> [a]
+sortOn f = map snd .
+            sortBy (comparing fst) . map (\x -> let y = f x in y `seq` (y, x))
+#endif
+
+takeMap :: Integral a => a -> (b -> c) -> [b] -> [c]
+takeMap n = (`zipWith` [0..n]) . const
 
 takeIndices :: [a] -> [Int] -> [a]
 takeIndices l = map (l !!)
@@ -21,9 +39,28 @@ pairM f h (x,y) = (f x, h y)
 pairUp :: a -> b -> (a,b)
 pairUp x y = (x,y)
 
+-- | 'zipWith' pairs from parallel lists which fulfill some property.
+zipWithWhen :: (a -> b -> c) -> (a -> b -> Bool) -> [a] -> [b] -> [c]
+zipWithWhen _ _ []    _       = []
+zipWithWhen _ _ _     []      = []
+zipWithWhen f p (a:as) (b:bs) | p a b     = f a b : zipWithWhen f p as bs
+                              | otherwise = zipWithWhen f p as bs
+
 -- | Equivalent to 'sum' for 'Ring' types
-sumR :: Ring a => [a] -> a
-sumR = foldl add addId
+sumR :: (Foldable t, Ring a) => t a -> a
+sumR = foldr add addId
+
+-- | Equivalent to 'product' for 'Ring' types
+productR :: (Foldable t, Ring a) => t a -> a
+productR = foldr mul mulId
+
+{-# INLINE takeMap      #-}
+{-# INLINE takeIndices  #-}
+{-# INLINE pairM        #-}
+{-# INLINE pairUp       #-}
+{-# INLINE sumR         #-}
+{-# INLINE productR     #-}
+{-# INLINE sumV         #-}
 
 -- | Returns the appropriate function for arithmetic expressions having
 --   products with exponentials of -1 over 'Ring' types
@@ -38,18 +75,28 @@ sign (p1, p2) = if sum [ length (filter (i <) p1) | i <- p2 ] `mod` 2 == 0
                   then mulId
                   else addInv mulId
 
--- | Summation over vector spaces
-sumV :: VectorSpace v => [v] -> v
-sumV (v:vs) = foldl addV v vs
+-- | Summation over modules.
+sumV :: Module m => [m] -> m
+sumV (v:vs) = foldr addV v vs
 sumV _      = error "sumV: Need at least one vector to sum!\n"
 
 -- | Numerical equality accounting for round-off errors
 eqNum :: Field a => a -> a -> Bool
 eqNum a b
-    | (a' /= 0.0) && (b' /= 0.0)  = toDouble (abs ((a' - b') / max a' b')) < 2e-10
-    | otherwise                   = max (abs a') (abs b') < 2e-10
-  where a' = toDouble a
-        b' = toDouble b
+    | (a_abs > 1e-6) || (b_abs > 1e-6)  = toDouble (abs (a' - b') / max a_abs b_abs) < eps
+    | otherwise                   = max (abs a') (abs b') < eps
+  where a'  = toDouble a
+        b'  = toDouble b
+        a_abs = abs a'
+        b_abs = abs b'
+        eps = 1e-6
+
+-- TODO: The eqNum function should have type
+--   eqNum :: Double -> Double -> Bool
+-- Or perhaps RealFrac a => a -> a -> Bool
+
+
+
 
 -- | Data type for dimension. Used to generate reasonably small dimensions to
 -- | use in testing.

@@ -26,10 +26,12 @@ module FEECa.Internal.Point (
 
   ) where
 
+import Prelude  hiding  ( (<>) )
+
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
 import FEECa.Utility.Print
-import FEECa.Utility.Utility (pairM)
+import FEECa.Utility.Utility  ( pairM )
 
 \end{code}
 }
@@ -46,9 +48,7 @@ The \code{Point} data type is build on top of the \code{Vector} data type using
 \begin{code}
 -- | Points in n-dimensional Euclidean space. A point describes a fixed position
 -- | in space and can not be computed with.
-newtype Point a = Point (Vector a) deriving Show
-
-deriving instance Eq (Point Double)
+newtype Point a = Point (Vector a) deriving (Eq, Show)
 
 instance Dimensioned (Point a) where
     dim (Point v) = dim v
@@ -110,10 +110,12 @@ fromPoint :: Point a -> Vector a
 fromPoint (Point v) = v
 
 -- Instances
-instance VectorSpace (Point Double) where
+instance Module (Point Double) where
   type Scalar (Point Double) = Double
   addV x = toPoint . uncurry addV . pairM fromPoint fromPoint . (x,)
   sclV _ = undefined
+
+instance VectorSpace (Point Double)
 
 instance EuclideanSpace (Point Double) where
   dot x    = uncurry dot . pairM fromPoint fromPoint . (x,)

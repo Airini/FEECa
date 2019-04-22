@@ -1,18 +1,28 @@
 module FEECa.Demo where
 
--- import Control.Applicative
+import Prelude        hiding  ( (<>) )
+-- import Control.Applicative ()
 
-import FEECa.DifferentialForm (DifferentialForm)
-import FEECa.Internal.Form (Form, Dim)
+import FEECa.DifferentialForm ( DifferentialForm )
+import FEECa.Internal.Form    ( Form, Dim )
 import FEECa.Internal.Point
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
+--import FEECa.Utility.Utility  ( sumR, productR )
 import FEECa.Mask
 import FEECa.Polynomial
 
-
+import FEECa.Utility.Print    ( Pretty(..), Doc, text, (<+>) )
+import qualified FEECa.Utility.Print as P ( (<>) )
 -------
+-- TODO: remove.... projectables, etc.
+--import qualified FEECa.Internal.Form as F ( inner )
+--import FEECa.DifferentialForm ( dxV )
+
+-- TODO: aid, to be removed.
+pNotation :: (Pretty a, Show a) => a -> Doc
+pNotation x = text (show x) <+> text "~~" <+> pPrint x P.<> text "\n"
 
 -- A 2D simplex
 x20, x21, x22 :: Vector Double
@@ -150,7 +160,8 @@ ku = 𝝹 u
 -- Inner product
 val6 :: Double
 val6 = w1 <> w2 -- summation over the basis
--- val7 = inner u v t3 -- same summation but also an integration over all x in t3
+--val12 :: Double
+--val12 = F.inner dxVF u v -- t3 -- same summation but also an integration over all x in t3
 
 -- Interior product/contraction
 v5 :: Vector Double
@@ -160,7 +171,7 @@ u5 = head (hs 2) .* w1' .+. ((hs 2 !! 3) .* w2') .+. (constant 0.5 .* dxs' 1 /\ 
 val7, val11 :: Form Double
 val7 = w1 ⌟ v5
 val8, val9, val10 :: DifferentialForm (PolyRepresentation Double)
-val8 = u5 & fmap pure v5
-val9 = w1' & fmap pure v5
-val10 = v & fmap pure v5
+val8 = u5 & fmap constant v5
+val9 = w1' & fmap constant v5
+val10 = v & fmap constant v5
 val11 = w4 ⌟ v2

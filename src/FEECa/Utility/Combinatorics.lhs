@@ -20,12 +20,12 @@ module FEECa.Utility.Combinatorics (
 
   -- * Increasing Lists
   -- ** Generation
-  , increasingLists,  increasingLists1
+  , increasingLists, increasingLists1
   -- ** Indexing
   , unrank
 
   -- * Lists of degree r
-  , sublists, kSublists ,  sumRLists, sumRLists'
+  , sublists, kSublists, sumRLists, sumRLists'
 
   ) where
 
@@ -137,6 +137,7 @@ unrank :: Integral a
        -> [a]
 unrank k n i = increasingLists k n !! fromIntegral i
 
+{- TODO: not used? Check when it might be a better idea (if at any time)
 rank :: Int -> [Int] -> Int
 rank = rank' 0
 
@@ -145,6 +146,7 @@ rank' _     _     []      = 0
 rank' lower upper (l:ls)  = (l - lower) * (upper - l - 1) `choose` (k - 1)
                             + rank' (l + 1) upper ls
   where k = length ls + 1
+-}
 
 \end{code}
 

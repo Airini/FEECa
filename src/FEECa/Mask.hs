@@ -3,15 +3,17 @@
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
+-- XXX: {-# LANGUAGE UndecidableInstances   #-}
 
 
 module FEECa.Mask where
 
--- import Control.Applicative
+-- import Control.Applicative ()
 
 import FEECa.DifferentialForm
-import FEECa.Internal.Form
-import FEECa.Internal.Spaces hiding (inner)
+import FEECa.Internal.Form hiding ( inner )
+import qualified FEECa.Internal.Form as F ( inner )
+import FEECa.Internal.Spaces
 import FEECa.Internal.Vector
 import FEECa.Internal.Simplex
 import FEECa.Polynomial
@@ -26,10 +28,10 @@ type VectorField a = Vector (PolyRepresentation a)
 tangential :: Ring a => Int -> VectorField a
 tangential n = vector (map (monomial . MI.unit n) [0..n-1])
 
-(.*) :: VectorSpace v => Scalar v -> v -> v
+(.*) :: Module v => Scalar v -> v -> v
 (.*) = sclV
 
-(.+.) :: VectorSpace v => Binop v
+(.+.) :: Module v => Binop v
 (.+.) = addV
 
 (.+) :: Ring f => Binop f
@@ -67,13 +69,13 @@ dx = oneForm
 dxN :: Ring f => Dim -> Dim -> Form f
 dxN = flip dx
 
-dxVP :: (Eq f, Field f) => Int -> Vector f -> PolyRepresentation f
+dxVP :: Field f => Int -> Vector f -> PolyRepresentation f
 dxVP = (fmap . fmap) constant dxV
 
-dxVF :: (Eq f, Ring f) => Int -> VectorField f -> PolyRepresentation f
+dxVF :: Ring f => Int -> VectorField f -> PolyRepresentation f
 dxVF i (Vector v) = v !! (i-1)
 
-(#) :: forall f v. (Ring f, VectorSpace f,
+(#) :: forall f v. (Ring f, Module f,
                     Projectable v (Scalar f), Scalar v ~ Scalar f)
     => Form f -> [v] -> f
 (#) = refine projection
@@ -82,7 +84,8 @@ dxVF i (Vector v) = v !! (i-1)
 --d' :: (Function h v, Algebra (Form h)) => (Int -> v) ->  Monop (Form h)
 --d' = df'
 
-class (Ring f, VectorSpace v) => Projectable v f where
+-- TODO: check constraints
+class (Ring f, Module v) => Projectable v f where
   projection :: Int -> v -> f
 
 instance Field f => Projectable (Vector f) f where
@@ -109,17 +112,25 @@ coordinates = fmap linearPolynomial . canonCoords
 bssIx :: Ring a => Int -> Int -> Vector a
 bssIx n = vector . flip canonCoord n
 
+{- XXX: TODO: quick, dirty fix for now. REDO!
+instance (Ring a, VectorSpace a, a ~ Scalar a) => InnerProductSpace a where
+  inner = mul
+-}
+instance InnerProductSpace Double where
+  inner = mul
+
 -- or <|> ?
-(<>) :: (Eq f, Field f{-, InnerProductSpace (Form f)-}) => Form f -> Form f -> Scalar f
-(<>) omega eta = undefined --S.inner omega eta -- inner dxV omega eta
+(<>) :: (Field f, InnerProductSpace f)
+        {-, Projectable (Vector (Scalar f)) f) -}
+     => Form f -> Form f -> Scalar f
+(<>) omega eta = F.inner dxV omega eta -- undefined --S.inner omega eta -- inner dxV omega eta
   where n = dimVec omega
 {-
 (⌟) :: (Eq f, Field f) => Form f -> Vector f -> Form f
 (⌟) = contract dxV
 -}
 
-(⌟) :: (Ring f, Projectable v f, Dimensioned v)
-     => Form f -> v -> Form f
+(⌟) :: (Projectable v f, Dimensioned v) => Form f -> v -> Form f
 (⌟) = contract projection
 
 {-interior :: (Eq f, Field f) => Form f -> Vector f -> Form f
@@ -139,12 +150,15 @@ d form = df (vector . flip canonCoord n) form
   where n = dimVec form
 
 -- | Evaluation of differential forms at a given point to obtain an alternating form
-(§) :: DifferentialForm (PolyRepresentation Double) -> Vector Double -> Form Double
+(§) :: DifferentialForm (PolyRepresentation Double) -> Vector Double
+    -> Form Double
 (§) = eval
 
 -- XXX: perhaps we could add to VectorSpace a function for projecting vectors
 --   (some kind of canonical projection)
-(&) :: (Field f, Eq (Vector f)) => DifferentialForm (PolyRepresentation f) -> VectorField f -> DifferentialForm (PolyRepresentation f)
+(&) :: Field f
+    => DifferentialForm (PolyRepresentation f) -> VectorField f
+    -> DifferentialForm (PolyRepresentation f)
 (&) = contract dxVF
 -- ALSO: generalise Vector? that way we can have parameterised vectors :)
 -- kappa, etc. => explicit symbols
@@ -153,7 +167,7 @@ d form = df (vector . flip canonCoord n) form
 
 --integral :: (FiniteElement t r, Function f (Primitive) =>
 integral :: (EuclideanSpace v, f ~ Scalar v) => Simplex v -> DifferentialForm (PolyRepresentation f) -> f
-integral t f = integratePolynomial t undefined {- (f#vs)
+integral t _f = integratePolynomial t undefined {- (f#vs)
   where vs = fmap (lii ) $ spanningVectors t
         lii v = vector (fmap constant (toList v))-}
 
@@ -164,21 +178,11 @@ instance Field f => Field (PolyRepresentation f) where
   toDouble = undefined
 -}
 
-
--- XXX: additional instances for now
-instance Functor Vector where
-  fmap f (Vector v) = Vector (fmap f v)
-
-instance Functor Term where
-  fmap f (Constant a) = Constant (f a)
-  fmap f (Term a mi)  = Term (f a) mi
-
-instance Functor Polynomial where
-  fmap f (Polynomial n ts) = Polynomial n (fmap (fmap f) ts)
-
+{-
 instance Applicative Polynomial where
   pure = constant
   (<*>) = undefined
+-}
 
 {-
 instance (Field r, EuclideanSpace (Vector r), r ~ Scalar (Vector r))  =>

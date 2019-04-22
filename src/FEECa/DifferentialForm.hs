@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MonoLocalBinds   #-}
 
 module FEECa.DifferentialForm (
 
@@ -48,7 +49,7 @@ y :: Vector Double
 y = vector [3,-2.3,1]
 -}
 
-dxV :: (Eq (Vector f), Field f) => Int -> Vector f -> f
+dxV :: Field f => Int -> Vector f -> f
 dxV i x = toList x !! (i-1)
 
 {-expression = refine dxVP (t /\ g) [b, y]
@@ -60,6 +61,7 @@ eg1 = evaluate (vector [-0.1,10,0]) expression
 -- basisIx must be in agreement with the proj paramenter used in evaluation!
 --      OR: add zero-th vector to 'VectorSpace' class?
 -- Remark: reduced generality for our R^n types
+
 
 -- Generalised to any appropriate form (polynomial differential forms being but
 -- a case)

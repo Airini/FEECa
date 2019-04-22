@@ -5,22 +5,27 @@
 module FEECa.PolynomialTest where
 
 
-import Control.Monad
+import Control.Monad    ( liftM, liftM2 )
 
-import Properties
-import FEECa.Polynomial
 import FEECa.Internal.Vector
 import FEECa.Internal.Simplex
 import FEECa.Internal.Spaces
+import FEECa.Polynomial
+
 import FEECa.Utility.Utility
 import FEECa.Utility.Combinatorics
-import FEECa.Utility.Test
 import FEECa.Utility.Print
-import qualified FEECa.Internal.MultiIndex as MI
 
-import Test.QuickCheck (quickCheckAll)
+import Properties
+import FEECa.Utility.Test
 import qualified Test.QuickCheck as Q
-import qualified Numeric.LinearAlgebra.HMatrix as M
+
+
+-- =======
+-- import qualified FEECa.Internal.MultiIndex as MI
+
+--import qualified Numeric.LinearAlgebra.HMatrix as M
+-- >>>>>>> efa221f... Cleaned up further tests (definitely shouldn't use `fromDouble`).
 
 ------------------------------------------------------------------------------
 -- Dimension of the space to be tested. Must be greater than zero.
@@ -37,16 +42,19 @@ n = 2
 ------------------------------------------------------------------------------
 
 instance (Ring r, Q.Arbitrary r) => Q.Arbitrary (Polynomial r) where
-  arbitrary = Q.oneof [arbitraryPolynomial n, arbitraryConstant]
+  arbitrary = Q.frequency [(4,arbitraryPolynomial n), (1,arbitraryConstant)]
 
 arbitraryPolynomial :: (Ring r, Q.Arbitrary r) => Int -> Q.Gen (Polynomial r)
-arbitraryPolynomial  n = do r   <- Q.choose (0,10)
-                            mis <- Q.listOf1 (arbitraryMI n r)
-                            cs  <- Q.listOf1 Q.arbitrary
-                            return $ polynomial (zip (take 10 cs) (take 10 mis))
+arbitraryPolynomial n = do
+  r <- Q.choose (0,10)
+  s <- Q.choose (0,15)
+  let mis = Q.vectorOf s (arbitraryMI n r)
+      cs  = Q.vectorOf s Q.arbitrary
+  liftM polynomial (liftM2 zip cs mis)
 
 arbitraryConstant :: (Ring r, Q.Arbitrary r) => Q.Gen (Polynomial r)
 arbitraryConstant = liftM constant Q.arbitrary
+
 
 ------------------------------------------------------------------------------
 -- Generate random vectors of dimension n, so that they can be used to evaluate
@@ -67,11 +75,12 @@ propArithmetic :: (EuclideanSpace v, Function f v, VectorSpace f, Ring f,
                 => (r -> r -> Bool)
                 -> f -> f -> v -> r
                 -> Bool
-propArithmetic eq f1 f2 v c =
-    (prop_operator2_commutativity eq addV add (evaluate v) f1 f2
-    && prop_operator2_commutativity eq mul mul (evaluate v) f1 f2
-    && prop_operator2_commutativity eq sub sub (evaluate v) f1 f2
-    && prop_operator_commutativity eq (sclV c) (mul c) (evaluate v) f1)
+propArithmetic eq x y v c =
+     homomorphicEv addV add && homomorphicEv mul mul && homomorphicEv sub sub
+    && prop_operator_commutativity eq (sclV c) (mul c) atV x
+  where homomorphicEv o1 o2 = prop_homomorphism eq o1 o2 atV x y
+        atV                 = evaluate v
+
 
 ------------------------------------------------------------------------------
 -- Concrete arithmetic properties for polynomials defined over rationals.
@@ -97,11 +106,10 @@ propDerivation_linear v1 v2 = prop_linearity (==) (evaluate v2 . derive v2)
 propDerivationProduct :: (EuclideanSpace v, Function f v, Ring f)
                         => v -> v -> f -> f
                         -> Bool
-propDerivationProduct v1 v2 p1 p2 =
-    evaluate v1 (add (mul dp1 p2) (mul dp2 p1))
-    == evaluate v1 (derive v2 (mul p1 p2))
-  where dp1 = derive v2 p1
-        dp2 = derive v2 p2
+propDerivationProduct v1 v2 f g =
+    ev (add (mul g (d f)) (mul f (d g))) == (ev . d) (mul f g)
+  where ev = evaluate v1
+        d  = derive v2
 
 prop_derivation_product :: Vector Rational -> Vector Rational
                         -> Polynomial Rational -> Polynomial Rational
@@ -120,13 +128,12 @@ prop_derivation_linear_rational :: Vector Rational -> Vector Rational
                                 -> Bool
 prop_derivation_linear_rational = propDerivation_linear
 
-prop_derivation_product_rational :: Vector Rational
-                                 -> Vector Rational
+prop_derivation_product_rational :: Vector Rational -> Vector Rational
                                  -> Rational
-                                 -> Polynomial Rational
-                                 -> Polynomial Rational
+                                 -> Polynomial Rational -> Polynomial Rational
                                  -> Bool
 prop_derivation_product_rational = propDerivation_linear
+
 
 --------------------------------------------------------------------------------
 -- Barycentric Coordinates
@@ -147,16 +154,32 @@ prop_barycentric t =
         bs          = barycentricCoordinates t
         vs          = vertices t
         k           = topologicalDimension t
-        oneLists    = map (map fromInt') (sumRLists (k+1) 1)
+        oneLists    = map (map fromInt) (sumRLists (k+1) 1)
 
+--------------------------------------------------------------------------------
+-- Gradients of Barycentric Coordinates
+--------------------------------------------------------------------------------
+
+-- Helper function to create list of vector with 1.0 as first component
+d0vectors :: Field a => Int -> [Vector a]
+d0vectors n = [fromList $ [mulId]
+                 ++ (replicate (i-1) addId)
+                 ++ [addInv mulId]
+                 ++ (replicate (n - i) addId) | i <- [1..n]]
+
+-- Local gradients of barycentric coordinates, i.e. taken w.r.t the barycentric
+-- coordinates themselves. Here we ensure that for a random simplex, if we move
+-- from one corner a to corner b (in barycentric coordinates) the multiplication
+-- of the  different vector with jacobian yields the corner b
+-- (also in barycentric coordinates). This is equivalent to the vectors
+-- [x_0, ..., x_n] with x_0 = 1 and x_i = -1 for any i > 0 being eigenvectors of
+-- the gradient matrix.
+prop_local_gradients :: Simplex (Vector Double) -> Bool
+prop_local_gradients t = all (\v -> and $ zipWith eqNum (toList ((mult grads v)::Vector Double)) (toList v)) vs
+  where grads     = localBarycentricGradients t
+        vs        = d0vectors n :: [Vector Double]
+        mult vs v = fromList [dot w v | w <- vs]
+        n         = topologicalDimension t
 
 return []
-testPolynomial = $quickCheckAll
-
-t  = referenceSimplex 3 :: (Simplex (Vector Double))
-bs = barycentricCoordinates t
-vs = vertices t
-l1 = [[evaluate v b | v <- vs] | b <- bs]
-l2 = (map (map fromInt') $ sumRLists (topologicalDimension t + 1) 1) :: [[Double]]
-
-allEq l1 l2 = and $ zipWith (\l3 l4 -> (and (zipWith eqNum l3 l4))) l1 l2
+testPolynomial = $quickCheckWithAll

@@ -13,23 +13,32 @@ import Numeric (fromRat)
 -- Mathematically these should be fields, but inversion is not required in our
 -- context, hence the simplification of properties and operations to that which
 -- will be necessary for the operations aimed to be supported: those of a ring
-class Eq v => Ring v where  -- XXX: only Eq v for now
-  add     :: v -> v -> v
-  addId   :: v
-  addInv  :: v -> v
+class Eq r => Ring r where  -- XXX: only Eq v for now
+  add     :: r -> r -> r
+  addId   :: r
+  addInv  :: r -> r
+  addInv  = sub addId
 
-  mul     :: v -> v -> v
-  mulId   :: v
+  mul     :: r -> r -> r
+  mulId   :: r
 
-  fromInt :: Integral a => a -> v  -- XXX: or fromRational?
+  -- | Default derived subtraction.
+  sub :: r -> r -> r
+  sub a b = add a (addInv b)
 
-  pow     :: Integral a => v -> a -> v
+  -- | Default derived integer exponentiation.
+  pow     :: Integral a => r -> a -> r
   -- no neg security!
   pow _ 0 = mulId
   pow t n = mul t (pow t (n-1))
+  
+  embedIntegral :: Integral a => a -> r -- XXX: or fromRational?
 
-fromInt' :: Ring a => Int -> a
-fromInt' = fromInt
+  {-# MINIMAL add, addId, addInv, mul, mulId, embedIntegral
+            | add, addId, sub,    mul, mulId, embedIntegral #-}
+
+fromInt :: Ring a => Int -> a
+fromInt = embedIntegral
 
 {-
 -- Class instantiation for notation ease.
@@ -37,27 +46,30 @@ instance {-# OVERLAPPABLE #-} Ring v => Num v where
   (+) = add
   (*) = mul
   negate = addInv
-dd  fromInteger = fromInt
+dd  embedIntegral = fromInt
   abs = undefined -- XXX: :S TODO: add Ord v to constraint? In any case, for polynomials...
   signum = undefined -- XXX: :S
 -}
-
--- | Derived subtraction operation from 'Ring' class functions.
-sub :: Ring r => r -> r -> r
-sub a b = add a (addInv b)
 
   -- associative, distributive, ...
   -- Compared to Num: add = (+), mul = (*), addId = 0, mulId = 1, addInv = negate
 
 -- | Completion of the 'Ring' class to that of a 'Field'
 class Ring f => Field f where
-    mulInv     :: f -> f
---    fromDouble :: Double -> f
-    toDouble   :: f -> Double
+  mulInv :: f -> f
+  mulInv = divide mulId
+  
+  -- | Default derived division.
+  divide :: f -> f -> f
+  divide a b = mul a (mulInv b)
 
--- | Derived division operation from 'Field' class functions.
-divide :: Field f => f -> f -> f
-divide a b = mul a (mulInv b)
+  -- fromDouble :: Double -> f
+  -- fromDouble = undefined
+  toDouble   :: f -> Double
+  toDouble = undefined
+  
+  {-# MINIMAL mulInv
+            | divide #-}
 
 -- Example instances for the floating 'Double' and for the 'Rational' types.
 instance Ring Double where
@@ -66,18 +78,29 @@ instance Ring Double where
   addInv  = (0-)
   mul     = (*)
   mulId   = 1
-  fromInt = fromIntegral
   pow     = (^^)
+  embedIntegral = fromIntegral
+
+instance Ring Integer where
+  add     = (+)
+  addId   = 0
+  addInv  = negate
+  mul     = (*)
+  mulId   = 1
+  embedIntegral = fromIntegral
+  pow     = (^)
 
 instance Field Double where
-  mulInv     = (1/)
+  divide     = (/)
 --  fromDouble = id
   toDouble   = id
 
-instance VectorSpace Double where
+instance Module Double where
   type Scalar Double = Double
   addV = (+)
   sclV = (*)
+
+instance VectorSpace Double
 
 instance Ring Rational where
   add     = (+)
@@ -85,35 +108,35 @@ instance Ring Rational where
   addInv  = (0-)
   mul     = (*)
   mulId   = 1
-  fromInt = fromIntegral
   pow     = (^)
+  embedIntegral = fromIntegral
 
 instance Field Rational where
-  mulInv      = (1/)
+  mulInv      = recip
 --  fromDouble  = realToFrac
   toDouble    = fromRat
 
--- | Definition of vector spaces via a class 'VectorSpace' differing from the
--- mathematical definition in the object it is defined over: 'Ring' scalars
--- instead of 'Field' ones; that is, a module over a 'Ring' in reality.
-class (Ring (Scalar v)) => VectorSpace v where --(Scalar v)) => VectorSpace v where -- Module over a Ring
-  type Scalar v :: *      -- Coefficient ring
-  addV  :: v -> v -> v
-  sclV  :: Scalar v -> v -> v -- Scalar v -> v -> v
+-- | Definition of module over a (commutative) 'Ring'  via a class 'Module'.
+-- TODO: check whether the commutative requirement is actually necessary.
+class (Ring (Scalar m)) => Module m where
+  type Scalar m :: *      -- Coefficient ring
+  addV :: m -> m -> m
+  sclV :: Scalar m -> m -> m
 
-  -- | Derived vector subtraction from 'VectorSpace' class functions.
-  subV :: v -> v -> v
+  -- | Derived vector subtraction from 'Module' class functions.
+  subV :: m -> m -> m
   subV v1 v2 = addV v1 (sclV (addInv mulId) v2)
 
--- | Zero vector
--- XXX: NB: we could add it as a member of the class?? for more "peculiar" types
-zeroV :: VectorSpace v => v -> v
-zeroV = sclV addId
+  -- | Zero vector
+  zeroV :: m -> m
+  zeroV = sclV addId
+  
+  {-# MINIMAL addV, sclV #-}
 
--- Example instance of lists as a 'VectorSpace' class type.
-{- removed for now: shall we only have _data_ types instantiated as VectorSpace?
+-- Example instance of lists as a 'Module' class type.
+{- removed for now: shall we only have _data_ types instantiated as Module?
 (cfr: tt) ==> likely to bring this instance back, just testing-}
-instance (Ring a, Eq [a]) => VectorSpace [a] where
+instance (Ring a, Eq [a]) => Module [a] where
   type Scalar [a] = a
 
   addV []     []      = []
@@ -123,12 +146,15 @@ instance (Ring a, Eq [a]) => VectorSpace [a] where
   sclV _ []     = []
   sclV a (v:vs) = mul a v : sclV a vs
 
--- | Definition of the mathematical 'Algebra' taking our defined 'VectorSpace'
+class (Module v, Field (Scalar v)) => VectorSpace v
+
+-- | Definition of the mathematical 'Algebra' taking our defined 'Module'
 -- class hence being defined over 'Ring's.
-class (VectorSpace v) => Algebra v where -- "union type" of vectorspaces of different dimension
-  addA :: v -> v -> v
-  (/\) :: v -> v -> v
-  sclA :: {-r -> v -> v -} Scalar v -> v -> v
+class Module m => Algebra m where -- "union type" of modules of different dimension
+  addA :: m -> m -> m
+  (/\) :: m -> m -> m
+  
+  sclA :: {-r -> v -> v -} Scalar m -> m -> m
 
   addA = addV
   sclA = sclV
@@ -141,11 +167,13 @@ class Dimensioned t where
 -- types which may be interpreted as lists of values (that is, they have an
 -- immeidate definition as coordinates wrt to a basis) and for appropriate inner
 -- products giving rise to metrics.
-class (Eq v, Dimensioned v, VectorSpace v, Eq (Scalar v), Field (Scalar v))
+-- TODO: check VS vs M
+class ( Eq v, Dimensioned v, VectorSpace v )
     => EuclideanSpace v where
   dot      :: v -> v -> Scalar v
   fromList :: [Scalar v] -> v
   toList   :: v -> [Scalar v]
+-- XXX: add basis??
   proj     :: v -> v -> v
 
   proj = projDefault
@@ -159,10 +187,15 @@ class Floating a => Sqrt a -- TODO: Maybe make Sqrt a separate class
                            -- later without Floating (or remove Sqrt
                            -- if not needed)
 
--- XXX: add basis??
+
+norm2 :: EuclideanSpace v => v -> Scalar v
+norm2 v = dot v v
+
+--- XXX: Hilbert Space?
 
 -- | Inner product space to define the generalised inner product on differential
 -- | forms.
+-- TODO: vector space or module
 class (Ring v, VectorSpace v) => InnerProductSpace v where
   inner :: v -> v -> Scalar v
 
@@ -171,7 +204,7 @@ class (Ring v, VectorSpace v) => InnerProductSpace v where
 -- differentiated in any arbitrary direction in it (that is, wrt to an arbitrary
 -- vector) and evaluated to 'Scalar' values the 'VectorSpace' is defined over
 -- TODO: update so that it requires more? ==> Euclidean Space
-class (VectorSpace v) => Function f v where
+class VectorSpace v => Function f v where
   derive    :: v -> f -> f
   evaluate  :: v -> f -> Scalar v
 
@@ -218,3 +251,8 @@ unitVector n i
 -- representation: lists of 'Double'.
 toDouble' :: EuclideanSpace v => v -> [Double]
 toDouble' = map toDouble . toList
+
+-- | General translation to 'EuclideanSpace' vectors from lists with
+-- 'Integral' components.
+fromIntegral' :: (EuclideanSpace v, Integral a) => [a] -> v
+fromIntegral' = fromList . map embedIntegral

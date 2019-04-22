@@ -10,24 +10,25 @@ module FEECa.Internal.Form (
   , zeroForm, nullForm, oneForm
 
   -- * Form operations
-  , apply, refine, refineBasis, inner, contract
+  , apply, refine, refineBasis, inner, contract, trace
   
   ) where
 
 
 -- import Control.Applicative
-import            Data.List (intersect)
+import            Data.List ( intersect, elemIndex )
+import            Data.Maybe ( fromJust )
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 -- import qualified Numeric.LinearAlgebra.Data as M
 
 import            FEECa.Utility.Combinatorics
 import            FEECa.Utility.Discrete
-import qualified  FEECa.Utility.Print           as P  (Pretty(..), printForm, text)
-import            FEECa.Utility.Utility               (pairM, sumV, expSign, sign)
+import qualified  FEECa.Utility.Print           as P  ( Pretty(..), printForm,
+                                                        text, (<>), (<+>), int )
+import            FEECa.Utility.Utility               ( pairM, sumV, expSign, sign )
 
-import            FEECa.Internal.Spaces     hiding    (inner)
-import qualified  FEECa.Internal.Spaces         as S  (inner)
-
+import            FEECa.Internal.Spaces     hiding    ( inner )
+import qualified  FEECa.Internal.Spaces         as S  ( inner )
 
 -- * General form: does not depend on the underlying vector space it works on
 --   in any way.
@@ -43,13 +44,12 @@ data Form f =  -- we lose dependency on the type of vector!
     Form  { arity   :: Dim            -- ^ For complete evaluation
           , dimVec  :: Dim            -- ^ Of the underlying vector space
           , terms   :: [(f, Prd)] }   -- ^ List of terms of (coeff,wedge)'s
-  deriving (Eq)
+  deriving Eq
 
 
-split :: (VectorSpace w, Scalar w ~ v)
-      => Form w -> ([w], [Form v])
-split (Form k n cs)   = unzip $ map split' cs
-  where  split' (a,b) = (a, Form k n [(mulId, b)])
+split :: (Module w, Scalar w ~ v) => Form w -> ([w], [Form v])
+split (Form k n cs) = unzip $ map split' cs
+  where split' (a,b) = (a, Form k n [(mulId, b)])
 
 -- terms [(17, [1,2]), (38, [1,3])] = 17*dx1/\dx2 + 38*dx1/\dx3
 
@@ -67,11 +67,13 @@ instance Functor Form where
 
 instance Show f => Show (Form f) where
   show (Form k n cs) = show k ++ "-form in " ++ show n ++ " dimensions: " ++
-                        show (P.printForm "dx" "0" (P.text . show) cs)
+                        show cs
 
 instance P.Pretty f => P.Pretty (Form f) where
-  pPrint (Form _ _ cs) = P.printForm "dx" "0" P.pPrint cs -- show or pPrint...
-  
+  pPrint (Form k n cs) =
+    P.int k P.<> P.text "-form in" P.<+> P.int n P.<+> P.text "dimensions:"
+    P.<+> P.printForm "dx" "0" P.pPrint cs
+
 -- NB: will be (i -> i -> Ordering) once we normalise all products to be in
 --      their normal form - an increasing list
 combineWithBy :: (a -> a -> a) -> (i -> i -> Bool)
@@ -122,11 +124,14 @@ omega //\\ eta
   where dxs     (_,ys) = filter (null . intersect ys . snd) (terms omega)
         combine (a,xs) = pairM (mul a) (xs++)
 
--- | Forms over a 'Ring' form a 'VectorSpace'.
-instance Ring f => VectorSpace (Form f) where
+-- | Forms over a 'Ring' form a 'Module'.
+instance Ring f => Module (Form f) where
   type Scalar (Form f) = f
   addV = (+++)
   sclV = (***)
+
+-- | Forms over a 'Field' form a 'VectorSpace'.
+instance Field f => VectorSpace (Form f)
 
 -- | For 'Form's defined over a 'Ring' we associate an 'Algebra': the exterior
 -- algebra.
@@ -140,7 +145,7 @@ instance Ring f => Algebra (Form f) where
 
 -- | Basic abstract 1-form
 oneForm :: Ring f => Dim -> Dim -> Form f
-oneForm i n | i < 0 || i > n = errForm "oneForm" MoProjBd
+oneForm i n | i < 0 || i > n  = errForm "oneForm" MoProjBd
             | otherwise       = Form 1 n [ (mulId,[i]) ]
 
 
@@ -156,17 +161,23 @@ nullForm :: Dim -> f -> Form f
 nullForm n f = Form 0 n [(f, [])]
 
 
+-- TODO: perhaps revert to old notation "proj" if I don't figure out why I
+-- changed to "pieIx" -- Irene
+
 -- Necesitamos una función de pinchado
 --  y así pinchar las consecutivas componentes
 -- If the function was actually a field, this part would be simplified
-contract :: (Ring f, VectorSpace v, Dimensioned v)
+contract :: (Ring f, Module v, Dimensioned v)
          => (Idx -> v -> f) -> Form f -> v -> Form f
 contract pieIx omega v
     | vecNEq omega v = errForm "contract" MoVecEq
-    | otherwise      = Form (max 0 (arity omega - 1)) (dimVec omega) $
-        concatMap (\c -> map (pinchado c) [1..arity omega])
-                  (terms omega)
-  where pinchado (f,[]) _ = (f, []) -- error ??
+    | otherwise      = foldl (+++) (zeroForm k n) $
+        map (\c -> Form k n $ map (pinchado c) [1..arity omega])
+            (terms omega)
+        {- concatMap (\c -> map (pinchado c) [1..arity omega]) -}
+  where k = max 0 (arity omega - 1)
+        n = dimVec omega
+        pinchado (f,[]) _ = (f, []) -- error ??
         pinchado (f,ds) i = let (ds1,j:ds2) = splitAt (i-1) ds in
                               (expSign i $ mul f (pieIx j v), ds1 ++ ds2)
   {- TODO:  optimise
@@ -182,14 +193,14 @@ contract pieIx omega v
 -- make_lookup  :: (Ring r, EuclideanSpace v, Scalar v ~ r)
 --              => Int -> Int -> [v] -> [[v]] -> Array [r]
 -- make_lookup n k ds vvs
-apply :: (EuclideanSpace v, Ring w, VectorSpace w, Scalar v ~ Scalar w)
+apply :: (EuclideanSpace v, Ring w, Module w, Scalar v ~ Scalar w)
       => [v] -> [v] -> Form w -> w
 apply ds vs (Form k _ cs) = foldl addV addId (map (apply' k ds vs) cs)
 
 -- TODO: remove placeholder
 fromDouble = undefined
 
-apply' :: (EuclideanSpace v, VectorSpace w, Scalar v ~ Scalar w)
+apply' :: (EuclideanSpace v, Module w, Scalar v ~ Scalar w)
        => Int -> [v] -> [v] -> (w,[Int]) -> w
 apply' _ _  _  (p, []) = p
 apply' k ds vs (p, cs) = sclV c p
@@ -207,9 +218,9 @@ refineBasis ds vvs = map (map (fromDouble . M.det)) submatrices
 -- | Run function for 'Form's: given (an appropriate number of) vector arguments
 --   and a 1-form basis (given as a basis-element indexing function 'proj'), it
 --   evaluates the form on those arguments
-refine :: (Ring w, VectorSpace w, VectorSpace v, Scalar v ~ Scalar w)
-       => (Idx -> v -> Scalar w)      -- ^ The definition for the projection function
-                                      --   for the specific vector space
+refine :: (Ring w, Module w, Module v, Scalar v ~ Scalar w)
+       => (Idx -> v -> Scalar w)  -- ^ The definition for the projection function
+                                  --   for the specific vector space
        -> Form w
        -> [v] -> w
 refine pieIx (Form _ _ cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . formify pieIx) cs')
@@ -223,11 +234,11 @@ refine pieIx (Form _ _ cs) vs = {-#SCC "Form.refine" #-} sumV (map (($ vs) . for
 
 -- | Helper function in evaluation: given a 1-form basis, converts a single
 --   'Form' term into an actual function on vectors
-formify :: (Ring w, VectorSpace w, VectorSpace v, Scalar w ~ Scalar v)
+formify :: (Ring w, Module w, Module v, Scalar w ~ Scalar v)
         => (i -> v -> Scalar v) -> (w,[i]) -> [v] -> w
 formify _    (s, [])   _  = s
 formify pieIx (s, i:is) vs
-    | null is   = {-#SCC "Form.formify" #-}sclV (pieIx i (head vs)) s
+    | null is   = {-#SCC "Form.formify"  #-} sclV (pieIx i (head vs)) s
     | otherwise = {-#SCC "Form.formifyR" #-}
         foldl addV addId
               (map (\(w,e) -> sclV
@@ -247,9 +258,20 @@ inner pieIx omega eta
           (flip $ \vs -> add (S.inner (app omega vs) (app eta vs)))
           addId
           (map pick' (permutations n (arity omega)))
-  where pick' is = pick (differences is) (map (unitVector n) [0..n-1])
-        app = refine pieIx
-        n = dimVec omega
+  where pick' is  = pick (differences is) (map (unitVector n) [0..n-1])
+        app       = refine pieIx
+        n         = dimVec omega
+
+trace :: [Int] -> Form w -> Form w
+trace sigma (Form k n ts)
+  | k' < k    = Form k' n []
+  | otherwise = Form k n (map (pairM id restrict') (filter' ts))
+  where filter'   = filter ((is_in_range' sigma) . snd)
+        restrict' = map (\x -> fromJust $ elemIndex x sigma)
+        k' = length sigma
+
+is_in_range' :: [Int] -> [Int] -> Bool
+is_in_range' sigma is = and [elem i sigma | i <- is]
 
 
 -- * Helper functions

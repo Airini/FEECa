@@ -1,4 +1,4 @@
-# FEECa: Finite Element Exterior Calculus in Haskell
+# FEECa: Finite Element Exterior Calculus in Haskell [![Build Status](https://travis-ci.org/Airini/FEECa.svg?branch=master)](https://travis-ci.org/Airini/FEECa)
 
 [FEECa (\['fi:ka\])](https://en.wikipedia.org/wiki/Fika_(Sweden)) is a library
 implementing the mathematical framework that [the theory of finite element
@@ -25,6 +25,85 @@ J. Computer Methods in Applied Mechanics and Engineering. 2009.
 
 [docu]: http://Airini.github.io/FEECa "Online documentation! (in the making)"
 The [FEECa online documentation][docu] is under construction.
+
+
+## Installation
+
+To build and use FEECa, the Haskell compiler [GHC][ghc]
+and [Cabal][cabal] should be installed in your system. Or you could
+use [Stack][stack], which will install the Haskell tools (including
+GHC and Cabal) for you.
+
+Short version (for Ubuntu):
+```shell
+sudo apt-get install libblas-dev liblapack-dev
+sudo apt-get install stack
+stack upgrade
+git clone https://github.com/Airini/FEECa.git
+cd FEECa
+stack build
+```
+
+Details:
+
+The package and dependencies are tested for GHC 8.0 upwards and will
+not build with older versions of the compiler.
+
+If you are new to Haskell or the building environment described, we
+recommend you install the [Haskell Platform][hplatform] which provides
+GHC, Cabal and stack.
+
+LAPACK and BLAS should also be installed. If not so, and you are on a linux
+machine, use `apt-get` (the snippet below will install developer versions of
+both):
+
+```
+sudo apt-get -qq update
+sudo apt-get install -y libblas-dev liblapack-dev
+```
+
+For other systems, we recommend you search for the best way of getting these
+libraries. On OS X, you may install them via Homebrew or Macports.
+
+*Note:* The "new-style" `cabal` commands may be used in place of the old style
+ones in the following snippets.
+
+When these dependencies are ready, FEECa may be built and installed as a Cabal
+package using `cabal` (or stack):
+
+```
+cabal install --only-dependencies
+cabal configure
+cabal install
+```
+
+The first instruction will install all dependencies (alone); the parameter
+`--reorder-goals` might become necessary for some versions of Cabal. If you do
+not install them first, `cabal` will display the missing dependencies and
+the instructions to install them.
+
+
+If you wish to run the test-suite:
+```
+cabal configure --enable-tests
+cabal build
+cabal test
+```
+
+Or:
+```
+make test-feec
+```
+
+
+[ghc]:  https://www.haskell.org/ghc/
+
+[cabal]: https://www.haskell.org/cabal/
+
+[stack]: https://docs.haskellstack.org/en/stable/README/
+
+[hplatform]: https://www.haskell.org/platform/
+
 
 ## The project
 

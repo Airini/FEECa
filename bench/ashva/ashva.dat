@@ -1,0 +1,1169 @@
+benchmarking PrLk basis/(1,0)/1
+time                 6.829 μs   (6.758 μs .. 6.909 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 6.829 μs   (6.780 μs .. 6.902 μs)
+std dev              196.5 ns   (140.7 ns .. 305.4 ns)
+variance introduced by outliers: 34% (moderately inflated)
+
+benchmarking PrLk basis/(1,0)/2
+time                 9.566 μs   (9.507 μs .. 9.634 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 9.567 μs   (9.519 μs .. 9.622 μs)
+std dev              173.2 ns   (143.4 ns .. 211.6 ns)
+variance introduced by outliers: 17% (moderately inflated)
+
+benchmarking PrLk basis/(1,0)/3
+time                 11.46 μs   (11.33 μs .. 11.61 μs)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 11.34 μs   (11.27 μs .. 11.45 μs)
+std dev              281.8 ns   (193.2 ns .. 424.5 ns)
+variance introduced by outliers: 27% (moderately inflated)
+
+benchmarking PrLk basis/(1,0)/4
+time                 12.84 μs   (12.75 μs .. 12.96 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 12.80 μs   (12.73 μs .. 12.89 μs)
+std dev              252.3 ns   (174.0 ns .. 348.9 ns)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking PrLk basis/(1,0)/5
+time                 14.52 μs   (14.43 μs .. 14.64 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 14.56 μs   (14.45 μs .. 14.75 μs)
+std dev              489.4 ns   (277.9 ns .. 770.1 ns)
+variance introduced by outliers: 40% (moderately inflated)
+
+benchmarking PrLk basis/(1,1)/1
+time                 14.11 μs   (14.03 μs .. 14.22 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 14.07 μs   (14.02 μs .. 14.16 μs)
+std dev              223.8 ns   (150.8 ns .. 294.8 ns)
+variance introduced by outliers: 13% (moderately inflated)
+
+benchmarking PrLk basis/(1,1)/2
+time                 26.12 μs   (26.00 μs .. 26.25 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 26.14 μs   (26.02 μs .. 26.37 μs)
+std dev              536.8 ns   (267.4 ns .. 871.4 ns)
+variance introduced by outliers: 18% (moderately inflated)
+
+benchmarking PrLk basis/(1,1)/3
+time                 37.46 μs   (37.27 μs .. 37.69 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 37.45 μs   (37.28 μs .. 37.70 μs)
+std dev              704.0 ns   (497.6 ns .. 966.5 ns)
+variance introduced by outliers: 15% (moderately inflated)
+
+benchmarking PrLk basis/(1,1)/4
+time                 48.74 μs   (48.33 μs .. 49.24 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 48.63 μs   (48.36 μs .. 49.11 μs)
+std dev              1.268 μs   (795.4 ns .. 2.094 μs)
+variance introduced by outliers: 25% (moderately inflated)
+
+benchmarking PrLk basis/(1,1)/5
+time                 59.69 μs   (59.20 μs .. 60.35 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 59.67 μs   (59.37 μs .. 60.20 μs)
+std dev              1.364 μs   (883.6 ns .. 2.188 μs)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking PrLk basis/(2,0)/1
+time                 15.56 μs   (15.41 μs .. 15.73 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 15.64 μs   (15.50 μs .. 15.88 μs)
+std dev              598.8 ns   (378.2 ns .. 950.5 ns)
+variance introduced by outliers: 46% (moderately inflated)
+
+benchmarking PrLk basis/(2,0)/2
+time                 28.70 μs   (28.39 μs .. 29.01 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 28.59 μs   (28.40 μs .. 29.09 μs)
+std dev              945.4 ns   (433.3 ns .. 1.794 μs)
+variance introduced by outliers: 37% (moderately inflated)
+
+benchmarking PrLk basis/(2,0)/3
+time                 43.56 μs   (43.19 μs .. 44.01 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 43.50 μs   (43.27 μs .. 43.91 μs)
+std dev              958.4 ns   (667.2 ns .. 1.312 μs)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking PrLk basis/(2,0)/4
+time                 60.19 μs   (59.73 μs .. 60.78 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 60.19 μs   (59.87 μs .. 60.68 μs)
+std dev              1.321 μs   (911.8 ns .. 1.799 μs)
+variance introduced by outliers: 18% (moderately inflated)
+
+benchmarking PrLk basis/(2,0)/5
+time                 80.02 μs   (79.66 μs .. 80.50 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 80.12 μs   (79.80 μs .. 80.62 μs)
+std dev              1.329 μs   (911.3 ns .. 2.030 μs)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking PrLk basis/(2,1)/1
+time                 48.58 μs   (48.25 μs .. 48.96 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 48.74 μs   (48.41 μs .. 49.28 μs)
+std dev              1.418 μs   (878.2 ns .. 2.281 μs)
+variance introduced by outliers: 29% (moderately inflated)
+
+benchmarking PrLk basis/(2,1)/2
+time                 116.6 μs   (116.2 μs .. 117.2 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 116.5 μs   (116.1 μs .. 117.2 μs)
+std dev              1.665 μs   (999.3 ns .. 2.822 μs)
+
+benchmarking PrLk basis/(2,1)/3
+time                 214.5 μs   (211.7 μs .. 217.4 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 213.0 μs   (211.6 μs .. 215.0 μs)
+std dev              5.657 μs   (4.028 μs .. 8.288 μs)
+variance introduced by outliers: 21% (moderately inflated)
+
+benchmarking PrLk basis/(2,1)/4
+time                 336.0 μs   (333.9 μs .. 338.5 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 334.7 μs   (333.7 μs .. 336.0 μs)
+std dev              3.714 μs   (2.549 μs .. 5.167 μs)
+
+benchmarking PrLk basis/(2,1)/5
+time                 491.5 μs   (486.5 μs .. 496.4 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 488.2 μs   (486.1 μs .. 491.9 μs)
+std dev              9.070 μs   (6.627 μs .. 12.67 μs)
+
+benchmarking PrLk basis/(2,2)/1
+time                 32.41 μs   (32.21 μs .. 32.67 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 32.44 μs   (32.30 μs .. 32.66 μs)
+std dev              597.1 ns   (401.3 ns .. 857.2 ns)
+variance introduced by outliers: 15% (moderately inflated)
+
+benchmarking PrLk basis/(2,2)/2
+time                 88.06 μs   (87.07 μs .. 89.08 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 87.29 μs   (86.94 μs .. 87.92 μs)
+std dev              1.650 μs   (1.219 μs .. 2.223 μs)
+variance introduced by outliers: 13% (moderately inflated)
+
+benchmarking PrLk basis/(2,2)/3
+time                 170.8 μs   (170.0 μs .. 171.7 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 172.0 μs   (170.7 μs .. 174.2 μs)
+std dev              5.567 μs   (2.847 μs .. 8.715 μs)
+variance introduced by outliers: 29% (moderately inflated)
+
+benchmarking PrLk basis/(2,2)/4
+time                 284.1 μs   (281.9 μs .. 286.8 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 283.7 μs   (282.5 μs .. 285.6 μs)
+std dev              4.908 μs   (3.635 μs .. 6.923 μs)
+
+benchmarking PrLk basis/(2,2)/5
+time                 428.8 μs   (426.7 μs .. 431.3 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 428.3 μs   (427.0 μs .. 431.7 μs)
+std dev              6.554 μs   (3.896 μs .. 11.37 μs)
+
+benchmarking PrLk basis/(3,0)/1
+time                 35.37 μs   (35.16 μs .. 35.59 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 35.40 μs   (35.26 μs .. 35.62 μs)
+std dev              593.1 ns   (444.8 ns .. 916.0 ns)
+variance introduced by outliers: 12% (moderately inflated)
+
+benchmarking PrLk basis/(3,0)/2
+time                 81.40 μs   (80.72 μs .. 82.16 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 81.82 μs   (81.17 μs .. 82.81 μs)
+std dev              2.629 μs   (1.812 μs .. 4.139 μs)
+variance introduced by outliers: 32% (moderately inflated)
+
+benchmarking PrLk basis/(3,0)/3
+time                 152.5 μs   (151.2 μs .. 153.9 μs)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 153.4 μs   (152.2 μs .. 155.5 μs)
+std dev              5.608 μs   (4.007 μs .. 8.320 μs)
+variance introduced by outliers: 35% (moderately inflated)
+
+benchmarking PrLk basis/(3,0)/4
+time                 257.1 μs   (255.2 μs .. 259.0 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 257.3 μs   (255.5 μs .. 260.5 μs)
+std dev              8.032 μs   (4.903 μs .. 14.58 μs)
+variance introduced by outliers: 26% (moderately inflated)
+
+benchmarking PrLk basis/(3,0)/5
+time                 401.3 μs   (399.2 μs .. 404.4 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 402.8 μs   (400.5 μs .. 406.5 μs)
+std dev              10.17 μs   (7.448 μs .. 13.25 μs)
+variance introduced by outliers: 17% (moderately inflated)
+
+benchmarking PrLk basis/(3,1)/1
+time                 124.8 μs   (124.1 μs .. 125.8 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 125.7 μs   (124.8 μs .. 127.6 μs)
+std dev              4.264 μs   (2.067 μs .. 7.648 μs)
+variance introduced by outliers: 33% (moderately inflated)
+
+benchmarking PrLk basis/(3,1)/2
+time                 376.3 μs   (373.8 μs .. 378.9 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 375.8 μs   (374.0 μs .. 379.4 μs)
+std dev              8.266 μs   (4.685 μs .. 12.79 μs)
+variance introduced by outliers: 14% (moderately inflated)
+
+benchmarking PrLk basis/(3,1)/3
+time                 848.9 μs   (842.4 μs .. 856.8 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 845.8 μs   (842.6 μs .. 850.5 μs)
+std dev              12.86 μs   (8.801 μs .. 17.73 μs)
+
+benchmarking PrLk basis/(3,1)/4
+time                 1.635 ms   (1.623 ms .. 1.651 ms)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 1.643 ms   (1.632 ms .. 1.658 ms)
+std dev              42.63 μs   (30.66 μs .. 58.31 μs)
+variance introduced by outliers: 14% (moderately inflated)
+
+benchmarking PrLk basis/(3,1)/5
+time                 2.746 ms   (2.731 ms .. 2.765 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 2.760 ms   (2.747 ms .. 2.785 ms)
+std dev              59.15 μs   (35.87 μs .. 96.54 μs)
+
+benchmarking PrLk basis/(3,2)/1
+time                 153.7 μs   (152.5 μs .. 154.9 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 153.1 μs   (152.4 μs .. 154.2 μs)
+std dev              2.657 μs   (1.762 μs .. 3.772 μs)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking PrLk basis/(3,2)/2
+time                 504.8 μs   (502.7 μs .. 508.4 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 506.9 μs   (504.3 μs .. 511.4 μs)
+std dev              11.90 μs   (7.968 μs .. 18.57 μs)
+variance introduced by outliers: 15% (moderately inflated)
+
+benchmarking PrLk basis/(3,2)/3
+time                 1.221 ms   (1.213 ms .. 1.231 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 1.221 ms   (1.216 ms .. 1.234 ms)
+std dev              26.38 μs   (16.49 μs .. 40.41 μs)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking PrLk basis/(3,2)/4
+time                 2.475 ms   (2.463 ms .. 2.493 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 2.463 ms   (2.460 ms .. 2.470 ms)
+std dev              14.31 μs   (8.334 μs .. 26.57 μs)
+
+benchmarking PrLk basis/(3,2)/5
+time                 4.462 ms   (4.431 ms .. 4.492 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 4.470 ms   (4.453 ms .. 4.495 ms)
+std dev              68.10 μs   (51.06 μs .. 88.37 μs)
+
+benchmarking PrLk basis/(3,3)/1
+time                 61.22 μs   (60.70 μs .. 61.66 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 60.87 μs   (60.62 μs .. 61.25 μs)
+std dev              1.042 μs   (809.9 ns .. 1.381 μs)
+variance introduced by outliers: 12% (moderately inflated)
+
+benchmarking PrLk basis/(3,3)/2
+time                 210.7 μs   (209.2 μs .. 212.2 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 210.0 μs   (209.3 μs .. 211.5 μs)
+std dev              3.309 μs   (2.267 μs .. 5.095 μs)
+
+benchmarking PrLk basis/(3,3)/3
+time                 527.0 μs   (524.9 μs .. 529.8 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 530.9 μs   (527.6 μs .. 536.5 μs)
+std dev              13.51 μs   (8.419 μs .. 20.70 μs)
+variance introduced by outliers: 17% (moderately inflated)
+
+benchmarking PrLk basis/(3,3)/4
+time                 1.117 ms   (1.104 ms .. 1.132 ms)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 1.112 ms   (1.105 ms .. 1.124 ms)
+std dev              28.69 μs   (18.31 μs .. 47.93 μs)
+variance introduced by outliers: 15% (moderately inflated)
+
+benchmarking PrLk basis/(3,3)/5
+time                 2.039 ms   (2.028 ms .. 2.052 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 2.042 ms   (2.032 ms .. 2.061 ms)
+std dev              43.46 μs   (28.88 μs .. 68.14 μs)
+
+benchmarking PrLk evaluate/(1,0)/1
+time                 88.34 μs   (87.83 μs .. 88.93 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 87.83 μs   (87.56 μs .. 88.33 μs)
+std dev              1.154 μs   (769.6 ns .. 1.829 μs)
+
+benchmarking PrLk evaluate/(1,0)/2
+time                 140.8 μs   (140.1 μs .. 141.8 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 140.9 μs   (140.2 μs .. 142.2 μs)
+std dev              2.833 μs   (1.601 μs .. 4.912 μs)
+variance introduced by outliers: 14% (moderately inflated)
+
+benchmarking PrLk evaluate/(1,0)/3
+time                 198.6 μs   (197.4 μs .. 200.3 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 198.6 μs   (197.6 μs .. 200.5 μs)
+std dev              4.560 μs   (2.874 μs .. 6.572 μs)
+variance introduced by outliers: 17% (moderately inflated)
+
+benchmarking PrLk evaluate/(1,0)/4
+time                 254.9 μs   (253.4 μs .. 256.9 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 255.3 μs   (254.3 μs .. 257.8 μs)
+std dev              4.964 μs   (1.943 μs .. 9.399 μs)
+variance introduced by outliers: 13% (moderately inflated)
+
+benchmarking PrLk evaluate/(1,0)/5
+time                 317.5 μs   (316.2 μs .. 319.0 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 319.7 μs   (317.7 μs .. 322.6 μs)
+std dev              8.087 μs   (5.170 μs .. 12.25 μs)
+variance introduced by outliers: 18% (moderately inflated)
+
+benchmarking PrLk evaluate/(1,1)/1
+time                 117.6 μs   (117.0 μs .. 118.3 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 117.6 μs   (117.1 μs .. 118.7 μs)
+std dev              2.400 μs   (1.309 μs .. 4.368 μs)
+variance introduced by outliers: 15% (moderately inflated)
+
+benchmarking PrLk evaluate/(1,1)/2
+time                 210.9 μs   (210.0 μs .. 212.1 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 211.1 μs   (210.3 μs .. 213.1 μs)
+std dev              3.871 μs   (1.924 μs .. 7.149 μs)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking PrLk evaluate/(1,1)/3
+time                 315.8 μs   (314.2 μs .. 317.8 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 315.2 μs   (314.3 μs .. 316.4 μs)
+std dev              3.430 μs   (2.622 μs .. 4.368 μs)
+
+benchmarking PrLk evaluate/(1,1)/4
+time                 418.7 μs   (416.8 μs .. 421.4 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 417.6 μs   (416.4 μs .. 419.4 μs)
+std dev              4.947 μs   (3.434 μs .. 7.619 μs)
+
+benchmarking PrLk evaluate/(1,1)/5
+time                 533.2 μs   (530.1 μs .. 537.0 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 532.7 μs   (531.1 μs .. 535.5 μs)
+std dev              7.028 μs   (4.123 μs .. 12.23 μs)
+
+benchmarking PrLk evaluate/(2,0)/1
+time                 145.8 μs   (144.4 μs .. 147.2 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 144.9 μs   (144.5 μs .. 145.7 μs)
+std dev              1.935 μs   (1.158 μs .. 2.798 μs)
+
+benchmarking PrLk evaluate/(2,0)/2
+time                 309.2 μs   (308.0 μs .. 311.0 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 310.5 μs   (308.9 μs .. 313.1 μs)
+std dev              6.767 μs   (4.677 μs .. 9.762 μs)
+variance introduced by outliers: 14% (moderately inflated)
+
+benchmarking PrLk evaluate/(2,0)/3
+time                 543.6 μs   (540.2 μs .. 547.4 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 542.7 μs   (540.3 μs .. 546.6 μs)
+std dev              10.43 μs   (6.131 μs .. 15.51 μs)
+variance introduced by outliers: 10% (moderately inflated)
+
+benchmarking PrLk evaluate/(2,0)/4
+time                 853.4 μs   (847.6 μs .. 860.1 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 848.6 μs   (845.1 μs .. 854.0 μs)
+std dev              14.31 μs   (10.57 μs .. 18.94 μs)
+
+benchmarking PrLk evaluate/(2,0)/5
+time                 1.224 ms   (1.219 ms .. 1.231 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.225 ms   (1.222 ms .. 1.230 ms)
+std dev              13.35 μs   (9.002 μs .. 18.63 μs)
+
+benchmarking PrLk evaluate/(2,1)/1
+time                 431.4 μs   (429.5 μs .. 434.1 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 433.0 μs   (430.5 μs .. 441.5 μs)
+std dev              12.68 μs   (3.205 μs .. 23.73 μs)
+variance introduced by outliers: 22% (moderately inflated)
+
+benchmarking PrLk evaluate/(2,1)/2
+time                 1.004 ms   (998.3 μs .. 1.012 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 1.009 ms   (1.005 ms .. 1.017 ms)
+std dev              20.54 μs   (14.84 μs .. 29.71 μs)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking PrLk evaluate/(2,1)/3
+time                 1.907 ms   (1.901 ms .. 1.914 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 1.927 ms   (1.916 ms .. 1.948 ms)
+std dev              50.79 μs   (31.95 μs .. 82.56 μs)
+variance introduced by outliers: 13% (moderately inflated)
+
+benchmarking PrLk evaluate/(2,1)/4
+time                 3.218 ms   (3.194 ms .. 3.242 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 3.220 ms   (3.200 ms .. 3.247 ms)
+std dev              74.48 μs   (52.11 μs .. 105.5 μs)
+
+benchmarking PrLk evaluate/(2,1)/5
+time                 4.855 ms   (4.822 ms .. 4.905 ms)
+                     0.999 R²   (0.996 R² .. 1.000 R²)
+mean                 4.868 ms   (4.842 ms .. 4.935 ms)
+std dev              115.7 μs   (60.04 μs .. 221.7 μs)
+
+benchmarking PrLk evaluate/(2,2)/1
+time                 205.8 μs   (204.5 μs .. 207.5 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 206.9 μs   (205.5 μs .. 209.0 μs)
+std dev              5.787 μs   (4.343 μs .. 7.792 μs)
+variance introduced by outliers: 22% (moderately inflated)
+
+benchmarking PrLk evaluate/(2,2)/2
+time                 527.4 μs   (522.0 μs .. 533.6 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 526.0 μs   (522.6 μs .. 530.3 μs)
+std dev              12.92 μs   (9.438 μs .. 18.78 μs)
+variance introduced by outliers: 16% (moderately inflated)
+
+benchmarking PrLk evaluate/(2,2)/3
+time                 1.101 ms   (1.093 ms .. 1.113 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 1.098 ms   (1.092 ms .. 1.105 ms)
+std dev              22.40 μs   (17.40 μs .. 28.99 μs)
+
+benchmarking PrLk evaluate/(2,2)/4
+time                 1.946 ms   (1.937 ms .. 1.956 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.937 ms   (1.934 ms .. 1.942 ms)
+std dev              11.79 μs   (7.381 μs .. 22.36 μs)
+
+benchmarking PrLk evaluate/(2,2)/5
+time                 3.154 ms   (3.099 ms .. 3.252 ms)
+                     0.995 R²   (0.987 R² .. 1.000 R²)
+mean                 3.128 ms   (3.101 ms .. 3.193 ms)
+std dev              118.3 μs   (64.13 μs .. 228.3 μs)
+variance introduced by outliers: 21% (moderately inflated)
+
+benchmarking PrLk evaluate/(3,0)/1
+time                 208.5 μs   (207.1 μs .. 209.9 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 210.1 μs   (208.0 μs .. 214.1 μs)
+std dev              9.345 μs   (4.753 μs .. 15.74 μs)
+variance introduced by outliers: 43% (moderately inflated)
+
+benchmarking PrLk evaluate/(3,0)/2
+time                 580.3 μs   (557.2 μs .. 616.3 μs)
+                     0.980 R²   (0.960 R² .. 0.999 R²)
+mean                 570.1 μs   (559.5 μs .. 594.5 μs)
+std dev              51.24 μs   (28.84 μs .. 88.53 μs)
+variance introduced by outliers: 72% (severely inflated)
+
+benchmarking PrLk evaluate/(3,0)/3
+time                 1.170 ms   (1.161 ms .. 1.180 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 1.166 ms   (1.160 ms .. 1.179 ms)
+std dev              28.39 μs   (16.03 μs .. 54.60 μs)
+variance introduced by outliers: 14% (moderately inflated)
+
+benchmarking PrLk evaluate/(3,0)/4
+time                 2.131 ms   (2.103 ms .. 2.158 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 2.110 ms   (2.102 ms .. 2.122 ms)
+std dev              34.14 μs   (25.28 μs .. 43.00 μs)
+
+benchmarking PrLk evaluate/(3,0)/5
+time                 3.501 ms   (3.483 ms .. 3.521 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 3.491 ms   (3.481 ms .. 3.507 ms)
+std dev              39.36 μs   (25.12 μs .. 57.36 μs)
+
+benchmarking PrLk evaluate/(3,1)/1
+time                 993.5 μs   (986.4 μs .. 1.002 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 996.6 μs   (990.6 μs .. 1.008 ms)
+std dev              26.93 μs   (16.42 μs .. 39.22 μs)
+variance introduced by outliers: 16% (moderately inflated)
+
+benchmarking PrLk evaluate/(3,1)/2
+time                 2.855 ms   (2.832 ms .. 2.874 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 2.839 ms   (2.828 ms .. 2.854 ms)
+std dev              42.96 μs   (31.21 μs .. 55.79 μs)
+
+benchmarking PrLk evaluate/(3,1)/3
+time                 6.543 ms   (6.492 ms .. 6.601 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 6.611 ms   (6.574 ms .. 6.660 ms)
+std dev              134.6 μs   (93.55 μs .. 209.1 μs)
+
+benchmarking PrLk evaluate/(3,1)/4
+time                 13.02 ms   (12.92 ms .. 13.10 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 13.07 ms   (13.00 ms .. 13.19 ms)
+std dev              235.4 μs   (138.6 μs .. 353.4 μs)
+
+benchmarking PrLk evaluate/(3,1)/5
+time                 23.13 ms   (23.00 ms .. 23.25 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 23.10 ms   (23.01 ms .. 23.21 ms)
+std dev              232.4 μs   (155.8 μs .. 333.0 μs)
+
+benchmarking PrLk evaluate/(3,2)/1
+time                 1.109 ms   (1.103 ms .. 1.115 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 1.115 ms   (1.109 ms .. 1.127 ms)
+std dev              27.82 μs   (13.36 μs .. 45.91 μs)
+variance introduced by outliers: 14% (moderately inflated)
+
+benchmarking PrLk evaluate/(3,2)/2
+time                 3.514 ms   (3.474 ms .. 3.552 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 3.497 ms   (3.484 ms .. 3.520 ms)
+std dev              59.26 μs   (41.62 μs .. 83.81 μs)
+
+benchmarking PrLk evaluate/(3,2)/3
+time                 9.016 ms   (8.956 ms .. 9.088 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 9.064 ms   (9.028 ms .. 9.165 ms)
+std dev              148.4 μs   (55.51 μs .. 311.0 μs)
+
+benchmarking PrLk evaluate/(3,2)/4
+time                 20.43 ms   (20.24 ms .. 20.67 ms)
+                     0.999 R²   (0.998 R² .. 1.000 R²)
+mean                 20.48 ms   (20.37 ms .. 20.62 ms)
+std dev              289.1 μs   (225.7 μs .. 422.6 μs)
+
+benchmarking PrLk evaluate/(3,2)/5
+time                 40.22 ms   (39.95 ms .. 40.59 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 40.10 ms   (39.93 ms .. 40.35 ms)
+std dev              386.5 μs   (281.3 μs .. 528.8 μs)
+
+benchmarking PrLk evaluate/(3,3)/1
+time                 301.8 μs   (299.1 μs .. 304.3 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 301.2 μs   (299.7 μs .. 303.4 μs)
+std dev              6.081 μs   (4.407 μs .. 8.721 μs)
+variance introduced by outliers: 13% (moderately inflated)
+
+benchmarking PrLk evaluate/(3,3)/2
+time                 996.1 μs   (992.8 μs .. 1000.0 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 994.4 μs   (993.1 μs .. 996.4 μs)
+std dev              5.452 μs   (3.949 μs .. 7.820 μs)
+
+benchmarking PrLk evaluate/(3,3)/3
+time                 2.799 ms   (2.773 ms .. 2.830 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 2.789 ms   (2.775 ms .. 2.812 ms)
+std dev              60.91 μs   (38.86 μs .. 95.46 μs)
+
+benchmarking PrLk evaluate/(3,3)/4
+time                 6.879 ms   (6.779 ms .. 6.985 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 6.775 ms   (6.749 ms .. 6.823 ms)
+std dev              98.73 μs   (64.75 μs .. 137.4 μs)
+
+benchmarking PrLk evaluate/(3,3)/5
+time                 14.15 ms   (14.11 ms .. 14.17 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 14.17 ms   (14.14 ms .. 14.21 ms)
+std dev              87.20 μs   (50.72 μs .. 146.0 μs)
+
+benchmarking PrmLk basis/(1,0)/1
+time                 10.70 μs   (10.66 μs .. 10.75 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 10.76 μs   (10.70 μs .. 10.87 μs)
+std dev              279.1 ns   (175.7 ns .. 443.4 ns)
+variance introduced by outliers: 29% (moderately inflated)
+
+benchmarking PrmLk basis/(1,0)/2
+time                 20.72 μs   (20.57 μs .. 20.86 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 20.62 μs   (20.55 μs .. 20.72 μs)
+std dev              289.7 ns   (210.2 ns .. 388.6 ns)
+
+benchmarking PrmLk basis/(1,0)/3
+time                 27.12 μs   (26.76 μs .. 27.44 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 26.91 μs   (26.75 μs .. 27.13 μs)
+std dev              596.3 ns   (437.2 ns .. 767.8 ns)
+variance introduced by outliers: 21% (moderately inflated)
+
+benchmarking PrmLk basis/(1,0)/4
+time                 32.13 μs   (31.90 μs .. 32.40 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 32.24 μs   (32.01 μs .. 32.55 μs)
+std dev              932.5 ns   (605.5 ns .. 1.301 μs)
+variance introduced by outliers: 30% (moderately inflated)
+
+benchmarking PrmLk basis/(1,0)/5
+time                 37.61 μs   (37.43 μs .. 37.82 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 37.72 μs   (37.49 μs .. 38.06 μs)
+std dev              917.0 ns   (677.0 ns .. 1.143 μs)
+variance introduced by outliers: 23% (moderately inflated)
+
+benchmarking PrmLk basis/(1,1)/1
+time                 6.965 μs   (6.918 μs .. 7.034 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 6.972 μs   (6.940 μs .. 7.031 μs)
+std dev              141.8 ns   (81.87 ns .. 220.8 ns)
+variance introduced by outliers: 21% (moderately inflated)
+
+benchmarking PrmLk basis/(1,1)/2
+time                 13.02 μs   (12.92 μs .. 13.13 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 12.97 μs   (12.91 μs .. 13.08 μs)
+std dev              267.6 ns   (184.9 ns .. 376.2 ns)
+variance introduced by outliers: 20% (moderately inflated)
+
+benchmarking PrmLk basis/(1,1)/3
+time                 17.73 μs   (17.62 μs .. 17.88 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 17.71 μs   (17.65 μs .. 17.82 μs)
+std dev              267.8 ns   (164.9 ns .. 390.9 ns)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking PrmLk basis/(1,1)/4
+time                 22.45 μs   (22.31 μs .. 22.60 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 22.44 μs   (22.31 μs .. 22.68 μs)
+std dev              625.2 ns   (379.5 ns .. 1.046 μs)
+variance introduced by outliers: 30% (moderately inflated)
+
+benchmarking PrmLk basis/(1,1)/5
+time                 27.28 μs   (27.06 μs .. 27.51 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 27.22 μs   (27.03 μs .. 27.58 μs)
+std dev              859.0 ns   (566.5 ns .. 1.561 μs)
+variance introduced by outliers: 35% (moderately inflated)
+
+benchmarking PrmLk basis/(2,0)/1
+time                 22.96 μs   (22.80 μs .. 23.17 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 22.94 μs   (22.81 μs .. 23.16 μs)
+std dev              555.1 ns   (377.9 ns .. 771.7 ns)
+variance introduced by outliers: 24% (moderately inflated)
+
+benchmarking PrmLk basis/(2,0)/2
+time                 64.97 μs   (64.41 μs .. 65.55 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 65.02 μs   (64.55 μs .. 65.96 μs)
+std dev              2.066 μs   (1.275 μs .. 3.695 μs)
+variance introduced by outliers: 32% (moderately inflated)
+
+benchmarking PrmLk basis/(2,0)/3
+time                 117.4 μs   (116.7 μs .. 118.1 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 117.6 μs   (116.9 μs .. 118.8 μs)
+std dev              3.077 μs   (1.816 μs .. 5.106 μs)
+variance introduced by outliers: 23% (moderately inflated)
+
+benchmarking PrmLk basis/(2,0)/4
+time                 182.9 μs   (181.8 μs .. 184.0 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 182.2 μs   (181.3 μs .. 183.8 μs)
+std dev              3.789 μs   (1.787 μs .. 6.685 μs)
+variance introduced by outliers: 14% (moderately inflated)
+
+benchmarking PrmLk basis/(2,0)/5
+time                 259.6 μs   (257.8 μs .. 262.3 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 260.3 μs   (258.8 μs .. 262.7 μs)
+std dev              6.471 μs   (4.399 μs .. 9.928 μs)
+variance introduced by outliers: 18% (moderately inflated)
+
+benchmarking PrmLk basis/(2,1)/1
+time                 29.48 μs   (29.17 μs .. 29.86 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 29.55 μs   (29.33 μs .. 29.85 μs)
+std dev              857.8 ns   (655.3 ns .. 1.112 μs)
+variance introduced by outliers: 30% (moderately inflated)
+
+benchmarking PrmLk basis/(2,1)/2
+time                 76.18 μs   (75.74 μs .. 76.66 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 76.22 μs   (75.82 μs .. 77.10 μs)
+std dev              1.874 μs   (958.2 ns .. 3.421 μs)
+variance introduced by outliers: 22% (moderately inflated)
+
+benchmarking PrmLk basis/(2,1)/3
+time                 135.8 μs   (135.0 μs .. 136.8 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 136.0 μs   (135.2 μs .. 137.8 μs)
+std dev              3.740 μs   (1.602 μs .. 7.095 μs)
+variance introduced by outliers: 23% (moderately inflated)
+
+benchmarking PrmLk basis/(2,1)/4
+time                 212.7 μs   (211.2 μs .. 214.2 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 212.2 μs   (211.2 μs .. 213.9 μs)
+std dev              4.340 μs   (3.096 μs .. 6.399 μs)
+variance introduced by outliers: 14% (moderately inflated)
+
+benchmarking PrmLk basis/(2,1)/5
+time                 302.8 μs   (301.2 μs .. 305.2 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 304.3 μs   (302.4 μs .. 307.7 μs)
+std dev              8.419 μs   (5.034 μs .. 13.26 μs)
+variance introduced by outliers: 21% (moderately inflated)
+
+benchmarking PrmLk basis/(2,2)/1
+time                 10.05 μs   (10.02 μs .. 10.10 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 10.12 μs   (10.05 μs .. 10.41 μs)
+std dev              382.2 ns   (127.5 ns .. 821.2 ns)
+variance introduced by outliers: 46% (moderately inflated)
+
+benchmarking PrmLk basis/(2,2)/2
+time                 26.75 μs   (26.55 μs .. 26.98 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 26.61 μs   (26.50 μs .. 26.77 μs)
+std dev              428.7 ns   (293.6 ns .. 573.2 ns)
+variance introduced by outliers: 12% (moderately inflated)
+
+benchmarking PrmLk basis/(2,2)/3
+time                 50.07 μs   (49.69 μs .. 50.45 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 50.34 μs   (49.97 μs .. 51.00 μs)
+std dev              1.631 μs   (1.116 μs .. 2.302 μs)
+variance introduced by outliers: 34% (moderately inflated)
+
+benchmarking PrmLk basis/(2,2)/4
+time                 79.94 μs   (79.40 μs .. 80.65 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 79.86 μs   (79.47 μs .. 80.68 μs)
+std dev              1.819 μs   (1.040 μs .. 2.992 μs)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking PrmLk basis/(2,2)/5
+time                 116.9 μs   (116.2 μs .. 117.8 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 116.8 μs   (116.2 μs .. 118.2 μs)
+std dev              2.607 μs   (1.287 μs .. 4.837 μs)
+variance introduced by outliers: 17% (moderately inflated)
+
+benchmarking PrmLk basis/(3,0)/1
+time                 47.77 μs   (47.06 μs .. 48.81 μs)
+                     0.995 R²   (0.989 R² .. 1.000 R²)
+mean                 47.89 μs   (47.29 μs .. 49.36 μs)
+std dev              2.946 μs   (1.563 μs .. 5.316 μs)
+variance introduced by outliers: 65% (severely inflated)
+
+benchmarking PrmLk basis/(3,0)/2
+time                 169.1 μs   (168.5 μs .. 170.1 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 169.9 μs   (169.0 μs .. 172.0 μs)
+std dev              4.189 μs   (1.695 μs .. 8.567 μs)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking PrmLk basis/(3,0)/3
+time                 424.3 μs   (421.3 μs .. 427.6 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 423.7 μs   (421.5 μs .. 428.0 μs)
+std dev              9.789 μs   (6.454 μs .. 14.99 μs)
+variance introduced by outliers: 15% (moderately inflated)
+
+benchmarking PrmLk basis/(3,0)/4
+time                 829.5 μs   (825.3 μs .. 835.6 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 831.0 μs   (827.9 μs .. 837.8 μs)
+std dev              15.06 μs   (8.248 μs .. 29.34 μs)
+
+benchmarking PrmLk basis/(3,0)/5
+time                 1.475 ms   (1.466 ms .. 1.485 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 1.480 ms   (1.473 ms .. 1.495 ms)
+std dev              29.71 μs   (16.44 μs .. 54.96 μs)
+
+benchmarking PrmLk basis/(3,1)/1
+time                 82.11 μs   (81.62 μs .. 82.67 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 81.85 μs   (81.54 μs .. 82.29 μs)
+std dev              1.199 μs   (824.5 ns .. 1.761 μs)
+
+benchmarking PrmLk basis/(3,1)/2
+time                 281.6 μs   (279.5 μs .. 283.9 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 281.3 μs   (279.9 μs .. 283.9 μs)
+std dev              6.299 μs   (4.248 μs .. 10.02 μs)
+variance introduced by outliers: 15% (moderately inflated)
+
+benchmarking PrmLk basis/(3,1)/3
+time                 687.5 μs   (683.4 μs .. 691.7 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 684.1 μs   (681.8 μs .. 687.8 μs)
+std dev              9.431 μs   (6.506 μs .. 14.02 μs)
+
+benchmarking PrmLk basis/(3,1)/4
+time                 1.438 ms   (1.428 ms .. 1.449 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 1.430 ms   (1.427 ms .. 1.437 ms)
+std dev              15.86 μs   (10.14 μs .. 22.85 μs)
+
+benchmarking PrmLk basis/(3,1)/5
+time                 2.449 ms   (2.430 ms .. 2.473 ms)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 2.471 ms   (2.453 ms .. 2.505 ms)
+std dev              83.45 μs   (48.60 μs .. 141.8 μs)
+variance introduced by outliers: 18% (moderately inflated)
+
+benchmarking PrmLk basis/(3,2)/1
+time                 57.72 μs   (57.44 μs .. 58.03 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 58.32 μs   (57.80 μs .. 59.25 μs)
+std dev              2.205 μs   (1.409 μs .. 3.249 μs)
+variance introduced by outliers: 40% (moderately inflated)
+
+benchmarking PrmLk basis/(3,2)/2
+time                 191.6 μs   (190.9 μs .. 192.4 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 191.8 μs   (191.1 μs .. 193.2 μs)
+std dev              3.335 μs   (1.899 μs .. 5.254 μs)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking PrmLk basis/(3,2)/3
+time                 449.6 μs   (448.3 μs .. 451.4 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 451.7 μs   (449.6 μs .. 462.7 μs)
+std dev              11.97 μs   (3.345 μs .. 28.08 μs)
+variance introduced by outliers: 19% (moderately inflated)
+
+benchmarking PrmLk basis/(3,2)/4
+time                 949.7 μs   (946.2 μs .. 954.8 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 947.2 μs   (945.7 μs .. 948.8 μs)
+std dev              5.028 μs   (3.440 μs .. 8.548 μs)
+
+benchmarking PrmLk basis/(3,2)/5
+time                 1.630 ms   (1.627 ms .. 1.634 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.630 ms   (1.627 ms .. 1.633 ms)
+std dev              9.339 μs   (6.915 μs .. 13.48 μs)
+
+benchmarking PrmLk basis/(3,3)/1
+time                 13.20 μs   (13.19 μs .. 13.21 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 13.19 μs   (13.18 μs .. 13.20 μs)
+std dev              19.93 ns   (16.15 ns .. 27.64 ns)
+
+benchmarking PrmLk basis/(3,3)/2
+time                 46.59 μs   (46.58 μs .. 46.60 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 46.60 μs   (46.59 μs .. 46.62 μs)
+std dev              37.94 ns   (26.20 ns .. 58.82 ns)
+
+benchmarking PrmLk basis/(3,3)/3
+time                 110.2 μs   (110.2 μs .. 110.3 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 110.2 μs   (110.2 μs .. 110.3 μs)
+std dev              83.18 ns   (67.00 ns .. 106.5 ns)
+
+benchmarking PrmLk basis/(3,3)/4
+time                 217.2 μs   (217.0 μs .. 217.6 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 217.1 μs   (216.8 μs .. 218.0 μs)
+std dev              1.261 μs   (149.7 ns .. 2.887 μs)
+
+benchmarking PrmLk basis/(3,3)/5
+time                 375.3 μs   (374.6 μs .. 376.4 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 374.9 μs   (374.5 μs .. 375.9 μs)
+std dev              1.820 μs   (864.0 ns .. 3.442 μs)
+
+benchmarking PrmLk evaluate/(1,0)/1
+time                 87.33 μs   (87.22 μs .. 87.52 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 87.38 μs   (87.29 μs .. 87.66 μs)
+std dev              504.8 ns   (95.10 ns .. 1.056 μs)
+
+benchmarking PrmLk evaluate/(1,0)/2
+time                 139.6 μs   (139.3 μs .. 140.1 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 139.6 μs   (139.3 μs .. 140.5 μs)
+std dev              1.549 μs   (158.7 ns .. 3.087 μs)
+
+benchmarking PrmLk evaluate/(1,0)/3
+time                 196.7 μs   (196.3 μs .. 197.2 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 196.7 μs   (196.6 μs .. 196.9 μs)
+std dev              529.3 ns   (302.7 ns .. 817.4 ns)
+
+benchmarking PrmLk evaluate/(1,0)/4
+time                 254.4 μs   (253.4 μs .. 256.1 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 254.3 μs   (253.8 μs .. 255.2 μs)
+std dev              2.201 μs   (1.231 μs .. 3.395 μs)
+
+benchmarking PrmLk evaluate/(1,0)/5
+time                 315.7 μs   (315.5 μs .. 316.1 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 316.5 μs   (316.1 μs .. 317.8 μs)
+std dev              2.061 μs   (509.7 ns .. 4.256 μs)
+
+benchmarking PrmLk evaluate/(1,1)/1
+time                 82.26 μs   (82.24 μs .. 82.29 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 82.26 μs   (82.24 μs .. 82.30 μs)
+std dev              96.61 ns   (72.25 ns .. 132.7 ns)
+
+benchmarking PrmLk evaluate/(1,1)/2
+time                 177.3 μs   (177.2 μs .. 177.5 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 177.2 μs   (177.2 μs .. 177.4 μs)
+std dev              298.5 ns   (152.3 ns .. 553.2 ns)
+
+benchmarking PrmLk evaluate/(1,1)/3
+time                 279.7 μs   (279.5 μs .. 279.9 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 279.5 μs   (279.4 μs .. 279.6 μs)
+std dev              393.8 ns   (269.8 ns .. 597.5 ns)
+
+benchmarking PrmLk evaluate/(1,1)/4
+time                 386.7 μs   (386.7 μs .. 386.8 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 386.8 μs   (386.7 μs .. 386.8 μs)
+std dev              279.7 ns   (220.1 ns .. 365.8 ns)
+
+benchmarking PrmLk evaluate/(1,1)/5
+time                 498.1 μs   (497.6 μs .. 498.6 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 498.1 μs   (498.0 μs .. 498.3 μs)
+std dev              382.9 ns   (258.0 ns .. 639.8 ns)
+
+benchmarking PrmLk evaluate/(2,0)/1
+time                 144.4 μs   (144.2 μs .. 144.8 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 144.2 μs   (144.1 μs .. 144.4 μs)
+std dev              462.9 ns   (178.6 ns .. 923.3 ns)
+
+benchmarking PrmLk evaluate/(2,0)/2
+time                 307.2 μs   (306.7 μs .. 308.1 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 307.9 μs   (307.0 μs .. 309.8 μs)
+std dev              4.237 μs   (1.158 μs .. 8.080 μs)
+
+benchmarking PrmLk evaluate/(2,0)/3
+time                 538.3 μs   (538.0 μs .. 538.7 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 538.1 μs   (537.9 μs .. 538.5 μs)
+std dev              851.8 ns   (505.5 ns .. 1.624 μs)
+
+benchmarking PrmLk evaluate/(2,0)/4
+time                 839.0 μs   (837.7 μs .. 840.1 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 842.0 μs   (839.6 μs .. 848.3 μs)
+std dev              12.12 μs   (2.005 μs .. 20.90 μs)
+
+benchmarking PrmLk evaluate/(2,0)/5
+time                 1.220 ms   (1.218 ms .. 1.224 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.218 ms   (1.218 ms .. 1.219 ms)
+std dev              2.406 μs   (1.153 μs .. 4.251 μs)
+
+benchmarking PrmLk evaluate/(2,1)/1
+time                 312.2 μs   (312.1 μs .. 312.3 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 312.2 μs   (312.1 μs .. 312.2 μs)
+std dev              216.1 ns   (166.5 ns .. 308.5 ns)
+
+benchmarking PrmLk evaluate/(2,1)/2
+time                 879.3 μs   (878.5 μs .. 880.3 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 879.2 μs   (878.8 μs .. 880.2 μs)
+std dev              2.069 μs   (1.109 μs .. 3.704 μs)
+
+benchmarking PrmLk evaluate/(2,1)/3
+time                 1.732 ms   (1.729 ms .. 1.738 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.731 ms   (1.730 ms .. 1.733 ms)
+std dev              3.779 μs   (1.491 μs .. 7.736 μs)
+
+benchmarking PrmLk evaluate/(2,1)/4
+time                 2.855 ms   (2.853 ms .. 2.858 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 2.854 ms   (2.853 ms .. 2.856 ms)
+std dev              4.907 μs   (2.774 μs .. 8.137 μs)
+
+benchmarking PrmLk evaluate/(2,1)/5
+time                 4.281 ms   (4.280 ms .. 4.282 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 4.280 ms   (4.279 ms .. 4.281 ms)
+std dev              3.451 μs   (2.667 μs .. 5.065 μs)
+
+benchmarking PrmLk evaluate/(2,2)/1
+time                 123.4 μs   (123.1 μs .. 123.8 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 123.2 μs   (123.1 μs .. 123.5 μs)
+std dev              470.0 ns   (98.22 ns .. 985.7 ns)
+
+benchmarking PrmLk evaluate/(2,2)/2
+time                 393.6 μs   (392.1 μs .. 395.2 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 392.6 μs   (392.4 μs .. 393.3 μs)
+std dev              1.334 μs   (491.3 ns .. 2.185 μs)
+
+benchmarking PrmLk evaluate/(2,2)/3
+time                 837.9 μs   (830.2 μs .. 848.0 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 831.3 μs   (830.0 μs .. 836.5 μs)
+std dev              6.883 μs   (2.681 μs .. 14.39 μs)
+
+benchmarking PrmLk evaluate/(2,2)/4
+time                 1.436 ms   (1.434 ms .. 1.438 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.437 ms   (1.437 ms .. 1.438 ms)
+std dev              2.224 μs   (1.315 μs .. 3.597 μs)
+
+benchmarking PrmLk evaluate/(2,2)/5
+time                 2.241 ms   (2.233 ms .. 2.252 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 2.235 ms   (2.233 ms .. 2.241 ms)
+std dev              12.64 μs   (5.435 μs .. 23.45 μs)
+
+benchmarking PrmLk evaluate/(3,0)/1
+time                 206.3 μs   (206.1 μs .. 206.7 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 206.1 μs   (205.9 μs .. 206.6 μs)
+std dev              905.1 ns   (270.5 ns .. 2.105 μs)
+
+benchmarking PrmLk evaluate/(3,0)/2
+time                 547.8 μs   (547.5 μs .. 548.4 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 547.9 μs   (547.8 μs .. 548.1 μs)
+std dev              479.6 ns   (344.1 ns .. 684.2 ns)
+
+benchmarking PrmLk evaluate/(3,0)/3
+time                 1.154 ms   (1.152 ms .. 1.157 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.152 ms   (1.151 ms .. 1.155 ms)
+std dev              6.016 μs   (2.949 μs .. 10.36 μs)
+
+benchmarking PrmLk evaluate/(3,0)/4
+time                 2.097 ms   (2.091 ms .. 2.106 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 2.092 ms   (2.091 ms .. 2.096 ms)
+std dev              8.126 μs   (2.320 μs .. 13.91 μs)
+
+benchmarking PrmLk evaluate/(3,0)/5
+time                 3.475 ms   (3.473 ms .. 3.476 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 3.476 ms   (3.475 ms .. 3.476 ms)
+std dev              3.048 μs   (2.580 μs .. 3.997 μs)
+
+benchmarking PrmLk evaluate/(3,1)/1
+time                 743.6 μs   (742.8 μs .. 744.6 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 744.4 μs   (743.3 μs .. 746.6 μs)
+std dev              4.894 μs   (2.360 μs .. 8.550 μs)
+
+benchmarking PrmLk evaluate/(3,1)/2
+time                 2.578 ms   (2.575 ms .. 2.584 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 2.581 ms   (2.578 ms .. 2.588 ms)
+std dev              15.05 μs   (4.300 μs .. 27.14 μs)
+
+benchmarking PrmLk evaluate/(3,1)/3
+time                 6.049 ms   (6.045 ms .. 6.055 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 6.043 ms   (6.042 ms .. 6.045 ms)
+std dev              4.754 μs   (3.503 μs .. 7.565 μs)
+
+benchmarking PrmLk evaluate/(3,1)/4
+time                 11.63 ms   (11.61 ms .. 11.64 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 11.66 ms   (11.65 ms .. 11.71 ms)
+std dev              64.38 μs   (10.19 μs .. 131.3 μs)
+
+benchmarking PrmLk evaluate/(3,1)/5
+time                 20.05 ms   (19.98 ms .. 20.15 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 19.98 ms   (19.95 ms .. 20.04 ms)
+std dev              89.88 μs   (22.98 μs .. 145.9 μs)
+
+benchmarking PrmLk evaluate/(3,2)/1
+time                 758.2 μs   (757.2 μs .. 759.2 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 759.2 μs   (757.9 μs .. 761.4 μs)
+std dev              5.927 μs   (3.668 μs .. 9.102 μs)
+
+benchmarking PrmLk evaluate/(3,2)/2
+time                 2.936 ms   (2.932 ms .. 2.941 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 2.931 ms   (2.929 ms .. 2.938 ms)
+std dev              12.83 μs   (6.765 μs .. 24.82 μs)
+
+benchmarking PrmLk evaluate/(3,2)/3
+time                 7.309 ms   (7.305 ms .. 7.317 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 7.309 ms   (7.306 ms .. 7.315 ms)
+std dev              11.28 μs   (7.432 μs .. 18.05 μs)
+
+benchmarking PrmLk evaluate/(3,2)/4
+time                 15.59 ms   (14.72 ms .. 16.95 ms)
+                     0.978 R²   (0.957 R² .. 1.000 R²)
+mean                 14.94 ms   (14.67 ms .. 15.56 ms)
+std dev              908.6 μs   (122.2 μs .. 1.598 ms)
+variance introduced by outliers: 27% (moderately inflated)
+
+benchmarking PrmLk evaluate/(3,2)/5
+time                 25.42 ms   (24.87 ms .. 25.77 ms)
+                     0.999 R²   (0.997 R² .. 1.000 R²)
+mean                 26.38 ms   (25.94 ms .. 27.37 ms)
+std dev              1.383 ms   (366.0 μs .. 2.439 ms)
+variance introduced by outliers: 20% (moderately inflated)
+
+benchmarking PrmLk evaluate/(3,3)/1
+time                 180.9 μs   (170.9 μs .. 195.6 μs)
+                     0.969 R²   (0.943 R² .. 1.000 R²)
+mean                 175.8 μs   (171.5 μs .. 185.8 μs)
+std dev              20.39 μs   (4.947 μs .. 34.42 μs)
+variance introduced by outliers: 85% (severely inflated)
+
+benchmarking PrmLk evaluate/(3,3)/2
+time                 724.6 μs   (722.6 μs .. 727.2 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 723.2 μs   (722.2 μs .. 725.0 μs)
+std dev              4.133 μs   (2.711 μs .. 5.804 μs)
+
+benchmarking PrmLk evaluate/(3,3)/3
+time                 1.904 ms   (1.897 ms .. 1.913 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 1.900 ms   (1.898 ms .. 1.903 ms)
+std dev              8.412 μs   (5.098 μs .. 13.46 μs)
+
+benchmarking PrmLk evaluate/(3,3)/4
+time                 3.955 ms   (3.948 ms .. 3.971 ms)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 3.955 ms   (3.949 ms .. 3.975 ms)
+std dev              29.47 μs   (4.790 μs .. 59.17 μs)
+
+benchmarking PrmLk evaluate/(3,3)/5
+time                 7.185 ms   (7.173 ms .. 7.213 ms)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 7.179 ms   (7.171 ms .. 7.207 ms)
+std dev              38.97 μs   (4.362 μs .. 81.30 μs)
+

@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 %------------------------------------------------------------------------------%
 
 \section{Multi-Indices}
@@ -34,9 +35,12 @@ The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
 \begin{code}
 
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE FlexibleInstances    #-}
+-- {-# LANGUAGE DeriveFoldable       #-}
+{-# LANGUAGE CPP                  #-}
 
-module FEECa.Internal.MultiIndex(
+module FEECa.Internal.MultiIndex (
 
   -- * The MultiIndex type
     MultiIndex, toList, valid
@@ -44,8 +48,8 @@ module FEECa.Internal.MultiIndex(
   -- ** Constructors
   , multiIndex, zero, unit, degreeR
 
-  -- * Extension
-  , extend
+  -- * Extension and Restriction
+  , extend, is_in_range, restrict
 
   -- * Mathematical Operations
   , add, decrease, derive, factorial, choose, choose', degree, range
@@ -53,11 +57,20 @@ module FEECa.Internal.MultiIndex(
   ) where
 
 
-import            Control.Applicative               (ZipList(..), liftA2)
+import            Control.Applicative               (ZipList(..), liftA2, pure, (<*>))
+{-
+  #if MIN_VERSION_base(4,9,0)
+  #else
+  import            Data.Foldable                     (Foldable(..))
+  #endif
+-}
 
 import            FEECa.Utility.Combinatorics       (sumRLists)
 import qualified  FEECa.Utility.Combinatorics as C  (choose, factorial)
-import            FEECa.Internal.Spaces             (Dimensioned(..), Field(..), fromInt)
+import            FEECa.Internal.Spaces             (Dimensioned(..), Field(..))
+import qualified  FEECa.Internal.Spaces       as S  (Ring(..))
+
+
 
 \end{code}
 
@@ -76,6 +89,16 @@ the number of exponents in the multi-index.
 \begin{code}
 
 type MultiIndex = ZipList Int
+
+-- #if MIN_VERSION_base(4,9,0)
+-- #else
+-- deriving instance Foldable ZipList
+#if MIN_VERSION_base(4,7,0)
+#else
+deriving instance Show MultiIndex
+deriving instance Eq   MultiIndex
+#endif
+-- #endif
 
 instance Dimensioned MultiIndex where
   dim mi = length (getZipList mi)
@@ -130,11 +153,11 @@ multiIndex l
 
 -- | Check whether a given multi-index is valid.
 valid :: MultiIndex -> Bool
-valid mi = all (0 <=) (toList mi)
+valid = all (>= 0) . getZipList
 
 -- | Transform multi-index into list
-toList :: Integral a => MultiIndex -> [a]
-toList = map fromIntegral . getZipList
+toList :: {-Integral a =>-} MultiIndex -> [Int]
+toList = {-map fromIntegral .-} getZipList
 
 \end{code}
 
@@ -238,13 +261,36 @@ extend :: Int -> [Int] -> MultiIndex -> MultiIndex
 extend n sigma mi
     | length sigma == dim mi = multiIndex $ extend' n (-1) sigma mi'
     | otherwise = error $(show sigma) ++ " \n " ++ show mi ++ "extend: Dimensions of sigma and multi-index don't agree"
-  where mi'       = toList mi
+  where mi' = getZipList mi
 
 extend' :: Int -> Int -> [Int] -> [Int] -> [Int]
 extend' n _ []      []      = replicate n 0
 extend' n i (s:ss)  (j:js)  = replicate di 0 ++ (j : extend' (n - di - 1) s ss js)
   where di = s - i - 1  -- Number of zeros to pad.
 extend' _ _ _       _       = error "extend': list argument lengths must match"
+
+is_in_range :: [Int] -> MultiIndex -> Bool
+is_in_range sigma mi = is_in_range' sigma (toList mi)
+
+is_in_range' :: [Int] -> [Int] -> Bool
+is_in_range' [] is = all (0==) is
+is_in_range' sigma@(s:ss) (i:is)
+  | s > 0  = (i == 0) && (is_in_range' sigma' is)
+  | s == 0 = is_in_range' ss' is
+  where sigma' = map ((+) (-1)) sigma
+        ss'    = map ((+) (-1)) ss
+
+restrict :: [Int] -> MultiIndex -> MultiIndex
+restrict sigma mi = multiIndex $ restrict' sigma (toList mi)
+
+restrict' :: [Int] -> [Int] -> [Int]
+restrict' [] _ = []
+restrict' sigma@(s:ss) (i:is)
+  | s > 0  = restrict' sigma' is
+  | s == 0 = i : restrict' ss' is
+  where sigma' = map ((+) (-1)) sigma
+        ss'    = map ((+) (-1)) ss
+
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -261,7 +307,7 @@ the addition of the each pair of elements separately.
 \begin{code}
 
 -- | Add two multi-indices
-add :: (Integral a) => ZipList a -> ZipList a -> ZipList a
+add :: Integral a => ZipList a -> ZipList a -> ZipList a
 add = liftA2 (+)
 
 \end{code}
@@ -301,13 +347,15 @@ of the element-wise binomial coefficients.
 %------------------------------------------------------------------------------%
 
 \begin{code}
+
 -- | Generalized binomial coefficients for multi-indices as defined in the paper
 -- | by Kirby.
 choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
-choose a b = product (getZipList (liftA2 C.choose a b))
+choose a b = product (getZipList $ liftA2 C.choose a b)
 
-choose' :: Fractional b => Int -> ZipList Int -> b
-choose' a b = fromIntegral (C.factorial a) / fromIntegral (factorial b)
+choose' :: Fractional b => Int -> MultiIndex -> b
+choose' a b = C.factorial a / factorial b -- fromIntegral (C.factorial a) / fromIntegral (factorial b)
+-- TODO: investigate *why* fromIntegral was there before.
 
 \end{code}
 
@@ -328,5 +376,5 @@ decrease i alpha  = pure f <*> ZipList [0..] <*> alpha
 -- | Decrease element in multi-index
 derive :: (Integral a, Field b) =>  Int -> ZipList a -> (b, ZipList a)
 derive i alpha  = (c, decrease i alpha)
-  where c = fromInt (getZipList alpha !! i)
+  where c = S.embedIntegral (getZipList alpha !! i)
 \end{code}

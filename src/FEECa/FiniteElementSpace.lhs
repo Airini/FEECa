@@ -26,29 +26,27 @@ where $\kappa$ is the Koszul operator.
 {-# LANGUAGE FlexibleContexts #-}
 
 module FEECa.FiniteElementSpace (
-    FiniteElementSpace(..),
-    Name(..),
-    finiteElementSpace,
-    BasisFunction,
-    Simplex,
-    Vector,
-    basis,
-    vspaceDim,
-    whitneyForm,
-    prmLkBasis,
-    prmLkFace,
-    psi'
+
+    FiniteElementSpace (..), Name(..), BasisFunction
+
+  , finiteElementSpace, basis, dofs, nDofs, vspaceDim, degree, arity, simplex
+  , prmLkBasis, prmLkFace
+  , whitneyForm, psi'
+
+  , Simplex, Vector
+
  -- * Introduction
  -- $intro
-    ) where
+  ) where
 
 import            Data.List
+import            Data.Function (on)
 import qualified  Math.Combinatorics.Exact.Binomial as CBin
 
 import            FEECa.Utility.Combinatorics     (increasingLists, sublists)
 import            FEECa.Utility.Print             (printForm, dlambda)
 import qualified  FEECa.Utility.Print       as P  (Pretty(..))
-import            FEECa.Utility.Utility           (pairM)
+import            FEECa.Utility.Utility           (pairM, sumV)
 
 import            FEECa.Internal.Form   hiding    (arity, inner)
 import qualified  FEECa.Internal.MultiIndex as MI
@@ -103,6 +101,11 @@ data FiniteElementSpace = PrLk Int Int Simplex
 -- | Form BernsteinPolynomial.
 type BasisFunction = DifferentialForm
 
+
+-- | Type synomym for a degree of freedom, i.e. a linear bounded map from
+-- | the space of polynomial differential forms to the reals.
+type DoF = DifferentialForm -> Double
+
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -126,6 +129,11 @@ degree (PrmLk r _ _) = r
 arity :: FiniteElementSpace -> Int
 arity (PrLk _ k _)  = k
 arity (PrmLk _ k _) = k
+
+-- | The simplex over which the finite element space is defined.
+simplex :: FiniteElementSpace -> Simplex
+simplex (PrLk _ _ t)  = t
+simplex (PrmLk _ _ t) = t
 
 -- | The dimension of the underlying vector space.
 vspaceDim :: FiniteElementSpace -> Int
@@ -152,9 +160,9 @@ are given by
 -- | The dimension of the finite element space.
 instance Dimensioned FiniteElementSpace where
     dim (PrmLk r k t) = ((r + k - 1) `CBin.choose` k) * ((n + r) `CBin.choose` (n - k))
-        where n = S.geometricalDimension t
+        where n = S.topologicalDimension t
     dim (PrLk r k t) = ((r + k) `CBin.choose` r ) * ((n + r) `CBin.choose` (n - k))
-        where n = S.geometricalDimension t
+        where n = S.topologicalDimension t
 
 \end{code}
 
@@ -172,6 +180,16 @@ is described below.
 basis :: FiniteElementSpace -> [BasisFunction]
 basis (PrmLk r k t) = prmLkBasis r k t
 basis (PrLk r k t) = prLkBasis r k t
+
+-- | List the basis functions of the given finite element space.
+dofs :: FiniteElementSpace -> [DoF]
+dofs (PrmLk r k t) = prmLkDofs r k t
+dofs (PrLk r k t)  = prLkDofs  r k t
+
+-- | List the basis functions of the given finite element space.
+nDofs :: FiniteElementSpace -> Int -> Int
+nDofs (PrmLk r k t) k2 = prmLkNDofs r k t k2
+nDofs (PrLk r k t)  k2 = prLkNDofs  r k t k2
 
 pPrintBasisFunction :: BasisFunction -> String
 pPrintBasisFunction = show . printForm dlambda "0" P.pPrint
@@ -214,28 +232,28 @@ data Name = P
 -- | Create named finite element space of given polynomial degree over the
 -- | given simplex.
 finiteElementSpace :: Name -> Int -> Simplex -> FiniteElementSpace
-finiteElementSpace P r t = PrLk r 0 t
-finiteElementSpace Pm r t = PrmLk r 0 t
-finiteElementSpace DP r t = PrLk r (S.topologicalDimension t) t
-finiteElementSpace DPm r t = PrmLk r (S.topologicalDimension t) t
-finiteElementSpace RT r t
-    | S.topologicalDimension t == 2 = PrmLk r 1 t
-    | otherwise = error "RT elements are defined in two dimensions."
+finiteElementSpace P    r t = PrLk  r 0 t
+finiteElementSpace Pm   r t = PrmLk r 0 t
+finiteElementSpace DP   r t = PrLk  r (S.topologicalDimension t) t
+finiteElementSpace DPm  r t = PrmLk r (S.topologicalDimension t) t
+finiteElementSpace RT   r t
+  | S.topologicalDimension t == 2 = PrmLk r 1 t
+  | otherwise = error "RT elements are defined in two dimensions."
 finiteElementSpace N1e r t
-    | S.topologicalDimension t == 3 = PrmLk r 1 t
-    | otherwise = error "N1e1 elements are defined in three dimensions."
+  | S.topologicalDimension t == 3 = PrmLk r 1 t
+  | otherwise = error "N1e1 elements are defined in three dimensions."
 finiteElementSpace N1f r t
-    | S.topologicalDimension t == 3 = PrmLk r 2 t
-    | otherwise = error "N1f1 elements are defined in three dimensions."
+  | S.topologicalDimension t == 3 = PrmLk r 2 t
+  | otherwise = error "N1f1 elements are defined in three dimensions."
 finiteElementSpace BDM r t
-    | S.topologicalDimension t == 2 = PrLk r 1 t
-    | otherwise = error "BDM elements are defined in two dimensions."
+  | S.topologicalDimension t == 2 = PrLk r 1 t
+  | otherwise = error "BDM elements are defined in two dimensions."
 finiteElementSpace N2e r t
-    | S.topologicalDimension t == 3 = PrLk r 1 t
-    | otherwise = error "N2e1 elements are defined in three dimensions."
+  | S.topologicalDimension t == 3 = PrLk r 1 t
+  | otherwise = error "N2e1 elements are defined in three dimensions."
 finiteElementSpace N2f r t
-    | S.topologicalDimension t == 3 = PrLk r 2 t
-    | otherwise = error "N2f1 elements are defined in three dimensions."
+  | S.topologicalDimension t == 3 = PrLk r 2 t
+  | otherwise = error "N2f1 elements are defined in three dimensions."
 
 \end{code}
 
@@ -295,10 +313,10 @@ of the face $\smp{f}$.
 -- | The Whitney forms as given by  equation (6.3).
 whitneyForm :: Simplex -> [Int] -> Form BernsteinPolynomial
 whitneyForm t sigma = Form k n [ (lambda' i, subsets !! i) | i <- [0..k]]
-    where k = length sigma - 1
-          n = S.topologicalDimension t
-          subsets = sublists sigma
-          lambda' i = sclV ((-1)^i) (monomial t (MI.unit (n + 1) (sigma !! i)))
+  where k = length sigma - 1
+        n = S.topologicalDimension t
+        subsets = sublists sigma
+        lambda' i = sclV ((-1)^i) (monomial t (MI.unit (n + 1) (sigma !! i)))
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -317,8 +335,8 @@ whitneyForm t sigma = Form k n [ (lambda' i, subsets !! i) | i <- [0..k]]
 -- | Arnold, Falk, Winther.
 extend :: Simplex -> Form BernsteinPolynomial -> Form BernsteinPolynomial
 extend t (Form k _ cs) = Form k n (extend' cs)
-    where extend' = map (pairM (B.extend t) (extendFace n))
-          n       = S.topologicalDimension t
+  where extend' = map (pairM (B.extend t) (extendFace n))
+        n       = S.topologicalDimension t
 
 -- | Extend the face of a subsimplex of a simplex of topological dimension n to the
 -- | the simplex. That is, for a face given as an increasing list of vertices of the
@@ -354,22 +372,43 @@ The construction of this set is implemented in the function \code{prmLkBasis}.
 -- | using the geometric composition given by Anrold, Falk, Winther.
 prmLkBasis :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
 prmLkBasis r k t = concat [prmLkFace t f r k | f <- fs]
-    where n      = S.topologicalDimension t
-          fs     = concat [S.subsimplices t i | i <- [k..n]]
+  where n      = S.topologicalDimension t
+        fs     = concat [S.subsimplices t i | i <- [k..n]]
 
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
 -- | a given face of a simplex.
 prmLkFace :: Simplex -> Simplex -> Int -> Int -> [Form BernsteinPolynomial]
 prmLkFace t f r k = [ sclV (lambda a) (phi s) | a <- alphas, s <- sigmas, valid a s ]
-    where alphas     = MI.degreeR (n+1) (r-1)
-          sigmas     = increasingLists (k+1) n
-          n          = S.topologicalDimension t
-          valid a s  = setEq (domain a s) (S.sigma f) && zeros a s
-          zeros a s  = 0 == sum (take (minimum s) (MI.toList a))
-          setEq d l  = sort d == l
-          domain a   = union (MI.range a)
-          phi        = whitneyForm t
-          lambda     = monomial t
+  where alphas     = MI.degreeR (n+1) (r-1)
+        sigmas     = increasingLists (k+1) n
+        n          = S.topologicalDimension t
+        valid a s  = setEq (domain a s) (S.sigma f) && zeros a s
+        zeros a s  = 0 == sum (take (minimum s) (MI.toList a))
+        setEq d l  = sort d == l
+        domain a   = union (MI.range a)
+        phi        = whitneyForm t
+        lambda     = monomial t
+
+prmLkDofs :: Int -> Int -> Simplex -> [DoF]
+prmLkDofs r k t = concat [prmLkDofsFace r k f | f <- fs]
+  where fs = concat [S.subsimplices t d | d <- [0..n]]
+        n  = S.topologicalDimension t
+
+prmLkDofsFace :: Int -> Int -> Simplex -> [DoF]
+prmLkDofsFace r k f
+  | r' < 0 = []
+  | k' < 0 = []
+  | otherwise = [\omega -> D.integrate f (D.trace f omega /\ eta) | eta <- bs]
+  where dimf = S.topologicalDimension f
+        r' = r + k - dimf - 1
+        k' = dimf - k
+        bs = prLkBasis r' k' f
+
+prmLkNDofs :: Int -> Int -> Simplex -> Int -> Int
+prmLkNDofs r k t k2 = sum [dim (PrLk r' k' f) | f <- S.subsimplices t k2]
+  where r' = r + k - k2 - 1
+        k' = k2 - k
+
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -394,18 +433,25 @@ Define $\psf{\alpha}{f}{g}{\sigma}$
 -- | spaces as given in equations (8.1) and (8.2) in Arnold, Falk, Winther.
 psi :: Simplex -> Simplex -> MI.MultiIndex -> [Int] -> Form BernsteinPolynomial
 psi t f alpha sigma  = foldl (/\) unit [psi' t f alpha i | i <- sigma]
-    where unit = nullForm n mulId
-          n = dim alpha - 1
+  where unit = nullForm n mulId
+        n    = dim alpha - 1
 
 -- TODO: Check form indices.
 psi' :: Simplex -> Simplex -> MI.MultiIndex -> Int -> Form BernsteinPolynomial
-psi' t f alpha i = foldl subV (db i) [ sclV (c j) (db j) | j <- sigma]
-    where db j = sclV (constant t 1.0) $ oneForm j n
-          c _  = sclV ((alpha' !! i) / r) mulId -- TODO: check here!
-          r    = fromInteger $ MI.degree alpha
-          alpha' = map fromInteger $ MI.toList alpha
-          n      = S.geometricalDimension f
-          sigma  = S.sigma f
+psi' t f alpha i = sumV $ db i : map (sclV c . db) sigma -- db j | j <- sigma ]
+  where db j    = oneForm j n
+        --dxiOnT  = sclV (constant t mulId) (db i)
+        c       = (constant t . addInv) ((divide `on` embedIntegral) alpha_i r)
+        -- TODO: check here! used to be (c j) in the list comprehension... even though j as an argument was unused
+        r       = MI.degree alpha
+        alpha_i = MI.toList alpha !! i
+        n       = S.geometricalDimension f
+        sigma   = S.sigma f
+--psi' t f alpha i = fold subV (db i) [ sclV (c j) (db j) | j <- sigma ]
+        --db j = sclV (constant t 1.0) (oneForm j n)
+        --c _  = sclV ((alpha' !! i) / r) mulId -- TODO: check here!
+        --c _  = divide (embedIntegral $ alpha' !! i) r -- sclV ((alpha' !! i) / r) mulId -- TODO: check here!
+        --alpha' = map fromInteger $ MI.toList alpha
 
 \end{code}
 
@@ -433,37 +479,60 @@ $$
 -- | the geometric decomposition given by Arnold, Falk, Winther.
 prLkBasis :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
 prLkBasis r k t = concat [prLkFace t f r k | f <- fs]
-    where n  = S.topologicalDimension t
-          fs = concat [S.subsimplices t i | i <- [k..n]]
+  where n  = S.topologicalDimension t
+        fs = concat [S.subsimplices t i | i <- [k..n]]
 
 -- | Basis functions  for the space PrMinusLambdak associated to
 -- | a given face of a simplex.
 prLkFace :: Simplex -> Simplex -> Int -> Int -> [Form BernsteinPolynomial]
 prLkFace t f r k = [ sclV (lambda a) (psi'' a s) | a <- alphas, s <- sigmas, valid a s ]
-    where alphas     = MI.degreeR (n+1) r
-          sigmas     = increasingLists k n
-          n          = S.topologicalDimension t
-          valid a s  = setEq (domain a s) (S.sigma f) && zeros a s
-          zeros a s  = 0 == sum (take (minimum' $ S.sigma f \\ s) (MI.toList a))
-          setEq d l  = sort d == l
-          domain a s = MI.range a `union` s
-          psi''      = psi t f
-          lambda     = monomial t
-          minimum' s = if null s then 0 else minimum s
+  where alphas     = MI.degreeR (n+1) r
+        sigmas     = increasingLists k n
+        n          = S.topologicalDimension t
+        valid a s  = setEq (domain a s) (S.sigma f) && zeros a s
+        zeros a s  = 0 == sum (take (minimum' $ S.sigma f \\ s) (MI.toList a))
+        setEq d l  = sort d == l
+        domain a s = MI.range a `union` s
+        psi''      = psi t f
+        lambda     = monomial t
+        minimum' s = if null s then 0 else minimum s
 
 -- | Basis for the space PrMinusLambdak with vanishing trace associated to
 -- | a given face of a simplex.
 prLkFace' :: Int -> Int -> Simplex -> [Form BernsteinPolynomial]
-prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas,
-                                                 sigma <- sigmas alpha]
-    where n       = S.topologicalDimension t
-          b       = monomial t
-          alphas  = MI.degreeR (n + 1)  r
-          sigmas alpha = [ sigma | sigma <- increasingLists k n,
-                                   range alpha sigma == [0..n],
-                                   isZero alpha sigma ]
-          isZero alpha sigma = all (0==) (take (minimum' sigma) (MI.toList alpha))
-          minimum' sigma     = minimum ([0..n] \\ sigma)
+prLkFace' r k t = [Form k n [(b alpha, sigma)] | alpha <- alphas
+                                               , sigma <- sigmas alpha]
+  where n       = S.topologicalDimension t
+        b       = monomial t
+        alphas  = MI.degreeR (n + 1)  r
+        sigmas alpha = [ sigma | sigma <- increasingLists k n
+                               , range alpha sigma == [0..n]
+                               , isZero alpha sigma ]
+        isZero alpha sigma = all (0==) (take (minimum' sigma) (MI.toList alpha))
+        minimum' sigma     = minimum ([0..n] \\ sigma)
+
+prLkDofs :: Int -> Int -> Simplex -> [DoF]
+prLkDofs r k t = concat [prLkDofsFace r k f | f <- fs]
+  where fs = concat [S.subsimplices t d | d <- [0..n]]
+        n  = S.topologicalDimension t
+
+prLkDofsFace :: Int -> Int -> Simplex -> [DoF]
+prLkDofsFace r k f
+  | r' < 0 = []
+  | k' < 0 = []
+  | otherwise = [\omega -> D.integrate f (D.trace f omega /\ eta) | eta <- bs]
+  where dimf = S.topologicalDimension f
+        r' = r + k - dimf
+        k' = dimf - k
+        bs = prmLkBasis r' k' f
+
+prLkNDofs :: Int -> Int -> Simplex -> Int -> Int
+prLkNDofs r k t k2
+  | r' < 0 = 0
+  | k' < 0 = 0
+  | otherwise = sum [dim $ PrmLk r' k' f | f <- S.subsimplices t k2]
+  where r' = r + k - k2
+        k' = k2 - k
 
 {-
 t = S.referenceSimplex 2
@@ -480,5 +549,6 @@ s1 = finiteElementSpace N2f 3 t
 -}
 
 \end{code}
+
 
 \section{Bibliography}

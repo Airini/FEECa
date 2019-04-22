@@ -51,32 +51,38 @@ module FEECa.Polynomial (
   , expandTerm, monomial, multiIndices, degrees, toPairs
 
   -- * Mathematical operations
-  , evaluatePolynomial, derivePolynomial, integratePolynomial, multiplyPolynomial
+  , evaluatePolynomial, derivePolynomial, derivePolynomialBasis
+  ,  integratePolynomial, multiplyPolynomial
 
   -- * Barycentric Coordinates
   , barycentricCoordinate, barycentricCoordinates
-  , barycentricGradient, barycentricGradients
-  , barycentricGradients', simplexToMatrix, euclideanToBarycentric
+  , barycentricGradient, barycentricGradients, barycentricGradients'
+  , simplexToMatrix, euclideanToBarycentric, localBarycentricGradients
 
+  -- XXX:
   , simplifyT, simplifyP
 
   ) where
 
 
+import            Prelude                     hiding  ( (<>) )
 import            Data.List
+import            Numeric.LinearAlgebra.Data          ( (??), Extractor(All, Drop) )
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
-import            FEECa.Utility.Print ( Pretty (..), printPolynomial )
+import            FEECa.Utility.Print   ( Pretty (..), printPolynomial )
+import            FEECa.Utility.Utility ( takeMap, zipWithWhen, sumR, productR )
+
 import qualified  FEECa.Internal.MultiIndex as MI (
                       MultiIndex, zero, unit, decrease,
                       toList, add, degree, valid )
 import            FEECa.Internal.Simplex
-
 import            FEECa.Internal.Spaces           (
                       Ring (..), Field (..), Dimensioned (..),
-                      VectorSpace (..), EuclideanSpace (..),
-                      toDouble' ) --, fromDouble')
+                      Module (..), VectorSpace, EuclideanSpace (..),
+                      toDouble' ) --, fromDouble' )
 import qualified  FEECa.Internal.Spaces     as S  ( Function (..) )
+
 
 
 \end{code}
@@ -109,6 +115,10 @@ data Term a = Constant a
 coefficient :: Term a -> a
 coefficient (Constant a) = a
 coefficient (Term a _)   = a
+
+instance Functor Term where
+  fmap f (Constant a) = Constant (f a)
+  fmap f (Term a mi)  = Term (f a) mi
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -132,6 +142,8 @@ data Polynomial a =
                  terms  :: [Term a] }
   deriving (Eq, Show)
 
+instance Functor Polynomial where
+  fmap f (Polynomial n ts) = Polynomial n (map (fmap f) ts)
 \end{code}
 
 
@@ -154,7 +166,7 @@ multiIndices n (Polynomial _ ls) = multiIndices' n ls
 multiIndices' :: Int -> [Term a] -> [MI.MultiIndex]
 multiIndices' n (Term _ mi  : ls) = mi : multiIndices' n ls
 multiIndices' n (Constant _ : ls) = MI.zero n : multiIndices' n ls
-multiIndices' _ [] = []
+multiIndices' _ []                = []
 
 \end{code}
 
@@ -193,7 +205,7 @@ polynomial and returns a list of the coefficient-multi-index pairs.
 
 -- | Return polynomial represented as list of coefficient-multi-index pairs.
 toPairs :: Int -> Polynomial a -> [(a, MI.MultiIndex)]
-toPairs n p = map (expandTerm n) (terms p)
+toPairs n = map (expandTerm n) . terms
 
 \end{code}
 
@@ -211,21 +223,23 @@ Polynomials over $\R{n}$ form a vector space over $\mathrm R$ and a ring. To
 \begin{code}
 
 -- | Polynomials as vector spaces.
-instance Ring a => VectorSpace (Polynomial a) where
+instance Ring a => Module (Polynomial a) where
   type Scalar (Polynomial a) = a
   addV = addPolynomial
   sclV = scalePolynomial
 
+instance Field a => VectorSpace (Polynomial a)
+
 -- | Polynomials as a ring.
 instance Ring a => Ring (Polynomial a) where
-  add    = addPolynomial
+  add    = addV
   addId  = constant addId
-  addInv = scalePolynomial (addInv mulId)
+  addInv = sclV (addInv mulId)
 
-  mul       = multiplyPolynomial multiplyMonomial
-  mulId     = constant mulId
+  mul    = multiplyPolynomial multiplyMonomial
+  mulId  = constant mulId
 
-  fromInt x = Polynomial 0 [Constant (fromInt x)]
+  embedIntegral = constant . embedIntegral
 
 \end{code}
 
@@ -243,12 +257,12 @@ the \code{Polynomial} type, the terms have to be expanded to pairs of
 
 -- | Pretty printing of polynomials.
 instance Pretty (Polynomial Double) where
-    pPrint p = printPolynomial "x" (map (expandTerm 0) (terms p))
+  pPrint p = printPolynomial "x" (map (expandTerm 0) (terms p))
 
 -- | Expand term to (Double, MI.MultiIndex)-form suitable for printing.
 expandTerm :: Int -> Term a -> (a, MI.MultiIndex)
 expandTerm n (Constant c) = (c, MI.zero n)
-expandTerm _ (Term c mi) = (c ,mi)
+expandTerm _ (Term c mi)  = (c, mi)
 
 \end{code}
 
@@ -265,8 +279,8 @@ expandTerm _ (Term c mi) = (c ,mi)
 -- | Polynomials as functions.
 
 instance (EuclideanSpace v, r ~ Scalar v) => S.Function (Polynomial r) v where
-  evaluate v = evaluatePolynomial (evaluateMonomial v)
-  derive = derivePolynomial deriveMonomial
+  evaluate = evaluatePolynomial . evaluateMonomial . toList
+  derive   = derivePolynomial deriveMonomial
 
 \end{code}
 
@@ -288,6 +302,7 @@ The functions \code{constant}, \code{monomial}, \code{term} and
 -- | Create a constant polynomial with the given value.
 constant :: a -> Polynomial a
 constant c = Polynomial 0 [Constant c]
+
 -- | Create a polynomial consisting of a single monomial from a given
 -- | multi-index.
 monomial :: Ring a => MI.MultiIndex -> Polynomial a
@@ -295,28 +310,28 @@ monomial mi = Polynomial (MI.degree mi) [Term mulId mi]
 
 -- | Create a term of a polynomial consisting of a scaled monomial.
 term :: Ring a => (a, MI.MultiIndex) -> Term a
-term (c, mi) = Term c mi
+term = uncurry Term
 
 -- | Create a polynomial from a list of coefficient-multi-index pairs.
 polynomial :: Ring a => [(a, MI.MultiIndex)] -> Polynomial a
-polynomial l = if checkPolynomial l
-               then Polynomial r (map term l)
-               else error "Given coefficients and multi-indices do not define a valid polynomial."
-    where r = if not (null l) then maximum (map (MI.degree . snd) l) else 0
+polynomial l
+    | checkPolynomial l = Polynomial r $ aggregate (map term l)
+    | otherwise         = error "Given coefficients and multi-indices do not define a valid polynomial."
+  where r = if null l then 0 else maximum (map (MI.degree . snd) l)
 
 -- | Check whether a list of coefficient-multi-index pairs represents a
 -- | polynomial.
 checkPolynomial :: [(a, MI.MultiIndex)] -> Bool
-checkPolynomial ls = all (MI.valid . snd) ls&& sameLength (map snd ls)
+checkPolynomial ls = all (MI.valid . snd) ls && sameLength (map snd ls)
 
 -- | Check if all multi-indices in the list have the same dimension.
 sameLength :: [MI.MultiIndex] -> Bool
-sameLength (l:ls) = sameLength' (dim l) ls
-sameLength [] = True
+sameLength []     = True
+sameLength (l:ls) = all ((== dim l) . dim) ls
 
-sameLength' :: Int -> [MI.MultiIndex] -> Bool
-sameLength' i (l:ls) = (i == dim l) && sameLength' (dim l) ls
-sameLength' _ [] = True
+{-sameLength' :: Int -> [MI.MultiIndex] -> Bool
+sameLength' i (l:ls)  = (i == dim l) && sameLength' (dim l) ls
+sameLength' _ []      = True-}
 
 \end{code}
 
@@ -333,9 +348,11 @@ In addition to that a constructor for homogeneous, linear polynomials
 -- | Create 1st degree homogeneous polynomial in n variables from
 -- | length n list of coefficients. The coefficient with index i in the list
 -- | equals the coefficient of the ith variable of the returned polynomial.
-linearPolynomial :: [a] -> Polynomial a
-linearPolynomial l = Polynomial 1 $ zipWith Term l [MI.unit n i | i <- [0..n - 1]]
+linearPolynomial :: Ring a => [a] -> Polynomial a
+linearPolynomial l = Polynomial 1 $ zipWithWhen Term (flip (const (/= addId)))
+                                                l [MI.unit n i | i <- [0..n - 1]]
   where n  = length l
+-- TODO: check so as to have a smarter constructor
 
 \end{code}
 
@@ -357,14 +374,14 @@ Since polynomials are represented as a sum of terms addition of polynomials can
 \begin{code}
 
 -- | Add two polynomials.
-addPolynomial :: (Ring a) => Polynomial a -> Polynomial a -> Polynomial a
+addPolynomial :: Ring a => Polynomial a -> Polynomial a -> Polynomial a
 addPolynomial (Polynomial r1 ts1) (Polynomial r2 ts2)
-    | ts /= [] = Polynomial (max r1 r2) ts
-    | otherwise = Polynomial 0 [Constant addId]
-                  where ts = removeZeros (ts1 ++ ts2)
+    | null ts   = constant addId
+    | otherwise = Polynomial (max r1 r2) ts
+  where ts = {-(aggregate . removeZeros)-} aggregate (ts1 ++ ts2)
 
-removeZeros :: Ring a => [Term a] -> [Term a]
-removeZeros ts = [ t | t <- ts, coefficient t /= addId ]
+--removeZeroes :: Ring a => [Term a] -> [Term a]
+--removeZeroes = filter ((/= addId) . coefficient)
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -382,40 +399,37 @@ The implementation of scaling and multiplication of polynomials is straight
 
 -- | Scale term by a scalar.
 scaleTerm :: Ring a => a -> Term a -> Term a
-scaleTerm c1 (Term c2 mi)  = Term (mul c1 c2) mi
-scaleTerm c1 (Constant c2) = Constant (mul c1 c2)
+scaleTerm = fmap . mul
 
 -- | Scaling of a polynomial.
-scalePolynomial :: (Ring a) => a -> Polynomial a -> Polynomial a
-scalePolynomial c (Polynomial r ts) = Polynomial r (map (scaleTerm c) ts)
+scalePolynomial :: Ring a => a -> Polynomial a -> Polynomial a
+scalePolynomial c | c == addId = const addId
+                  | otherwise  = fmap (mul c)
+-- c (Polynomial r ts) = Polynomial r (map (scaleTerm c) ts)
 
--- | Multiply two terms using the function f two multiply the monomials given by
--- | multi-indices mi1, mi2.
+-- | Multiplication of two terms of a given function for monomial
+-- | multiplication when represented as multi-indices.
 multiplyTerm :: Ring a
-             => (MI.MultiIndex -> MI.MultiIndex -> Term a) -- f
-             -> Term a -- mi1
-             -> Term a -- mi2
-             -> Term a
+             => (MI.MultiIndex -> MI.MultiIndex -> Term a)
+             -> Term a -> Term a -> Term a
+multiplyTerm _ (Constant c)  t             = scaleTerm c t -- (Constant c2) = Constant (mul c1 c2)
+--multiplyTerm _ (Constant c)  t(Term c2 mi)  = Term (mul c1 c2) mi
+multiplyTerm _ t             (Constant c)  = scaleTerm c t --Term (mul c1 c2) mi
 multiplyTerm f (Term c1 mi1) (Term c2 mi2) = scaleTerm (mul c1 c2) (f mi1 mi2)
-multiplyTerm _ (Term c1 mi)  (Constant c2) = Term (mul c1 c2) mi
-multiplyTerm _ (Constant c2) (Term c1 mi)  = Term (mul c1 c2) mi
-multiplyTerm _ (Constant c1) (Constant c2) = Constant (mul c1 c2)
 
 -- | Multiplication of two monomials.
-multiplyMonomial :: (Ring a) => MI.MultiIndex -> MI.MultiIndex -> Term a
+multiplyMonomial :: Ring a => MI.MultiIndex -> MI.MultiIndex -> Term a
 multiplyMonomial mi1 mi2
-    | dim mi1 == dim mi2  = Term mulId (MI.add mi1 mi2)
-    | otherwise = error "multiplyMonomial: Polynomial dimensions don't agree."
+  | dim mi1 == dim mi2  = Term mulId (MI.add mi1 mi2)
+  | otherwise = error "multiplyMonomial: Polynomial dimensions don't agree."
 
--- | General multiplication of polynomial using the function f for the multi-
--- | plication of monomial.
+-- | General multiplication of polynomials in terms of a given function for
+-- | monomial multiplication.
 multiplyPolynomial :: Ring a
-                   => (MI.MultiIndex -> MI.MultiIndex -> Term a) -- f
-                   -> Polynomial a
-                   -> Polynomial a
-                   -> Polynomial a
+                   => (MI.MultiIndex -> MI.MultiIndex -> Term a)
+                   -> Polynomial a -> Polynomial a -> Polynomial a
 multiplyPolynomial f (Polynomial r1 ts1) (Polynomial r2 ts2) =
-    Polynomial (r1 + r2) [multiplyTerm f t1 t2 | t1 <- ts1, t2 <- ts2]
+  Polynomial (r1 + r2) $ aggregate [multiplyTerm f t1 t2 | t1 <- ts1, t2 <- ts2]
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -440,20 +454,15 @@ The function \code{evaluateMonomial} implements the evaluation function for the
 -- | scaled by the terms coefficient or simply the value of the term if the term
 -- | is constant.
 evaluateTerm :: Ring r
-         => (MI.MultiIndex -> r) -- The evaluation function
-         -> Term r
-         -> r
+             => (MI.MultiIndex -> r) -> Term r -> r
 evaluateTerm f (Term c mi)  = mul c (f mi)
 evaluateTerm _ (Constant c) = c
 
 -- | Evaluate monomial over standard monomial basis.
-evaluateMonomial :: (EuclideanSpace v, r ~ Scalar v)
-                 => v
-                 -> MI.MultiIndex
-                 -> r
-evaluateMonomial v mi = prod' (zipWith pow (toList v) (MI.toList mi::[Int]))
-    where prod' = foldl mul mulId
-
+evaluateMonomial :: Ring r -- (EuclideanSpace v, r ~ Scalar v)
+                 => [r] -> MI.MultiIndex -> r
+evaluateMonomial v mi = productR (zipWith pow v (MI.toList mi::[Int]))
+--  where prod' = foldl mul mulId
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -472,11 +481,8 @@ The evaluation of polynomials over the monomial basis can now be realized by
 -- | General evaluation function of a polynomial p using the given function f
 -- | for the evaluation of monomials.
 evaluatePolynomial :: Ring r
-                   => (MI.MultiIndex -> r) -- f
-                   -> Polynomial r         -- p
-                   -> r
-evaluatePolynomial f p = foldl add addId (map (evaluateTerm f) (terms p))
-
+                   => (MI.MultiIndex -> r) -> Polynomial r -> r
+evaluatePolynomial f = sumR . map (evaluateTerm f) . terms
 
 \end{code}
 
@@ -544,19 +550,20 @@ The function \code{deriveMonomial} implements the derivative of a monomial for
 -- | in a given space direction, the function computes the derivative of the given
 -- | term using the product rule.
 deriveTerm :: (EuclideanSpace v, r ~ Scalar v)
-           => Dx r
-           -> v
-           -> Term r
-           -> Polynomial r
+           => Dx r -> v -> Term r -> Polynomial r
 deriveTerm _  _ (Constant _) = constant addId
-deriveTerm dx v (Term c mi)  = sclV c (foldl add addId (zipWith sclV v' (dx mi)))
+deriveTerm dx v (Term c mi)  = {-sclV c -} sumR (zipWith (sclV . mul c) v' (dx mi))
   where v' = toList v
+
+deriveTermBasis :: Ring r => Dx r -> Int -> Term r -> Polynomial r
+deriveTermBasis _  _ (Constant _) = constant addId
+deriveTermBasis dx i (Term c mi)  = sclV c ((dx mi) !! i)
 
 -- | Derivative of a monomial over the standard monomial basis in given space
 -- | direction.
 deriveMonomial :: Ring r => Dx r
 deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
-  where c i   = fromInt (MI.toList mi !! i)
+  where c i   = embedIntegral (MI.toList mi !! i)
         mi' i = MI.decrease i mi
         n     = dim mi
 \end{code}
@@ -574,12 +581,12 @@ deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
 
 -- | General derivative for a polynomial with arbitrary basis.
 derivePolynomial :: (EuclideanSpace v, r ~ Scalar v)
-                 => Dx r
-                 -> v
-                 -> Polynomial r
-                 -> Polynomial r
-derivePolynomial dx v p = foldl add addId [ deriveTerm dx v t | t <- ts ]
-    where ts = terms p
+                 => Dx r -> v -> Polynomial r -> Polynomial r
+derivePolynomial dx v = sumR . map (deriveTerm dx v) . terms -- t | t <- terms p ]
+
+derivePolynomialBasis :: Ring r => Dx r -> Int -> Polynomial r -> Polynomial r
+derivePolynomialBasis dx i = sumR . map (deriveTermBasis dx i) . terms -- t | t <- terms p ]
+
 
 \end{code}
 
@@ -600,12 +607,10 @@ Since the method used  has precision $2q - 1$, the integration of a polynomial
 -- | Numerically integrate the polynomial p over the simplex t using a Gauss-Jacobi
 -- | quadrature rule.
 integratePolynomial :: (EuclideanSpace v, r ~ Scalar v)
-                    => Simplex v      -- t
-                    -> Polynomial r   -- p
-                    -> r
-integratePolynomial t p = integrateOverSimplex q t (`S.evaluate` p)
-    where q = div (r + 2) 2
-          r = degree p
+                    => Simplex v -> Polynomial r -> r
+integratePolynomial t p = integrateOverSimplex q t (p S.$$)
+  where q = div (r + 2) 2
+        r = degree p
 
 \end{code}
 
@@ -688,15 +693,13 @@ coordinates and only the $i$ barycentric coordinate, respectively.
 fromDouble' = undefined
 fromDouble  = undefined
 
-euclideanToBarycentric :: (EuclideanSpace v)
-                       => Simplex v
-                       -> [v]
-                       -> [v]
-euclideanToBarycentric t vs =  map (fromDouble' . M.toList) $ M.toRows res
-    where res  = vmat M.<> mat
-          mat  = M.inv (simplexToMatrix (extendSimplex t))
-          vmat = M.matrix (n+1) $ concatMap ((1.0:) . toDouble') vs
-          n    = geometricalDimension t
+euclideanToBarycentric :: EuclideanSpace v
+                       => Simplex v -> [v] -> [v]
+euclideanToBarycentric t vs = map (fromDouble' . M.toList) $ M.toRows res
+  where res  = vmat M.<> mat
+        mat  = M.inv (simplexToMatrix (extendSimplex t))
+        vmat = M.matrix (n+1) $ concatMap ((1.0:) . toDouble') vs
+        n    = geometricalDimension t
 
 -- | 1st degree polynomial taking value 1 on vertex n_i of the simplex and
 -- | 0 on all others. Requires the topological dimension of the simplex to be
@@ -704,36 +707,32 @@ euclideanToBarycentric t vs =  map (fromDouble' . M.toList) $ M.toRows res
 -- | vertices if the underlying space has dimensionality n.
 -- TODO: check take
 barycentricCoordinates :: (EuclideanSpace v, r ~ Scalar v)
-                       => Simplex v
-                       -> [ Polynomial r ]
-barycentricCoordinates s = {-# SCC "barycentricCoordinates" #-} take (nt + 1) bs
-    where bs  = map vectorToPolynomial (take (nt+1) (M.toColumns mat))
-          mat = {-# SCC "solveSystem" #-}M.inv (simplexToMatrix (extendSimplex s))
-          nt  = topologicalDimension s
+                       => Simplex v -> [ Polynomial r ]
+barycentricCoordinates s = {-# SCC "barycentricCoordinates" #-}
+    takeMap nt vectorToPolynomial (M.toColumns mat)
+  where mat = {-# SCC "solveSystem" #-} M.inv (simplexToMatrix (extendSimplex s))
+        nt  = topologicalDimension s
 
 -- | Simple wrapper for barycentricCoordinates that picks out the ith polynomial
 -- | in the list
 barycentricCoordinate :: (EuclideanSpace v, r ~ Scalar v)
-                      => Simplex v
-                      -> Int
-                      -> Polynomial r
-barycentricCoordinate s i =  barycentricCoordinates s !! i
+                      => Simplex v -> Int -> Polynomial r
+barycentricCoordinate s i = barycentricCoordinates s !! i
 
 -- Transforms a given simplex into the matrix representing the linear
 -- equation system for the barycentric coordinates.
 simplexToMatrix :: EuclideanSpace v
-                => Simplex v
-                -> M.Matrix Double
-simplexToMatrix s@(Simplex _ l) = M.matrix (n+1) (concatMap append1 l)
-    where n = geometricalDimension s
-          append1 v = 1 : toDouble' v
+                => Simplex v -> M.Matrix Double
+simplexToMatrix s@(Simplex _ l) = M.matrix (n+1) (concatMap prefix1 l)
+  where n         = geometricalDimension s
+        prefix1 v = 1 : toDouble' v
 
 -- Transforms a solution vector of the linear equation system for the
 -- barycentric coordinates into the corresponding polynomial.
 vectorToPolynomial :: Field s
                    => M.Vector Double -> Polynomial s
 vectorToPolynomial v = add (constant (head l)) (linearPolynomial (tail l))
-    where l = map fromDouble (M.toList v)
+  where l = map fromDouble (M.toList v)
 
 \end{code}
 
@@ -753,24 +752,22 @@ repsectively.
 -- Transforms a solution vector of the linear equation system into the
 -- gradients of the barycentric coordinates.
 vectorToGradient :: EuclideanSpace v
-                 => M.Vector Double
-                 -> v
-vectorToGradient v  = fromDouble' (tail (M.toList v))
+                 => M.Vector Double -> v
+vectorToGradient = fromDouble' . tail . M.toList
 
 -- | Compute gradients of the barycentric coordinates.
 barycentricGradients :: EuclideanSpace v
-                     => Simplex v
-                     -> [v]
-barycentricGradients t = {-# SCC "barycentricGradients" #-} map vectorToGradient (take (nt+1) (M.toColumns mat))
-    where mat = M.inv (simplexToMatrix (extendSimplex t))
-          nt  = topologicalDimension t
+                     => Simplex v -> [v]
+barycentricGradients t = {-# SCC "barycentricGradients" #-}
+    takeMap nt vectorToGradient (M.toColumns mat)-- (take (nt+1) (M.toColumns mat))
+  where mat = M.inv (simplexToMatrix (extendSimplex t))
+        nt  = topologicalDimension t
 
 -- | Compute gradients of the barycentric coordinates.
 barycentricGradients' :: EuclideanSpace v
-                      => Simplex v
-                      -> [v]
+                      => Simplex v -> [v]
 barycentricGradients' t = map (fromDouble' . M.toList) (tail (M.toRows mat))
-    where mat = M.inv (simplexToMatrix (extendSimplex t))
+  where mat = M.inv (simplexToMatrix (extendSimplex t))
 
 -- | Compute gradient of the barycentric coordinate corresponding to edge i
 barycentricGradient :: EuclideanSpace v
@@ -779,34 +776,49 @@ barycentricGradient :: EuclideanSpace v
                     -> v
 barycentricGradient t i = barycentricGradients t !! i
 
+localBarycentricGradients :: EuclideanSpace v
+                          => Simplex v
+                          -> [v]
+localBarycentricGradients t = map (fromDouble' . M.toList) (M.toColumns b)
+  where t'  = simplexToMatrix $ extendSimplex t
+        t'' = t' ?? (All, Drop 1)
+        a   = M.inv t'
+        a'  = a ?? (Drop 1, All)
+        b   = t'' M.<> a'
+
 \end{code}
 
 \begin{code}
 simplifyP :: Ring a => Polynomial a -> Polynomial a
-simplifyP (Polynomial d ts) = Polynomial d (aggregate (map simplifyT ts))
+simplifyP (Polynomial d ts) = Polynomial d (aggregate {-filter ((/= addId) . coefficient) ts) -} (map simplifyT ts))
 
--- combine all Constant into one
+-- combine all Constant terms into one
 -- combine all terms of the same ZipList into one
 type SimpleTerms a = [Term a]
 aggregate :: Ring a => [Term a] -> SimpleTerms a
 aggregate = foldr aggStep []
   where aggStep :: Ring a => Term a -> SimpleTerms a -> SimpleTerms a
         aggStep t [] = [t]
-        aggStep (Constant c1) (Constant c2 : ts) = Constant (add c1 c2) : ts
-        aggStep (Constant c1) ts                 = Constant c1 : ts
+        aggStep ct@(Constant c1) (t:ts)
+          | c1 == addId = t : ts
+          | otherwise   = case t of Constant c2 -> Constant (add c1 c2) : ts
+                                    _           -> ct : t : ts
+        -- aggStep (Constant c1) ts                 = Constant c1 : ts
         aggStep (Term fa1 mi) ts = if null matches then insertTerm (Term fa1 mi) ts
-                                                   else insertTerm (Term (add fa1 fa2) mi) rest
+                                                   -- else insertTerm (Term (add fa1 fa2) mi) rest
+                                                   else insertTerm (Term (sumR (fa1:map coefficient matches)) mi) rest
           where -- TODO: check this code
                 (matches, rest) = partition (eqMI mi) ts
-                [Term fa2 _mi'] = matches -- TODO: is matches always of length 1?
+                -- [Term fa2 _mi'] = matches -- TODO: is matches always of length 1?
 
 eqMI :: MI.MultiIndex -> Term a -> Bool
 eqMI _  (Constant _)  =  False -- all (0==) mi
 eqMI mi (Term _ mi')  =  mi == mi'
 
-insertTerm :: Term a -> SimpleTerms a -> SimpleTerms a
-insertTerm t (Constant c : ts) = Constant c : t : ts
-insertTerm t ts                = t : ts
+insertTerm :: Ring a => Term a -> SimpleTerms a -> SimpleTerms a
+insertTerm t (Constant c : ts)  = Constant c : t : ts
+  --  | c == addId  = t : ts
+insertTerm t ts                 = t : ts
 
 simplifyT :: Ring a => Term a -> Term a
 simplifyT (Term fa _) | fa == addId = Constant addId

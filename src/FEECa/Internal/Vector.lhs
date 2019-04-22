@@ -24,6 +24,8 @@ module FEECa.Internal.Vector(
   ) where
 
 
+import Prelude        hiding  ( (<>) )
+import FEECa.Utility.Utility  ( sumR )
 import FEECa.Internal.Spaces
 import FEECa.Utility.Print    as P
 
@@ -70,15 +72,28 @@ data Vector a = Vector { components :: [a] } deriving Show
 --instance Eq (Vector Rational) where
 --    v1 == v2 = and (zipWith (==) (components v1) (components v2))
 
+instance Functor Vector where
+  fmap f (Vector v) = Vector (fmap f v)
 
 instance Eq a => Eq (Vector a) where
-    v1 == v2 = and (zipWith (==) (components v1) (components v2))
+  v1 == v2 = and (zipWith (==) (components v1) (components v2))
 
--- | R^n as a vector space.
-instance Ring a => VectorSpace (Vector a) where
+  -- TODO: Note that |zipWith| stops when the shorter vector ends, so
+  --   for all v. vector []  ==  v
+  -- Thus an invariant for this definition to work is that vectors
+  -- compared for equality always have the same dimenstion.
+  -- TODO: #2 : why is the instance not derived?
+
+-- | R^n as a module.
+instance Ring a => Module (Vector a) where
   type Scalar (Vector a) = a
   addV (Vector l1) (Vector l2) = Vector $ zipWith add l1 l2
   sclV c (Vector l) = Vector $ map (mul c) l
+
+  -- Note: Also here, for addV to be correct, it is important that
+  -- vectors have the same length (dimension).
+
+instance Field a => VectorSpace (Vector a)
 
 -- | R^n as a Euclidean space.
 instance (Field a, Eq a) => EuclideanSpace (Vector a) where
@@ -90,8 +105,8 @@ instance (Field a, Eq a) => EuclideanSpace (Vector a) where
 projVector :: (Field a) => Vector a -> Vector a -> Vector a
 projVector = projDefault
 
-dotVector :: Ring a => Vector a -> Vector a -> a
-dotVector (Vector l1) (Vector l2) = foldl add addId (zipWith mul l1 l2)
+dotVector :: Ring r => Vector r -> Vector r -> r
+dotVector (Vector l1) (Vector l2) = sumR (zipWith mul l1 l2)
 
 -- | The dimension of vectors.
 instance Dimensioned (Vector a) where

@@ -32,13 +32,13 @@ increasing, i.e.\  $\sigma(j+1) > \sigma(j)$ for all $j=1,\ldots,k'-1$.
 %------------------------------------------------------------------------------%
 
 \begin{code}
-{-# LANGUAGE
-   MultiParamTypeClasses,
-   FlexibleContexts,
-   TypeFamilies,
-   FlexibleInstances #-}
 
-module FEECa.Internal.Simplex(
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE FlexibleInstances      #-}
+
+module FEECa.Internal.Simplex (
   -- * The Simplex type
   Simplex(..), simplex, simplex', referenceSimplex, face,
 
@@ -48,6 +48,7 @@ module FEECa.Internal.Simplex(
 
   -- * Subsimplices
   subsimplex, subsimplices, subsimplices', extendSimplex, complement,
+  boundary, boundarySigns,
 
   -- * Integration
   integrateOverSimplex,
@@ -59,6 +60,7 @@ module FEECa.Internal.Simplex(
   -- , fromDouble, fromDouble'
   ) where
 
+import Prelude    hiding  ( (<>) )
 import Data.List
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
@@ -97,7 +99,7 @@ import qualified  FEECa.Utility.Utility         as U
 
 \begin{code}
 -- | n-simplex represented by a list of vectors of given dimensionality
--- | Invariant: geometrical dimension = length of the vector - 1
+-- | Invariant: geometrical dimension = length of the vertices - 1
 data Simplex a =  Simplex { sigma :: [Int],
                             vertices :: [a] }
   deriving (Eq, Show)
@@ -153,8 +155,8 @@ using unicode.
 \begin{code}
 instance EuclideanSpace v => Pretty (Simplex v) where
   pPrint t@(Simplex _ l) = int m <> text "-Simplex in "
-                            <> rn n <> text ":\n"
-                            <> printVectorRow 2 cs
+                            <> rn n $+$ -- <> text ":\n"
+                            printVectorRow 2 cs
     where cs = map toDouble' l
           n  = geometricalDimension t
           m  = topologicalDimension t
@@ -317,7 +319,7 @@ subsimplex (Simplex _ []) _ _ =
 subsimplex s@(Simplex _ l) k i
     | k > n                     = error err_dim
     | i >= (n+1) `choose` (k+1) = error err_ind
-    | otherwise                 = Simplex indices (map (l !!) indices)
+    | otherwise                 = Simplex indices (U.takeIndices l indices)
   where n = topologicalDimension s
         indices = unrank (k+1) n i
         err_ind = "subsimplex: Index of subsimplex exceeds (n+1) choose (k+1)."
@@ -328,12 +330,15 @@ subsimplex s@(Simplex _ l) k i
 subsimplices :: Simplex v -> Int -> [Simplex v]
 subsimplices t@(Simplex _ l) k
     | k > n     = error err_dim
-    | otherwise = [Simplex i vs | (i, vs) <- zip indices subvertices]
-  where n = topologicalDimension t
-        indices = map (unrank (k+1) n) [0..(n+1) `choose` (k+1) - 1]
-        subvertices = map (U.takeIndices l) indices
+    | otherwise = [ Simplex ix (U.takeIndices l ix) |
+                      ix <- increasingLists (k+1) n ]
+  where n       = topologicalDimension t
         err_dim = "subsimplices: Dimensionality of subsimplices is"
                   ++ "higher than that of the simplex."
+-- TODO: note that the implementation has always seemed to ignore the original
+--  "permutation" of indices we had from the original simplex if the argument
+--  happens to be a subsimplex, ie: non-full simmplex. Now, should we check or
+--  is it intended functionality?
 
 -- | List subsimplices of given simplex with dimension larger or equal to k.
 subsimplices' :: Simplex v -> Int -> [Simplex v]
@@ -348,6 +353,22 @@ subsimplices' t k = concat [ subsimplices t k' | k' <- [k..n] ]
 complement :: Simplex v -> Simplex v -> [v]
 complement (Simplex _ l) (Simplex sigm _) = [l !! i | i <- [0..n], i `notElem` sigm]
     where n = length l - 1
+
+boundary :: Simplex v -> [Simplex v]
+boundary t
+  | k <= 0    = error err_dim
+  | otherwise = subsimplices t (k-1)
+  where k = topologicalDimension t
+        err_dim = "boundary: Can't take the boundary of a simplex with topological dimension "
+                  ++ "less than 1."
+
+boundarySigns :: EuclideanSpace v => Simplex v -> [Scalar v]
+boundarySigns t
+  | k <= 0    = error err_dim
+  | otherwise = map (\x -> if (even x) then mulId else addInv mulId) [0..k]
+  where k = topologicalDimension t
+        err_dim = "boundary: Can't take the boundary of a simplex with topological dimension "
+                  ++ "less than 1."
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -367,27 +388,29 @@ For the computation of the barycentric coordinates of a simplex whose
 extendSimplex :: EuclideanSpace v => Simplex v -> Simplex v
 extendSimplex t
     | n == nt   = t
-    | otherwise = simplex' p0 (take n (extendVectors n dirs))
+    | otherwise = simplex' p0 (extendVectors n dirs)
   where n     = geometricalDimension t
         nt    = topologicalDimension t
         dirs  = spanningVectors t
         p0    = referenceVertex t
 
-norm :: EuclideanSpace v => v -> v -> Ordering
-norm v1 v2 = compare v12 v22
-  where v12 = toDouble $ dot v1 v1
-        v22 = toDouble $ dot v2 v2
-
 -- | Uses the Gram-Schmidt method to add at most n orthogonal vectors to the
 -- | given set of vectors. Due to round off error the resulting list may contain
 -- | more than n vectors, which then have to be removed manually.
-extendVectors :: (EuclideanSpace v , Eq (Scalar v))
+extendVectors :: EuclideanSpace v
               => Int -> [v] -> [v]
-extendVectors n vs = vs ++ take (n - k) (sortBy (flip norm) vs')
-  where vs' = drop k $ gramSchmidt $ vs ++ [unitVector n i | i <- [0..n-1]]
-        k   = length vs
-
-
+extendVectors n [] = extendOrthGS (Right n)
+extendVectors _ vs = extendOrthGS (Left vs)
+    {- XXX: this was there before, jointly with providing GS with the
+            n unit vectors in addition to vs, but it seems to be quite
+            unnecessary; the comment in the function description doesn't seem
+            to apply since we know at most n-k additional vectors could ever
+            form an orthogonal basis jointly with vs; changed it so that GS
+            takes care of this, as would be expected (ie: it will give at most
+            n orthogonal vectors where n = dim (EuclideanSpace v):
+        take (n - k)  (U.sortOn (Down . norm2) us
+      where us = {-drop k $ -}gramSchmidt $ vs ++ [unitVector n i | i <- [0..(n-1)]]
+            k  = length vs -}
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -430,11 +453,7 @@ extendVectors n vs = vs ++ take (n - k) (sortBy (flip norm) vs')
 -- | Convert a vector given in barycentric coordinates to euclidean coordinates.
 barycentricToCartesian :: EuclideanSpace v
                        => Simplex v -> v -> v
-barycentricToCartesian (Simplex _ vs) v = foldl sclAdd zero' (zip v' vs)
-  where sclAdd p (c, p0) = addV p (sclV c p0)
-        zero'            = zeroV (head vs)
-        v'               = toList v
-
+barycentricToCartesian (Simplex _ vs) v = U.sumV (zipWith sclV (toList v) vs)
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -524,7 +543,7 @@ integral of $f$ over $\smp{T}$ can then be approximated using
 
 -- | Numerically integrate the function f over the simplex t using a Gauss-Jacobi
 -- | quadrature rule with q nodes.
-integrateOverSimplex :: (EuclideanSpace v, r ~ Scalar v, Eq r)
+integrateOverSimplex :: (EuclideanSpace v, r ~ Scalar v)
                      => Int             -- q
                      -> Simplex v       -- t
                      -> (v -> r)        -- f

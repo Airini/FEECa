@@ -6,28 +6,27 @@ module to be used with the \code{QuickCheck}\cite{package:qc} module.
 
 %------------------------------------------------------------------------------%
 
-\ignore{
+% \ignore{
 \begin{code}
 
 {-# LANGUAGE TemplateHaskell #-}
 
 module FEECa.Utility.CombinatoricsTest (
-                          testCombinatorics
-                          ) where
+    testCombinatorics
+  ) where
 
-import FEECa.Utility.Combinatorics ( increasingLists,
-                                    increasingLists1,
-                                    unrank,
-                                    sublists,
-                                    sumRLists,
-                                    sumRLists' )
-import qualified FEECa.Utility.Combinatorics as C ( choose )
-import Test.QuickCheck
-import Test.QuickCheck.All
-import Data.List (sort, (\\))
+import Control.Monad  ( liftM )
+
+import FEECa.Utility.Combinatorics  ( choose, unrank, sublists,
+                                      increasingLists, increasingLists1,
+                                      sumRLists, sumRLists' )
+import FEECa.Utility.Test           ( quickCheckWithAll )
+
+import qualified  Test.QuickCheck as Q  ( choose )
+import            Test.QuickCheck       ( Arbitrary, arbitrary )
 
 \end{code}
-}
+%}
 
 %------------------------------------------------------------------------------%
 
@@ -48,14 +47,15 @@ $k \leq n$ and $n \leq 100$.
 
 \begin{code}
 -- | Data type for parameters k,n defining an increasing list.
-data Parameters = Parameters Int Int deriving (Eq, Show)
+data Parameters = Parameters Int Int
+  deriving (Eq, Show)
 
 -- | Arbitrary instance that randomly chooses k,n such that 0 <= k <= n <= 20.
 instance Arbitrary Parameters where
-    arbitrary = do
-      n <- choose (0,20)
-      k <- choose (0,n)
-      return (Parameters k n)
+  arbitrary = do
+    n <- Q.choose (0,20)
+    k <- Q.choose (0,n)
+    return (Parameters k n)
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -86,7 +86,7 @@ prop_increasing (Parameters k n) = increasing (increasingLists k n)
 As noted in \ref{sec:Combinatorics}, for given $k,n$ the number of increasing
 lists is $(n + 1) \choose k$ or $n \choose k$, depending on whether the zero is
 included in the list. The \code{increasingLists} and the \code{increasingLists1}
- functions should therefore return exactly this number of lists.
+functions should therefore return exactly this number of lists.
 
 %------------------------------------------------------------------------------%
 
@@ -96,13 +96,13 @@ included in the list. The \code{increasingLists} and the \code{increasingLists1}
 -- | increasing lists with length k + 1 and elements in [0..n].
 prop_number :: Parameters -> Bool
 prop_number (Parameters k n) =
-    length (increasingLists k n) == (n + 1) `C.choose` k
+  length (increasingLists k n) == (n + 1) `choose` k
 
 -- | The number of lists returned by increasingLists must be the number of all
 -- | increasing lists with length k + 1 and elements in [1..n].
 prop_number1 :: Parameters -> Bool
 prop_number1 (Parameters k n) =
-    length (increasingLists1 k n) == n `C.choose` k
+  length (increasingLists1 k n) == n `choose` k
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -117,12 +117,12 @@ We also require the lists returned by \code{increasingLists} and
 -- | The lists returned by increasingLists should be in order.
 prop_ordered :: Parameters -> Bool
 prop_ordered (Parameters k n) = and $ zipWith (<) l (tail l)
-    where l = increasingLists k n
+  where l = increasingLists k n
 
 -- | The lists returned by increasingLists1 should be in order.
 prop_ordered1 :: Parameters -> Bool
 prop_ordered1 (Parameters k n) = and $ zipWith (<) l (tail l)
-    where l = increasingLists1 k n
+  where l = increasingLists1 k n
 
 \end{code}
 
@@ -140,9 +140,8 @@ shoul be chaged.
 -- | For given index i 'unrank' should return the ith element of the increasing
 -- | lists in lexicographic order.
 prop_index :: Parameters -> Int -> Bool
-prop_index (Parameters k n) i =
-    increasingLists k n !! i' == unrank k n i'
-        where i' = i `mod` ((n + 1) `C.choose` k)
+prop_index (Parameters k n) i = increasingLists k n !! i' == unrank k n i'
+  where i' = i `mod` ((n + 1) `choose` k)
 
 \end{code}
 
@@ -163,20 +162,20 @@ $k$ such sublists.
 -- | For a given list of length k, 'sublists' should return k lists.
 prop_sublists_number :: Parameters -> Int -> Bool
 prop_sublists_number (Parameters k n) i = length(sublists l) == k
-    where l = unrank k n i'
-          i' = i `mod` ((n + 1) `C.choose` k)
+  where l = unrank k n i'
+        i' = i `mod` ((n + 1) `choose` k)
 
 -- | 'sublists' should preserve the order of the input list.
 prop_sublists_order :: Parameters -> Int -> Bool
 prop_sublists_order (Parameters k n) i = all increasing (sublists l)
-    where l = unrank k n i'
-          i' = i `mod` ((n + 1) `C.choose` k)
+  where l = unrank k n i'
+        i' = i `mod` ((n + 1) `choose` k)
 
 -- | Lists returend by 'sublists' for a length k list should have length k - n1.
 prop_sublists_length :: Parameters -> Int -> Bool
 prop_sublists_length (Parameters k n) i = all ((k - 1)==) (map length (sublists l))
-    where l = unrank k n i'
-          i' = i `mod` ((n + 1) `C.choose` k)
+  where l = unrank k n i'
+        i' = i `mod` ((n + 1) `choose` k)
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -192,12 +191,11 @@ To simplify the testing of the functions that generate lists of a certain degree
 -- | Data type to represent small integers that are suitable for lengths of
 -- | lists.
 data SmallInt = SmallInt Int
-                deriving (Eq, Show)
+  deriving (Eq, Show)
 
 -- | Randomly choose an integer from the set [0,..,20].
 instance Arbitrary SmallInt where
-    arbitrary = do n <- choose (0, 10)
-                   return (SmallInt n)
+  arbitrary = liftM SmallInt (Q.choose (0,10))
 \end{code}
 
 %------------------------------------------------------------------------------%
@@ -230,18 +228,18 @@ equality in the first property relaxed to less or equal.
 -- | Lists returned by 'prop_sum_r' should sum to r.
 prop_sum_r' :: SmallInt -> SmallInt -> Bool
 prop_sum_r' (SmallInt n) (SmallInt r) = all (r >=) $ map sum (sumRLists' n r)
-    where l = sumRLists' n r
+  where l = sumRLists' n r
 
 -- | Lists returned by 'prop_sum_r' should have length n.
 prop_sum_r'_length :: SmallInt -> SmallInt -> Bool
 prop_sum_r'_length (SmallInt n) (SmallInt r) = all (n ==) $ map length l
-    where l = sumRLists' n r
+  where l = sumRLists' n r
 
 -- | Lists returend by 'prop_sum_r_positive' should contain only elements
 -- | larger or equal zero.
 prop_sum_r'_positive :: SmallInt -> SmallInt -> Bool
 prop_sum_r'_positive (SmallInt n) (SmallInt r) = all (all (0<=)) l
-    where l = sumRLists' n r
+  where l = sumRLists' n r
 
 \end{code}
 
@@ -253,7 +251,7 @@ prop_sum_r'_positive (SmallInt n) (SmallInt r) = all (all (0<=)) l
 \begin{code}
 
 return []
-testCombinatorics = $quickCheckAll
+testCombinatorics = $quickCheckWithAll
 
 \end{code}
 
