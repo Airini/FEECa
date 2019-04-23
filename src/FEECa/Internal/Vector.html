@@ -26,91 +26,94 @@
         <div id="content">
 
             <h1 id="vectors">Vectors</h1>
-<p>The <span><code>Vector</code></span> module provides a data type and functions for the handling of vectors in <span class="math inline">\(n\)</span>-dimensional Euclidean space <span class="math inline">\({\mathbb{R}^{n}}\)</span>.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="ot">{-# LANGUAGE TypeFamilies #-}</span>
-
-<span class="kw">module</span> <span class="dt">FEECa.Internal.Vector</span>(
-
-  <span class="co">-- * The Vector Type</span>
-    <span class="dt">Vector</span>(<span class="fu">..</span>), <span class="dt">Dimensioned</span>(<span class="fu">..</span>), vector
-
-  <span class="co">-- * Manipulating Vectors</span>
-  , toList
-
-  <span class="co">-- * Mathematical Functions</span>
-  , dot, pow
-
-  ) <span class="kw">where</span>
-
-<span class="kw">import </span><span class="dt">FEECa.Utility.Utility</span> (sumR)
-<span class="kw">import </span><span class="dt">FEECa.Internal.Spaces</span>
-<span class="kw">import </span><span class="dt">FEECa.Utility.Print</span>    <span class="kw">as</span> <span class="dt">P</span></code></pre></div>
-<h2 id="the-vector-type">The <span><code>Vector</code></span> Type</h2>
-<p>Vectors in <span class="math inline">\({\mathbb{R}^{n}}\)</span> are represented using the parametrized type <span><code>Vector a</code></span> where <span><code>a</code></span> is the number type used to represent the scalars. Internally a vector is implemented using a list <span><code>[a]</code></span>. The dimension <span class="math inline">\(n\)</span> is inferred from the length of the list. Since vectors from Euclidean spaces of different dimension are of the same type, it is up to the user not to mix vectors from different spaces, which will lead to runtime errors.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="co">-- | Vectors in n-dimensional euclidean space.</span>
-<span class="kw">data</span> <span class="dt">Vector</span> a <span class="fu">=</span> <span class="dt">Vector</span> {<span class="ot"> components ::</span> [a] } <span class="kw">deriving</span> <span class="dt">Show</span></code></pre></div>
-<p>To use the <span><code>Vector a</code></span> type in the <span><code>FEECa</code></span> framework, we have to make it an instance of the <span><code>VectorSpace</code></span> and the <span><code>EuclideanSpace</code></span> classes. We instantiate two types <span><code>Vector Rational</code></span> and <span><code>Vector Double</code></span> in order to have one type with exact arithmetic using Haskells <span><code>Rational</code></span> type and one using standard floating point arithmetic.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="co">-- | Use numerical equality for floating point arithmetic.</span>
-<span class="co">-- instance Eq (Vector Double) where</span>
-<span class="co">--    v1 == v2 = and (zipWith U.eqNum (components v1) (components v2))</span>
-
-<span class="co">-- | Use exact equality for exact arithmetic.</span>
-<span class="co">--instance Eq (Vector Rational) where</span>
-<span class="co">--    v1 == v2 = and (zipWith (==) (components v1) (components v2))</span>
-
-<span class="kw">instance</span> <span class="dt">Functor</span> <span class="dt">Vector</span> <span class="kw">where</span>
-  fmap f (<span class="dt">Vector</span> v) <span class="fu">=</span> <span class="dt">Vector</span> (fmap f v)
-
-<span class="kw">instance</span> <span class="dt">Eq</span> a <span class="ot">=&gt;</span> <span class="dt">Eq</span> (<span class="dt">Vector</span> a) <span class="kw">where</span>
-  v1 <span class="fu">==</span> v2 <span class="fu">=</span> and (zipWith (<span class="fu">==</span>) (components v1) (components v2))
-
-  <span class="co">-- TODO: Note that |zipWith| stops when the shorter vector ends, so</span>
-  <span class="co">--   for all v. vector []  ==  v</span>
-  <span class="co">-- Thus an invariant for this definition to work is that vectors</span>
-  <span class="co">-- compared for equality always have the same dimenstion.</span>
-  <span class="co">-- TODO: #2 : why is the instance not derived?</span>
-
-<span class="co">-- | R^n as a vector space.</span>
-<span class="kw">instance</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">Module</span> (<span class="dt">Vector</span> a) <span class="kw">where</span>
-  <span class="kw">type</span> <span class="dt">Scalar</span> (<span class="dt">Vector</span> a) <span class="fu">=</span> a
-  addV (<span class="dt">Vector</span> l1) (<span class="dt">Vector</span> l2) <span class="fu">=</span> <span class="dt">Vector</span> <span class="fu">$</span> zipWith add l1 l2
-  sclV c (<span class="dt">Vector</span> l) <span class="fu">=</span> <span class="dt">Vector</span> <span class="fu">$</span> map (mul c) l
-
-  <span class="co">-- Note: Also here, for addV to be correct, it is important that</span>
-  <span class="co">-- vectors have the same length (dimension).</span>
-
-<span class="kw">instance</span> <span class="dt">Field</span> a <span class="ot">=&gt;</span> <span class="dt">VectorSpace</span> (<span class="dt">Vector</span> a)
-
-<span class="co">-- | R^n as a Euclidean space.</span>
-<span class="kw">instance</span> <span class="dt">Field</span> a <span class="ot">=&gt;</span> <span class="dt">EuclideanSpace</span> (<span class="dt">Vector</span> a) <span class="kw">where</span>
-  dot       <span class="fu">=</span> dotVector
-  toList    <span class="fu">=</span> components
-  fromList  <span class="fu">=</span> vector
-
-<span class="ot">dotVector ::</span> <span class="dt">Ring</span> r <span class="ot">=&gt;</span> <span class="dt">Vector</span> r <span class="ot">-&gt;</span> <span class="dt">Vector</span> r <span class="ot">-&gt;</span> r
-dotVector (<span class="dt">Vector</span> l1) (<span class="dt">Vector</span> l2) <span class="fu">=</span> sumR (zipWith mul l1 l2)
-
-<span class="co">-- | The dimension of vectors.</span>
-<span class="kw">instance</span> <span class="dt">Dimensioned</span> (<span class="dt">Vector</span> a) <span class="kw">where</span>
-  dim (<span class="dt">Vector</span> l) <span class="fu">=</span> length l</code></pre></div>
+<p>The <code>Vector</code> module provides a data type and functions for the handling of vectors in <span class="math inline">\(n\)</span>-dimensional Euclidean space <span class="math inline">\(\mathbb{R}^{n}\)</span>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" title="1"></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="ot">{-# LANGUAGE TypeFamilies #-}</span></a>
+<a class="sourceLine" id="cb1-3" title="3"></a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="kw">module</span> <span class="dt">FEECa.Internal.Vector</span>(</a>
+<a class="sourceLine" id="cb1-5" title="5"></a>
+<a class="sourceLine" id="cb1-6" title="6">  <span class="co">-- * The Vector Type</span></a>
+<a class="sourceLine" id="cb1-7" title="7">    <span class="dt">Vector</span>(<span class="op">..</span>), <span class="dt">Dimensioned</span>(<span class="op">..</span>), vector</a>
+<a class="sourceLine" id="cb1-8" title="8"></a>
+<a class="sourceLine" id="cb1-9" title="9">  <span class="co">-- * Manipulating Vectors</span></a>
+<a class="sourceLine" id="cb1-10" title="10">  , toList</a>
+<a class="sourceLine" id="cb1-11" title="11"></a>
+<a class="sourceLine" id="cb1-12" title="12">  <span class="co">-- * Mathematical Functions</span></a>
+<a class="sourceLine" id="cb1-13" title="13">  , dot, pow</a>
+<a class="sourceLine" id="cb1-14" title="14"></a>
+<a class="sourceLine" id="cb1-15" title="15">  ) <span class="kw">where</span></a>
+<a class="sourceLine" id="cb1-16" title="16"></a>
+<a class="sourceLine" id="cb1-17" title="17"></a>
+<a class="sourceLine" id="cb1-18" title="18"><span class="kw">import</span> <span class="dt">Prelude</span>        <span class="kw">hiding</span>  ( (&lt;&gt;) )</a>
+<a class="sourceLine" id="cb1-19" title="19"><span class="kw">import</span> <span class="dt">FEECa.Utility.Utility</span>  ( sumR )</a>
+<a class="sourceLine" id="cb1-20" title="20"><span class="kw">import</span> <span class="dt">FEECa.Internal.Spaces</span></a>
+<a class="sourceLine" id="cb1-21" title="21"><span class="kw">import</span> <span class="dt">FEECa.Utility.Print</span>    <span class="kw">as</span> <span class="dt">P</span></a>
+<a class="sourceLine" id="cb1-22" title="22"></a></code></pre></div>
+<h2 id="the-vector-type">The <code>Vector</code> Type</h2>
+<p>Vectors in <span class="math inline">\(\mathbb{R}^{n}\)</span> are represented using the parametrized type <code>Vector a</code> where <code>a</code> is the number type used to represent the scalars. Internally a vector is implemented using a list <code>[a]</code>. The dimension <span class="math inline">\(n\)</span> is inferred from the length of the list. Since vectors from Euclidean spaces of different dimension are of the same type, it is up to the user not to mix vectors from different spaces, which will lead to runtime errors.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" title="1"></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="co">-- | Vectors in n-dimensional euclidean space.</span></a>
+<a class="sourceLine" id="cb2-3" title="3"><span class="kw">data</span> <span class="dt">Vector</span> a <span class="ot">=</span> <span class="dt">Vector</span> {<span class="ot"> components ::</span> [a] } <span class="kw">deriving</span> <span class="dt">Show</span></a></code></pre></div>
+<p>To use the <code>Vector a</code> type in the <code>FEECa</code> framework, we have to make it an instance of the <code>VectorSpace</code> and the <code>EuclideanSpace</code> classes. We instantiate two types <code>Vector Rational</code> and <code>Vector Double</code> in order to have one type with exact arithmetic using Haskells <code>Rational</code> type and one using standard floating point arithmetic.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" title="1"></a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="co">-- | Use numerical equality for floating point arithmetic.</span></a>
+<a class="sourceLine" id="cb3-3" title="3"><span class="co">-- instance Eq (Vector Double) where</span></a>
+<a class="sourceLine" id="cb3-4" title="4"><span class="co">--    v1 == v2 = and (zipWith U.eqNum (components v1) (components v2))</span></a>
+<a class="sourceLine" id="cb3-5" title="5"></a>
+<a class="sourceLine" id="cb3-6" title="6"><span class="co">-- | Use exact equality for exact arithmetic.</span></a>
+<a class="sourceLine" id="cb3-7" title="7"><span class="co">--instance Eq (Vector Rational) where</span></a>
+<a class="sourceLine" id="cb3-8" title="8"><span class="co">--    v1 == v2 = and (zipWith (==) (components v1) (components v2))</span></a>
+<a class="sourceLine" id="cb3-9" title="9"></a>
+<a class="sourceLine" id="cb3-10" title="10"><span class="kw">instance</span> <span class="dt">Functor</span> <span class="dt">Vector</span> <span class="kw">where</span></a>
+<a class="sourceLine" id="cb3-11" title="11">  <span class="fu">fmap</span> f (<span class="dt">Vector</span> v) <span class="ot">=</span> <span class="dt">Vector</span> (<span class="fu">fmap</span> f v)</a>
+<a class="sourceLine" id="cb3-12" title="12"></a>
+<a class="sourceLine" id="cb3-13" title="13"><span class="kw">instance</span> <span class="dt">Eq</span> a <span class="ot">=&gt;</span> <span class="dt">Eq</span> (<span class="dt">Vector</span> a) <span class="kw">where</span></a>
+<a class="sourceLine" id="cb3-14" title="14">  v1 <span class="op">==</span> v2 <span class="ot">=</span> <span class="fu">and</span> (<span class="fu">zipWith</span> (<span class="op">==</span>) (components v1) (components v2))</a>
+<a class="sourceLine" id="cb3-15" title="15"></a>
+<a class="sourceLine" id="cb3-16" title="16">  <span class="co">-- TODO: Note that |zipWith| stops when the shorter vector ends, so</span></a>
+<a class="sourceLine" id="cb3-17" title="17">  <span class="co">--   for all v. vector []  ==  v</span></a>
+<a class="sourceLine" id="cb3-18" title="18">  <span class="co">-- Thus an invariant for this definition to work is that vectors</span></a>
+<a class="sourceLine" id="cb3-19" title="19">  <span class="co">-- compared for equality always have the same dimenstion.</span></a>
+<a class="sourceLine" id="cb3-20" title="20">  <span class="co">-- TODO: #2 : why is the instance not derived?</span></a>
+<a class="sourceLine" id="cb3-21" title="21"></a>
+<a class="sourceLine" id="cb3-22" title="22"><span class="co">-- | R^n as a vector space.</span></a>
+<a class="sourceLine" id="cb3-23" title="23"><span class="kw">instance</span> <span class="dt">Ring</span> a <span class="ot">=&gt;</span> <span class="dt">Module</span> (<span class="dt">Vector</span> a) <span class="kw">where</span></a>
+<a class="sourceLine" id="cb3-24" title="24">  <span class="kw">type</span> <span class="dt">Scalar</span> (<span class="dt">Vector</span> a) <span class="ot">=</span> a</a>
+<a class="sourceLine" id="cb3-25" title="25">  addV (<span class="dt">Vector</span> l1) (<span class="dt">Vector</span> l2) <span class="ot">=</span> <span class="dt">Vector</span> <span class="op">$</span> <span class="fu">zipWith</span> add l1 l2</a>
+<a class="sourceLine" id="cb3-26" title="26">  sclV c (<span class="dt">Vector</span> l) <span class="ot">=</span> <span class="dt">Vector</span> <span class="op">$</span> <span class="fu">map</span> (mul c) l</a>
+<a class="sourceLine" id="cb3-27" title="27"></a>
+<a class="sourceLine" id="cb3-28" title="28">  <span class="co">-- Note: Also here, for addV to be correct, it is important that</span></a>
+<a class="sourceLine" id="cb3-29" title="29">  <span class="co">-- vectors have the same length (dimension).</span></a>
+<a class="sourceLine" id="cb3-30" title="30"></a>
+<a class="sourceLine" id="cb3-31" title="31"><span class="kw">instance</span> <span class="dt">Field</span> a <span class="ot">=&gt;</span> <span class="dt">VectorSpace</span> (<span class="dt">Vector</span> a)</a>
+<a class="sourceLine" id="cb3-32" title="32"></a>
+<a class="sourceLine" id="cb3-33" title="33"><span class="co">-- | R^n as a Euclidean space.</span></a>
+<a class="sourceLine" id="cb3-34" title="34"><span class="kw">instance</span> <span class="dt">Field</span> a <span class="ot">=&gt;</span> <span class="dt">EuclideanSpace</span> (<span class="dt">Vector</span> a) <span class="kw">where</span></a>
+<a class="sourceLine" id="cb3-35" title="35">  dot       <span class="ot">=</span> dotVector</a>
+<a class="sourceLine" id="cb3-36" title="36">  toList    <span class="ot">=</span> components</a>
+<a class="sourceLine" id="cb3-37" title="37">  fromList  <span class="ot">=</span> vector</a>
+<a class="sourceLine" id="cb3-38" title="38"></a>
+<a class="sourceLine" id="cb3-39" title="39"><span class="ot">dotVector ::</span> <span class="dt">Ring</span> r <span class="ot">=&gt;</span> <span class="dt">Vector</span> r <span class="ot">-&gt;</span> <span class="dt">Vector</span> r <span class="ot">-&gt;</span> r</a>
+<a class="sourceLine" id="cb3-40" title="40">dotVector (<span class="dt">Vector</span> l1) (<span class="dt">Vector</span> l2) <span class="ot">=</span> sumR (<span class="fu">zipWith</span> mul l1 l2)</a>
+<a class="sourceLine" id="cb3-41" title="41"></a>
+<a class="sourceLine" id="cb3-42" title="42"><span class="co">-- | The dimension of vectors.</span></a>
+<a class="sourceLine" id="cb3-43" title="43"><span class="kw">instance</span> <span class="dt">Dimensioned</span> (<span class="dt">Vector</span> a) <span class="kw">where</span></a>
+<a class="sourceLine" id="cb3-44" title="44">  dim (<span class="dt">Vector</span> l) <span class="ot">=</span> <span class="fu">length</span> l</a></code></pre></div>
 <h3 id="constructors">Constructors</h3>
-<p>The <span><code>Vector a</code></span> data type provides the <span><code>vector</code></span> function as a smart constructor for vectors. Even though up to now the constructor does nothing but calling the type constructor, the <span><code>vector</code></span> functions is provided to hide the internal implementation to other modules.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="co">-- | Create vector from list of components.</span>
-<span class="ot">vector ::</span> [a] <span class="ot">-&gt;</span> <span class="dt">Vector</span> a
-vector <span class="fu">=</span> <span class="dt">Vector</span></code></pre></div>
+<p>The <code>Vector a</code> data type provides the <code>vector</code> function as a smart constructor for vectors. Even though up to now the constructor does nothing but calling the type constructor, the <code>vector</code> functions is provided to hide the internal implementation to other modules.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" title="1"></a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="co">-- | Create vector from list of components.</span></a>
+<a class="sourceLine" id="cb4-3" title="3"><span class="ot">vector ::</span> [a] <span class="ot">-&gt;</span> <span class="dt">Vector</span> a</a>
+<a class="sourceLine" id="cb4-4" title="4">vector <span class="ot">=</span> <span class="dt">Vector</span></a></code></pre></div>
 <h3 id="printing-vectors">Printing Vectors</h3>
-<p>Vectors can be displayed on the command line in two ways. As an instance of <span><code>Show</code></span>, calling <span><code>show</code></span> on a vector will display its type structure. Using <span><code>pPrint</code></span> to render the vector, the vector is redered as a column vector using unicode characters.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="co">-- | Pretty printing for vectors.</span>
-<span class="kw">instance</span> <span class="dt">Field</span> a <span class="ot">=&gt;</span> <span class="dt">Pretty</span> (<span class="dt">Vector</span> a) <span class="kw">where</span>
-  pPrint v <span class="fu">=</span> text <span class="st">&quot;Vector in &quot;</span>
-              <span class="fu">&lt;&gt;</span> rn (dim v)
-              <span class="fu">&lt;&gt;</span> text <span class="st">&quot;:&quot;</span>
-              <span class="fu">P.$$</span> printVector <span class="dv">2</span> (map toDouble (components v))</code></pre></div>
+<p>Vectors can be displayed on the command line in two ways. As an instance of <code>Show</code>, calling <code>show</code> on a vector will display its type structure. Using <code>pPrint</code> to render the vector, the vector is redered as a column vector using unicode characters.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" title="1"></a>
+<a class="sourceLine" id="cb5-2" title="2"><span class="co">-- | Pretty printing for vectors.</span></a>
+<a class="sourceLine" id="cb5-3" title="3"><span class="kw">instance</span> <span class="dt">Field</span> a <span class="ot">=&gt;</span> <span class="dt">Pretty</span> (<span class="dt">Vector</span> a) <span class="kw">where</span></a>
+<a class="sourceLine" id="cb5-4" title="4">  pPrint v <span class="ot">=</span> text <span class="st">&quot;Vector in &quot;</span></a>
+<a class="sourceLine" id="cb5-5" title="5">              <span class="op">&lt;&gt;</span> rn (dim v)</a>
+<a class="sourceLine" id="cb5-6" title="6">              <span class="op">&lt;&gt;</span> text <span class="st">&quot;:&quot;</span></a>
+<a class="sourceLine" id="cb5-7" title="7">              <span class="op">P.$$</span> printVector <span class="dv">2</span> (<span class="fu">map</span> toDouble (components v))</a></code></pre></div>
 
         </div>
         <div id="footer">

@@ -26,136 +26,136 @@
         <div id="content">
 
             <h1 id="combinatorics">Combinatorics</h1>
-<p>The <span><code>Combinatorics</code></span> module contains functions for common combinatorial tasks that arise in <span><code>FEECa</code></span>. Those are</p>
+<p>The <code>Combinatorics</code> module contains functions for common combinatorial tasks that arise in <code>FEECa</code>. Those are</p>
 <ul>
 <li><p>computation of binomial coefficients and factorials,</p></li>
 <li><p>generation and indexing of increasing lists,</p></li>
 <li><p>generation of multi-indices of a given degree.</p></li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="kw">module</span> <span class="dt">FEECa.Utility.Combinatorics</span> (
-
-  <span class="co">-- * Mathematical Functions</span>
-    choose, factorial
-
-  <span class="co">-- * Increasing Lists</span>
-  <span class="co">-- ** Generation</span>
-  , increasingLists, increasingLists1
-  <span class="co">-- ** Indexing</span>
-  , unrank
-
-  <span class="co">-- * Lists of degree r</span>
-  , sublists, kSublists, sumRLists, sumRLists'
-
-  ) <span class="kw">where</span>
-
-
-<span class="kw">import qualified</span> <span class="dt">Math.Combinatorics.Exact.Binomial</span>  <span class="kw">as</span> <span class="dt">B</span>
-<span class="kw">import qualified</span> <span class="dt">Math.Combinatorics.Exact.Factorial</span> <span class="kw">as</span> <span class="dt">F</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb1-1" title="1"></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">module</span> <span class="dt">FEECa.Utility.Combinatorics</span> (</a>
+<a class="sourceLine" id="cb1-3" title="3"></a>
+<a class="sourceLine" id="cb1-4" title="4">  <span class="co">-- * Mathematical Functions</span></a>
+<a class="sourceLine" id="cb1-5" title="5">    choose, factorial</a>
+<a class="sourceLine" id="cb1-6" title="6"></a>
+<a class="sourceLine" id="cb1-7" title="7">  <span class="co">-- * Increasing Lists</span></a>
+<a class="sourceLine" id="cb1-8" title="8">  <span class="co">-- ** Generation</span></a>
+<a class="sourceLine" id="cb1-9" title="9">  , increasingLists, increasingLists1</a>
+<a class="sourceLine" id="cb1-10" title="10">  <span class="co">-- ** Indexing</span></a>
+<a class="sourceLine" id="cb1-11" title="11">  , unrank</a>
+<a class="sourceLine" id="cb1-12" title="12"></a>
+<a class="sourceLine" id="cb1-13" title="13">  <span class="co">-- * Lists of degree r</span></a>
+<a class="sourceLine" id="cb1-14" title="14">  , sublists, kSublists, sumRLists, sumRLists'</a>
+<a class="sourceLine" id="cb1-15" title="15"></a>
+<a class="sourceLine" id="cb1-16" title="16">  ) <span class="kw">where</span></a>
+<a class="sourceLine" id="cb1-17" title="17"></a>
+<a class="sourceLine" id="cb1-18" title="18"></a>
+<a class="sourceLine" id="cb1-19" title="19"><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Math.Combinatorics.Exact.Binomial</span>  <span class="kw">as</span> <span class="dt">B</span></a>
+<a class="sourceLine" id="cb1-20" title="20"><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Math.Combinatorics.Exact.Factorial</span> <span class="kw">as</span> <span class="dt">F</span></a></code></pre></div>
 <h2 id="mathematical-functions">Mathematical Functions</h2>
-<p>The <span><code>Combinatorics</code></span> module re-exports the function <span><code>choose</code></span> for the computation of binomial coefficients and the function <span><code>factorial</code></span> for the computation of factorials from the <strong>exact-combinatorics</strong> <span class="citation">(Romano 2015)</span> package.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Simple wrapper for 'factorial' that returns Num types.</span>
-<span class="ot">factorial ::</span> <span class="dt">Num</span> a <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> a
-factorial <span class="fu">=</span> fromInteger <span class="fu">.</span> F.factorial
-
-<span class="co">-- | Simple wrapper for 'choose'</span>
-<span class="ot">choose ::</span> (<span class="dt">Integral</span> a, <span class="dt">Num</span> b) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> b
-choose i j <span class="fu">=</span> fromIntegral (B.choose i j)</code></pre></div>
+<p>The <code>Combinatorics</code> module re-exports the function <code>choose</code> for the computation of binomial coefficients and the function <code>factorial</code> for the computation of factorials from the <strong>exact-combinatorics</strong> <span class="citation" data-cites="package:ec">(Romano 2015)</span> package.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb2-1" title="1"><span class="co">-- | Simple wrapper for 'factorial' that returns Num types.</span></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="ot">factorial ::</span> <span class="dt">Num</span> a <span class="ot">=&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> a</a>
+<a class="sourceLine" id="cb2-3" title="3">factorial <span class="ot">=</span> <span class="fu">fromInteger</span> <span class="op">.</span> F.factorial</a>
+<a class="sourceLine" id="cb2-4" title="4"></a>
+<a class="sourceLine" id="cb2-5" title="5"><span class="co">-- | Simple wrapper for 'choose'</span></a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="ot">choose ::</span> (<span class="dt">Integral</span> a, <span class="dt">Num</span> b) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> b</a>
+<a class="sourceLine" id="cb2-7" title="7">choose i j <span class="ot">=</span> <span class="fu">fromIntegral</span> (B.choose i j)</a></code></pre></div>
 <h2 id="increasing-lists">Increasing Lists</h2>
-<p>Increasing lists of length <span class="math inline">\(k\)</span> with elements in <span class="math inline">\(\{0,\ldots,n\}\)</span> provide a natural way of representing faces of simplices (c.f. [sec:simplex]) and alternating <span class="math inline">\(n\)</span>-forms (c.f. [sec:forms]). An ordering on those lists can be defined using lexicographic order. In lexicographic ordering, the natural ordering of the intergers is extended to lists by the principle of alphabetic ordering. Lexicographic ordering is also what Haskell uses to compare lists. Take as an example <span class="math inline">\(k=3, n=3\)</span>:</p>
+<p>Increasing lists of length <span class="math inline">\(k\)</span> with elements in <span class="math inline">\(\{0,\ldots,n\}\)</span> provide a natural way of representing faces of simplices (c.f. <a href="#sec:simplex" data-reference-type="ref" data-reference="sec:simplex">[sec:simplex]</a>) and alternating <span class="math inline">\(n\)</span>-forms (c.f. <a href="#sec:forms" data-reference-type="ref" data-reference="sec:forms">[sec:forms]</a>). An ordering on those lists can be defined using lexicographic order. In lexicographic ordering, the natural ordering of the intergers is extended to lists by the principle of alphabetic ordering. Lexicographic ordering is also what Haskell uses to compare lists. Take as an example <span class="math inline">\(k=3, n=3\)</span>:</p>
 <p><span class="math display">\[\begin{aligned}
   0,1,2 \\
   0,1,3 \\
   0,2,3 \\
   1,2,3\end{aligned}\]</span></p>
 <h3 id="generation">Generation</h3>
-<p>The main task of generating increasing lists is performed by <span><code>increasingLists'</code></span>, which generates a list of all increasing lists beginning with a given integer number. value. <span><code>increasingLists</code></span> and <span><code>increasingLists1</code></span> provide wrappers for <span><code>increasingLists'</code></span> to generate the length-<span class="math inline">\(k\)</span> lists with elements in <span class="math inline">\(\{0,\ldots,n\}\)</span> and <span class="math inline">\(\{1,\ldots,n\}\)</span>, respectively.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | List all increasing lists of length k with elements in [0..n]</span>
-<span class="ot">increasingLists ::</span> <span class="dt">Integral</span> a
-                <span class="ot">=&gt;</span> a <span class="co">-- k</span>
-                <span class="ot">-&gt;</span> a <span class="co">-- n</span>
-                <span class="ot">-&gt;</span> [[a]]
-increasingLists k n <span class="fu">=</span> increasingLists' k n <span class="dv">0</span>
-
-<span class="co">-- | List all increasing lists of length k with elements in [1..n]</span>
-<span class="ot">increasingLists1 ::</span> <span class="dt">Integral</span> a
-                <span class="ot">=&gt;</span> a <span class="co">-- k</span>
-                <span class="ot">-&gt;</span> a <span class="co">-- n</span>
-                <span class="ot">-&gt;</span> [[a]]
-increasingLists1 k n <span class="fu">=</span> increasingLists' k n <span class="dv">1</span>
-
-<span class="co">-- | List all increasing lists of length k with elements in [0..n] starting</span>
-<span class="co">-- | with x0.</span>
-<span class="ot">increasingLists' ::</span> <span class="dt">Integral</span> a
-                 <span class="ot">=&gt;</span> a <span class="co">-- k</span>
-                 <span class="ot">-&gt;</span> a <span class="co">-- n</span>
-                 <span class="ot">-&gt;</span> a <span class="co">-- x0</span>
-                 <span class="ot">-&gt;</span> [[a]]
-increasingLists' k n x0
-    <span class="fu">|</span> k <span class="fu">&lt;</span> <span class="dv">1</span>     <span class="fu">=</span> [[]]
-    <span class="fu">|</span> k <span class="fu">==</span> <span class="dv">1</span>    <span class="fu">=</span> [[x] <span class="fu">|</span> x <span class="ot">&lt;-</span> [x0 <span class="fu">..</span> n]]
-    <span class="fu">|</span> otherwise <span class="fu">=</span> [ x <span class="fu">:</span> xs <span class="fu">|</span> x <span class="ot">&lt;-</span> [x0 <span class="fu">..</span> (n <span class="fu">-</span> k) <span class="fu">+</span> <span class="dv">1</span>],
-                             xs <span class="ot">&lt;-</span> increasingLists' (k <span class="fu">-</span> <span class="dv">1</span>) n (x <span class="fu">+</span> <span class="dv">1</span>)]</code></pre></div>
+<p>The main task of generating increasing lists is performed by <code>increasingLists'</code>, which generates a list of all increasing lists beginning with a given integer number. value. <code>increasingLists</code> and <code>increasingLists1</code> provide wrappers for <code>increasingLists'</code> to generate the length-<span class="math inline">\(k\)</span> lists with elements in <span class="math inline">\(\{0,\ldots,n\}\)</span> and <span class="math inline">\(\{1,\ldots,n\}\)</span>, respectively.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb3-1" title="1"><span class="co">-- | List all increasing lists of length k with elements in [0..n]</span></a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="ot">increasingLists ::</span> <span class="dt">Integral</span> a</a>
+<a class="sourceLine" id="cb3-3" title="3">                <span class="ot">=&gt;</span> a <span class="co">-- k</span></a>
+<a class="sourceLine" id="cb3-4" title="4">                <span class="ot">-&gt;</span> a <span class="co">-- n</span></a>
+<a class="sourceLine" id="cb3-5" title="5">                <span class="ot">-&gt;</span> [[a]]</a>
+<a class="sourceLine" id="cb3-6" title="6">increasingLists k n <span class="ot">=</span> increasingLists' k n <span class="dv">0</span></a>
+<a class="sourceLine" id="cb3-7" title="7"></a>
+<a class="sourceLine" id="cb3-8" title="8"><span class="co">-- | List all increasing lists of length k with elements in [1..n]</span></a>
+<a class="sourceLine" id="cb3-9" title="9"><span class="ot">increasingLists1 ::</span> <span class="dt">Integral</span> a</a>
+<a class="sourceLine" id="cb3-10" title="10">                <span class="ot">=&gt;</span> a <span class="co">-- k</span></a>
+<a class="sourceLine" id="cb3-11" title="11">                <span class="ot">-&gt;</span> a <span class="co">-- n</span></a>
+<a class="sourceLine" id="cb3-12" title="12">                <span class="ot">-&gt;</span> [[a]]</a>
+<a class="sourceLine" id="cb3-13" title="13">increasingLists1 k n <span class="ot">=</span> increasingLists' k n <span class="dv">1</span></a>
+<a class="sourceLine" id="cb3-14" title="14"></a>
+<a class="sourceLine" id="cb3-15" title="15"><span class="co">-- | List all increasing lists of length k with elements in [0..n] starting</span></a>
+<a class="sourceLine" id="cb3-16" title="16"><span class="co">-- | with x0.</span></a>
+<a class="sourceLine" id="cb3-17" title="17"><span class="ot">increasingLists' ::</span> <span class="dt">Integral</span> a</a>
+<a class="sourceLine" id="cb3-18" title="18">                 <span class="ot">=&gt;</span> a <span class="co">-- k</span></a>
+<a class="sourceLine" id="cb3-19" title="19">                 <span class="ot">-&gt;</span> a <span class="co">-- n</span></a>
+<a class="sourceLine" id="cb3-20" title="20">                 <span class="ot">-&gt;</span> a <span class="co">-- x0</span></a>
+<a class="sourceLine" id="cb3-21" title="21">                 <span class="ot">-&gt;</span> [[a]]</a>
+<a class="sourceLine" id="cb3-22" title="22">increasingLists' k n x0</a>
+<a class="sourceLine" id="cb3-23" title="23">    <span class="op">|</span> k <span class="op">&lt;</span> <span class="dv">1</span>     <span class="ot">=</span> [[]]</a>
+<a class="sourceLine" id="cb3-24" title="24">    <span class="op">|</span> k <span class="op">==</span> <span class="dv">1</span>    <span class="ot">=</span> [[x] <span class="op">|</span> x <span class="ot">&lt;-</span> [x0 <span class="op">..</span> n]]</a>
+<a class="sourceLine" id="cb3-25" title="25">    <span class="op">|</span> <span class="fu">otherwise</span> <span class="ot">=</span> [ x <span class="op">:</span> xs <span class="op">|</span> x <span class="ot">&lt;-</span> [x0 <span class="op">..</span> (n <span class="op">-</span> k) <span class="op">+</span> <span class="dv">1</span>],</a>
+<a class="sourceLine" id="cb3-26" title="26">                             xs <span class="ot">&lt;-</span> increasingLists' (k <span class="op">-</span> <span class="dv">1</span>) n (x <span class="op">+</span> <span class="dv">1</span>)]</a></code></pre></div>
 <h3 id="indexing">Indexing</h3>
-<p>Increasing lists can be indexed by assigning index <span class="math inline">\(0\)</span> to the smallest list (in lexicographic order) and then counting upward. The function <span><code>unrank</code></span> returns the increasing list with index <span class="math inline">\(i\)</span> for given paramters <span class="math inline">\(k,n\)</span>.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="co">-- | Compute the increasing list of length k with elements in [0..n]</span>
-<span class="co">-- | corresponding to a given index i and length k.</span>
-<span class="ot">unrank ::</span> <span class="dt">Integral</span> a
-       <span class="ot">=&gt;</span> a <span class="co">-- k</span>
-       <span class="ot">-&gt;</span> a <span class="co">-- n</span>
-       <span class="ot">-&gt;</span> a <span class="co">-- the index i</span>
-       <span class="ot">-&gt;</span> [a]
-unrank k n i <span class="fu">=</span> increasingLists k n <span class="fu">!!</span> fromIntegral i
-
-<span class="co">{- TODO: not used? Check when it might be a better idea (if at any time)</span>
-<span class="co">rank :: Int -&gt; [Int] -&gt; Int</span>
-<span class="co">rank = rank' 0</span>
-
-<span class="co">rank' :: Int -&gt; Int -&gt; [Int] -&gt; Int</span>
-<span class="co">rank' _     _     []      = 0</span>
-<span class="co">rank' lower upper (l:ls)  = (l - lower) * (upper - l - 1) `choose` (k - 1)</span>
-<span class="co">                            + rank' (l + 1) upper ls</span>
-<span class="co">  where k = length ls + 1</span>
-<span class="co">-}</span></code></pre></div>
-<p>The function <span><code>sublists</code></span> returns all length <span class="math inline">\(k-1\)</span> sublists of a given length <span class="math inline">\(k\)</span> list. The ordering of the list is preserved.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="co">-- | List all length k-1 sublists of the given length k list.</span>
-<span class="ot">sublists ::</span> [a] <span class="co">-- the length k list</span>
-         <span class="ot">-&gt;</span> [[a]]
-sublists ls <span class="fu">=</span> [ take i ls <span class="fu">++</span> drop (i<span class="fu">+</span><span class="dv">1</span>) ls <span class="fu">|</span> i <span class="ot">&lt;-</span> [<span class="dv">0</span> <span class="fu">..</span> length ls <span class="fu">-</span> <span class="dv">1</span>]]
-
-<span class="ot">kSublists ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [[a]]
-kSublists _ []     <span class="fu">=</span> [[]]
-kSublists k ls<span class="fu">@</span>(h<span class="fu">:</span>t)
-  <span class="fu">|</span> k <span class="fu">&lt;=</span> <span class="dv">0</span>         <span class="fu">=</span> [[]]
-  <span class="fu">|</span> k <span class="fu">&gt;=</span> length ls <span class="fu">=</span> [ls]
-  <span class="fu">|</span> k <span class="fu">==</span> <span class="dv">1</span>         <span class="fu">=</span> [[l] <span class="fu">|</span> l <span class="ot">&lt;-</span> ls]
-  <span class="fu">|</span> otherwise      <span class="fu">=</span> [h <span class="fu">:</span> ts <span class="fu">|</span> ts <span class="ot">&lt;-</span> kSublists (k <span class="fu">-</span> <span class="dv">1</span>) t] <span class="fu">++</span> kSublists k t</code></pre></div>
+<p>Increasing lists can be indexed by assigning index <span class="math inline">\(0\)</span> to the smallest list (in lexicographic order) and then counting upward. The function <code>unrank</code> returns the increasing list with index <span class="math inline">\(i\)</span> for given paramters <span class="math inline">\(k,n\)</span>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb4-1" title="1"><span class="co">-- | Compute the increasing list of length k with elements in [0..n]</span></a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="co">-- | corresponding to a given index i and length k.</span></a>
+<a class="sourceLine" id="cb4-3" title="3"><span class="ot">unrank ::</span> <span class="dt">Integral</span> a</a>
+<a class="sourceLine" id="cb4-4" title="4">       <span class="ot">=&gt;</span> a <span class="co">-- k</span></a>
+<a class="sourceLine" id="cb4-5" title="5">       <span class="ot">-&gt;</span> a <span class="co">-- n</span></a>
+<a class="sourceLine" id="cb4-6" title="6">       <span class="ot">-&gt;</span> a <span class="co">-- the index i</span></a>
+<a class="sourceLine" id="cb4-7" title="7">       <span class="ot">-&gt;</span> [a]</a>
+<a class="sourceLine" id="cb4-8" title="8">unrank k n i <span class="ot">=</span> increasingLists k n <span class="op">!!</span> <span class="fu">fromIntegral</span> i</a>
+<a class="sourceLine" id="cb4-9" title="9"></a>
+<a class="sourceLine" id="cb4-10" title="10"><span class="co">{- TODO: not used? Check when it might be a better idea (if at any time)</span></a>
+<a class="sourceLine" id="cb4-11" title="11"><span class="co">rank :: Int -&gt; [Int] -&gt; Int</span></a>
+<a class="sourceLine" id="cb4-12" title="12"><span class="co">rank = rank' 0</span></a>
+<a class="sourceLine" id="cb4-13" title="13"></a>
+<a class="sourceLine" id="cb4-14" title="14"><span class="co">rank' :: Int -&gt; Int -&gt; [Int] -&gt; Int</span></a>
+<a class="sourceLine" id="cb4-15" title="15"><span class="co">rank' _     _     []      = 0</span></a>
+<a class="sourceLine" id="cb4-16" title="16"><span class="co">rank' lower upper (l:ls)  = (l - lower) * (upper - l - 1) `choose` (k - 1)</span></a>
+<a class="sourceLine" id="cb4-17" title="17"><span class="co">                            + rank' (l + 1) upper ls</span></a>
+<a class="sourceLine" id="cb4-18" title="18"><span class="co">  where k = length ls + 1</span></a>
+<a class="sourceLine" id="cb4-19" title="19"><span class="co">-}</span></a></code></pre></div>
+<p>The function <code>sublists</code> returns all length <span class="math inline">\(k-1\)</span> sublists of a given length <span class="math inline">\(k\)</span> list. The ordering of the list is preserved.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb5-1" title="1"></a>
+<a class="sourceLine" id="cb5-2" title="2"><span class="co">-- | List all length k-1 sublists of the given length k list.</span></a>
+<a class="sourceLine" id="cb5-3" title="3"><span class="ot">sublists ::</span> [a] <span class="co">-- the length k list</span></a>
+<a class="sourceLine" id="cb5-4" title="4">         <span class="ot">-&gt;</span> [[a]]</a>
+<a class="sourceLine" id="cb5-5" title="5">sublists ls <span class="ot">=</span> [ <span class="fu">take</span> i ls <span class="op">++</span> <span class="fu">drop</span> (i<span class="op">+</span><span class="dv">1</span>) ls <span class="op">|</span> i <span class="ot">&lt;-</span> [<span class="dv">0</span> <span class="op">..</span> <span class="fu">length</span> ls <span class="op">-</span> <span class="dv">1</span>]]</a>
+<a class="sourceLine" id="cb5-6" title="6"></a>
+<a class="sourceLine" id="cb5-7" title="7"><span class="ot">kSublists ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> [[a]]</a>
+<a class="sourceLine" id="cb5-8" title="8">kSublists _ []     <span class="ot">=</span> [[]]</a>
+<a class="sourceLine" id="cb5-9" title="9">kSublists k ls<span class="op">@</span>(h<span class="op">:</span>t)</a>
+<a class="sourceLine" id="cb5-10" title="10">  <span class="op">|</span> k <span class="op">&lt;=</span> <span class="dv">0</span>         <span class="ot">=</span> [[]]</a>
+<a class="sourceLine" id="cb5-11" title="11">  <span class="op">|</span> k <span class="op">&gt;=</span> <span class="fu">length</span> ls <span class="ot">=</span> [ls]</a>
+<a class="sourceLine" id="cb5-12" title="12">  <span class="op">|</span> k <span class="op">==</span> <span class="dv">1</span>         <span class="ot">=</span> [[l] <span class="op">|</span> l <span class="ot">&lt;-</span> ls]</a>
+<a class="sourceLine" id="cb5-13" title="13">  <span class="op">|</span> <span class="fu">otherwise</span>      <span class="ot">=</span> [h <span class="op">:</span> ts <span class="op">|</span> ts <span class="ot">&lt;-</span> kSublists (k <span class="op">-</span> <span class="dv">1</span>) t] <span class="op">++</span> kSublists k t</a></code></pre></div>
 <h2 id="lists-of-degree-r">Lists of Degree <span class="math inline">\(r\)</span></h2>
 <p>For generating multi-indices of degree <span class="math inline">\(r\)</span>, it is necessary to generate lists of positive integers that sum to a given value. Note that here we will use the parameter <span class="math inline">\(n\)</span> to denote the length of the list. This is because those functions are used for the generation of multi-indices and therefore in most cases have length equal to the dimension <span class="math inline">\(n\)</span> of the underlying vector space.</p>
-<p>Two variants of functions generating such lists are provided. The function <span><code>sumRLists</code></span> returns a list of all length <span class="math inline">\(n\)</span> lists that sum to <span class="math inline">\(r\)</span>. The function <span><code>sumRLists'</code></span> lists all length <span class="math inline">\(n\)</span> lists that sum to <span class="math inline">\(r\)</span> <strong>or less</strong>.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
-<span class="co">-- | All length n lists of integers whose entries sum to r.</span>
-<span class="ot">sumRLists ::</span> <span class="dt">Integral</span> a
-          <span class="ot">=&gt;</span> a <span class="co">-- n</span>
-          <span class="ot">-&gt;</span> a <span class="co">-- r</span>
-          <span class="ot">-&gt;</span> [[a]]
-sumRLists n r
-    <span class="fu">|</span> r <span class="fu">==</span> <span class="dv">0</span>    <span class="fu">=</span> [replicate (fromIntegral n) <span class="dv">0</span>]
-    <span class="fu">|</span> n <span class="fu">==</span> <span class="dv">1</span>    <span class="fu">=</span> [[r]]
-    <span class="fu">|</span> n <span class="fu">&lt;</span> <span class="dv">1</span>     <span class="fu">=</span> []
-    <span class="fu">|</span> otherwise <span class="fu">=</span> concat [[ls <span class="fu">++</span> [l] <span class="fu">|</span> ls <span class="ot">&lt;-</span> sumRLists (n<span class="fu">-</span><span class="dv">1</span>) (r<span class="fu">-</span>l)] <span class="fu">|</span> l <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>r]]
-
-<span class="co">-- | All length n lists of integers whose sum to r or less.</span>
-<span class="ot">sumRLists' ::</span> <span class="dt">Integral</span> a
-           <span class="ot">=&gt;</span> a <span class="co">-- n</span>
-           <span class="ot">-&gt;</span> a <span class="co">-- r</span>
-           <span class="ot">-&gt;</span> [[a]]
-sumRLists' n r <span class="fu">=</span> concat [ sumRLists n r' <span class="fu">|</span> r' <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="fu">..</span>r]]</code></pre></div>
+<p>Two variants of functions generating such lists are provided. The function <code>sumRLists</code> returns a list of all length <span class="math inline">\(n\)</span> lists that sum to <span class="math inline">\(r\)</span>. The function <code>sumRLists'</code> lists all length <span class="math inline">\(n\)</span> lists that sum to <span class="math inline">\(r\)</span> <strong>or less</strong>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><a class="sourceLine" id="cb6-1" title="1"></a>
+<a class="sourceLine" id="cb6-2" title="2"><span class="co">-- | All length n lists of integers whose entries sum to r.</span></a>
+<a class="sourceLine" id="cb6-3" title="3"><span class="ot">sumRLists ::</span> <span class="dt">Integral</span> a</a>
+<a class="sourceLine" id="cb6-4" title="4">          <span class="ot">=&gt;</span> a <span class="co">-- n</span></a>
+<a class="sourceLine" id="cb6-5" title="5">          <span class="ot">-&gt;</span> a <span class="co">-- r</span></a>
+<a class="sourceLine" id="cb6-6" title="6">          <span class="ot">-&gt;</span> [[a]]</a>
+<a class="sourceLine" id="cb6-7" title="7">sumRLists n r</a>
+<a class="sourceLine" id="cb6-8" title="8">    <span class="op">|</span> r <span class="op">==</span> <span class="dv">0</span>    <span class="ot">=</span> [<span class="fu">replicate</span> (<span class="fu">fromIntegral</span> n) <span class="dv">0</span>]</a>
+<a class="sourceLine" id="cb6-9" title="9">    <span class="op">|</span> n <span class="op">==</span> <span class="dv">1</span>    <span class="ot">=</span> [[r]]</a>
+<a class="sourceLine" id="cb6-10" title="10">    <span class="op">|</span> n <span class="op">&lt;</span> <span class="dv">1</span>     <span class="ot">=</span> []</a>
+<a class="sourceLine" id="cb6-11" title="11">    <span class="op">|</span> <span class="fu">otherwise</span> <span class="ot">=</span> <span class="fu">concat</span> [[ls <span class="op">++</span> [l] <span class="op">|</span> ls <span class="ot">&lt;-</span> sumRLists (n<span class="op">-</span><span class="dv">1</span>) (r<span class="op">-</span>l)] <span class="op">|</span> l <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="op">..</span>r]]</a>
+<a class="sourceLine" id="cb6-12" title="12"></a>
+<a class="sourceLine" id="cb6-13" title="13"><span class="co">-- | All length n lists of integers whose sum to r or less.</span></a>
+<a class="sourceLine" id="cb6-14" title="14"><span class="ot">sumRLists' ::</span> <span class="dt">Integral</span> a</a>
+<a class="sourceLine" id="cb6-15" title="15">           <span class="ot">=&gt;</span> a <span class="co">-- n</span></a>
+<a class="sourceLine" id="cb6-16" title="16">           <span class="ot">-&gt;</span> a <span class="co">-- r</span></a>
+<a class="sourceLine" id="cb6-17" title="17">           <span class="ot">-&gt;</span> [[a]]</a>
+<a class="sourceLine" id="cb6-18" title="18">sumRLists' n r <span class="ot">=</span> <span class="fu">concat</span> [ sumRLists n r' <span class="op">|</span> r' <span class="ot">&lt;-</span> [<span class="dv">0</span><span class="op">..</span>r]]</a></code></pre></div>
 <h1 id="bibliography" class="unnumbered">Bibliography</h1>
-<div id="refs" class="references">
+<div id="refs" class="references" role="doc-bibliography">
 <div id="ref-package:ec">
-<p>Romano, Wren G. 2015. “Exact-Combinatorics: Efficient Exact Computation of Combinatoric Functions.” <a href="http://hackage.haskell.org/package/exact-combinatorics" class="uri">http://hackage.haskell.org/package/exact-combinatorics</a>.</p>
+<p>Romano, Wren G. 2015. “Exact-Combinatorics: Efficient Exact Computation of Combinatoric Functions.” <a href="http://hackage.haskell.org/package/exact-combinatorics">http://hackage.haskell.org/package/exact-combinatorics</a>.</p>
 </div>
 </div>
 
