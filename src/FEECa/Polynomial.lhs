@@ -89,15 +89,15 @@ import qualified  FEECa.Internal.Spaces     as S  ( Function (..) )
 
 %------------------------------------------------------------------------------%
 
-\subsection{ The \code{Polynomial} Type}
+\subsection{ The \inlcode{Polynomial} Type}
 
-Two types are used to represent polynomials. The \code{Term} type represents
- a single term in the sum that constitutes the polynomial. The \code{Term} type
- provides two constructors. The \code{Constant} constructor for constant terms
- and the \code{Monomial} constructor for a monomial (represented by a
- \code{MultiIndex}) scaled by a scalar. Note that the constant term carries
+Two types are used to represent polynomials. The \inlcode{Term} type represents
+ a single term in the sum that constitutes the polynomial. The \inlcode{Term} type
+ provides two constructors. The \inlcode{Constant} constructor for constant terms
+ and the \inlcode{Monomial} constructor for a monomial (represented by a
+ \inlcode{MultiIndex}) scaled by a scalar. Note that the constant term carries
  no information about the underlying space while the monomial contains this
- information implicitly in the length of the multi-index. The \code{Term} type
+ information implicitly in the length of the multi-index. The \inlcode{Term} type
  is parametrized in order to allow for the definition of polynomials over
  arbitrary Rings.
 
@@ -123,9 +123,9 @@ instance Functor Term where
 
 %------------------------------------------------------------------------------%
 
-Based on the \code{Term} type, a polynomial is now be represented as a list of
- terms, keeping the sum implicit. In addition to that, the \code{Polynomial}
-type provides the \code{degree} field that holds the degree of the polynomial.
+Based on the \inlcode{Term} type, a polynomial is now be represented as a list of
+ terms, keeping the sum implicit. In addition to that, the \inlcode{Polynomial}
+type provides the \inlcode{degree} field that holds the degree of the polynomial.
 
 %------------------------------------------------------------------------------%
 
@@ -151,7 +151,7 @@ instance Functor Polynomial where
 
 For the extension of polynomials defined on simplices it is necessary to extract
  the multi-indices defining the polynomial. To this end the \module{Polynomial}
- module provides the function \code{multiIndices} which converts all of the
+ module provides the function \inlcode{multiIndices} which converts all of the
  constants in the polynomials to multi-index representation, i.e. with
  multi-index conatining only zeros, and returns a list of them.
 
@@ -174,7 +174,7 @@ multiIndices' _ []                = []
 
 For the integration of Bernstein polynomials it is also necessary to access the
 degrees of each term of the polynomial. To keep the internal structure of the
-polynomials encapsulated, the function \code{degrees} is provided, that returns
+polynomials encapsulated, the function \inlcode{degrees} is provided, that returns
 a list containing the degrees of the terms in the polynomial.
 
 %------------------------------------------------------------------------------%
@@ -196,7 +196,7 @@ degrees' (Constant _:ls) = 0 : degrees' ls
 
 For some computations on Bernstein polynomials it is necessary to obtain the
 polynomial represented as a list of coefficient-multi-index pairs. To this end
-the \code{toPairs} function is provided, that extends all constant terms in the
+the \inlcode{toPairs} function is provided, that extends all constant terms in the
 polynomial and returns a list of the coefficient-multi-index pairs.
 
 %------------------------------------------------------------------------------%
@@ -214,8 +214,8 @@ toPairs n = map (expandTerm n) . terms
 \subsubsection{Class Instantiations}
 
 Polynomials over $\R{n}$ form a vector space over $\mathrm R$ and a ring. To
- make their algebraic structure available in \code{FEECa}, we make them instances
- of the \code{Vectorspace} and \code{Ring} classes. The implementation of the
+ make their algebraic structure available in \inlcode{FEECa}, we make them instances
+ of the \inlcode{Vectorspace} and \inlcode{Ring} classes. The implementation of the
  arithmetic functions on polynomials is given below.
 
 %------------------------------------------------------------------------------%
@@ -246,8 +246,8 @@ instance Ring a => Ring (Polynomial a) where
 %------------------------------------------------------------------------------%
 
 As for all other types, pretty printing of polynomials is provided by
- instantiating the \code{Pretty} class. To hide the internal implementation of
-the \code{Polynomial} type, the terms have to be expanded to pairs of
+ instantiating the \inlcode{Pretty} class. To hide the internal implementation of
+the \inlcode{Polynomial} type, the terms have to be expanded to pairs of
  coefficients and multi-indices before using the rendering functions in the
 \module{Print} module.
 
@@ -270,7 +270,7 @@ expandTerm _ (Term c mi)  = (c, mi)
 
  The main purpose of the polynomial type is of course its use as a function over
  $\R{n}$. We therefore declare the type an instance of the abstract
- \code{Function} class. The implementation of evaluation and derivation of
+ \inlcode{Function} class. The implementation of evaluation and derivation of
  polynomials is given below.
 %------------------------------------------------------------------------------%
 
@@ -288,12 +288,12 @@ instance (EuclideanSpace v, r ~ Scalar v) => S.Function (Polynomial r) v where
 
 The \module{Polynomial} provides smart constructors to simplify the creation of
  valid polynomials. The stress here lies on valid, because not every instance of
- \code{Polynomial} represents a valid polynomial. For a polynomials to be valid,
+ \inlcode{Polynomial} represents a valid polynomial. For a polynomials to be valid,
  all multi-indices representing the monomials must be of the same length.
 
-The functions \code{constant}, \code{monomial}, \code{term} and
- \code{polynomial} can be used to create a constant polynomial, a monomial,
- a term (scaled monomial) and a polynomial. The function \code{polynomial}
+The functions \inlcode{constant}, \inlcode{monomial}, \inlcode{term} and
+ \inlcode{polynomial} can be used to create a constant polynomial, a monomial,
+ a term (scaled monomial) and a polynomial. The function \inlcode{polynomial}
  performs a check if the given parameters represent a valid polynomial and puts
  out an error message if not.
 
@@ -338,7 +338,7 @@ sameLength' _ []      = True-}
 %------------------------------------------------------------------------------%
 
 In addition to that a constructor for homogeneous, linear polynomials
-\code{linearPolynomial} in $\R{n}$ is provided, which takes a list of $n$
+\inlcode{linearPolynomial} in $\R{n}$ is provided, which takes a list of $n$
  coefficients that contains the slope of the $n$ variables of the polynomials.
 
 %------------------------------------------------------------------------------%
@@ -436,13 +436,13 @@ multiplyPolynomial f (Polynomial r1 ts1) (Polynomial r2 ts2) =
 
 \subsection{Evaluation}
 
- The \code{Polynomial} type also provides abstract functions for the
+ The \inlcode{Polynomial} type also provides abstract functions for the
  implementation of polynomials over different bases. To this end, the
-\code{evaluateTerm} function provides an abstract function for the evaluation of
+\inlcode{evaluateTerm} function provides an abstract function for the evaluation of
  a term of a polynomial, which takes a function that evaluates a monomial given
  by a given multi-index and scales the result be the terms coefficient.
 
-The function \code{evaluateMonomial} implements the evaluation function for the
+The function \inlcode{evaluateMonomial} implements the evaluation function for the
  standard monomial basis over $\R{n}$. In this case the evaluation function for
  the monomial just implements eq. $\eqref{eq:pow}$.
 
@@ -468,11 +468,11 @@ evaluateMonomial v mi = productR (zipWith pow v (MI.toList mi::[Int]))
 %------------------------------------------------------------------------------%
 
 General evaluation of a polynomial can then be implemented by using the general
- \code{evalTerm} function to evaluate each term and add up the results. This is
- implemented in the \code{evaluate'} function.
+ \inlcode{evalTerm} function to evaluate each term and add up the results. This is
+ implemented in the \inlcode{evaluate'} function.
 
 The evaluation of polynomials over the monomial basis can now be realized by
- partially evaluating \code{evaluate} with \code{evaluateMonomial}.
+ partially evaluating \inlcode{evaluate} with \inlcode{evaluateMonomial}.
 
 %------------------------------------------------------------------------------%
 
@@ -505,7 +505,7 @@ where $\vec{\alpha}^j$ is the multi-index $\vec{\alpha}$ with the $j$th index
  consisting of multiple terms.
 
 To provide generalized functions for the derivation of polynomials, we introduce
- the \code{Dx} type as a synomym for functions implementing derivation of
+ the \inlcode{Dx} type as a synomym for functions implementing derivation of
  monomials $\vec{y}^{\vec{\alpha}}$. The returned list is supposed to hold the
  directional derivatives of the given monomial in each space direction.
 
@@ -521,7 +521,7 @@ type Dx a = MI.MultiIndex -> [Polynomial a]
 
 %------------------------------------------------------------------------------%
 
- The function \code{deriveTerm} then computes the directional derivative of
+ The function \inlcode{deriveTerm} then computes the directional derivative of
  a given term along a direction given by an arbitrary vector $\vec{v}$, which
  is given by
 
@@ -534,7 +534,7 @@ type Dx a = MI.MultiIndex -> [Polynomial a]
  derivative of the term and scaling it by the corresponding component of the
  vector. The result is a list of Terms representing a polynomial.
 
-The function \code{deriveMonomial} implements the derivative of a monomial for
+The function \inlcode{deriveMonomial} implements the derivative of a monomial for
  the standard monomial basis in $\R{n}$. In this case the derivative of a
  is just
 
@@ -573,7 +573,7 @@ deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
  In the same way as for the evaluation of polynomials, we provide a
  basis-independent implementation of the deriviation for the derivation of
  polynomials. The function for deriving a polynomial over the monomial basis
- can be obtained by partially evaluating \code{derivePolynomial deriveMonomial}.
+ can be obtained by partially evaluating \inlcode{derivePolynomial deriveMonomial}.
 
 %------------------------------------------------------------------------------%
 
@@ -596,7 +596,7 @@ derivePolynomialBasis dx i = sumR . map (deriveTermBasis dx i) . terms -- t | t 
 \subsection{Integration}
 
 For integration of polynomials over simplices, we use the
-\code{integrateOverSimplex} function provided by the \module{Simplex} module.
+\inlcode{integrateOverSimplex} function provided by the \module{Simplex} module.
 Since the method used  has precision $2q - 1$, the integration of a polynomial
  of degree $r$ is exact if $q \geq \frac{(r + 1)}{2}$.
 
@@ -674,15 +674,15 @@ The barycentric coordinates $\lambda_i(\vec{x})$ are then given by
 
 Note that the above method assumes that the simplex $T$ has $n+1$ vertices, for
 simplices with less vertices it is necessary to extend the simplex first. This
-is done using the \code{extendSimplex} function.
+is done using the \inlcode{extendSimplex} function.
 
-The inversion of the matrix is performed using the \code{hmatrix} package
-\cite{Ruiz}. The \code{simplexToMatrix} and \code{vectorToPolynomial} functions
+The inversion of the matrix is performed using the \inlcode{hmatrix} package
+\cite{Ruiz}. The \inlcode{simplexToMatrix} and \inlcode{vectorToPolynomial} functions
 handle the conversion between the simplex, the linear system and the polynomials
 representing the barycentric coordinates.
 
-Finally, the function \code{barycentricCoordinates} and
-\code{barycentricCoordinate} return a list containing all barycentric
+Finally, the function \inlcode{barycentricCoordinates} and
+\inlcode{barycentricCoordinate} return a list containing all barycentric
 coordinates and only the $i$ barycentric coordinate, respectively.
 
 %------------------------------------------------------------------------------%
@@ -736,8 +736,8 @@ vectorToPolynomial v = add (constant (head l)) (linearPolynomial (tail l))
 
 Since the barycentric coordinates are linear functions, the gradients of the
 barycentric coordinates are constant vectors, namely the vectors $\vec{b}_n$ in
-equation (\ref{eq:def_barycentric}). The functions \code{barycentricGradients}
-and \code{barycentricGradient} return the list of the gradients of the
+equation (\ref{eq:def_barycentric}). The functions \inlcode{barycentricGradients}
+and \inlcode{barycentricGradient} return the list of the gradients of the
 barycentric coordinates and the gradient of the $i$th barycentric coordinate,
 repsectively.
 

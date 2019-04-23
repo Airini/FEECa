@@ -1,6 +1,6 @@
 \section{Vectors}
 
-The \code{Vector} module provides a data type and
+The \inlcode{Vector} module provides a data type and
 functions for the handling of vectors in $n$-dimensional Euclidean space
  $\R{n}$.
 
@@ -34,11 +34,11 @@ import FEECa.Utility.Print    as P
 
 %------------------------------------------------------------------------------%
 
-\subsection{The \code{Vector} Type}
+\subsection{The \inlcode{Vector} Type}
 
- Vectors in $\R{n}$ are represented using the parametrized type \code{Vector a}
- where \code{a} is the number type used to represent the scalars. Internally a
- vector is implemented using a list \code{[a]}. The dimension $n$ is inferred
+ Vectors in $\R{n}$ are represented using the parametrized type \inlcode{Vector a}
+ where \inlcode{a} is the number type used to represent the scalars. Internally a
+ vector is implemented using a list \inlcode{[a]}. The dimension $n$ is inferred
  from the length of the list. Since vectors from Euclidean spaces of different
  dimension are of the same type, it is up to the user not to mix vectors from
  different spaces, which will lead to runtime errors.
@@ -54,10 +54,10 @@ data Vector a = Vector { components :: [a] } deriving Show
 
 %------------------------------------------------------------------------------%
 
- To use the \code{Vector a} type in the \code{FEECa} framework, we have to make
- it an instance of the \code{VectorSpace} and the \code{EuclideanSpace} classes.
- We instantiate two types \code{Vector Rational} and \code{Vector Double} in
- order to have one type with exact arithmetic using Haskells \code{Rational}
+ To use the \inlcode{Vector a} type in the \inlcode{FEECa} framework, we have to make
+ it an instance of the \inlcode{VectorSpace} and the \inlcode{EuclideanSpace} classes.
+ We instantiate two types \inlcode{Vector Rational} and \inlcode{Vector Double} in
+ order to have one type with exact arithmetic using Haskells \inlcode{Rational}
  type and one using standard floating point arithmetic.
 
 %------------------------------------------------------------------------------%
@@ -114,9 +114,9 @@ instance Dimensioned (Vector a) where
 
 \subsubsection{Constructors}
 
- The \code{Vector a} data type provides the \code{vector} function as a smart
+ The \inlcode{Vector a} data type provides the \inlcode{vector} function as a smart
  constructor for vectors. Even though up to now the constructor does nothing
- but calling the type constructor, the \code{vector} functions is provided to
+ but calling the type constructor, the \inlcode{vector} functions is provided to
  hide the internal implementation to other modules.
 
 %------------------------------------------------------------------------------%
@@ -134,8 +134,8 @@ vector = Vector
 \subsubsection{Printing Vectors}
 
  Vectors can be displayed on the command line in two ways. As an instance of
- \code{Show}, calling \code{show} on a vector will display its type structure.
- Using \code{pPrint} to render the vector, the vector is redered as a column
+ \inlcode{Show}, calling \inlcode{show} on a vector will display its type structure.
+ Using \inlcode{pPrint} to render the vector, the vector is redered as a column
  vector using unicode characters.
 
 %------------------------------------------------------------------------------%

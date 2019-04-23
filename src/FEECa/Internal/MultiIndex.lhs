@@ -3,7 +3,7 @@
 
 \section{Multi-Indices}
 
-The \code{MultiIndex} module provides a data type and functions for handling
+The \inlcode{MultiIndex} module provides a data type and functions for handling
 of multi-indices. A multi-index $\vec{\alpha}$ is a tuple
 
 \begin{align}
@@ -74,10 +74,10 @@ import            FEECa.Internal.Spaces             (Dimensioned(..), Field(..))
 
 %------------------------------------------------------------------------------%
 
-\subsection{The \code{MultiIndex} type}
+\subsection{The \inlcode{MultiIndex} type}
 
-The \code{MultiIndex} type is implemented as a type synomnym for
-\code{ZipList Int} type because this allows the use of the \code{Applicative}
+The \inlcode{MultiIndex} type is implemented as a type synomnym for
+\inlcode{ZipList Int} type because this allows the use of the \inlcode{Applicative}
 class for the implementation of methods on multi-indices.
 
 The dimension of a multi-index is the dimension of the underlying space, i.e.
@@ -104,7 +104,7 @@ instance Dimensioned MultiIndex where
 
 %------------------------------------------------------------------------------%
 
-The functions \code{degree} and \code{range} compute the degree and range of a
+The functions \inlcode{degree} and \inlcode{range} compute the degree and range of a
 given multi-index, as defined above.
 
 %------------------------------------------------------------------------------%
@@ -131,13 +131,13 @@ range' _ (ZipList []) = []
 \subsubsection{Constructors}
 
 
- The \code{MultiIndex} type provides the \code{multiIndex} constructor which
- constructs a multi-index from a list of integers \code{[Int]}. The constructor
+ The \inlcode{MultiIndex} type provides the \inlcode{multiIndex} constructor which
+ constructs a multi-index from a list of integers \inlcode{[Int]}. The constructor
  makes sure that all entries of the multi-index are positive and throws a
  run-time error otherwise.
 
- The \code{toList} function transforms a given multi-index back to a list
- \code{[a]} of \code{Integer} class type.
+ The \inlcode{toList} function transforms a given multi-index back to a list
+ \inlcode{[a]} of \inlcode{Integer} class type.
 %------------------------------------------------------------------------------%
 
 \begin{code}
@@ -162,13 +162,13 @@ toList = {-map fromIntegral .-} getZipList
 
 A common use case is the creation of multi-indices of degree 0 or 1.
 %
-This is done using the functions \code{zero} and \code{unit},
+This is done using the functions \inlcode{zero} and \inlcode{unit},
 respectively.
 %
-The function \code{zero} creates a multi-index of given dimension
+The function \inlcode{zero} creates a multi-index of given dimension
 containing only zeros, while
 %
-\code{unit} creates a multi-index of given dimension with all elements
+\inlcode{unit} creates a multi-index of given dimension with all elements
 equal to zero except for the element with index $i$:
 
 \begin{align}
@@ -195,11 +195,11 @@ unit n i = ZipList $ concat [replicate i 0,[1],replicate (n-i-1) 0]
 \end{code}
 %------------------------------------------------------------------------------%
 
-The function \code{degreeR} returns a list of all multi-indices of
+The function \inlcode{degreeR} returns a list of all multi-indices of
 given dimension $n$ and degree $r$.
 %
-It is basically a wrapper for the \code{sumRLists} function provided
-by the \code{FEECa.Utility.Combinatorics} module.
+It is basically a wrapper for the \inlcode{sumRLists} function provided
+by the \inlcode{FEECa.Utility.Combinatorics} module.
 
 %------------------------------------------------------------------------------%
 
@@ -362,7 +362,7 @@ choose' a b = C.factorial a / factorial b -- fromIntegral (C.factorial a) / from
 
 For the derivation of polynomials, it is required to decrease the
 element at a given index of a multi-index, this is implemented by the
-\code{decrease} function.
+\inlcode{decrease} function.
 
 \begin{code}
 -- | Decrease element in multi-index

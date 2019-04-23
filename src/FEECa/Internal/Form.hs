@@ -15,7 +15,6 @@ module FEECa.Internal.Form (
   ) where
 
 
--- import Control.Applicative
 import            Data.List ( intersect, elemIndex )
 import            Data.Maybe ( fromJust )
 import qualified  Numeric.LinearAlgebra.HMatrix as M

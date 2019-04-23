@@ -1,6 +1,6 @@
 \section{Points}
 
-The \module{Point} provides the \code{Point} data type that is used to represent
+The \module{Point} provides the \inlcode{Point} data type that is used to represent
 positions in n-dimensional Euclidean space.
 
 %------------------------------------------------------------------------------%
@@ -38,10 +38,10 @@ import FEECa.Utility.Utility  ( pairM )
 
 %------------------------------------------------------------------------------%
 
-\subsection{The Point type}
+\subsection{The \inlcode{Point} type}
 
-The \code{Point} data type is build on top of the \code{Vector} data type using
- a \code{Vector} to represent the coordinates of the given point.
+The \inlcode{Point} data type is build on top of the \inlcode{Vector} data type using
+ a \inlcode{Vector} to represent the coordinates of the given point.
 
 %------------------------------------------------------------------------------%
 
@@ -68,9 +68,9 @@ point = Point . vector
 
 \subsection{Convenience Functions}
 
-The \code{Point} data type provides convenience functions for the creation of
- special points in $\R{n}$. The \code{zero} function returns the \code{Point}
- instance representing the origin in $\R{n}$. \code{unit} returns the point
+The \inlcode{Point} data type provides convenience functions for the creation of
+ special points in $\R{n}$. The \inlcode{zero} function returns the \inlcode{Point}
+ instance representing the origin in $\R{n}$. \inlcode{unit} returns the point
 in $\R{n}$ that lies at a distance of 1 from the origin on the given axis.
 
 %------------------------------------------------------------------------------%

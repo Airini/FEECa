@@ -1,6 +1,6 @@
 \section{Simplex}
 
-The \code{Simplex} module implements simplices in n-dimensional
+The \incode{Simplex} module implements simplices in n-dimensional
 Euclidean space $\R{n}$.
 %
 A $k$-simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ in
@@ -74,7 +74,7 @@ import qualified  FEECa.Utility.Utility         as U
 
 %------------------------------------------------------------------------------%
 
-\subsection{The \code{Simplex} type}
+\subsection{The \incode{Simplex} type}
 
  We represent a simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ by a list containing
  the vertices $\vec{v_0},\ldots,\vec{v_k}$ and an increasing map $\sigma$
@@ -82,10 +82,10 @@ import qualified  FEECa.Utility.Utility         as U
  contains. The mapping $\sigma$ is represented by an increasing list
  $\sigma(1),\ldots, \sigma(k)$.
 
- The \code{Simplex} type is parametrized by the type used to represent vectors
- in $\R{n}$. The type \code{Simplex a} contains two fields.
- \code{sigma :: [Int]} represents the mapping $\sigma$ and
- \code{vertices :: [a]} the vertices of the simplex. For full simplices,
+ The \incode{Simplex} type is parametrized by the type used to represent vectors
+ in $\R{n}$. The type \incode{Simplex a} contains two fields.
+ \incode{sigma :: [Int]} represents the mapping $\sigma$ and
+ \incode{vertices :: [a]} the vertices of the simplex. For full simplices,
  $\sigma$ is just $0,\ldots,n$. For subsimplices of another simplex, $\sigma$
  keeps track of which of the vertices of the supersimplex are included in the
  subsimplex. This is needed for the extension of polynomials defined on a
@@ -142,8 +142,8 @@ spanningVectors (Simplex _ _)      = []
 \subsubsection{Printing Simplices}
 
 For printing of simplices two methods are provided. As an instance of the
-\code{Show} class¸ \code{show} displays the internal structure of the
-\code{Simplex} type. \code{pPrint} renders the simplex as a list of vectors
+\incode{Show} class¸ \incode{show} displays the internal structure of the
+\incode{Simplex} type. \incode{pPrint} renders the simplex as a list of vectors
 using unicode.
 
 %------------------------------------------------------------------------------%
@@ -163,9 +163,9 @@ instance EuclideanSpace v => Pretty (Simplex v) where
 
 \subsubsection{Constructors}
 
- The \code{Simplex} type provides two different constructors for the
- construction of full simplices. The \code{simplex} constructor creates a
- simplex from a given list of vertices. The \code{simplex'} constructor creates
+ The \incode{Simplex} type provides two different constructors for the
+ construction of full simplices. The \incode{simplex} constructor creates a
+ simplex from a given list of vertices. The \incode{simplex'} constructor creates
  a simplex from a given reference vertex $\vec{v_0}$ and $n$ direction vectors
  $\vec{v_1}-\vec{v_0},\ldots,\vec{v_n}-\vec{v_0}$. In both cases the topological
  dimension of the simplex must agree with the geometrical one, otherwise an
@@ -196,7 +196,7 @@ simplex' p0 vs
 
 %------------------------------------------------------------------------------%
 
- The function \code{referenceSimplex} constructs the reference simplex in
+ The function \incode{referenceSimplex} constructs the reference simplex in
  $\R{n}$, which is defined as the simplex $T=[\vec{v_0},\ldots,\vec{v_n}]$ with
  vertices
 \begin{align}
@@ -240,9 +240,9 @@ face (Simplex sigma1 vs) sigma2 = Simplex [sigma1 !! i | i <- sigma2]
  basis of the space using the Gram-Schmidt method and then projecting the
  spanning vectors onto that space.
 
- The function \code{volume} checks whether the given simplex has full space
- dimension and if not performs the projection using \code{project} and
- \code{gramSchmidt}. \code{volume'} simply uses the above formula to compute the
+ The function \incode{volume} checks whether the given simplex has full space
+ dimension and if not performs the projection using \incode{project} and
+ \incode{gramSchmidt}. \incode{volume'} simply uses the above formula to compute the
  volume of a full simplex $\smp{T}$.
 
 %------------------------------------------------------------------------------%
@@ -287,9 +287,9 @@ volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
  to index each subsimplex of a given dimension $k$ of a simplex.
 
  Three functions are provided to obtain subsimplices from a given simplex.
-\code{subsimplex} returns the $i$th $k$-subsimplex of a given simplex.
- \code{subsimplices} returns a list of all the subsimplices of dimension $k$ and
- \code{subsimplices'} returns a list of all the subsimplices of dimension $k$ or
+\incode{subsimplex} returns the $i$th $k$-subsimplex of a given simplex.
+ \incode{subsimplices} returns a list of all the subsimplices of dimension $k$ and
+ \incode{subsimplices'} returns a list of all the subsimplices of dimension $k$ or
  higher.
 
 %------------------------------------------------------------------------------%
@@ -426,7 +426,7 @@ extendVectors _ vs = extendOrthGS (Left vs)
    \vec{v_n}=(0,0,\ldots,1)
  \end{align}
 
- The function \code{barycentricToCartesian} converts a vector given in
+ The function \inlcode{barycentricToCartesian} converts a vector given in
  barycentric coordinates to cartesian coordinates:
 
 %------------------------------------------------------------------------------%
@@ -461,7 +461,7 @@ barycentricToCartesian (Simplex _ vs) v = U.sumV (zipWith sclV (toList v) vs)
  We refer to the tuple $(t_0,\ldots,t_{n-1})$ as the cubic coordinates of the
  corresponding point $(\lambda_0,\ldots,\lambda_n)$ in barycentric coordinates.
 
- The functions \code{cubicToCartesian} and \code{cubicToBarycentric} convert
+ The functions \inlcode{cubicToCartesian} and \inlcode{cubicToBarycentric} convert
  from the cubic coordinate system to Cartesian and barycentric coordinates,
  respectively. Note that cubic coordinates define a point in space only with
  respect to a given simplex.
@@ -516,9 +516,9 @@ integral of $f$ over $\smp{T}$ can then be approximated using
   \int_\smp{T} d\vec{x} \: f(\vec{x}) \:&=
   V(\smp{T}) \sum_{j_1=0}^q w^{n-1}_{j_1}\ldots \sum_{j_n=0}^qw_{j_n}f(\xi^0_{j_n}) \end{align}
 
- The above formula is implemented by the function \code{integral}. The
+ The above formula is implemented by the function \inlcode{integral}. The
  computation of the quadrature weights and nodes is implemented in
- \code{FEECa.Utility.Quadrature}.
+ \inlcode{FEECa.Utility.Quadrature}.
 
 %------------------------------------------------------------------------------%
 

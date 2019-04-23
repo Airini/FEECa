@@ -62,13 +62,13 @@ import            FEECa.Utility.Utility       (sumR, pairM)
 
 %------------------------------------------------------------------------------%
 
-\subsection{The \code{BernsteinPolynomial} Type}
+\subsection{The \inlcode{BernsteinPolynomial} Type}
 
-The \code{BernsteinPolynomial} type uses the \code{Polynomial} type (to
-represent Bernstein polynomials) and also stores the \code{Simplex} over which
+The \inlcode{BernsteinPolynomial} type uses the \inlcode{Polynomial} type (to
+represent Bernstein polynomials) and also stores the \inlcode{Simplex} over which
 the polynomial is defined.
 %
-The \code{BernsteinPolynomial} type provides an additional constructor for
+The \inlcode{BernsteinPolynomial} type provides an additional constructor for
 constant polynomials which are polymorphic over simplices.
 
 %------------------------------------------------------------------------------%
@@ -106,28 +106,28 @@ domain _ = error "domain: No domain associated with constant Bernstein polynomia
 
 \subsubsection{Constructors}
 
-Since not all possible instances of the type \code{BernsteinPolynomial}
+Since not all possible instances of the type \inlcode{BernsteinPolynomial}
 represent valid Bernstein polynomials, the constructors have to make sure that
 the constructed polynomials are consistent.
 %
 To be valid, all multi-indices must have dimension $k+1$, where $k$ is the
-toppological dimension of the underlying simplex $T =
+topological dimension of the underlying simplex $T =
 [\vec{v_0},\ldots,\vec{v_k}]$.
 %
 Note that in Bernstein representation the multi-indices representing the
 polynomial are of dimension $k+1$, while in the monomial representation they
 have dimension $k$.
 
-The function \code{polynomial} creates a Bernstein polynomial from a list of
+The function \inlcode{polynomial} creates a Bernstein polynomial from a list of
 coefficient-multi-index pairs.
 %
 The function throws an error if the provided arguments are invalid.
 
-The function \code{monomial} creates a barycentric monomial from a given
+The function \inlcode{monomial} creates a barycentric monomial from a given
 multi-index and throws an error if the dimension of simplex and the multi-index
 are inconsistent.
 
-The function \code{constant} creates a constant barycentric monomial and does
+The function \inlcode{constant} creates a constant barycentric monomial and does
 not require to be passed a simplex argument.
 % TODO: but it does right now...
 %------------------------------------------------------------------------------%
@@ -180,8 +180,8 @@ polynomials over $\R{n}$.
 That is, they form a ring with respect to addition and multiplication of
 polynomials and a vector space over $\mathrm R$.
 %
-These algebraic structures are implemented by the \code{Ring} and
-\code{VectorSpace} classes, respectively.
+These algebraic structures are implemented by the \inlcode{Ring} and
+\inlcode{VectorSpace} classes, respectively.
 
 %------------------------------------------------------------------------------%
 
@@ -222,7 +222,7 @@ inner product space with $L^2$ inner product given by
 This inner product over Bernstein polynomials is used to define the inner
 product in the space of polynomial differential forms over the simplex.
 %
-In \code{FEECa}, the class \code{InnerProductSpace} is used to represent inner
+In \inlcode{FEECa}, the class \inlcode{InnerProductSpace} is used to represent inner
 product spaces.
 
 %------------------------------------------------------------------------------%
@@ -236,7 +236,7 @@ instance (EuclideanSpace v, r ~ Scalar v) => InnerProductSpace (BernsteinPolynom
 %------------------------------------------------------------------------------%
 
 Finally, Bernstein polynomials are also functions that can be evaluated and
-derived so they are declared an instance of the class \code{Function}.
+derived so they are declared an instance of the class \inlcode{Function}.
 
 %------------------------------------------------------------------------------%
 
@@ -255,8 +255,8 @@ instance (EuclideanSpace v, r ~ Scalar v)
 
 Addition, scaling and multiplication of Bernstein polynomials is
 straight-forward and can be implemented using the functions
-\code{addPolynomial}, \code{scalePolynomial} and \code{multiplyPolynomial}
-provided by the \code{Polynomial} module.
+\inlcode{addPolynomial}, \inlcode{scalePolynomial} and \inlcode{multiplyPolynomial}
+provided by the \inlcode{Polynomial} module.
 
 %------------------------------------------------------------------------------%
 
@@ -346,7 +346,7 @@ component of the gradient of the $j$-th barycentric coordinate.
 Note that the factor $\alpha_i$ in the derivation is absorbed into the
 prefactor $\frac{(r-1)!}{\vec{\alpha}}$ of $\B_{\vec{\alpha^j}}^{r-1}$.
 
-The derivation of Bernstein monomials is provided by \code{deriveMonomial}.
+The derivation of Bernstein monomials is provided by \inlcode{deriveMonomial}.
 %
 The derivation of Bernstein polynomials is then implemented using the general
 function provided by the \module{Polynomial} module.
@@ -405,7 +405,7 @@ For the integration of Bernstein polynomials two functions are provided.
 The first one uses the quadrature rule over simplices to compute integrals over
 arbitrary simplices.
 %
-This is implemented by the \code{integrate} function.
+This is implemented by the \inlcode{integrate} function.
 
 %------------------------------------------------------------------------------%
 
@@ -436,9 +436,9 @@ simplex it is defined over, which is given by
 where $k$ is the topological dimension of the simplex.
 %
 Since this requires the simplex the polynomial is defined over to be known this
-function does not work for the \code{Constant} constructor.
+function does not work for the \inlcode{Constant} constructor.
 %TODO: then perhaps the Constant should also store the simplex?
-The \code{redefine} function can be used to add the information about the
+The \inlcode{redefine} function can be used to add the information about the
 simplex to the Bernstein polynomial.
 
 %------------------------------------------------------------------------------%

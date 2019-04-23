@@ -12,9 +12,9 @@ import Test.QuickCheck as TQ
 
 
 -- | Abstract properties
-prop_linearity :: VectorSpace v => (Scalar v -> Scalar v -> Bool)
-  -> (v -> Scalar v)
-  -> Scalar v -> v -> v -> Bool
+prop_linearity :: Module m => (Scalar m -> Scalar m -> Bool)
+  -> (m -> Scalar m)
+  -> Scalar m -> m -> m -> Bool
 prop_linearity eq f c a b = mul c (f a) `eq` f (sclV c a)
                          && add (f a) (f b) `eq` f (addV a b)
 
@@ -96,23 +96,23 @@ prop_inv f h i = forAll arbitrary $ \x ->
 -- inverses, distributivity
 
 
--- | Vector Space properties
+-- | Module properties
 
 -- Addition commutativity
-propV_addComm :: (VectorSpace v, Eq v, Show v) => v -> v -> Property
+propV_addComm :: (Module m, Eq m, Show m) => m -> m -> Property
 propV_addComm = prop_commutativity id addV --(addV x y) == (addV x y)
 
 -- Addition associativity : to be instantiated with an appropriate type
-propV_addAssoc :: (Eq v, VectorSpace v, Show v) => v -> v -> v -> Property
+propV_addAssoc :: (Eq m, Module m, Show m) => m -> m -> m -> Property
 propV_addAssoc = prop_associativity id addV
 
-propV_sclTwice :: (VectorSpace v, Eq v, Show v) => Scalar v -> Scalar v -> v -> Property
+propV_sclTwice :: (Module m, Eq m, Show m) => Scalar m -> Scalar m -> m -> Property
 propV_sclTwice a b x = sclV a (sclV b x) === sclV (mul a b) x
 
-propV_scladdFDistr :: (VectorSpace v, Eq v, Show v) => Scalar v -> Scalar v -> v -> Property
+propV_scladdFDistr :: (Module m, Eq m, Show m) => Scalar m -> Scalar m -> m -> Property
 propV_scladdFDistr = prop_distributivityA id add addV sclV
 
-propV_scladdVDistr :: (VectorSpace v, Eq v, Show v) => Scalar v -> v -> v -> Property
+propV_scladdVDistr :: (Module m, Eq m, Show m) => Scalar m -> m -> m -> Property
 propV_scladdVDistr = prop_distributivityB id addV sclV
 
 -- | Alternating forms (graded algebra properties): other than the vector space

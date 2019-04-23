@@ -1,6 +1,6 @@
 \section{Finite Element Spaces}
 
-The \code{FiniteElementSpace} module provides functions for the
+The \inlcode{FiniteElementSpace} module provides functions for the
 generation of finite element bases over simplices.
 %
 The implementation is based on the article by \citet{ArnoldFalkWinther}.
@@ -69,17 +69,17 @@ import qualified  FEECa.PolynomialDifferentialForm as D
 
 %------------------------------------------------------------------------------%
 
-\subsection{The \code{FiniteElementSpace} Data Type}
+\subsection{The \inlcode{FiniteElementSpace} Data Type}
 
-The \code{FiniteElementSpace} type represents a
+The \inlcode{FiniteElementSpace} type represents a
 %
 finite element space over a simplex.
 %
 It provides three type constructors.
 %
-The \code{PrLk} and the \code{PrmLk} constructors to represent the
+The \inlcode{PrLk} and the \inlcode{PrmLk} constructors to represent the
 spaces $\pl{r}{k}$ and $\pml{r}{k}$, respectively and the
-\code{GenSpace} constructor to represent a general space by a set of
+\inlcode{GenSpace} constructor to represent a general space by a set of
 basis functions.
 %TODO: There is no GenSpace constructor: either fix the text or the code.
 
@@ -111,9 +111,9 @@ type DoF = DifferentialForm -> Double
 %------------------------------------------------------------------------------%
 
 For the $\pl{r}{k}$ and $\pml{r}{k}$ spaces the following functions can be used
-to extract their properties. \code{degree} returns the maximum degree $r$ of the
-spaces, while \code{arity} returns the arity $k$ of the alternating forms.
-\code{vspaceDim} returns the dimension $n$ of the underlying euclidean space
+to extract their properties. \inlcode{degree} returns the maximum degree $r$ of the
+spaces, while \inlcode{arity} returns the arity $k$ of the alternating forms.
+\inlcode{vspaceDim} returns the dimension $n$ of the underlying euclidean space
 $\R{n}$.
 
 %------------------------------------------------------------------------------%
@@ -144,7 +144,7 @@ vspaceDim (PrmLk _ _ t) = S.geometricalDimension t
 
 %------------------------------------------------------------------------------%
 
-The function \code{dim} can be used to compute the dimension of the spaces which
+The function \inlcode{dim} can be used to compute the dimension of the spaces which
 are given by
 
 \begin{align}
@@ -168,7 +168,7 @@ instance Dimensioned FiniteElementSpace where
 
 %------------------------------------------------------------------------------%
 
-Finally, the actual work is performed by the \code{basis} function which computes
+Finally, the actual work is performed by the \inlcode{basis} function which computes
 the basis elements of a given $\pl{r}{k}$ or $\pml{r}{k}$ space. The implementation
 is described below.
 
@@ -208,7 +208,7 @@ pPrint l  = putStrLn $ "[ " ++ foldl render (pPrintBasisFunction (head l)) (tail
 \subsection{Concrete Spaces}
 
 For the construction of finite element spaces over a given simplex the
-\code{finiteElementSpace} function is provided.
+\inlcode{finiteElementSpace} function is provided.
 %
 It takes the name of one of the primary spaces of finite elements as
 presented in \cite{ArnoldLogg}.
@@ -362,7 +362,7 @@ $$
 \end{align}
 $$
 
-The construction of this set is implemented in the function \code{prmLkBasis}.
+The construction of this set is implemented in the function \inlcode{prmLkBasis}.
 
 %------------------------------------------------------------------------------%
 

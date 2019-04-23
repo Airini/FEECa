@@ -23,19 +23,18 @@ mathExtensions          = [ Ext_tex_math_dollars, Ext_tex_math_double_backslash
                           , Ext_latex_macros ]
 defaultExtensions       = readerExtensions defaultHakyllReaderOptions
 writerDefaultExtensions = writerExtensions defaultHakyllWriterOptions
-newExtensions           = Prelude.foldr S.insert defaultExtensions mathExtensions
-newWriterExtensions     = Prelude.foldr S.insert defaultExtensions extensions
-readExtensions          = Prelude.foldr S.insert defaultExtensions
-                                        [Ext_literate_haskell]
+newExtensions           = Prelude.foldr enableExtension defaultExtensions mathExtensions
+newWriterExtensions     = Prelude.foldr enableExtension writerDefaultExtensions (extensions ++ mathExtensions)
+readExtensions          = Prelude.foldr enableExtension defaultExtensions (extensions ++ mathExtensions) -- [Ext_literate_haskell]
 
 writerOptions = defaultHakyllWriterOptions {
-                  writerExtensions     = newExtensions,
-                  writerHTMLMathMethod = MathJax ""
+                  writerExtensions     = newWriterExtensions
+                , writerHTMLMathMethod = MathJax "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
                 }
 
 readerOptions = defaultHakyllReaderOptions {
-                  readerExtensions =  readExtensions,
-                  readerApplyMacros = True
+                  readerExtensions =  readExtensions
+                --, readerApplyMacros = True
                 }
 
 customPandocCompiler :: Compiler (Item String)
@@ -53,7 +52,7 @@ compilePandoc macros main = do
     print cmdErr
     return $ itemSetBody cmdOut main
   where cmd = "pandoc"
-        args = [ "-f","latex+lhs+inline_code_attributes"
+        args = [ "-f", "latex+lhs+inline_code_attributes+tex_math_dollars"
                , "--mathjax=https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 --               , "-H", "doc/header",
                , "--bibliography=doc/tech-report.bib"

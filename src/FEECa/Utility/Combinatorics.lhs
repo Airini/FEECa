@@ -1,8 +1,8 @@
 
 \section{Combinatorics}
 
-The \code{Combinatorics} module contains functions for  common combinatorial
-tasks that arise in \code{FEECa}. Those are
+The \inlcode{Combinatorics} module contains functions for  common combinatorial
+tasks that arise in \inlcode{FEECa}. Those are
 \begin{itemize}
   \item computation of binomial coefficients and factorials,
   \item generation and indexing of increasing lists,
@@ -39,9 +39,9 @@ import qualified Math.Combinatorics.Exact.Factorial as F
 
 \subsection{Mathematical Functions}
 
-The \code{Combinatorics} module re-exports the function \code{choose}
+The \inlcode{Combinatorics} module re-exports the function \inlcode{choose}
 for the computation of binomial coefficients and the function
-\code{factorial} for the computation of factorials from the
+\inlcode{factorial} for the computation of factorials from the
 \textbf{exact-combinatorics} \cite{package:ec} package.
 
 %------------------------------------------------------------------------------%
@@ -79,9 +79,9 @@ lists. Take as an example $k=3, n=3$:
 \subsubsection{Generation}
 
 The main task of generating increasing lists is performed by
-\code{increasingLists'}, which generates a list of all increasing lists beginning
- with a given integer number. value. \code{increasingLists} and
- \code{increasingLists1} provide wrappers for \code{increasingLists'} to
+\inlcode{increasingLists'}, which generates a list of all increasing lists beginning
+ with a given integer number. value. \inlcode{increasingLists} and
+ \inlcode{increasingLists1} provide wrappers for \inlcode{increasingLists'} to
  generate the length-$k$ lists with elements in $\{0,\ldots,n\}$ and
  $\{1,\ldots,n\}$, respectively.
 
@@ -121,7 +121,7 @@ increasingLists' k n x0
 \subsubsection{Indexing}
 
 Increasing lists can be indexed by assigning index $0$ to the smallest list (in
-lexicographic order) and then counting upward. The function \code{unrank}
+lexicographic order) and then counting upward. The function \inlcode{unrank}
 returns the increasing list with index $i$ for given paramters $k,n$.
 
 %------------------------------------------------------------------------------%
@@ -164,7 +164,7 @@ rank' lower upper (l:ls)  = (l - lower) * (upper - l - 1) `choose` (k - 1)
 %%           ccc = (c-1) `choose` (k-1)
 %%           n' = r + n - cc
 
-The function \code{sublists} returns all length $k-1$ sublists of a given length
+The function \inlcode{sublists} returns all length $k-1$ sublists of a given length
 $k$ list. The ordering of the list is preserved.
 
 %------------------------------------------------------------------------------%
@@ -198,8 +198,8 @@ therefore in most cases have length equal to the dimension $n$ of the underlying
 vector space.
 
 Two variants of functions generating such lists are provided. The function
-\code{sumRLists} returns a list of all length $n$ lists that sum to $r$. The
-function \code{sumRLists'} lists all length $n$ lists that sum to $r$
+\inlcode{sumRLists} returns a list of all length $n$ lists that sum to $r$. The
+function \inlcode{sumRLists'} lists all length $n$ lists that sum to $r$
 \textbf{or less}.
 
 %------------------------------------------------------------------------------%

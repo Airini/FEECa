@@ -1,6 +1,10 @@
 % Fix to get inline highlighting with pandoc.
-\newcommand{\code}[1]{\lstinline|#1|}
+\newcommand{\inlcode}[1]{\lstinline|#1|}
 \lstset{language=Haskell,basicstyle=\small}
+%\usepackage{listings}
+%\usepackage{xcolor}
+%\lstloadlanguages{Haskell}
+%\lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small}}{}
 
 \newcommand{\dt}[1]{`<span class=dt>#1</span>`}
 
