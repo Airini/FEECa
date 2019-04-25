@@ -257,14 +257,14 @@ inner proj omega eta
 
 trace :: [Int] -> Form w -> Form w
 trace sigma (Form k n ts)
-  | k' < k    = Form k' n []
-  | otherwise = Form k n (map (pairM id restrict') (filter' ts))
-  where filter'   = filter ((is_in_range' sigma) . snd)
-        restrict' = map (\x -> fromJust $ elemIndex x sigma)
-        k' = length sigma
+    | k' < k    = Form k' n []
+    | otherwise = Form k n (map (pairM id restrict') ts')
+  where ts'       = filter (is_in_range' sigma . snd) ts
+        restrict' = map (fromJust . (`elemIndex` sigma))
+        k'        = length sigma
 
 is_in_range' :: [Int] -> [Int] -> Bool
-is_in_range' sigma is = and [elem i sigma | i <- is]
+is_in_range' sigma = all (`elem` sigma)
 
 -- | Checks arity equality
 degNEq :: Form f -> Form f -> Bool

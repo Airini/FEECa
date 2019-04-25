@@ -116,6 +116,16 @@ prop_derivation_product :: Vector Rational -> Vector Rational
                         -> Bool
 prop_derivation_product = propDerivationProduct
 
+prop_derivation_productD :: Vector Double -> Vector Double
+                         -> Polynomial Double -> Polynomial Double
+                         -> Bool
+prop_derivation_productD v1 v2 f g =
+    ev (add (mul g (d f)) (mul f (d g))) `eqNum` (ev . d) (mul f g)
+  where ev = evaluate v1
+        d  = derive v2
+
+
+
 -- Test for polynomials using exact arithmetic.
 prop_arithmetic_rational :: Polynomial Rational -> Polynomial Rational
                          -> Vector Rational -> Rational

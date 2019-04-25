@@ -4,7 +4,6 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 module FEECa.PolynomialDifferentialForm where
 
@@ -14,15 +13,14 @@ import Data.Foldable  ( Foldable (..) )
 import Data.Monoid    ( First (..) )
 import Data.Maybe
 
-import            FEECa.Internal.Vector
+import            FEECa.Internal.Vector       as V
 import            FEECa.Internal.Simplex
-import qualified  FEECa.Bernstein             as B
 import qualified  FEECa.Internal.Form         as F
-import qualified  FEECa.DifferentialForm      as D
 import qualified  FEECa.Polynomial            as P
 import qualified  FEECa.Internal.Spaces       as S
+import qualified  FEECa.Bernstein             as B
+import qualified  FEECa.DifferentialForm      as D
 import qualified  FEECa.Utility.Combinatorics as C
-import qualified  FEECa.Internal.Vector       as V
 
 type BernsteinPolynomial a = B.BernsteinPolynomial (Vector a) a
 type DifferentialForm a    = D.DifferentialForm (BernsteinPolynomial a)
@@ -68,7 +66,6 @@ evalSeparately t omega vs fs = V.toList $ Prelude.foldl S.addV (S.zero l) crossr
         ds          = P.barycentricGradients t
         omegasplit  = F.split omega
         l           = length vs * length fs
-        -- zero        = V.vector (replicate l $ S.embedIntegral 0.0)
 
 inner :: (S.Field a, Ord a) => DifferentialForm a -> DifferentialForm a -> a
 inner (F.Form _ _ []) _               = S.addId
@@ -82,16 +79,16 @@ inner omega eta
 integrate :: (Show a, S.Field a) => Simplex (Vector a) -> DifferentialForm a -> a
 integrate t omega = S.divide (B.integratePolynomial t b) (S.mul kfac vol)
   where b    = apply omega (spanningVectors t)
-        -- b'   = S.sclV (S.mulInv (S.mul kfac (volume t))) b
+        -- b'   = sclV (mulInv (mul kfac (volume t))) b
         vol  = if topologicalDimension t == 0 then S.mulId else volume t
         kfac = S.embedIntegral (C.factorial (topologicalDimension t))
 
 trace :: S.Field a => Simplex (Vector a) -> DifferentialForm a -> DifferentialForm a
-trace f omega = F.Form (F.arity omega) n' $ F.terms (fmap ((B.redefine f) . (B.trace f)) $ F.trace (sigma f) omega)
+trace f omega = F.Form (F.arity omega) n' $ F.terms (fmap (B.redefine f . B.trace f) (F.trace (sigma f) omega))
   where n' = topologicalDimension f
 
 d :: S.Field a => DifferentialForm a -> DifferentialForm a
-d omega = foldr (S.addA . (\i -> fmap (B.deriveBernsteinBasis i) ((F.oneForm i n) S./\ omega)))
+d omega = foldr (S.addA . (\i -> fmap (B.deriveBernsteinBasis i) (F.oneForm i n S./\ omega)))
           (F.zeroForm (1 + F.arity omega) n)
           [0..n]
   where n = F.dimVec omega

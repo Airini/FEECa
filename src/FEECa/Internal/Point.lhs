@@ -8,7 +8,6 @@ positions in n-dimensional Euclidean space.
 \ignore{
 \begin{code}
 
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TupleSections      #-}
 {-# LANGUAGE FlexibleInstances  #-}
 {-# LANGUAGE TypeFamilies       #-}
@@ -51,10 +50,10 @@ The \inlcode{Point} data type is build on top of the \inlcode{Vector} data type 
 newtype Point a = Point (Vector a) deriving (Eq, Show)
 
 instance Dimensioned (Point a) where
-    dim (Point v) = dim v
+  dim (Point v) = dim v
 
 instance Real a => Pretty (Point a) where
-    pPrint (Point v) = text "Point in "
+  pPrint (Point v) = text "Point in "
                        <> rn (dim v)
                        <> text ":\n"
                        <> printVector 2 (map (fromRational . toRational) (components v))

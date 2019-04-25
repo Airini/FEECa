@@ -262,7 +262,7 @@ volume t
         bs = gramSchmidt vs
 
 project :: EuclideanSpace v => [v] -> [v] -> [v]
-project bs vs = map fromList [[ proj b v | b <- bs] | v <- vs]
+project bs vs = [ fromList [proj b v | b <- bs] | v <- vs]
   where proj b v  = divide (dot b v) (sqrt' (dot b b))
         sqrt'     = fromDouble . sqrt . toDouble
 
@@ -339,16 +339,16 @@ complement (Simplex _ l) (Simplex sigm _) = [l !! i | i <- [0..n], i `notElem` s
 
 boundary :: Simplex v -> [Simplex v]
 boundary t
-  | k <= 0    = error err_dim
-  | otherwise = subsimplices t (k-1)
+    | k <= 0    = error err_dim
+    | otherwise = subsimplices t (k-1)
   where k = topologicalDimension t
         err_dim = "boundary: Can't take the boundary of a simplex with topological dimension "
                   ++ "less than 1."
 
 boundarySigns :: EuclideanSpace v => Simplex v -> [Scalar v]
 boundarySigns t
-  | k <= 0    = error err_dim
-  | otherwise = map (\x -> if (even x) then mulId else addInv mulId) [0..k]
+    | k <= 0    = error err_dim
+    | otherwise = map (\x -> if even x then mulId else addInv mulId) [0..k]
   where k = topologicalDimension t
         err_dim = "boundary: Can't take the boundary of a simplex with topological dimension "
                   ++ "less than 1."

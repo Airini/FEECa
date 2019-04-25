@@ -32,7 +32,6 @@ The degree of a multi-index $\vec{\alpha}$ is the sum of exponents in the tuple:
 
 \begin{code}
 
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE FlexibleInstances    #-}
 -- {-# LANGUAGE DeriveFoldable       #-}
@@ -55,7 +54,7 @@ module FEECa.Internal.MultiIndex (
   ) where
 
 
-import            Control.Applicative               (ZipList(..), liftA2, pure, (<*>))
+import            Control.Applicative               (ZipList(..), liftA2, (<*>))
 {-
   #if MIN_VERSION_base(4,9,0)
   #else
@@ -65,7 +64,7 @@ import            Control.Applicative               (ZipList(..), liftA2, pure, 
 
 import            FEECa.Utility.Combinatorics       (sumRLists)
 import qualified  FEECa.Utility.Combinatorics as C  (choose, factorial)
-import            FEECa.Internal.Spaces             (Dimensioned(..), Field(..))
+import            FEECa.Internal.Spaces             (Dimensioned(..), Ring(embedIntegral), Field(..))
 
 
 
@@ -267,26 +266,26 @@ extend' n i (s:ss)  (j:js)  = replicate di 0 ++ (j : extend' (n - di - 1) s ss j
 extend' _ _ _       _       = error "extend': list argument lengths must match"
 
 is_in_range :: [Int] -> MultiIndex -> Bool
-is_in_range sigma mi = is_in_range' sigma (toList mi)
+is_in_range sigma = is_in_range' sigma . toList
 
 is_in_range' :: [Int] -> [Int] -> Bool
-is_in_range' [] is = all (0==) is
+is_in_range' [] is = all (==0) is
 is_in_range' sigma@(s:ss) (i:is)
-  | s > 0  = (i == 0) && (is_in_range' sigma' is)
-  | s == 0 = is_in_range' ss' is
-  where sigma' = map ((+) (-1)) sigma
-        ss'    = map ((+) (-1)) ss
+    | s > 0  = (i == 0) && is_in_range' sigma' is
+    | s == 0 = is_in_range' ss' is
+  where sigma' = map (subtract 1) sigma
+        ss'    = map (subtract 1) ss
 
 restrict :: [Int] -> MultiIndex -> MultiIndex
-restrict sigma mi = multiIndex $ restrict' sigma (toList mi)
+restrict sigma = multiIndex . restrict' sigma . toList
 
 restrict' :: [Int] -> [Int] -> [Int]
 restrict' [] _ = []
 restrict' sigma@(s:ss) (i:is)
-  | s > 0  = restrict' sigma' is
-  | s == 0 = i : restrict' ss' is
-  where sigma' = map ((+) (-1)) sigma
-        ss'    = map ((+) (-1)) ss
+    | s > 0  = restrict' sigma' is
+    | s == 0 = i : restrict' ss' is
+  where sigma' = map (subtract 1) sigma
+        ss'    = map (subtract 1) ss
 
 \end{code}
 
@@ -367,11 +366,11 @@ element at a given index of a multi-index, this is implemented by the
 \begin{code}
 -- | Decrease element in multi-index
 decrease :: Integral a =>  Int -> ZipList a -> ZipList a
-decrease i alpha  = pure f <*> ZipList [0..] <*> alpha
+decrease i alpha  = f <$> ZipList [0..] <*> alpha
   where f j a = if j == i then max 0 (a-1) else a
 
 -- | Decrease element in multi-index
-derive :: (Integral a, Field b) =>  Int -> ZipList a -> (b, ZipList a)
-derive i alpha  = (c, decrease i alpha)
-  where c = (fromDouble . fromIntegral) (getZipList alpha !! i)
+derive :: Integral a =>  ZipList a -> [(a, ZipList a)]
+derive alpha = [ (c, decrease i alpha) | (c,i) <- coeffIxs ]
+  where coeffIxs = getZipList $ (,) <$> alpha <*> ZipList [0..]
 \end{code}

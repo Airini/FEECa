@@ -67,6 +67,7 @@ module FEECa.Polynomial (
 
 import            Prelude                     hiding  ( (<>) )
 import            Data.List
+import Control.Applicative (ZipList(..))
 import            Numeric.LinearAlgebra.Data          ( (??), Extractor(All, Drop) )
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
@@ -74,7 +75,7 @@ import            FEECa.Utility.Print   ( Pretty (..), printPolynomial )
 import            FEECa.Utility.Utility ( takeMap, zipWithWhen, sumR, productR )
 
 import qualified  FEECa.Internal.MultiIndex as MI (
-                      MultiIndex, zero, unit, decrease,
+                      MultiIndex, zero, unit, derive,
                       toList, add, degree, valid )
 import            FEECa.Internal.Simplex
 import            FEECa.Internal.Spaces           (
@@ -526,7 +527,7 @@ type Dx a = MI.MultiIndex -> [Polynomial a]
  is given by
 
 \begin{align}
-  \frac{d\: cvec{y}^{\vec{\alpha}}}{d\vec{v}} &= c\sum_{i = 0}^{n-1} v_{i}
+  \frac{d\: c\vec{y}^{\vec{\alpha}}}{d\vec{v}} &= c\sum_{i = 0}^{n-1} v_{i}
                                               \frac{d\vec{y}}{dx_i}
 \end{align}
 
@@ -552,20 +553,19 @@ The function \inlcode{deriveMonomial} implements the derivative of a monomial fo
 deriveTerm :: (EuclideanSpace v, r ~ Scalar v)
            => Dx r -> v -> Term r -> Polynomial r
 deriveTerm _  _ (Constant _) = constant addId
-deriveTerm dx v (Term c mi)  = {-sclV c -} sumR (zipWith (sclV . mul c) v' (dx mi))
+deriveTerm dx v (Term c mi)  = sumR (zipWith (sclV . mul c) v' (dx mi))
   where v' = toList v
 
 deriveTermBasis :: Ring r => Dx r -> Int -> Term r -> Polynomial r
 deriveTermBasis _  _ (Constant _) = constant addId
-deriveTermBasis dx i (Term c mi)  = sclV c ((dx mi) !! i)
+deriveTermBasis dx i (Term c mi)  = sclV c (dx mi !! i)
 
 -- | Derivative of a monomial over the standard monomial basis in given space
 -- | direction.
 deriveMonomial :: Ring r => Dx r
-deriveMonomial mi = [ polynomial [(c i, mi' i)] | i <- [0..n-1] ]
-  where c i   = embedIntegral (MI.toList mi !! i)
-        mi' i = MI.decrease i mi
-        n     = dim mi
+deriveMonomial = map dp . MI.derive
+  where dp (0,_) = constant addId
+        dp (c,m) = polynomial [(embedIntegral c, m)]
 \end{code}
 
 %------------------------------------------------------------------------------%

@@ -99,21 +99,21 @@ prop_inv f h i = forAll arbitrary $ \x ->
 -- | Module properties
 
 -- Addition commutativity
-propV_addComm :: (Module m, Eq m, Show m) => m -> m -> Property
-propV_addComm = prop_commutativity id addV --(addV x y) == (addV x y)
+propM_addComm :: (Module m, Eq m, Show m) => m -> m -> Property
+propM_addComm = prop_commutativity id addV --(addV x y) == (addV x y)
 
 -- Addition associativity : to be instantiated with an appropriate type
-propV_addAssoc :: (Eq m, Module m, Show m) => m -> m -> m -> Property
-propV_addAssoc = prop_associativity id addV
+propM_addAssoc :: (Eq m, Module m, Show m) => m -> m -> m -> Property
+propM_addAssoc = prop_associativity id addV
 
-propV_sclTwice :: (Module m, Eq m, Show m) => Scalar m -> Scalar m -> m -> Property
-propV_sclTwice a b x = sclV a (sclV b x) === sclV (mul a b) x
+propM_sclTwice :: (Module m, Eq m, Show m) => Scalar m -> Scalar m -> m -> Property
+propM_sclTwice a b x = sclV a (sclV b x) === sclV (mul a b) x
 
-propV_scladdFDistr :: (Module m, Eq m, Show m) => Scalar m -> Scalar m -> m -> Property
-propV_scladdFDistr = prop_distributivityA id add addV sclV
+propM_scladdFDistr :: (Module m, Eq m, Show m) => Scalar m -> Scalar m -> m -> Property
+propM_scladdFDistr = prop_distributivityA id add addV sclV
 
-propV_scladdVDistr :: (Module m, Eq m, Show m) => Scalar m -> m -> m -> Property
-propV_scladdVDistr = prop_distributivityB id addV sclV
+propM_scladdVDistr :: (Module m, Eq m, Show m) => Scalar m -> m -> m -> Property
+propM_scladdVDistr = prop_distributivityB id addV sclV
 
 -- | Alternating forms (graded algebra properties): other than the vector space
 -- | properties

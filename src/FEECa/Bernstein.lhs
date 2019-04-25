@@ -358,24 +358,22 @@ function provided by the \module{Polynomial} module.
 -- | Derivative of a Bernstein monomial
 deriveMonomial :: ( EuclideanSpace v, r ~ Scalar v )
                => Simplex v -> MI.MultiIndex -> [ Polynomial r ]
-deriveMonomial t mi = [ sumR [sclV (grads j i) (dp j) | j <- [0..n]] | i <- [0..n-1] ]
-    where grads j i = toList (barycentricGradients t !! j) !! i
-          dp j = if (mi' !! j) > 0
-                 then P.polynomial [MI.derive j mi]
-                 else P.constant addId
-          mi'  = MI.toList mi :: [Int]
-          n    = dim mi - 1
+deriveMonomial t mi = deriveMonoB barycentricGradient (dim mi - 1) t mi
 
 -- | Derivative of a Bernstein monomial
 deriveMonomialLocal :: ( EuclideanSpace v, r ~ Scalar v )
                => Simplex v -> MI.MultiIndex -> [ Polynomial r ]
-deriveMonomialLocal t mi = [ sumR [sclV (grads j i) (dp j) | j <- [0..n]] | i <- [0..n] ]
-    where grads j i = toList (localBarycentricGradients t !! j) !! i
-          dp j = if (mi' !! j) > 0
-                 then P.polynomial [MI.derive j mi]
-                 else P.constant addId
-          mi'  = MI.toList mi :: [Int]
-          n    = dim mi - 1
+deriveMonomialLocal t mi = deriveMonoB localBarycentricGradient (dim mi) t mi
+  where localBarycentricGradient t i = localBarycentricGradients t !! i
+
+deriveMonoB :: ( EuclideanSpace v, r ~ Scalar v)
+            => (Simplex v -> Int -> v) -> Int ->
+               Simplex v -> MI.MultiIndex -> [ Polynomial r ]
+deriveMonoB barGr n t mi = [ sumR [sclV (grads j i) (dp (c',mi')) | (j,(c',mi')) <- jMonDx] | i <- [0..n] ]
+  where grads j i = toList (barGr t j) !! i
+        jMonDx    = zipWith (,) [0..] (MI.derive mi)
+        dp (0,_)  = P.constant addId
+        dp (c,m)  = P.polynomial [(embedIntegral c,m)]
 
 -- | Derive Bernstein polynomial.
 deriveBernstein :: ( EuclideanSpace v, r ~ Scalar v )

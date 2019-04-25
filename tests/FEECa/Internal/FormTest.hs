@@ -34,13 +34,13 @@ testForm maxDim args = do
 --   forms and for forms in the same vector space
 checkList :: Int -> [Int -> Property]
 checkList max = [
-        propT 3 propV_addAssoc,
+        propT 3 propM_addAssoc,
         propT 3 propA_wedgeAssoc,
-        propT 2 (const propV_addComm),
-        propT 2 (\_ x y -> forAll c $ \a -> propV_scladdVDistr a x y)
+        propT 2 (const propM_addComm),
+        propT 2 (\_ x y -> forAll c $ \a -> propM_scladdVDistr a x y)
      ] ++
      map (\p -> propT 1 (\_ _ v -> forAll (pairOf c c) (\(a,b) -> p a b v)))
-         [ propV_sclTwice, propV_scladdFDistr ]
+         [ propM_sclTwice, propM_scladdFDistr ]
   where
     c = intNumG :: Gen Double
     propT :: Testable prop => Int -> (Form Double -> Form Double -> Form Double -> prop)

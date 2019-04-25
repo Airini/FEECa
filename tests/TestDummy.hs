@@ -16,7 +16,7 @@ import qualified FEECa.PolynomialDifferentialFormTest as DF
 import Control.Monad    ( liftM, unless )
 import System.Exit      ( exitFailure )
 
-import Test.QuickCheck  ( stdArgs )
+import Test.QuickCheck  ( stdArgs, Args(..) )
 
 nmax :: Int
 nmax = 4
@@ -35,5 +35,6 @@ main =
     , Q.testQuadrature
     , P.testPolynomial
     , DF.testDifferentialForm
-    , FE.testFiniteElement ]
+    , FE.testFiniteElement
+    ]
   >>= flip unless exitFailure
