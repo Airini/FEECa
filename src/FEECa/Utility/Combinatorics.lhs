@@ -48,12 +48,12 @@ for the computation of binomial coefficients and the function
 
 \begin{code}
 -- | Simple wrapper for 'factorial' that returns Num types.
-factorial :: Num a => Int -> a
+factorial :: Integral a => Int -> a
 factorial = fromInteger . F.factorial
 
 -- | Simple wrapper for 'choose'
-choose :: (Integral a, Num b) => a -> a -> b
-choose i j = fromIntegral (B.choose i j)
+choose :: Integral a => a -> a -> a
+choose = B.choose
 
 \end{code}
 

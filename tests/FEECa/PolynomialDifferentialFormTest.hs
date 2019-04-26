@@ -5,6 +5,7 @@
 module FEECa.PolynomialDifferentialFormTest where
 
 import Data.Maybe     ( fromJust, isJust )
+import Data.Ratio     ( (%) )
 import Control.Monad  ( liftM, liftM2 )
 
 import FEECa.Internal.Form
@@ -113,7 +114,7 @@ prop_integral t =
     volume t > 0 ==> all (nfac `eqNum`) [DF.integrate t (omega i) | i <- [1..n]]
   where omega i = Form n n [(lambda i, [1..n])]
         lambda  = B.barycentricCoordinate t
-        nfac    = 1.0 / factorial (n + 1)
+        nfac    = fromRational $ 1 % factorial (n + 1)
         n       = topologicalDimension t
 
 

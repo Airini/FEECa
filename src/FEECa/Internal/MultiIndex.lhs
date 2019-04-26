@@ -49,11 +49,12 @@ module FEECa.Internal.MultiIndex (
   , extend, is_in_range, restrict
 
   -- * Mathematical Operations
-  , add, decrease, derive, factorial, choose, choose', degree, range
+  , add, decrease, derive, factorial, choose, degree, range
 
   ) where
 
 
+import            Data.Ratio                        ( Ratio, (%) )
 import            Control.Applicative               (ZipList(..), liftA2, (<*>))
 {-
   #if MIN_VERSION_base(4,9,0)
@@ -324,7 +325,7 @@ factorial of all its elements:
 \begin{code}
 
 -- | Generalized factorial for multi-indices
-factorial :: Num b => MultiIndex -> b
+factorial :: Integral a => MultiIndex -> a
 factorial = product . map C.factorial . toList
 
 \end{code}
@@ -346,12 +347,11 @@ of the element-wise binomial coefficients.
 
 -- | Generalized binomial coefficients for multi-indices as defined in the paper
 -- | by Kirby.
-choose :: (Integral a, Num b) => ZipList a -> ZipList a -> b
+choose :: Integral a => ZipList a -> ZipList a -> a
 choose a b = product (getZipList $ liftA2 C.choose a b)
 
-choose' :: Fractional b => Int -> MultiIndex -> b
-choose' a b = C.factorial a / factorial b -- fromIntegral (C.factorial a) / fromIntegral (factorial b)
--- TODO: investigate *why* fromIntegral was there before.
+choose' :: Integral a => Int -> MultiIndex -> Ratio a
+choose' a b = C.factorial a % factorial b
 
 \end{code}
 

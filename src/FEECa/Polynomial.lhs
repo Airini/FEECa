@@ -52,7 +52,7 @@ module FEECa.Polynomial (
 
   -- * Mathematical operations
   , evaluatePolynomial, derivePolynomial, derivePolynomialBasis
-  ,  integratePolynomial, multiplyPolynomial
+  , integratePolynomial, multiplyPolynomial
 
   -- * Barycentric Coordinates
   , barycentricCoordinate, barycentricCoordinates
@@ -67,7 +67,6 @@ module FEECa.Polynomial (
 
 import            Prelude                     hiding  ( (<>) )
 import            Data.List
-import Control.Applicative (ZipList(..))
 import            Numeric.LinearAlgebra.Data          ( (??), Extractor(All, Drop) )
 import qualified  Numeric.LinearAlgebra.HMatrix as M
 
@@ -106,9 +105,9 @@ Two types are used to represent polynomials. The \inlcode{Term} type represents
 
 \begin{code}
 
--- | Represents terms of a n-dimensional polynomial. A Term is either a constant
--- | with a given value or consists of a multi-index and a double representing a
--- | monomial scaled by a scalar.
+-- | Represents terms of an n-dimensional polynomial. A Term is either a constant
+-- | with a given value or consists of a multi-index and a coefficient of
+-- | parameterised type representing a monomial scaled by a scalar.
 data Term a = Constant a
             | Term a MI.MultiIndex
   deriving (Eq, Show)
@@ -134,10 +133,10 @@ type provides the \inlcode{degree} field that holds the degree of the polynomial
 
 
 -- | General polynomial type. Represents a multi-dimensional polynomial of given
--- | degree by a list of terms. A term may either be a monomial scaled by a scalar,
--- | represented by Double and a MI.MultiIndex, or a constant, represented simply by a
--- | Double. The length of the multi-indices must match the dimensionality of the
--- | underlying vector space.
+-- | degree by a list of terms. A term may either be a monomial scaled by a
+-- | coefficient, of parameterised type, and a 'MI.MultiIndex', or a constant,
+-- | represented simply by a coefficient. The length of the multi-indices must
+-- | match the dimensionality of the underlying vector space.
 data Polynomial a =
     Polynomial { degree :: Int,
                  terms  :: [Term a] }
@@ -406,16 +405,14 @@ scaleTerm = fmap . mul
 scalePolynomial :: Ring a => a -> Polynomial a -> Polynomial a
 scalePolynomial c | c == addId = const addId
                   | otherwise  = fmap (mul c)
--- c (Polynomial r ts) = Polynomial r (map (scaleTerm c) ts)
 
 -- | Multiplication of two terms of a given function for monomial
 -- | multiplication when represented as multi-indices.
 multiplyTerm :: Ring a
              => (MI.MultiIndex -> MI.MultiIndex -> Term a)
              -> Term a -> Term a -> Term a
-multiplyTerm _ (Constant c)  t             = scaleTerm c t -- (Constant c2) = Constant (mul c1 c2)
---multiplyTerm _ (Constant c)  t(Term c2 mi)  = Term (mul c1 c2) mi
-multiplyTerm _ t             (Constant c)  = scaleTerm c t --Term (mul c1 c2) mi
+multiplyTerm _ (Constant c)  t             = scaleTerm c t
+multiplyTerm _ t             (Constant c)  = scaleTerm c t
 multiplyTerm f (Term c1 mi1) (Term c2 mi2) = scaleTerm (mul c1 c2) (f mi1 mi2)
 
 -- | Multiplication of two monomials.
@@ -462,7 +459,7 @@ evaluateTerm _ (Constant c) = c
 -- | Evaluate monomial over standard monomial basis.
 evaluateMonomial :: Ring r -- (EuclideanSpace v, r ~ Scalar v)
                  => [r] -> MI.MultiIndex -> r
-evaluateMonomial v mi = productR (zipWith pow v (MI.toList mi::[Int]))
+evaluateMonomial v mi = productR (zipWith pow v (MI.toList mi))
 --  where prod' = foldl mul mulId
 \end{code}
 
@@ -582,7 +579,7 @@ deriveMonomial = map dp . MI.derive
 -- | General derivative for a polynomial with arbitrary basis.
 derivePolynomial :: (EuclideanSpace v, r ~ Scalar v)
                  => Dx r -> v -> Polynomial r -> Polynomial r
-derivePolynomial dx v = sumR . map (deriveTerm dx v) . terms -- t | t <- terms p ]
+derivePolynomial dx v = sumR . map (deriveTerm dx v) . terms
 
 derivePolynomialBasis :: Ring r => Dx r -> Int -> Polynomial r -> Polynomial r
 derivePolynomialBasis dx i = sumR . map (deriveTermBasis dx i) . terms -- t | t <- terms p ]

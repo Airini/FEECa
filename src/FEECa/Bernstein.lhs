@@ -46,10 +46,10 @@ import            FEECa.Internal.Spaces
 import            FEECa.Internal.Vector
 
 import            FEECa.Polynomial        (
-                      Polynomial, terms, expandTerm,
+                      Polynomial, terms, expandTerm, toPairs,
                       derivePolynomial, derivePolynomialBasis,
                       barycentricCoordinates, barycentricGradient,
-                      barycentricGradients, localBarycentricGradients, toPairs)
+                      localBarycentricGradients)
 import qualified  FEECa.Polynomial   as P (
                       degree, multiIndices, monomial,
                       constant, polynomial, euclideanToBarycentric)
@@ -82,20 +82,20 @@ data BernsteinPolynomial v r  = Bernstein (Simplex v) (Polynomial r)
 
 -- Pretty printing for Bernstein polyonmials.
 instance Pretty (BernsteinPolynomial v Double) where
+  pPrint (Constant p)    = text (show p)
   pPrint (Bernstein _ p) = printBernstein ts
     where ts = map (expandTerm 0) (terms p)
-  pPrint (Constant p)    = text (show p)
 
 -- | List multi-indices of the terms in the polynomial.
 multiIndices :: (EuclideanSpace v, r ~ Scalar v)
              => BernsteinPolynomial v r -> [MI.MultiIndex]
+multiIndices (Constant _c)   = error "multiIndices: TODO"
 multiIndices (Bernstein t p) = P.multiIndices n p
   where n = geometricalDimension t
-multiIndices (Constant _c)   = error "multiIndices: TODO"
 
 degree :: BernsteinPolynomial v r -> Int
-degree (Bernstein _ p) = P.degree p
 degree (Constant _)    = 0
+degree (Bernstein _ p) = P.degree p
 
 domain :: BernsteinPolynomial v r -> Simplex v
 domain (Bernstein t _) = t
@@ -139,7 +139,7 @@ not require to be passed a simplex argument.
 -- | multi-indices and the simplex are inconsistent.
 polynomial :: (EuclideanSpace v, r ~ Scalar v)
            => Simplex v -> [(r, MI.MultiIndex)] -> BernsteinPolynomial v r
-polynomial t [] = Constant addId
+polynomial _ [] = Constant addId
 polynomial t l
     | n1 == n2 + 1 && termsOk = Bernstein t (P.polynomial l)
     | otherwise               = error "polynomial: Dimensions of Simplex and Polynomials do not match."
@@ -358,18 +358,18 @@ function provided by the \module{Polynomial} module.
 -- | Derivative of a Bernstein monomial
 deriveMonomial :: ( EuclideanSpace v, r ~ Scalar v )
                => Simplex v -> MI.MultiIndex -> [ Polynomial r ]
-deriveMonomial t mi = deriveMonoB barycentricGradient (dim mi - 1) t mi
+deriveMonomial t mi = deriveMonoG barycentricGradient (dim mi - 1) t mi
 
 -- | Derivative of a Bernstein monomial
 deriveMonomialLocal :: ( EuclideanSpace v, r ~ Scalar v )
                => Simplex v -> MI.MultiIndex -> [ Polynomial r ]
-deriveMonomialLocal t mi = deriveMonoB localBarycentricGradient (dim mi) t mi
+deriveMonomialLocal t mi = deriveMonoG localBarycentricGradient (dim mi) t mi
   where localBarycentricGradient t i = localBarycentricGradients t !! i
 
-deriveMonoB :: ( EuclideanSpace v, r ~ Scalar v)
+deriveMonoG :: ( EuclideanSpace v, r ~ Scalar v )
             => (Simplex v -> Int -> v) -> Int ->
                Simplex v -> MI.MultiIndex -> [ Polynomial r ]
-deriveMonoB barGr n t mi = [ sumR [sclV (grads j i) (dp (c',mi')) | (j,(c',mi')) <- jMonDx] | i <- [0..n] ]
+deriveMonoG barGr n t mi = [ sumR [sclV (grads j i) (dp (c',mi')) | (j,(c',mi')) <- jMonDx] | i <- [0..n] ]
   where grads j i = toList (barGr t j) !! i
         jMonDx    = zipWith (,) [0..] (MI.derive mi)
         dp (0,_)  = P.constant addId
@@ -378,16 +378,16 @@ deriveMonoB barGr n t mi = [ sumR [sclV (grads j i) (dp (c',mi')) | (j,(c',mi'))
 -- | Derive Bernstein polynomial.
 deriveBernstein :: ( EuclideanSpace v, r ~ Scalar v )
                 => v -> BernsteinPolynomial v r -> BernsteinPolynomial v r
-deriveBernstein v (Bernstein t p) = Bernstein t (derivePolynomial (deriveMonomial t) v p)
 deriveBernstein _ (Constant _)    = Constant addId
+deriveBernstein v (Bernstein t p) = Bernstein t (derivePolynomial (deriveMonomial t) v p)
 
-deriveBernsteinLocal :: (EuclideanSpace v, r ~ Scalar v)
-                 => v -> BernsteinPolynomial v r -> BernsteinPolynomial v r
-deriveBernsteinLocal _ (Constant _) = Constant addId
+deriveBernsteinLocal :: ( EuclideanSpace v, r ~ Scalar v )
+                     => v -> BernsteinPolynomial v r -> BernsteinPolynomial v r
+deriveBernsteinLocal _ (Constant _)    = Constant addId
 deriveBernsteinLocal v (Bernstein t p) = Bernstein t (derivePolynomial (deriveMonomialLocal t) v p)
  
-deriveBernsteinBasis :: (EuclideanSpace v, r ~ Scalar v)
-                     =>Int -> BernsteinPolynomial v r -> BernsteinPolynomial v r
+deriveBernsteinBasis :: ( EuclideanSpace v, r ~ Scalar v )
+                     => Int -> BernsteinPolynomial v r -> BernsteinPolynomial v r
 deriveBernsteinBasis _ (Constant _) = Constant addId
 deriveBernsteinBasis i (Bernstein t p) = Bernstein t (derivePolynomialBasis
                                                       (deriveMonomialLocal t) i p)
@@ -450,9 +450,9 @@ integrateBernstein :: (EuclideanSpace v, r ~ Scalar v)
 integrateBernstein (Bernstein t1 p) = sumR (map f (toPairs k p))
   where f (c, mi)   = mul c (divide (mul (factorialMI mi) vol)
                                     (mul (factorial' (MI.degree mi)) (fac mi)))
-        factorialMI = fromDouble . MI.factorial
-        factorial'  = fromDouble . factorial
-        fac mi      = fromDouble (fromInteger ((k + MI.degree mi) `choose` k))
+        factorialMI = embedIntegral . MI.factorial
+        factorial'  = embedIntegral . factorial
+        fac mi      = embedIntegral ((k + MI.degree mi) `choose` k)
         k     = topologicalDimension t1
         vol   = volume t1
 integrateBernstein (Constant _) = error "intergrateBernstein: No associated simplex for constant. Define over simplex first using redefine."
