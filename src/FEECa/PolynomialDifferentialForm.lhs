@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FlexibleContexts     #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
 
 module FEECa.PolynomialDifferentialForm where
 
@@ -59,7 +60,7 @@ evalSeparately :: (S.VectorSpace a, S.Scalar a ~ a)
                -> [Vector a]
                -> [[Vector a]]
                -> [a]
-evalSeparately t omega vs fs = V.toList $ Prelude.foldl S.addV (S.zero l) crossres
+evalSeparately t omega vs fs = S.toList $ Prelude.foldl S.addV (S.zero l) crossres
   where bvals       = B.tabulateBernstein t vs (fst omegasplit)
         fvals       = [[F.apply ds f eta | f <- fs] | eta <- snd omegasplit]
         crossres    = zipWith (\f v -> V.vector (liftA2 S.mul f v)) fvals bvals

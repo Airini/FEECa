@@ -326,7 +326,7 @@ factorial of all its elements:
 
 -- | Generalized factorial for multi-indices
 factorial :: Integral a => MultiIndex -> a
-factorial = product . map C.factorial . toList
+factorial = foldr ((*) . C.factorial) 1
 
 \end{code}
 

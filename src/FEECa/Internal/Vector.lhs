@@ -15,12 +15,6 @@ module FEECa.Internal.Vector(
   -- * The Vector Type
     Vector(..), Dimensioned(..), vector
 
-  -- * Manipulating Vectors
-  , toList
-
-  -- * Mathematical Functions
-  , dot, pow
-
   ) where
 
 

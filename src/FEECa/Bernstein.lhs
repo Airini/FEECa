@@ -37,6 +37,7 @@ space $\ps{r}{\smp{f}}$.
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE ExtendedDefaultRules   #-}
 
 module FEECa.Bernstein where
 
@@ -371,7 +372,7 @@ deriveMonoG :: ( EuclideanSpace v, r ~ Scalar v )
                Simplex v -> MI.MultiIndex -> [ Polynomial r ]
 deriveMonoG barGr n t mi = [ sumR [sclV (grads j i) (dp (c',mi')) | (j,(c',mi')) <- jMonDx] | i <- [0..n] ]
   where grads j i = toList (barGr t j) !! i
-        jMonDx    = zipWith (,) [0..] (MI.derive mi)
+        jMonDx    = zip [0..] (MI.derive mi)
         dp (0,_)  = P.constant addId
         dp (c,m)  = P.polynomial [(embedIntegral c,m)]
 
@@ -530,9 +531,9 @@ extend _ c = c
 trace :: (EuclideanSpace v, r ~ Scalar v)
       => Simplex v -> BernsteinPolynomial v r -> BernsteinPolynomial v r
 trace f (Bernstein t p) = polynomial f $ (trace' . removeZeros) (toPairs n' p)
-  where  trace'      = map (pairM id (MI.restrict (sigma f)))
-         removeZeros = filter $ (MI.is_in_range (sigma f)) . snd
-         n'     = topologicalDimension f
+  where  trace'       = map (pairM id (MI.restrict (sigma f)))
+         removeZeros  = filter (MI.is_in_range (sigma f) . snd)
+         n'           = topologicalDimension f
 trace f c = redefine f c
 
 \end{code}
