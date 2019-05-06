@@ -13,7 +13,7 @@ functions for the handling of vectors in $n$-dimensional Euclidean space
 module FEECa.Internal.Vector(
 
   -- * The Vector Type
-    Vector(..), Dimensioned(..), vector
+    Vector (components), vector
 
   ) where
 

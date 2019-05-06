@@ -138,13 +138,13 @@ dd :: Double
 omm = Form 1 2 [(1.0,[1])]
 umm = Form 1 2 [(1.0,[1])]
 uo = omm /\ umm
-dd = refine dxV uo [V.Vector [-3,7], V.Vector [5,-2]]
+dd = refine dxV uo [V.vector [-3,7], V.vector [5,-2]]
 
 
 -- | Our basic projection for 'Vector f': usual 1-form basis == external
 --   derivative of global coordinate functions
 dxV :: Int -> V.Vector f -> f
-dxV i (V.Vector x) = x !! (i-1)
+dxV i x = V.components x !! (i-1)
 
 -- * Helper functions
 

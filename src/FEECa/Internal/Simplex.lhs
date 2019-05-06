@@ -1,6 +1,6 @@
 \section{Simplex}
 
-The \incode{Simplex} module implements simplices in n-dimensional
+The \inlcode{Simplex} module implements simplices in $n$-dimensional
 Euclidean space $\R{n}$.
 %
 A $k$-simplex $\smp{T} = [\vec{v_0},\ldots,\vec{v_k}]$ in
@@ -37,6 +37,7 @@ increasing, i.e.\  $\sigma(j+1) > \sigma(j)$ for all $j=1,\ldots,k'-1$.
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE ExtendedDefaultRules   #-}
 
 module FEECa.Internal.Simplex (
   -- * The Simplex type
@@ -104,7 +105,7 @@ data Simplex a =  Simplex { sigma :: [Int],
 -- | underlying vector space.
 geometricalDimension :: Dimensioned a => Simplex a -> Int
 geometricalDimension (Simplex _ (p:_)) = dim p
-geometricalDimension _                 = error "geometricalDimension: empty list or vertices"
+geometricalDimension _                 = error "geometricalDimension: empty list of vertices"
 
 -- | The topological dimension of a n-simplex is the number of vertices minus
 -- | one.
@@ -129,7 +130,7 @@ referenceVertex :: Simplex v -> v
 referenceVertex (Simplex _ (p:_)) = p
 referenceVertex _                 = error "referenceVertex: there is no vertex in this simplex"
 
--- | List of the n direction vector pointing from the first point of the
+-- | List of the n direction vectors pointing from the first point of the
 -- | simplex to the others.
 spanningVectors :: VectorSpace v => Simplex v -> [v]
 spanningVectors (Simplex _ (v:vs)) = map (`subV` v) vs
@@ -177,20 +178,16 @@ instance EuclideanSpace v => Pretty (Simplex v) where
 
 -- | Construct a full simplex from a given list of points in R^n
 simplex :: EuclideanSpace v => [v] -> Simplex v
-simplex []        = error "simplex: empty list."
+simplex []                = error "simplex: empty list."
 simplex l@(p:_)
-    | dim p == n  = Simplex [0..n] l
-    | otherwise   = error "simplex: Dimensions don't agree."
+    | all ((n==) . dim) l = Simplex [0..n] l
+    | otherwise           = error "simplex: Dimensions don't agree."
   where n = length l - 1
 
 -- | Construct a full simplex from a reference vertex and n direction vectors.
 simplex' :: EuclideanSpace v => v -> [v] -> Simplex v
-simplex' _  []             = error "simplex': Topological dimension is zero."
-simplex' p0 vs
-    | all ((n==) . dim) vs = Simplex [0..n] (p0:vs')
-    | otherwise            = error "simplex': Dimensions don't agree."
-  where vs' = map (addV p0) vs
-        n   = length vs
+simplex' _  [] = error "simplex': Topological dimension is zero."
+simplex' p0 vs = simplex (p0 : map (addV p0) vs)
 
 \end{code}
 
@@ -254,8 +251,8 @@ face (Simplex sigma1 vs) sigma2 = Simplex [sigma1 !! i | i <- sigma2]
 volume :: EuclideanSpace v
        => Simplex v -> Scalar v
 volume t
-    | k == n     = volume' t
-    | otherwise  = volume (simplex' (zero k) (project bs vs))
+    | k == n    = volume' t
+    | otherwise = volume (simplex' (zero k) (project bs vs))
   where k  = topologicalDimension t
         n  = geometricalDimension t
         vs = spanningVectors t
@@ -267,7 +264,7 @@ project bs vs = [ fromList [proj b v | b <- bs] | v <- vs]
         sqrt'     = fromDouble . sqrt . toDouble
 
 volume' :: EuclideanSpace v => Simplex v -> Scalar v
-volume' t = fromDouble $  abs (M.det w) / fromInteger (factorial n)
+volume' t = fromDouble (abs (M.det w)) `divide` embedIntegral (factorial n)
   where n = geometricalDimension t
         w = M.matrix n comps
         comps = concatMap toDouble' (spanningVectors t)
@@ -531,9 +528,8 @@ integrateOverSimplex :: (EuclideanSpace v, r ~ Scalar v)
                      -> Simplex v       -- t
                      -> (v -> r)        -- f
                      -> r
-integrateOverSimplex q t f = mul vol ({-mul fac-} nestedSum q t f (n-1) [])
+integrateOverSimplex q t f = mul vol (nestedSum q t f (n-1) [])
   where n   = topologicalDimension t
-        --fac = embedIntegral 1 -- (fromDouble . fromInteger) (factorial n)
         vol = volume t
 
 -- Recursion for the computation of the nested sum in the numerical approximation

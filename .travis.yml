@@ -103,7 +103,7 @@ install:
 #  - travis_retry cabal install --enable-tests --enable-benchmarks --only-dependencies --reorder-goals -v2
 
 script:
-  - cabal configure -f-online-doc --enable-tests --enable-benchmarks -v
+  - cabal configure -f-online-doc --enable-tests -v
   - cabal build feeca test-feec bench prof
   - cabal test
   - cabal sdist

@@ -73,7 +73,7 @@ dxVP :: Field f => Int -> Vector f -> PolyRepresentation f
 dxVP = (fmap . fmap) constant dxV
 
 dxVF :: Ring f => Int -> VectorField f -> PolyRepresentation f
-dxVF i (Vector v) = v !! (i-1)
+dxVF i v = components v !! (i-1)
 
 (#) :: forall f v. (Ring f, Module f,
                     Projectable v (Scalar f), Scalar v ~ Scalar f)
@@ -93,7 +93,7 @@ instance Field f => Projectable (Vector f) f where
 instance Field f => Projectable (Vector f) (PolyRepresentation f) where
   projection = (fmap . fmap) constant dxV
 instance Ring f => Projectable (VectorField f) (PolyRepresentation f) where
-  projection i (Vector v) = v !! (i-1)
+  projection i v = components v !! (i-1)
 
 canonCoord :: Ring a => Int -> Int -> [a]
 canonCoord i n = take n $
