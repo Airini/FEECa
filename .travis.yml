@@ -73,7 +73,7 @@ install:
 ## -CACHE-BEGIN- ##
 # Cache management due to https://github.com/hvr/multi-ghc-travis
   - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
-  - cabal install --enable-tests --enable-benchmarks --only-dependencies --dry -v > installplan.txt
+  - cabal install --enable-tests --only-dependencies --dry -v > installplan.txt
   - sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt
 
 # check whether current requested install-plan matches cached package-db snapshot
@@ -87,7 +87,7 @@ install:
       echo "Dependency build cache MISS";
       rm -rf $HOME/.dependencystore;
       mkdir -p $HOME/.ghc $HOME/.cabal/lib $HOME/.cabal/share $HOME/.cabal/bin;
-      cabal install --enable-tests --enable-benchmarks --only-dependencies;
+      cabal install --enable-tests --only-dependencies;
     fi
 
 # snapshot package-db on cache miss
@@ -104,7 +104,7 @@ install:
 
 script:
   - cabal configure -f-online-doc --enable-tests -v
-  - cabal build feeca test-feec bench prof
+  - cabal build feeca test-feec prof
   - cabal test
   - cabal sdist
 
