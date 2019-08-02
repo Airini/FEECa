@@ -33,7 +33,7 @@ build-type:          Simple
 -- extra-source-files:
 
 cabal-version:       >= 1.10
-tested-with:         GHC == 8.0.*, GHC == 8.2.*, GHC == 8.4.*, GHC == 8.6.*
+tested-with:         GHC == 8.0.2, GHC == 8.2.*, GHC == 8.4.*, GHC == 8.6.*
 
 source-repository head
   type:     git

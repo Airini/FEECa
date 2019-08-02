@@ -27,7 +27,7 @@ prop_operator_commutativity :: (b -> b -> Bool)
   -> Monop a -> Monop b -> (a -> b)
   -> a -> Bool
 prop_operator_commutativity eq o1 o2 h x =
-    h (o1 x) `eq` o2 (h x)
+  h (o1 x) `eq` o2 (h x)
 
 prop_homomorphism :: (b -> b -> Bool)
   -> Binop a -> Binop b -> (a -> b)
