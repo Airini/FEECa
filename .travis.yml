@@ -24,33 +24,36 @@ matrix:
 #    - env: CABALVER=1.24 GHCVER=8.0.1
 #      compiler: "GHC 8.0.1"
 #      addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.1], sources: [hvr-ghc]}}
-    - env: CABALVER=1.24 GHCVER=8.0.2
+    - env: CABALVER=1.24 GHCVER=8.0.2 CINSTALL=install
       compiler: "GHC 8.0.2"
       addons: {apt: {packages: [cabal-install-1.24,ghc-8.0.2], sources: [hvr-ghc]}}
-    - env: CABALVER=2.0 GHCVER=8.2.1
+    - env: CABALVER=2.0 GHCVER=8.2.1 CINSTALL=install
       compiler: "GHC 8.2.1"
       addons: {apt: {packages: [cabal-install-2.0,ghc-8.2.1], sources: [hvr-ghc]}}
-    - env: CABALVER=2.0 GHCVER=8.2.2
+    - env: CABALVER=2.0 GHCVER=8.2.2 CINSTALL=install
       compiler: "GHC 8.2.2"
       addons: {apt: {packages: [cabal-install-2.0,ghc-8.2.2], sources: [hvr-ghc]}}
-    - env: CABALVER=2.2 GHCVER=8.4.2
+    - env: CABALVER=2.2 GHCVER=8.4.2 CINSTALL=install
       compiler: "GHC 8.4.2"
       addons: {apt: {packages: [cabal-install-2.2,ghc-8.4.2], sources: [hvr-ghc]}}
-    - env: CABALVER=2.2 GHCVER=8.4.4
+    - env: CABALVER=2.2 GHCVER=8.4.4 CINSTALL=install
       compiler: "GHC 8.4.4"
       addons: {apt: {packages: [cabal-install-2.2,ghc-8.4.4], sources: [hvr-ghc]}}
-    - env: CABALVER=2.4 GHCVER=8.6.2
+    - env: CABALVER=2.4 GHCVER=8.6.2 CINSTALL=install
       compiler: "GHC 8.6.2"
       addons: {apt: {packages: [cabal-install-2.4,ghc-8.6.2], sources: [hvr-ghc]}}
-    - env: CABALVER=2.4 GHCVER=8.6.3
+    - env: CABALVER=2.4 GHCVER=8.6.3 CINSTALL=install
       compiler: "GHC 8.6.3"
       addons: {apt: {packages: [cabal-install-2.4,ghc-8.6.3], sources: [hvr-ghc]}}
-    - env: CABALVER=2.4 GHCVER=8.6.4
+    - env: CABALVER=2.4 GHCVER=8.6.4 CINSTALL=install
       compiler: "GHC 8.6.4"
       addons: {apt: {packages: [cabal-install-2.4,ghc-8.6.4], sources: [hvr-ghc]}}
-    - env: CABALVER=2.4 GHCVER=8.6.5
+    - env: CABALVER=2.4 GHCVER=8.6.5 CINSTALL=install
       compiler: "GHC 8.6.5"
       addons: {apt: {packages: [cabal-install-2.4,ghc-8.6.5], sources: [hvr-ghc]}}
+    - env: CABALVER=3.0 GHCVER=8.8.1 CINSTALL=v1-install
+      compiler: "GHC 8.8.1"
+      addons: {apt: {packages: [cabal-install-3.0,ghc-8.8.1], sources: [hvr-ghc]}}
 
 
 before_install:
@@ -79,7 +82,7 @@ install:
 ## -CACHE-BEGIN- ##
 # Cache management due to https://github.com/hvr/multi-ghc-travis
   - sed -i 's/^jobs:/-- jobs:/' ${HOME}/.cabal/config
-  - cabal install --enable-tests --only-dependencies --dry -v > installplan.txt
+  - cabal $CINSTALL --enable-tests --only-dependencies --dry -v > installplan.txt
   - sed -i -e '1,/^Resolving /d' installplan.txt; cat installplan.txt
 
 # check whether current requested install-plan matches cached package-db snapshot
@@ -93,7 +96,7 @@ install:
       echo "Dependency build cache MISS";
       rm -rf $HOME/.dependencystore;
       mkdir -p $HOME/.ghc $HOME/.cabal/lib $HOME/.cabal/share $HOME/.cabal/bin;
-      cabal install --enable-tests --only-dependencies;
+      cabal $CINSTALL --enable-tests --only-dependencies;
     fi
 
 # snapshot package-db on cache miss
