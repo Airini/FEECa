@@ -17,16 +17,16 @@ x polynomial printing needs fixing.
 
 Please refer to the newest documentation available online!
 
-## "Internal" (most important for implementor, less visible for user):
+## Internal (most important for implementor, less visible for user):
 * Spaces.hs              -- General class definitions
-* Point.hs
-* Vector.hs
+* Point.lhs
+* Vector.lhs
 * Form.hs                -- Form Scalar ~= [(Scalar, k-permutation of n)] (lin. comb. of k-permuations)
-* Simplex.hs
-* MultiIndex.hs
+* Simplex.lhs
+* MultiIndex.lhs
 
-## Utilities
-* Combinatorics.hs
+## Utility
+* Combinatorics.lhs
 * Print.hs               -- class RenderVector
 * Discrete.hs            -- To be merged with Combinatorics
 * GramSchmidt.hs
@@ -34,10 +34,11 @@ Please refer to the newest documentation available online!
 * Quadrature.hs
 
 ## Actual user should import:
-* Polynomial.hs          -- Polynomial ~= [(Scalar, MultiIndex)] (lin. comb. of MultiIndex)
-* Bernstein.hs           -- ~= (Polynomial, Simplex)
+* Polynomial.lhs          -- Polynomial ~= [(Scalar, MultiIndex)] (lin. comb. of MultiIndex)
+* Bernstein.lhs           -- ~= (Polynomial, Simplex)
 * DifferentialForm.hs    -- ~= Form Polynomial
-* FiniteElementSpace.hs
+* FiniteElementSpace.lhs
+* PolynomialDifferentialForm.lhs
 
 * Mask.hs
 * Demo.hs

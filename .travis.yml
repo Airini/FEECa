@@ -55,7 +55,7 @@ matrix:
       compiler: "GHC 8.8.1"
       addons: {apt: {packages: [cabal-install-3.0,ghc-8.8.1], sources: [hvr-ghc]}}
     - env: CABALVER=3.2 GHCVER=8.8.2 CINSTALL=v1-install
-      compiler: "GHC 8.8.1"
+      compiler: "GHC 8.8.2"
       addons: {apt: {packages: [cabal-install-3.2,ghc-8.8.2], sources: [hvr-ghc]}}
 
 

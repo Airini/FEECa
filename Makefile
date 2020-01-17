@@ -1,13 +1,13 @@
 LIBRARY_N := feeca
 LIBRARY_D := FEECa
-BINDIR    := dist-newstyle/build
+#BINDIR    := dist-newstyle/build
 PROF      := prof
 TEST      := test-feec
 BENCH     := bench
-PROFCAB   := $(BINDIR)/$(PROF)
-BENCHCAB  := $(BINDIR)/$(BENCH)
-PROFBIN   := $(PROFCAB)/$(PROF)
-BENCHBIN  := $(BENCHCAB)/$(BENCH)
+#PROFCAB   := $(BINDIR)/$(PROF)
+#BENCHCAB  := $(BINDIR)/$(BENCH)
+#PROFBIN   := $(PROFCAB)/$(PROF)
+#BENCHBIN  := $(BENCHCAB)/$(BENCH)
 PLOTDIR   := $(BENCH)/$(LIBRARY_D)
 
 PRFLAGS   := --enable-profiling
@@ -54,16 +54,16 @@ bench: default
 tests: default
 
 profile: prof
-	./$(PROFBIN)
+	cabal new-run prof
 
 benchmark.%: bench
-	./$(BENCHBIN) &> $(addsuffix _$(TSTAMP),$(BENCH))
+	cabal new-bench &> $(addsuffix _$(TSTAMP),$(BENCH))
 
 test-feec.%: tests
 	cabal new-test
 
 clean-prof:
-	rm -f *.tix *.hp *.aux $(PROFBIN)
+	rm -f *.tix *.hp *.aux
 
 clean: clean-prof
 	cabal new-clean
